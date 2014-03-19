@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
-<body>
+<body ng-controller="RootCtrl">
   <div id="entity-container">
     <h2 class="trip-title">{{plan.name}}</h2>
     {% for entity_type in plan.TYPES_IN_ORDER %}
@@ -22,7 +22,7 @@
             </h3>
             <div class="columns" ng-show="show">
               <div ng-repeat="entityModel in entityModels">
-                <div class="one-entity" ng-mouseover="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
+                <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
                   <div class="one-entity-title">[[entityModel.data['name'] ]]</div>
                   <div class="one-entity-content">
                     <img class="entity-main-img" ng-src="[[entityModel.data['primary_photo_url'] ]]"/>
