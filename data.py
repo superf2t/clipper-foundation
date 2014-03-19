@@ -11,14 +11,21 @@ class LatLng(serializable.Serializable):
         self.lat = lat
         self.lng = lng
 
+ENTITY_TYPE_TO_ICON_URL = {
+    'Attraction': 'sight-2.png',
+    'Restaurant': 'restaurant.png',
+    'Hotel': 'lodging_0star.png',
+    'Nightlife': 'bar_coktail.png',
+}
+
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 'address',
         serializable.objf('latlng', LatLng), 'address_precision',
-        'rating', 'description', 'primary_photo_url', 'source_url')
+        'rating', 'description', 'primary_photo_url', 'source_url', 'icon_url')
 
     def __init__(self, name=None, entity_type=None, address=None, latlng=None,
             address_precision=None, rating=None, description=None,
-            primary_photo_url=None, source_url=None):
+            primary_photo_url=None, source_url=None, icon_url=None):
         self.name = name
         self.entity_type = entity_type
         self.address = address
@@ -28,6 +35,14 @@ class Entity(serializable.Serializable):
         self.description = description
         self.primary_photo_url = primary_photo_url
         self.source_url = source_url
+
+        self.initialize()
+
+    def initialize(self):
+        icon_url = ENTITY_TYPE_TO_ICON_URL.get(self.entity_type)
+        if self.address_precision == 'Imprecise':
+            icon_url = icon_url.replace('.', '_imprecise.')
+        self.icon_url = icon_url
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity))
