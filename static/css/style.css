@@ -42,6 +42,20 @@ html, body {
   width: 100%;
 }
 
+.entity-description {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.entity-edit-link {
+  text-align: right;
+  padding-top: 5px;
+}
+
+.entity-description-input {
+  width: 100%;
+}
+
 #entity-container {
   width: 50%;
   margin: 0;

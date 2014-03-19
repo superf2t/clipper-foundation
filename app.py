@@ -1,5 +1,4 @@
 import struct
-import urlparse
 import uuid
 
 from flask import Flask
@@ -52,6 +51,26 @@ def trip_plan():
         response.set_cookie('sessionid', str(sessionid))
     return response
 
+@app.route('/editentity', methods=['POST'])
+def editentity():
+    sessionid = decode_sessionid(request.cookies.get('sessionid'))
+    if not sessionid:
+        raise Exception('No sessionid found')
+    try:
+        input_entity = data.Entity.from_json_obj(request.json)
+    except:
+        raise Exception('Could not parse an Entity from the input')
+    trip_plan = data.load_trip_plan(sessionid)
+    if not trip_plan:
+        raise Exception('No trip plan found for this session')
+    for i, entity in enumerate(trip_plan.entities):
+        if entity.source_url == input_entity.source_url:
+            trip_plan.entities[i] = input_entity
+            break
+    data.save_trip_plan(trip_plan, sessionid)
+    return json.jsonify(status='Success')
+
+
 @app.route('/getbookmarklet')
 def getbookmarklet():
     template_vars = {
@@ -93,13 +112,6 @@ def make_jsonp_response(request_obj, response_json_obj):
     response.mimetype = 'application/javascript'
     return response
 
-def url_host(value):
-    return urlparse.urlparse(value).netloc
-
-def register_filters():
-    app.jinja_env.filters['url_host'] = url_host
-
 if __name__ == '__main__':
     app.debug = True
-    register_filters()
     app.run()
