@@ -19,7 +19,8 @@ class ScrapedPage(object):
     ENTITY_TYPE_XPATH = None
     PRIMARY_PHOTO_XPATH = None
 
-    def __init__(self, tree):
+    def __init__(self, url, tree):
+        self.url = url
         self.tree = tree
         self.root = tree.getroot()
 
@@ -52,15 +53,43 @@ class ScrapedPage(object):
     def get_primary_photo(self):
         return self.root.find(self.PRIMARY_PHOTO_XPATH).get('src')
 
+    def debug_string(self):
+        return '''
+Entity name: %s
+Entity type: %s
+Address: %s
+Rating: %s
+Primary photo url: %s
+        ''' % (self.get_entity_name(),
+            self.get_entity_type(),
+            self.get_address(),
+            self.get_rating(),
+            self.get_primary_photo())
+
 class TripAdvisorScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
     ENTITY_TYPE_XPATH = 'body//address//span[@class="placeTypeText"]'
-    PRIMARY_PHOTO_XPATH = 'body//img[@class="photo_image"]'
+
+    @fail_returns_none
+    def get_entity_type(self):
+        if '/Hotel_Review' in url:
+            return 'Hotel'
+        elif '/Restaurant_Review' in url:
+            return 'Restaurant'
+        return super(TripAdvisorScraper, self).get_entity_type()
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//div[@class="userRating"]//img').get('content')
+        return self.root.find('body//div[@rel="v:rating"]//img').get('content')
+
+    def get_primary_photo(self):
+        for img_xpath in ('body//img[@class="photo_image"]', 'body//img[@id="HERO_PHOTO"]'):
+            img_node = self.root.find(img_xpath)
+            if img_node is not None:
+                return img_node.get('src')
+        return None
+
 
 class YelpScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
@@ -146,19 +175,20 @@ def build_scraper(url):
     host = urlparse.urlparse(url).netloc.lower()
     scraper = None
     if 'tripadvisor.com' in host:
-        scraper = TripAdvisorScraper(tree)
+        scraper = TripAdvisorScraper(url, tree)
     elif 'yelp.com' in host:
-        scraper = YelpScraper(tree)
+        scraper = YelpScraper(url, tree)
     elif 'hotels.com' in host:
-        scraper = HotelsDotComScraper(tree)
+        scraper = HotelsDotComScraper(url, tree)
     elif 'airbnb.com' in host:
-        scraper = AirbnbScraper(tree)
+        scraper = AirbnbScraper(url, tree)
     return scraper
 
 if __name__ == '__main__':
     for url in (
             'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
             'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
+            'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
             'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
             'http://www.yelp.com/biz/ikes-place-san-francisco',
             'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
@@ -166,9 +196,4 @@ if __name__ == '__main__':
             'https://www.airbnb.com/rooms/2407670',
             'https://www.airbnb.com/rooms/2576604'):
         scraper = build_scraper(url)
-        print scraper.get_entity_name()
-        print scraper.get_entity_type()
-        print scraper.get_address()
-        print scraper.get_rating()
-        print scraper.get_primary_photo()
-        print '-----'
+        print scraper.debug_string()
