@@ -4,15 +4,24 @@ import os
 import constants
 import serializable
 
+class LatLng(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('lat', 'lng')
+
+    def __init__(self, lat=None, lng=None):
+        self.lat = lat
+        self.lng = lng
+
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 'address',
+        serializable.objf('latlng', LatLng),
         'rating', 'primary_photo_url', 'source_url')
 
-    def __init__(self, name=None, entity_type=None, address=None,
+    def __init__(self, name=None, entity_type=None, address=None, latlng=None,
             rating=None, primary_photo_url=None, source_url=None):
         self.name = name
         self.entity_type = entity_type
         self.address = address
+        self.latlng = latlng
         self.rating = rating
         self.primary_photo_url = primary_photo_url
         self.source_url = source_url
@@ -20,9 +29,14 @@ class Entity(serializable.Serializable):
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity))
 
+    TYPES_IN_ORDER = ('Hotel', 'Restaurant')
+
     def __init__(self, name=None, entities=()):
         self.name = name
         self.entities = entities or []
+
+    def entities_for_type(self, entity_type):
+        return [e for e in self.entities if e.entity_type == entity_type]
 
 def trip_plan_filename(sessionid):
     return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s.json' % sessionid)

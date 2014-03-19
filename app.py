@@ -8,6 +8,7 @@ from flask import render_template
 from flask import request
 
 import data
+import geocode
 import scraper
 
 app = Flask(__name__)
@@ -36,6 +37,19 @@ def clip():
         response.set_cookie('sessionid', str(sessionid))
     return response
 
+@app.route('/trip_plan')
+def trip_plan():
+    sessionid = decode_sessionid(request.cookies.get('sessionid'))
+    needs_sessionid = False
+    if not sessionid:
+        sessionid = generate_sessionid()
+        needs_sessionid = True
+    trip_plan = data.load_trip_plan(sessionid)
+    response = render_template('trip_plan.html', plan=trip_plan, plan_json=json.dumps(trip_plan.to_json_obj()))
+    if needs_sessionid:
+        response.set_cookie('sessionid', str(sessionid))
+    return response
+
 @app.route('/getbookmarklet')
 def getbookmarklet():
     template_vars = {
@@ -51,8 +65,11 @@ def handle_clipping(url, sessionid):
     trip_plan = data.load_trip_plan(sessionid)
     if not trip_plan:
         trip_plan = data.TripPlan('My First Trip')
+    address = scr.get_address()
+    latlng_json = geocode.lookup_latlng(address)
+    latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
     entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
-        address=scr.get_address(), rating=scr.get_rating(),
+        address=scr.get_address(), latlng=latlng, rating=scr.get_rating(),
         primary_photo_url=scr.get_primary_photo(), source_url=url)
     trip_plan.entities.append(entity)
     data.save_trip_plan(trip_plan, sessionid)
