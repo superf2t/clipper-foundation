@@ -21,20 +21,20 @@
               {{entity_type}}
             </h3>
             <div class="columns" ng-show="show">
-            {% for entity in plan.entities_for_type(entity_type) %}
-              <div class="one-entity" ng-mouseover='openInfowindow("{{entity.name}}")'>
-                <div class="one-entity-title">{{entity.name}}</div>
-                <div class="one-entity-content">
-                  <img class="entity-main-img" src="{{entity.primary_photo_url}}"/>
-                </div>
-                <div>
-                  Rating: {{entity.rating}}
-                </div>
-                <div>
-                  Clipped from <a href="{{entity.source_url}}" target="_blank">{{entity.source_url|url_host}}</a>
+              <div ng-repeat="entityModel in entityModels">
+                <div class="one-entity" ng-mouseover="openInfowindow(entityModel.data['name'])">
+                  <div class="one-entity-title">[[entityModel.data['name'] ]]</div>
+                  <div class="one-entity-content">
+                    <img class="entity-main-img" ng-src="[[entityModel.data['primary_photo_url'] ]]"/>
+                  </div>
+                  <div>
+                    Rating: [[entityModel.data['rating'] ]]
+                  </div>
+                  <div>
+                    Clipped from <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
+                  </div>
                 </div>
               </div>
-            {% endfor %}
             </div>
           </div>
         </div>

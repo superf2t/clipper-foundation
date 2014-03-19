@@ -1,5 +1,4 @@
 import struct
-import urlparse
 import uuid
 
 from flask import Flask
@@ -93,13 +92,6 @@ def make_jsonp_response(request_obj, response_json_obj):
     response.mimetype = 'application/javascript'
     return response
 
-def url_host(value):
-    return urlparse.urlparse(value).netloc
-
-def register_filters():
-    app.jinja_env.filters['url_host'] = url_host
-
 if __name__ == '__main__':
     app.debug = True
-    register_filters()
     app.run()
