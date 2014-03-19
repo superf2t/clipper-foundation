@@ -58,7 +58,6 @@ def getbookmarklet():
     return render_template('getbookmarklet.html', **template_vars)
 
 def handle_clipping(url, sessionid):
-    print sessionid
     scr = scraper.build_scraper(url)
     if not scr:
         return {'message': "Don't know how to scrape this url"}

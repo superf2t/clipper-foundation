@@ -36,9 +36,9 @@ class ScrapedPage(object):
 
 class TripAdvisorScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
-    ADDRESS_XPATH = 'body//address/span[@rel="v:address"]'
+    ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
     ENTITY_TYPE_XPATH = 'body//address//span[@class="placeTypeText"]'
-    PRIMARY_PHOTO_XPATH = 'body//img[@rel="v:photo"]'
+    PRIMARY_PHOTO_XPATH = 'body//img[@class="photo_image"]'
 
     def get_rating(self):
         return self.root.find('body//div[@class="userRating"]//img').get('content')
@@ -110,6 +110,7 @@ def build_scraper(url):
 if __name__ == '__main__':
     for url in (
             'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
+            'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
             'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
             'http://www.yelp.com/biz/ikes-place-san-francisco',
             'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
