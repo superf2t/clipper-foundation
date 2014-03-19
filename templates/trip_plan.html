@@ -22,7 +22,7 @@
             </h3>
             <div class="columns" ng-show="show">
               <div ng-repeat="entityModel in entityModels">
-                <div class="one-entity" ng-mouseover="openInfowindow(entityModel.data['name'])">
+                <div class="one-entity" ng-mouseover="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
                   <div class="one-entity-title">[[entityModel.data['name'] ]]</div>
                   <div class="one-entity-content">
                     <img class="entity-main-img" ng-src="[[entityModel.data['primary_photo_url'] ]]"/>
@@ -30,8 +30,19 @@
                   <div>
                     Rating: [[entityModel.data['rating'] ]]
                   </div>
+                  <div class="entity-description"
+                    ng-show="entityModel.hasDescription() && !editing">
+                    [[entityModel.data['description'] ]]
+                  </div>
+                  <div ng-show="editing">
+                    <textarea ng-model="entityModel.data['description']" class="entity-description-input"></textarea>
+                    <button ng-click="saveEntityEdit()">Save</button>
+                  </div>
                   <div>
                     Clipped from <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
+                  </div>
+                  <div class="entity-edit-link" ng-show="!editing">
+                    <a href="javascript:void(0)" ng-click="openEditEntity(entityModel.data['name'])">Edit</a>
                   </div>
                 </div>
               </div>

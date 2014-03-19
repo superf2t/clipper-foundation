@@ -6,6 +6,10 @@ function EntityModel(entityData) {
   this.data = entityData;
   this.marker = makeMarker(entityData);
   this.infowindow = makeInfowindow(entityData);
+
+  this.hasDescription = function() {
+    return this.data['description'] && this.data['description'].length;
+  };
 }
 
 function makeMarker(entity) {
@@ -66,6 +70,25 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
   };
 }
 
+function EntityCtrl($scope, $http) {
+  $scope.editing = false;
+
+  $scope.openEditEntity = function() {
+    $scope.editing = true;
+  }
+
+  $scope.saveEntityEdit = function() {
+    $http.post('/editentity', $scope.entityModel.data).success(function(response) {
+      if (response['status'] != 'Success') {
+        alert('Failed to save edits');
+      }
+    }).error(function() {
+      alert('Failed to save edits');
+    });
+    $scope.editing = false;
+  }
+}
+
 
 function createMap() {
   var mapOptions = {
@@ -82,11 +105,14 @@ window['initApp'] = function() {
   angular.module('appModule', ['mapModule'], function($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
-  }).filter('hostname', function() {
-    return function(input) {
-      return hostnameFromUrl(input);
-    }
-  });
+  })
+    .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
+    .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
+    .filter('hostname', function() {
+      return function(input) {
+        return hostnameFromUrl(input);
+      }
+    });
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);
   });
