@@ -4,6 +4,14 @@ import urlparse
 
 from lxml import etree
 
+def fail_returns_none(fn):
+    def wrapped(self):
+        try:
+            return fn(self)
+        except:
+            return None
+    return wrapped
+
 class ScrapedPage(object):
     PAGE_TITLE_XPATH = 'head/title'
     NAME_XPATH = None
@@ -15,25 +23,32 @@ class ScrapedPage(object):
         self.tree = tree
         self.root = tree.getroot()
 
+    @fail_returns_none
     def get_page_title(self):
         return self.root.find(self.PAGE_TITLE_XPATH).text.strip()
 
+    @fail_returns_none
     def get_entity_name(self):
         return self.root.find(self.NAME_XPATH).text.strip()
 
+    @fail_returns_none
     def get_address(self):
         addr_elem = self.root.find(self.ADDRESS_XPATH)
         return tostring_with_breaks(addr_elem).strip()
 
+    @fail_returns_none
     def get_address_precision(self):
         return 'Precise'
 
+    @fail_returns_none
     def get_entity_type(self):
         return self.root.find(self.ENTITY_TYPE_XPATH).text.strip()
 
+    @fail_returns_none
     def get_rating(self):
         return ''
 
+    @fail_returns_none
     def get_primary_photo(self):
         return self.root.find(self.PRIMARY_PHOTO_XPATH).get('src')
 
@@ -43,6 +58,7 @@ class TripAdvisorScraper(ScrapedPage):
     ENTITY_TYPE_XPATH = 'body//address//span[@class="placeTypeText"]'
     PRIMARY_PHOTO_XPATH = 'body//img[@class="photo_image"]'
 
+    @fail_returns_none
     def get_rating(self):
         return self.root.find('body//div[@class="userRating"]//img').get('content')
 
@@ -51,6 +67,7 @@ class YelpScraper(ScrapedPage):
     ADDRESS_XPATH = 'body//address[@itemprop="address"]'
     PRIMARY_PHOTO_XPATH = 'body//div[@class="showcase-photos"]//div[@class="showcase-photo-box"]//img'
 
+    @fail_returns_none
     def get_entity_type(self):
         categories_parent = self.root.find('body//span[@class="category-str-list"]')
         categories_str = etree.tostring(categories_parent, method='text')
@@ -60,9 +77,11 @@ class YelpScraper(ScrapedPage):
         else:
             return 'Restaurant'
 
+    @fail_returns_none
     def get_rating(self):
         return self.root.find('body//meta[@itemprop="ratingValue"]').get('content')
 
+    @fail_returns_none
     def get_primary_photo(self):
         return super(YelpScraper, self).get_primary_photo().replace('ls.jpg', 'l.jpg')
 
@@ -70,6 +89,7 @@ class HotelsDotComScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
 
+    @fail_returns_none
     def get_address(self):
         addr_parent = self.root.find('body//div[@class="address-cntr"]/span[@class="adr"]')
         street_addr = tostring_with_breaks(addr_parent.find('span[@class="street-address"]')).strip()
@@ -82,6 +102,7 @@ class HotelsDotComScraper(ScrapedPage):
     def get_entity_type(self):
         return 'Hotel'
 
+    @fail_returns_none
     def get_rating(self):
         # Looks like "4.5 / 5"
         rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), method='text').strip()
@@ -92,6 +113,7 @@ class AirbnbScraper(ScrapedPage):
     ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="photos"]//ul[@class="slideshow-images"]//li[@class="active"]//img'
 
+    @fail_returns_none
     def get_entity_name(self):
         return 'Airbnb: ' + super(AirbnbScraper, self).get_entity_name()
 
@@ -99,9 +121,11 @@ class AirbnbScraper(ScrapedPage):
         # TODO: Changing to 'Lodging' and add a subtype
         return 'Hotel'
 
+    @fail_returns_none
     def get_address_precision(self):
         return 'Imprecise'
 
+    @fail_returns_none
     def get_rating(self):
         return self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content')
 
@@ -139,7 +163,8 @@ if __name__ == '__main__':
             'http://www.yelp.com/biz/ikes-place-san-francisco',
             'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
             'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
-            'https://www.airbnb.com/rooms/2407670'):
+            'https://www.airbnb.com/rooms/2407670',
+            'https://www.airbnb.com/rooms/2576604'):
         scraper = build_scraper(url)
         print scraper.get_entity_name()
         print scraper.get_entity_type()
