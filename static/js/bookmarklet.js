@@ -24,7 +24,7 @@
       data: {url: url},
       dataType: 'jsonp'
     }).done(function(response){
-      console.log("response: " + response);
+      alert(response['message']);
     });
   }
 
