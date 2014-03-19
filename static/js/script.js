@@ -35,6 +35,12 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
   $scope.entityModels = [];
   $scope.show = true;
 
+  $scope.$on('closeallinfowindows', function() {
+    $.each($scope.entityModels, function(i, entityModel) {
+      entityModel.infowindow.close();
+    });
+  });
+
   $.each($scope.entities, function(i, entity) {
     $scope.entityModels.push(new EntityModel(entity));
   });
@@ -57,11 +63,10 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
   };
 
   $scope.openInfowindow = function(entityName) {
+    $scope.$emit('asktocloseallinfowindows');
     $.each($scope.entityModels, function(i, entityModel) {
       if (entityModel.data['name'] == entityName) {
         entityModel.infowindow.open($map, entityModel.marker);
-      } else {
-        entityModel.infowindow.close();
       }
     });
   };
@@ -86,6 +91,12 @@ function EntityCtrl($scope, $http) {
   }
 }
 
+function RootCtrl($scope) {
+  $scope.$on('asktocloseallinfowindows', function() {
+    $scope.$broadcast('closeallinfowindows');
+  });
+}
+
 
 function createMap() {
   var mapOptions = {
@@ -103,6 +114,7 @@ window['initApp'] = function() {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
+    .controller('RootCtrl', ['$scope', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
     .filter('hostname', function() {
