@@ -12,13 +12,13 @@
 </head>
 <body>
   <div id="entity-container">
-    <h2 class="trip-title">{{plan.title}}</h2>
+    <h2 class="trip-title">{{plan.name}}</h2>
     {% for entity_type in plan.TYPES_IN_ORDER %}
       {% if plan.entities_for_type(entity_type) %}
         <div ng-init='entityType = "{{entity_type}}"; entities = {{plan.entities_json_str_for_type(entity_type)}}'>
           <div class="one-entity-type" ng-controller="EntityTypeCtrl">
             <h3 ng-click="toggleSection()" class="entity-type-header">
-              {{entity_type}}
+              <a href="javascript:void(0)">{{entity_type}}</a>
             </h3>
             <div class="columns" ng-show="show">
               <div ng-repeat="entityModel in entityModels">
@@ -51,6 +51,9 @@
         </div>
       {% endif %}
     {% endfor %}
+    <div class="left-footer">
+      Copyright 2014 Unicycle Labs
+    </div>
 
   <div id="map-container">
     <div id="map">
