@@ -39,6 +39,12 @@ class TripPlan(serializable.Serializable):
     def entities_for_type(self, entity_type):
         return [e for e in self.entities if e.entity_type == entity_type]
 
+    def entities_json_str_for_type(self, entity_type):
+        entities = self.entities_for_type(entity_type)
+        if not entities:
+            return ''
+        return json.dumps([e.to_json_obj() for e in entities])
+
 def trip_plan_filename(sessionid):
     return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s.json' % sessionid)
 

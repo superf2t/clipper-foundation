@@ -3,6 +3,7 @@
 <head>
   <title>{{plan.name}}</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="//maps.googleapis.com/maps/api/js?sensor=false"></script>
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
@@ -14,25 +15,27 @@
     <h2 class="trip-title">{{plan.title}}</h2>
     {% for entity_type in plan.TYPES_IN_ORDER %}
       {% if plan.entities_for_type(entity_type) %}
-        <div class="one-entity-type">
-          <h3 onclick='toggleSection(this, "{{entity_type}}")' class="entity-type-header">
-            {{entity_type}}
-          </h3>
-          <div class="columns">
-          {% for entity in plan.entities_for_type(entity_type) %}
-            <div class="one-entity" onmouseover='openInfowindow("{{entity.name}}")'>
-              <div class="one-entity-title">{{entity.name}}</div>
-              <div class="one-entity-content">
-                <img class="entity-main-img" src="{{entity.primary_photo_url}}"/>
+        <div ng-init='entityType = "{{entity_type}}"; entities = {{plan.entities_json_str_for_type(entity_type)}}'>
+          <div class="one-entity-type" ng-controller="EntityTypeCtrl">
+            <h3 ng-click="toggleSection()" class="entity-type-header">
+              {{entity_type}}
+            </h3>
+            <div class="columns" ng-show="show">
+            {% for entity in plan.entities_for_type(entity_type) %}
+              <div class="one-entity" ng-mouseover='openInfowindow("{{entity.name}}")'>
+                <div class="one-entity-title">{{entity.name}}</div>
+                <div class="one-entity-content">
+                  <img class="entity-main-img" src="{{entity.primary_photo_url}}"/>
+                </div>
+                <div>
+                  Rating: {{entity.rating}}
+                </div>
+                <div>
+                  Clipped from <a href="{{entity.source_url}}" target="_blank">{{entity.source_url|url_host}}</a>
+                </div>
               </div>
-              <div>
-                Rating: {{entity.rating}}
-              </div>
-              <div>
-                Clipped from <a href="{{entity.source_url}}" target="_blank">{{entity.source_url|url_host}}</a>
-              </div>
+            {% endfor %}
             </div>
-          {% endfor %}
           </div>
         </div>
       {% endif %}
@@ -44,7 +47,7 @@
   </div>
 
   <script>
-    init({{plan_json|safe}});
+    initApp();
   </script>
 </body>
 </html>
