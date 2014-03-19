@@ -13,7 +13,8 @@
     }
   })(window,document,"1.10.0",function($,L){
 
-  var HOST = '127.0.0.1:5000';
+  //var HOST = '127.0.0.1:5000';
+  var HOST = 'travelclipper.ngrok.com';
 
   function absUrl(relativeUrl) {
     return '//' + HOST + relativeUrl;

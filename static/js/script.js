@@ -12,15 +12,20 @@ function drawMap(entities) {
   globalState().map = map;
   var bounds = new google.maps.LatLngBounds();
 
-  $.each(entities, function(i, entity){
+  $.each(entities, function(i, entity) {
     var latlng = new google.maps.LatLng(entity['latlng']['lat'], entity['latlng']['lng']);
     var entityName = entity['name'];
-    var marker = new google.maps.Marker({
+    var markerData = {
       position: latlng,
       map: map,
       title: entityName
       //icon: '/static/img/' + entity['icon_url']
-    });
+    };
+    console.log(entity);
+    if (entity['address_precision'] == 'Imprecise') {
+      markerData.icon = '/static/img/circle_marker.png'
+    }
+    var marker = new google.maps.Marker(markerData);
     bounds.extend(latlng);
 
     var infowindowContent = '<b>' + entityName + '</b>';

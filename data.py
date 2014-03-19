@@ -13,15 +13,16 @@ class LatLng(serializable.Serializable):
 
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 'address',
-        serializable.objf('latlng', LatLng),
+        serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'primary_photo_url', 'source_url')
 
     def __init__(self, name=None, entity_type=None, address=None, latlng=None,
-            rating=None, primary_photo_url=None, source_url=None):
+            address_precision=None, rating=None, primary_photo_url=None, source_url=None):
         self.name = name
         self.entity_type = entity_type
         self.address = address
         self.latlng = latlng
+        self.address_precision = address_precision
         self.rating = rating
         self.primary_photo_url = primary_photo_url
         self.source_url = source_url

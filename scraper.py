@@ -25,6 +25,9 @@ class ScrapedPage(object):
         addr_elem = self.root.find(self.ADDRESS_XPATH)
         return tostring_with_breaks(addr_elem).strip()
 
+    def get_address_precision(self):
+        return 'Precise'
+
     def get_entity_type(self):
         return self.root.find(self.ENTITY_TYPE_XPATH).text.strip()
 
@@ -84,6 +87,25 @@ class HotelsDotComScraper(ScrapedPage):
         rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), method='text').strip()
         return rating_fraction_str.split('/')[0].strip()
 
+class AirbnbScraper(ScrapedPage):
+    NAME_XPATH = 'body//div[@id="listing_name"]'
+    ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
+    PRIMARY_PHOTO_XPATH = 'body//div[@id="photos"]//ul[@class="slideshow-images"]//li[@class="active"]//img'
+
+    def get_entity_name(self):
+        return 'Airbnb: ' + super(AirbnbScraper, self).get_entity_name()
+
+    def get_entity_type(self):
+        # TODO: Changing to 'Lodging' and add a subtype
+        return 'Hotel'
+
+    def get_address_precision(self):
+        return 'Imprecise'
+
+    def get_rating(self):
+        return self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content')
+
+
 def tostring_with_breaks(element):
     modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
     new_element = etree.fromstring(modified_html)
@@ -105,6 +127,8 @@ def build_scraper(url):
         scraper = YelpScraper(tree)
     elif 'hotels.com' in host:
         scraper = HotelsDotComScraper(tree)
+    elif 'airbnb.com' in host:
+        scraper = AirbnbScraper(tree)
     return scraper
 
 if __name__ == '__main__':
@@ -114,7 +138,8 @@ if __name__ == '__main__':
             'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
             'http://www.yelp.com/biz/ikes-place-san-francisco',
             'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
-            'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first'):
+            'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
+            'https://www.airbnb.com/rooms/2407670'):
         scraper = build_scraper(url)
         print scraper.get_entity_name()
         print scraper.get_entity_type()

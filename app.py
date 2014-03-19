@@ -14,7 +14,8 @@ import scraper
 
 app = Flask(__name__)
 
-BASE_URL = 'http://127.0.0.1:5000'
+#BASE_URL = 'http://127.0.0.1:5000'
+BASE_URL = 'https://travelclipper.ngrok.com'
 
 @app.route('/')
 def home():
@@ -69,7 +70,8 @@ def handle_clipping(url, sessionid):
     latlng_json = geocode.lookup_latlng(address)
     latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
     entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
-        address=scr.get_address(), latlng=latlng, rating=scr.get_rating(),
+        address=scr.get_address(), latlng=latlng, 
+        address_precision=scr.get_address_precision(), rating=scr.get_rating(),
         primary_photo_url=scr.get_primary_photo(), source_url=url)
     trip_plan.entities.append(entity)
     data.save_trip_plan(trip_plan, sessionid)
