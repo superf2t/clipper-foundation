@@ -15,7 +15,7 @@ import scraper
 app = Flask(__name__)
 
 #BASE_URL = 'http://127.0.0.1:5000'
-BASE_URL = 'https://travelclipper.ngrok.com'
+BASE_URL = 'https://kauaitrip.ngrok.com'
 
 @app.route('/')
 def home():
