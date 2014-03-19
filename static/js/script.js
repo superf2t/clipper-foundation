@@ -18,12 +18,9 @@ function makeMarker(entity) {
   var markerData = {
     position: latlng,
     map: null,
-    title: entityName
-    //icon: '/static/img/' + entity['icon_url']
+    title: entityName,
+    icon: '/static/img/' + entity['icon_url']
   };
-  if (entity['address_precision'] == 'Imprecise') {
-    markerData.icon = '/static/img/circle_marker.png'
-  }
   return new google.maps.Marker(markerData);
 }
 

@@ -32,7 +32,7 @@
                   </div>
                   <div class="entity-description"
                     ng-show="entityModel.hasDescription() && !editing">
-                    [[entityModel.data['description'] ]]
+                    <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
                   </div>
                   <div ng-show="editing">
                     <textarea ng-model="entityModel.data['description']" class="entity-description-input"></textarea>
