@@ -41,8 +41,9 @@ def clip():
         sessionid = generate_sessionid()
         needs_sessionid = True
     url = request.values['url']
-    response_message = handle_clipping(url, sessionid)
-    modal_html = str(render_template('clipper_results_modal.html', message=response_message))
+    clip_result = handle_clipping(url, sessionid)
+    modal_html = str(render_template('clipper_results_modal.html',
+        clip_result=clip_result, base_url=BASE_URL))
     response = make_jsonp_response(request, {'html': modal_html})
     print str(response)
     if needs_sessionid:
@@ -99,24 +100,37 @@ def trip_plan_kauai():
         allow_editing=False)
     return response    
 
+class ClipResult(object):
+    STATUS_ERROR = 0
+    STATUS_SUCCESS_KNOWN_SOURCE = 1
+    STATUS_SAVED_FOR_LATER = 2
+
+    def __init__(self, status, entity=None):
+        self.status = status
+        self.entity = entity
 
 def handle_clipping(url, sessionid):
     scr = scraper.build_scraper(url)
-    if not scr:
-        return "Don't know how to scrape this url"
     trip_plan = data.load_trip_plan(sessionid)
+    result = None
     if not trip_plan:
         trip_plan = data.TripPlan('My First Trip')
-    address = scr.get_address()
-    latlng_json = geocode.lookup_latlng(address)
-    latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
-    entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
-        address=scr.get_address(), latlng=latlng, 
-        address_precision=scr.get_address_precision(), rating=scr.get_rating(),
-        primary_photo_url=scr.get_primary_photo(), source_url=url)
-    trip_plan.entities.append(entity)
+    if not scr:
+        clipped_page = data.ClippedPage(source_url=url)
+        trip_plan.clipped_pages.append(clipped_page)
+        result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER)
+    else:
+        address = scr.get_address()
+        latlng_json = geocode.lookup_latlng(address)
+        latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
+        entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
+            address=scr.get_address(), latlng=latlng, 
+            address_precision=scr.get_address_precision(), rating=scr.get_rating(),
+            primary_photo_url=scr.get_primary_photo(), source_url=url)
+        trip_plan.entities.append(entity)
+        result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity)
     data.save_trip_plan(trip_plan, sessionid)
-    return 'Successfully clipped "%s"' % scr.get_entity_name()
+    return result
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]

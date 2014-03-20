@@ -73,11 +73,11 @@ class TripAdvisorScraper(ScrapedPage):
 
     @fail_returns_none
     def get_entity_type(self):
-        if '/Hotel_Review' in url:
+        if '/Hotel_Review' in self.url:
             return 'Hotel'
-        elif '/Restaurant_Review' in url:
+        elif '/Restaurant_Review' in self.url:
             return 'Restaurant'
-        elif '/Attraction_Review' in url:
+        elif '/Attraction_Review' in self.url:
             return 'Attraction'
         return super(TripAdvisorScraper, self).get_entity_type()
 

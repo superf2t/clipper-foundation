@@ -44,14 +44,22 @@ class Entity(serializable.Serializable):
             icon_url = icon_url.replace('.', '_imprecise.')
         self.icon_url = icon_url
 
+class ClippedPage(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('source_url')
+
+    def __init__(self, source_url=None):
+        self.source_url = source_url
+
 class TripPlan(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity))
+    PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity),
+        serializable.objlistf('clipped_pages', ClippedPage))
 
     TYPES_IN_ORDER = ('Hotel', 'Restaurant', 'Attraction')
 
-    def __init__(self, name=None, entities=()):
+    def __init__(self, name=None, entities=(), clipped_pages=()):
         self.name = name
         self.entities = entities or []
+        self.clipped_pages = clipped_pages or []
 
     def entities_for_type(self, entity_type):
         return [e for e in self.entities if e.entity_type == entity_type]

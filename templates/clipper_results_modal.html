@@ -23,6 +23,14 @@
   </style>
   <div class="__tc-modal">
     <div class="__tc-title">Clipper Results</div>
-    <div>{{message}}</div>
+    {% if clip_result.status == clip_result.STATUS_SUCCESS_KNOWN_SOURCE %}
+      <div>Successfully clipped "{{clip_result.entity.name}}"</div>
+    {% elif clip_result.status == clip_result.STATUS_SAVED_FOR_LATER %}
+      <div>
+        We don't recognize this website so we've saved this url for you to clip manually.  Visit <a href="{{base_url}}">TravelClipper</a> when you're done clipping.
+      </div>
+    {% else %}
+      <div>An error occurred during clipping.  Please try again.</div>
+    {% endif %}
   </div>
 </div>
