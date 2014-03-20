@@ -45,10 +45,11 @@ class Entity(serializable.Serializable):
         self.icon_url = icon_url
 
 class ClippedPage(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('source_url')
+    PUBLIC_FIELDS = serializable.fields('source_url', 'title')
 
-    def __init__(self, source_url=None):
+    def __init__(self, source_url=None, title=None):
         self.source_url = source_url
+        self.title = title
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity),

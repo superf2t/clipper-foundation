@@ -98,6 +98,16 @@ function RootCtrl($scope) {
 }
 
 
+function ClippedPagesCtrl($scope) {
+  $scope.clippingActive = false;
+
+  $scope.openPageForClipping = function(url) {
+    $scope.clippingPageUrl = url;
+    $scope.clippingActive = true;
+  };
+}
+
+
 function createMap() {
   var mapOptions = {
     center: new google.maps.LatLng(-25.363882,131.044922),
@@ -117,6 +127,7 @@ window['initApp'] = function() {
     .controller('RootCtrl', ['$scope', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
+    .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);

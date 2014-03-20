@@ -118,8 +118,8 @@ def handle_clipping(url, sessionid):
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL)
     scr = scraper.build_scraper(url)
-    if not scr:
-        clipped_page = data.ClippedPage(source_url=url)
+    if scr.is_base_scraper():
+        clipped_page = data.ClippedPage(source_url=url, title=scr.get_page_title())
         trip_plan.clipped_pages.append(clipped_page)
         result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER)
     else:

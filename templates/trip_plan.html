@@ -13,6 +13,27 @@
 <body ng-controller="RootCtrl">
   <div id="entity-container">
     <h2 class="trip-title">{{plan.name}}</h2>
+
+    {% if plan.clipped_pages %}
+      <div ng-controller="ClippedPagesCtrl">
+        <h3>Clipped Pages</h3>
+        <div>
+          These are pages you clipped but we're unable to automatically parse.  Click on each to extract locations from the page.
+        </div>
+        {% for clipped_page in plan.clipped_pages %}
+          <div>
+            <a href="javascript:void(0)"
+              ng-click="openPageForClipping('{{clipped_page.source_url}}')">
+              {{clipped_page.title}}
+            </a>
+          </div>
+        {% endfor %}
+        <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
+        </iframe>
+      </div>
+    {% endif %}
+
+
     {% for entity_type in plan.TYPES_IN_ORDER %}
       {% if plan.entities_for_type(entity_type) %}
         <div ng-init='entityType = "{{entity_type}}"; entities = {{plan.entities_json_str_for_type(entity_type)}}'>

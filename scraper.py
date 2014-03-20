@@ -53,6 +53,9 @@ class ScrapedPage(object):
     def get_primary_photo(self):
         return self.root.find(self.PRIMARY_PHOTO_XPATH).get('src')
 
+    def is_base_scraper(self):
+        return type(self) == ScrapedPage
+
     def debug_string(self):
         return '''
 Entity name: %s
@@ -175,16 +178,16 @@ def parse_tree(url):
 def build_scraper(url):
     tree = parse_tree(url)
     host = urlparse.urlparse(url).netloc.lower()
-    scraper = None
+    scraper_class = ScrapedPage
     if 'tripadvisor.com' in host:
-        scraper = TripAdvisorScraper(url, tree)
+        scraper_class = TripAdvisorScraper
     elif 'yelp.com' in host:
-        scraper = YelpScraper(url, tree)
+        scraper_class = YelpScraper
     elif 'hotels.com' in host:
-        scraper = HotelsDotComScraper(url, tree)
+        scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
-        scraper = AirbnbScraper(url, tree)
-    return scraper
+        scraper_class = AirbnbScraper
+    return scraper_class(url, tree)
 
 if __name__ == '__main__':
     for url in (
