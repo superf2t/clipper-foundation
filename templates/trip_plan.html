@@ -41,9 +41,11 @@
                   <div>
                     Clipped from <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
                   </div>
-                  <div class="entity-edit-link" ng-show="!editing">
-                    <a href="javascript:void(0)" ng-click="openEditEntity(entityModel.data['name'])">Edit</a>
-                  </div>
+                  {% if allow_editing %}
+                    <div class="entity-edit-link" ng-show="!editing">
+                      <a href="javascript:void(0)" ng-click="openEditEntity(entityModel.data['name'])">Edit</a>
+                    </div>
+                  {% endif %}
                 </div>
               </div>
             </div>
