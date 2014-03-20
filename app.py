@@ -78,6 +78,17 @@ def getbookmarklet():
     }
     return render_template('getbookmarklet.html', **template_vars)
 
+
+@app.route('/trip_plan_kauai')
+def trip_plan_kauai():
+    kauai_trip_plan_id = 'kauai'
+    trip_plan = data.load_trip_plan(kauai_trip_plan_id)
+    response = render_template('trip_plan.html',
+        plan=trip_plan, plan_json=json.dumps(trip_plan.to_json_obj()),
+        allow_editing=False)
+    return response    
+
+
 def handle_clipping(url, sessionid):
     scr = scraper.build_scraper(url)
     if not scr:
