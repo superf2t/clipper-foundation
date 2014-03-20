@@ -24,8 +24,13 @@
     $.ajax(absUrl('/clip'), {
       data: {url: url},
       dataType: 'jsonp'
-    }).done(function(response){
-      alert(response['message']);
+    }).done(function(response) {
+      var div = $(response['html']);
+      $(document.body).append(div);
+      $(document.body).one('click', function() {
+        div.remove();
+        div = null;
+      })
     });
   }
 

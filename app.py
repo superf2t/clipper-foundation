@@ -41,8 +41,10 @@ def clip():
         sessionid = generate_sessionid()
         needs_sessionid = True
     url = request.values['url']
-    json_response = handle_clipping(url, sessionid)
-    response = make_jsonp_response(request, json_response)
+    response_message = handle_clipping(url, sessionid)
+    modal_html = str(render_template('clipper_results_modal.html', message=response_message))
+    response = make_jsonp_response(request, {'html': modal_html})
+    print str(response)
     if needs_sessionid:
         response.set_cookie('sessionid', str(sessionid))
     return response
@@ -101,7 +103,7 @@ def trip_plan_kauai():
 def handle_clipping(url, sessionid):
     scr = scraper.build_scraper(url)
     if not scr:
-        return {'message': "Don't know how to scrape this url"}
+        return "Don't know how to scrape this url"
     trip_plan = data.load_trip_plan(sessionid)
     if not trip_plan:
         trip_plan = data.TripPlan('My First Trip')
@@ -114,7 +116,7 @@ def handle_clipping(url, sessionid):
         primary_photo_url=scr.get_primary_photo(), source_url=url)
     trip_plan.entities.append(entity)
     data.save_trip_plan(trip_plan, sessionid)
-    return {'message': 'Successfully clipped "%s"' % scr.get_entity_name()}
+    return 'Successfully clipped "%s"' % scr.get_entity_name()
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
