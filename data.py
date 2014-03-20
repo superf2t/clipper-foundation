@@ -70,6 +70,15 @@ class TripPlan(serializable.Serializable):
             return ''
         return json.dumps([e.to_json_obj() for e in entities])
 
+    def contains_url(self, url):
+        for entity in self.entities:
+            if entity.source_url == url:
+                return True
+        for clipped_page in self.clipped_pages:
+            if clipped_page.source_url == url:
+                return True
+        return False
+
 def trip_plan_filename(sessionid):
     return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s.json' % sessionid)
 

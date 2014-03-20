@@ -104,17 +104,20 @@ class ClipResult(object):
     STATUS_ERROR = 0
     STATUS_SUCCESS_KNOWN_SOURCE = 1
     STATUS_SAVED_FOR_LATER = 2
+    STATUS_ALREADY_CLIPPED_URL = 3
 
     def __init__(self, status, entity=None):
         self.status = status
         self.entity = entity
 
 def handle_clipping(url, sessionid):
-    scr = scraper.build_scraper(url)
     trip_plan = data.load_trip_plan(sessionid)
     result = None
     if not trip_plan:
         trip_plan = data.TripPlan('My First Trip')
+    if trip_plan.contains_url(url):
+        return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL)
+    scr = scraper.build_scraper(url)
     if not scr:
         clipped_page = data.ClippedPage(source_url=url)
         trip_plan.clipped_pages.append(clipped_page)

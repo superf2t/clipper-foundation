@@ -29,6 +29,8 @@
       <div>
         We don't recognize this website so we've saved this url for you to clip manually.  Visit <a href="{{base_url}}">TravelClipper</a> when you're done clipping.
       </div>
+    {% elif clip_result.status == clip_result.STATUS_ALREADY_CLIPPED_URL %}
+      <div>You've already clipped this page to your trip plan.</div>
     {% else %}
       <div>An error occurred during clipping.  Please try again.</div>
     {% endif %}
