@@ -16,6 +16,15 @@ app = Flask(__name__)
 #BASE_URL = 'http://127.0.0.1:5000'
 BASE_URL = 'https://travelclipper.ngrok.com'
 
+debug = True
+if not debug:
+    import logging
+    import os
+    projectpath = os.environ.get('PROJECTPATH') or '.'
+    file_handler = logging.FileHandler(projectpath + '/app.log')
+    file_handler.setLevel(logging.WARNING)
+    app.logger.addHandler(file_handler)
+
 @app.route('/')
 def home():
     return render_template('home.html')
@@ -124,5 +133,5 @@ def make_jsonp_response(request_obj, response_json_obj):
     return response
 
 if __name__ == '__main__':
-    app.debug = True
+    app.debug = debug
     app.run()
