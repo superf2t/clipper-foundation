@@ -6,9 +6,16 @@ function EntityModel(entityData) {
   this.data = entityData;
   this.marker = makeMarker(entityData);
   this.infowindow = makeInfowindow(entityData);
+  this.currentImgUrl = entityData['photo_urls'] && entityData['photo_urls'][0];
+  this.currentImgUrlIndex = 0;
 
   this.hasDescription = function() {
     return this.data['description'] && this.data['description'].length;
+  };
+
+  this.advanceImg = function() {
+    this.currentImgUrlIndex = (this.currentImgUrlIndex + 1) % this.data['photo_urls'].length;
+    this.currentImgUrl = this.data['photo_urls'][this.currentImgUrlIndex];
   };
 }
 

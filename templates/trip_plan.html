@@ -46,7 +46,8 @@
                 <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
                   <div class="one-entity-title">[[entityModel.data['name'] ]]</div>
                   <div class="one-entity-content">
-                    <img class="entity-main-img" ng-src="[[entityModel.data['primary_photo_url'] ]]"/>
+                    <img class="entity-main-img" ng-src="[[entityModel.currentImgUrl]]"
+                      ng-click="entityModel.advanceImg()"/>
                   </div>
                   <div>
                     Rating: [[entityModel.data['rating'] ]]

@@ -36,6 +36,7 @@ html, body {
 
 .entity-main-img {
   width: 100%;
+  cursor: pointer;
 }
 
 .entity-description {
@@ -72,7 +73,7 @@ html, body {
 }
 
 .columns:hover .one-entity:hover {
-  opacity: 0.8;
+  border: 1px solid #A4C5F3;
 }
 
 .entity-type-header {
