@@ -1,9 +1,7 @@
-import json
 import re
-import urllib2
 import urlparse
 
-from lxml import etree
+from selenium import webdriver
 
 def fail_returns_none(fn):
     def wrapped(self):
@@ -20,23 +18,28 @@ class ScrapedPage(object):
     ENTITY_TYPE_XPATH = None
     PRIMARY_PHOTO_XPATH = None
 
-    def __init__(self, url, tree):
+    def __init__(self, url, browser):
         self.url = url
-        self.tree = tree
-        self.root = tree.getroot()
+        self.browser = browser
+        browser.get(url)
+
+    def tear_down(self):
+        self.browser.close()
+
+    def xpath(self, xpath):
+        return self.browser.find_element_by_xpath(xpath)
 
     @fail_returns_none
     def get_page_title(self):
-        return self.root.find(self.PAGE_TITLE_XPATH).text.strip()
+        return self.xpath(self.PAGE_TITLE_XPATH).text.strip()
 
     @fail_returns_none
     def get_entity_name(self):
-        return self.root.find(self.NAME_XPATH).text.strip()
+        return self.xpath(self.NAME_XPATH).text.strip()
 
     @fail_returns_none
     def get_address(self):
-        addr_elem = self.root.find(self.ADDRESS_XPATH)
-        return tostring_with_breaks(addr_elem).strip()
+        return re.sub('\n+', ' ', self.xpath(self.ADDRESS_XPATH).text.strip())
 
     @fail_returns_none
     def get_address_precision(self):
@@ -44,7 +47,7 @@ class ScrapedPage(object):
 
     @fail_returns_none
     def get_entity_type(self):
-        return self.root.find(self.ENTITY_TYPE_XPATH).text.strip()
+        return self.xpath(self.ENTITY_TYPE_XPATH).text.strip()
 
     @fail_returns_none
     def get_rating(self):
@@ -52,7 +55,7 @@ class ScrapedPage(object):
 
     @fail_returns_none
     def get_primary_photo(self):
-        return self.root.find(self.PRIMARY_PHOTO_XPATH).get('src')
+        return self.xpath(self.PRIMARY_PHOTO_XPATH).get_attribute('src')
 
     def is_base_scraper(self):
         return type(self) == ScrapedPage
@@ -71,9 +74,9 @@ Primary photo url: %s
             self.get_primary_photo())
 
 class TripAdvisorScraper(ScrapedPage):
-    NAME_XPATH = 'body//h1'
-    ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
-    ENTITY_TYPE_XPATH = 'body//address//span[@class="placeTypeText"]'
+    NAME_XPATH = 'html/body//h1'
+    ADDRESS_XPATH = 'html/body//address/span[@rel="v:address"]//span[@class="format_address"]'
+    ENTITY_TYPE_XPATH = 'html/body//address//span[@class="placeTypeText"]'
 
     @fail_returns_none
     def get_entity_type(self):
@@ -87,35 +90,23 @@ class TripAdvisorScraper(ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//div[@rel="v:rating"]//img').get('content')
+        return self.xpath('html/body//div[@rel="v:rating"]//img').get_attribute('content')
 
-    @fail_returns_none
     def get_primary_photo(self):
-        try:
-            img_url = self.root.find('body//img[@class="photo_image"]').get('src')
-        except:
-            img_url = None
-        if img_url:
-            return img_url
-        for script in self.root.findall('body//script'):
-            if 'lazyImgs' in script.text:
-                lines = script.text.split('\n')
-                for line in lines:
-                    if 'HERO_PHOTO' in line:
-                        some_json = json.loads(line)
-                        return some_json['data']
+        for img_xpath in ('html/body//img[@class="photo_image"]', 'html/body//img[@id="HERO_PHOTO"]'):
+            img_node = self.xpath(img_xpath)
+            if img_node is not None:
+                return img_node.get_attribute('src')
         return None
 
-
 class YelpScraper(ScrapedPage):
-    NAME_XPATH = 'body//h1'
-    ADDRESS_XPATH = 'body//address[@itemprop="address"]'
-    PRIMARY_PHOTO_XPATH = 'body//div[@class="showcase-photos"]//div[@class="showcase-photo-box"]//img'
+    NAME_XPATH = 'html/body//h1'
+    ADDRESS_XPATH = 'html/body//address[@itemprop="address"]'
+    PRIMARY_PHOTO_XPATH = 'html/body//div[contains(@class, "showcase-photos")]//div[@class="showcase-photo-box"]//img'
 
     @fail_returns_none
     def get_entity_type(self):
-        categories_parent = self.root.find('body//span[@class="category-str-list"]')
-        categories_str = etree.tostring(categories_parent, method='text')
+        categories_str = self.xpath('html/body//span[@class="category-str-list"]').text.strip()
         categories = [c.strip().lower() for c in categories_str.split(',')]
         if 'hotel' in categories or 'hotels' in categories:
             return 'Hotel'
@@ -124,39 +115,38 @@ class YelpScraper(ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//meta[@itemprop="ratingValue"]').get('content')
+        return self.xpath('html/body//meta[@itemprop="ratingValue"]').get_attribute('content')
 
     @fail_returns_none
     def get_primary_photo(self):
         return super(YelpScraper, self).get_primary_photo().replace('ls.jpg', 'l.jpg')
 
 class HotelsDotComScraper(ScrapedPage):
-    NAME_XPATH = 'body//h1'
-    PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
-
-    @fail_returns_none
-    def get_address(self):
-        addr_parent = self.root.find('body//div[@class="address-cntr"]/span[@class="adr"]')
-        street_addr = tostring_with_breaks(addr_parent.find('span[@class="street-address"]')).strip()
-        street_addr = re.sub('\s+', ' ', street_addr)
-        postal_addr = tostring_with_breaks(addr_parent.find('span[@class="postal-addr"]')).strip()
-        postal_addr = re.sub('\s+', ' ', postal_addr)
-        country = tostring_with_breaks(addr_parent.find('span[@class="country-name"]')).strip().strip(',')
-        return '%s %s %s' % (street_addr, postal_addr, country)
+    NAME_XPATH = 'html/body//h1'
+    ADDRESS_XPATH = 'html/body//div[@class="address-cntr"]/span[@class="adr"]'
+    PRIMARY_PHOTO_XPATH = 'html/body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
 
     def get_entity_type(self):
         return 'Hotel'
 
     @fail_returns_none
+    def get_address(self):
+        addr_parent = self.xpath('html/body//div[@class="address-cntr"]/span[@class="adr"]')
+        street_addr = addr_parent.find_element_by_xpath('span[@class="street-address"]').text.strip()
+        postal_addr = addr_parent.find_element_by_xpath('span[@class="postal-addr"]').text.strip()
+        country = addr_parent.find_element_by_xpath('span[@class="country-name"]').text.strip().strip(',')
+        return '%s %s %s' % (street_addr, postal_addr, country)
+
+    @fail_returns_none
     def get_rating(self):
         # Looks like "4.5 / 5"
-        rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), method='text').strip()
+        rating_fraction_str = self.xpath('html/body//div[@class="score-summary"]/span[@class="rating"]').text.strip()
         return rating_fraction_str.split('/')[0].strip()
 
 class AirbnbScraper(ScrapedPage):
-    NAME_XPATH = 'body//div[@id="listing_name"]'
-    ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
-    PRIMARY_PHOTO_XPATH = 'body//div[@id="photos"]//ul[@class="slideshow-images"]//li[@class="active"]//img'
+    NAME_XPATH = 'html/body//div[@id="listing_name"]'
+    ADDRESS_XPATH = 'html/body//div[@id="room"]//span[@id="display-address"]'
+    PRIMARY_PHOTO_XPATH = 'html/body//div[@id="photos"]//ul[@class="slideshow-images"]//li[@class="active"]//img'
 
     @fail_returns_none
     def get_entity_name(self):
@@ -172,23 +162,11 @@ class AirbnbScraper(ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content')
-
-
-def tostring_with_breaks(element):
-    modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
-    new_element = etree.fromstring(modified_html)
-    return etree.tostring(new_element, method='text')
-
-def parse_tree(url):
-    html = urllib2.urlopen(url)
-    parser = etree.HTMLParser()
-    tree = etree.parse(html, parser)
-    return tree
+        return self.xpath('html/body//div[@id="room"]//meta[@itemprop="ratingValue"]').get_attribute('content')
 
 def build_scraper(url):
-    tree = parse_tree(url)
     host = urlparse.urlparse(url).netloc.lower()
+    browser = webdriver.PhantomJS()
     scraper_class = ScrapedPage
     if 'tripadvisor.com' in host:
         scraper_class = TripAdvisorScraper
@@ -198,7 +176,7 @@ def build_scraper(url):
         scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
         scraper_class = AirbnbScraper
-    return scraper_class(url, tree)
+    return scraper_class(url, browser)
 
 if __name__ == '__main__':
     for url in (
@@ -213,3 +191,4 @@ if __name__ == '__main__':
             'https://www.airbnb.com/rooms/2576604'):
         scraper = build_scraper(url)
         print scraper.debug_string()
+        scraper.tear_down()
