@@ -129,7 +129,8 @@ def handle_clipping(url, sessionid):
         entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
             address=scr.get_address(), latlng=latlng, 
             address_precision=scr.get_address_precision(), rating=scr.get_rating(),
-            primary_photo_url=scr.get_primary_photo(), source_url=url)
+            primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
+            source_url=url)
         trip_plan.entities.append(entity)
         result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity)
     data.save_trip_plan(trip_plan, sessionid)

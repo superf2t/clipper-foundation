@@ -21,11 +21,12 @@ ENTITY_TYPE_TO_ICON_URL = {
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 'address',
         serializable.objf('latlng', LatLng), 'address_precision',
-        'rating', 'description', 'primary_photo_url', 'source_url', 'icon_url')
+        'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
+        'source_url', 'icon_url')
 
     def __init__(self, name=None, entity_type=None, address=None, latlng=None,
             address_precision=None, rating=None, description=None,
-            primary_photo_url=None, source_url=None, icon_url=None):
+            primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None):
         self.name = name
         self.entity_type = entity_type
         self.address = address
@@ -34,6 +35,7 @@ class Entity(serializable.Serializable):
         self.rating = rating
         self.description = description
         self.primary_photo_url = primary_photo_url
+        self.photo_urls = photo_urls or []
         self.source_url = source_url
 
         self.initialize()
