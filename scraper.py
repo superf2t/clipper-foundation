@@ -240,6 +240,12 @@ class AirbnbScraper(ScrapedPage):
     def get_rating(self):
         return self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content')
 
+    @fail_returns_empty
+    def get_photos(self):
+        thumbs = self.root.findall('body//div[@id="photos"]//div[@class="thumbnails-viewport"]//li//a')
+        return [thumb.get('href') for thumb in thumbs]
+
+
 
 def tostring_with_breaks(element):
     modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
