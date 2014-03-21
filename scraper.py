@@ -68,6 +68,10 @@ class ScrapedPage(object):
     def get_photos(self):
         return ()
 
+    @fail_returns_none
+    def get_site_specific_entity_id(self):
+        return None
+
     def is_base_scraper(self):
         return type(self) == ScrapedPage
 
@@ -171,6 +175,21 @@ class YelpScraper(ScrapedPage):
     @fail_returns_none
     def get_primary_photo(self):
         return super(YelpScraper, self).get_primary_photo().replace('ls.jpg', 'l.jpg')
+
+    @fail_returns_empty
+    def get_photos(self):
+        urls = []
+        photo_page_url = 'http://www.yelp.com/biz_photos/' + self.get_site_specific_entity_id()
+        photos_root = parse_tree(photo_page_url).getroot()
+        for thumb_img in photos_root.findall('body//div[@id="photo-thumbnails"]//a/img'):
+            urls.append(thumb_img.get('src').replace('ms.jpg', 'l.jpg'))
+        return urls
+
+    @fail_returns_none
+    def get_site_specific_entity_id(self):
+        path = urlparse.urlparse(self.url).path
+        return path.split('/')[2]
+
 
 class HotelsDotComScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
