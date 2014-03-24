@@ -115,6 +115,13 @@ function ClippedPagesCtrl($scope) {
 }
 
 
+function NavigationCtrl($scope, $location, $anchorScroll) {
+  $scope.navigate = function(entityType) {
+    $location.hash(entityType)
+    $anchorScroll();
+  };
+}
+
 function createMap() {
   var mapOptions = {
     center: new google.maps.LatLng(-25.363882,131.044922),
@@ -135,6 +142,7 @@ window['initApp'] = function() {
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
+    .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);
