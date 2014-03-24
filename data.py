@@ -82,19 +82,31 @@ class TripPlan(serializable.Serializable):
                 return True
         return False
 
-def trip_plan_filename(sessionid):
-    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s.json' % sessionid)
+class SessionInfo(object):
+    def __init__(self, email=None, active_map_id=None, sessionid=None, set_on_response=False):
+        self.email = email
+        self.active_map_id = active_map_id
+        self.sessionid = sessionid
+        self.set_on_response = set_on_response
 
-def load_trip_plan(sessionid):
+
+def trip_plan_filename(session_info):
+    if session_info.email:
+        user_namespace_identifier = session_info.email
+    else:
+        user_namespace_identifier = session_info.sessionid
+    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (user_namespace_identifier, session_info.active_map_id))
+
+def load_trip_plan(session_info):
     try:
-        trip_plan_file = open(trip_plan_filename(sessionid))
+        trip_plan_file = open(trip_plan_filename(session_info))
     except IOError:
         return None
     json_data = json.load(trip_plan_file)
     trip_plan_file.close()
     return TripPlan.from_json_obj(json_data)
 
-def save_trip_plan(trip_plan, sessionid):
-    trip_plan_file = open(trip_plan_filename(sessionid), 'w')
+def save_trip_plan(trip_plan, session_info):
+    trip_plan_file = open(trip_plan_filename(session_info), 'w')
     json_obj = trip_plan.to_json_obj()
     json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))

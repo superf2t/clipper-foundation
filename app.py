@@ -35,51 +35,39 @@ def clipper():
 
 @app.route('/clip')
 def clip():
-    sessionid = decode_sessionid(request.cookies.get('sessionid'))
-    needs_sessionid = False
-    if not sessionid:
-        sessionid = generate_sessionid()
-        needs_sessionid = True
+    session_info = decode_session(request.cookies)
     url = request.values['url']
-    clip_result = handle_clipping(url, sessionid)
+    clip_result = handle_clipping(url, session_info)
     modal_html = str(render_template('clipper_results_modal.html',
         clip_result=clip_result, base_url=BASE_URL))
     response = make_jsonp_response(request, {'html': modal_html})
-    print str(response)
-    if needs_sessionid:
-        response.set_cookie('sessionid', str(sessionid))
-    return response
+    return process_response(response, request, session_info)
 
 @app.route('/trip_plan')
 def trip_plan():
-    sessionid = decode_sessionid(request.cookies.get('sessionid'))
-    needs_sessionid = False
-    if not sessionid:
-        sessionid = generate_sessionid()
-        needs_sessionid = True
-    trip_plan = data.load_trip_plan(sessionid)
-    response = render_template('trip_plan.html', plan=trip_plan, plan_json=json.dumps(trip_plan.to_json_obj()))
-    if needs_sessionid:
-        response.set_cookie('sessionid', str(sessionid))
-    return response
+    session_info = decode_session(request.cookies)
+    trip_plan = data.load_trip_plan(session_info)
+    trip_plan_json = json.dumps(trip_plan.to_json_obj()) if trip_plan else None
+    response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json)
+    return process_response(response, request, session_info)
 
 @app.route('/editentity', methods=['POST'])
 def editentity():
-    sessionid = decode_sessionid(request.cookies.get('sessionid'))
+    session_info = decode_session(request.cookies)
     if not sessionid:
         raise Exception('No sessionid found')
     try:
         input_entity = data.Entity.from_json_obj(request.json)
     except:
         raise Exception('Could not parse an Entity from the input')
-    trip_plan = data.load_trip_plan(sessionid)
+    trip_plan = data.load_trip_plan(session_info)
     if not trip_plan:
         raise Exception('No trip plan found for this session')
     for i, entity in enumerate(trip_plan.entities):
         if entity.source_url == input_entity.source_url:
             trip_plan.entities[i] = input_entity
             break
-    data.save_trip_plan(trip_plan, sessionid)
+    data.save_trip_plan(trip_plan, session_info)
     return json.jsonify(status='Success')
 
 
@@ -110,8 +98,8 @@ class ClipResult(object):
         self.status = status
         self.entity = entity
 
-def handle_clipping(url, sessionid):
-    trip_plan = data.load_trip_plan(sessionid)
+def handle_clipping(url, session_info):
+    trip_plan = data.load_trip_plan(session_info)
     result = None
     if not trip_plan:
         trip_plan = data.TripPlan('My First Trip')
@@ -133,17 +121,45 @@ def handle_clipping(url, sessionid):
             source_url=url)
         trip_plan.entities.append(entity)
         result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity)
-    data.save_trip_plan(trip_plan, sessionid)
+    data.save_trip_plan(trip_plan, session_info)
     return result
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
     return struct.unpack('Q', sessionid)[0]
 
-def decode_sessionid(raw_session_id):
-    if not raw_session_id:
-        return None
-    return int(raw_session_id)
+def generate_map_id():
+    return generate_sessionid()
+
+def decode_session(cookies):
+    email = cookies.get('email')
+    try:
+        active_map_id = int(cookies.get('active_map_id'))
+    except:
+        active_map_id = None
+    try:
+        sessionid = int(cookies.get('sessionid'))
+    except:
+        sessionid = None
+    session_info = data.SessionInfo(email, active_map_id, sessionid)
+    if not session_info.sessionid:
+        session_info.sessionid = generate_sessionid()
+        session_info.set_on_response = True
+    if not session_info.active_map_id:
+        session_info.active_map_id = generate_map_id()
+        session_info.set_on_response = True
+    return session_info
+
+def process_response(response, request=None, session_info=None):
+    response = make_response(response)
+    if session_info and session_info.set_on_response:
+        if session_info.email and session_info.email != request.cookies.get('email'):
+            response.set_cookie('email', session_info.email)
+        if session_info.active_map_id and session_info.active_map_id != request.cookies.get('active_map_id'):
+            response.set_cookie('active_map_id', str(session_info.active_map_id))
+        if session_info.sessionid and session_info.sessionid != request.cookies.get('sessionid'):
+            response.set_cookie('sessionid', str(session_info.sessionid))
+    return response
 
 def make_jsonp_response(request_obj, response_json_obj):
     callback_name = request_obj.args.get('callback')
