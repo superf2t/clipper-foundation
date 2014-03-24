@@ -38,8 +38,9 @@ def clip():
     session_info = decode_session(request.cookies)
     url = request.values['url']
     clip_result = handle_clipping(url, session_info)
+    all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = str(render_template('clipper_results_modal.html',
-        clip_result=clip_result, base_url=BASE_URL))
+        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=BASE_URL))
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
@@ -94,9 +95,10 @@ class ClipResult(object):
     STATUS_SAVED_FOR_LATER = 2
     STATUS_ALREADY_CLIPPED_URL = 3
 
-    def __init__(self, status, entity=None):
+    def __init__(self, status, entity=None, trip_plan=None):
         self.status = status
         self.entity = entity
+        self.trip_plan = trip_plan
 
 def handle_clipping(url, session_info):
     trip_plan = data.load_trip_plan(session_info)
@@ -104,12 +106,12 @@ def handle_clipping(url, session_info):
     if not trip_plan:
         trip_plan = data.TripPlan('My First Trip')
     if trip_plan.contains_url(url):
-        return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL)
+        return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)
     if scr.is_base_scraper():
         clipped_page = data.ClippedPage(source_url=url, title=scr.get_page_title())
         trip_plan.clipped_pages.append(clipped_page)
-        result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER)
+        result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER, trip_plan=trip_plan)
     else:
         address = scr.get_address()
         latlng_json = geocode.lookup_latlng(address)
@@ -120,7 +122,7 @@ def handle_clipping(url, session_info):
             primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
             source_url=url)
         trip_plan.entities.append(entity)
-        result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity)
+        result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity, trip_plan)
     data.save_trip_plan(trip_plan, session_info)
     return result
 

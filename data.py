@@ -98,13 +98,32 @@ def trip_plan_filename(session_info):
     return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (user_namespace_identifier, session_info.active_map_id))
 
 def load_trip_plan(session_info):
+    return load_trip_plan_from_filename(trip_plan_filename(session_info))
+
+def load_trip_plan_from_filename(fname):
     try:
-        trip_plan_file = open(trip_plan_filename(session_info))
+        trip_plan_file = open(fname)
     except IOError:
         return None
     json_data = json.load(trip_plan_file)
     trip_plan_file.close()
     return TripPlan.from_json_obj(json_data)
+
+def load_all_trip_plans(session_info):
+    data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
+    if session_info.email:
+        user_namespace_identifier = session_info.email
+    else:
+        user_namespace_identifier = session_info.sessionid
+    fname_prefix = 'trip_plan_%s_' % user_namespace_identifier
+    trip_plans = []
+    for fname in os.listdir(data_dir):
+        if fname.startswith(fname_prefix):
+            full_fname = os.path.join(constants.PROJECTPATH, 'local_data', fname)
+            trip_plan = load_trip_plan_from_filename(full_fname)
+            if trip_plan:
+                trip_plans.append(trip_plan)
+    return trip_plans
 
 def save_trip_plan(trip_plan, session_info):
     trip_plan_file = open(trip_plan_filename(session_info), 'w')

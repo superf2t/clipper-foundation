@@ -25,11 +25,16 @@
       data: {url: url},
       dataType: 'jsonp'
     }).done(function(response) {
+      var handlerActive = true;
       var div = $(response['html']);
       $(document.body).append(div);
-      $(document.body).one('click', function() {
-        div.remove();
-        div = null;
+      $(document.body).on('click', function(event) {
+        if (!handlerActive) return;
+        if (!div.has(event.target).exists()) {
+          handlerActive = false;
+          div.remove();
+          div = null;
+        }
       })
     });
   }
