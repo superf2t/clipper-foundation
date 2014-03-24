@@ -246,6 +246,8 @@ class AirbnbScraper(ScrapedPage):
         return [thumb.get('href') for thumb in thumbs]
 
 
+class HomeawayScraper(ScrapedPage):
+    NAME_XPATH = 'body//h1'
 
 def tostring_with_breaks(element):
     modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
@@ -270,6 +272,8 @@ def build_scraper(url):
         scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
         scraper_class = AirbnbScraper
+    elif 'homeaway.com' in host:
+        scraper_class = HomeawayScraper
     return scraper_class(url, tree)
 
 if __name__ == '__main__':
@@ -282,6 +286,8 @@ if __name__ == '__main__':
             'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
             'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
             'https://www.airbnb.com/rooms/2407670',
-            'https://www.airbnb.com/rooms/2576604'):
+            'https://www.airbnb.com/rooms/2576604',
+            'http://www.homeaway.com/vacation-rental/p8647vb',
+            ):
         scraper = build_scraper(url)
         print scraper.debug_string()
