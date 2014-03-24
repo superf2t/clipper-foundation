@@ -55,14 +55,19 @@ class ClippedPage(serializable.Serializable):
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity),
-        serializable.objlistf('clipped_pages', ClippedPage))
+        serializable.objlistf('clipped_pages', ClippedPage),
+        'creator', serializable.listf('editors'))
 
     TYPES_IN_ORDER = ('Hotel', 'Restaurant', 'Attraction')
 
-    def __init__(self, name=None, entities=(), clipped_pages=()):
+    def __init__(self, name=None, entities=(), clipped_pages=(), creator=None, editors=()):
         self.name = name
         self.entities = entities or []
         self.clipped_pages = clipped_pages or []
+
+        # TODO: Make these private fields
+        self.creator = creator
+        self.editors = editors or []
 
     def entities_for_type(self, entity_type):
         return [e for e in self.entities if e.entity_type == entity_type]
@@ -82,6 +87,9 @@ class TripPlan(serializable.Serializable):
                 return True
         return False
 
+    def editable_by(self, session_info):
+        return str(self.creator) in (session_info.email, str(session_info.sessionid))
+
 class SessionInfo(object):
     def __init__(self, email=None, active_map_id=None, sessionid=None, set_on_response=False):
         self.email = email
@@ -89,13 +97,13 @@ class SessionInfo(object):
         self.sessionid = sessionid
         self.set_on_response = set_on_response
 
+    @property
+    def user_identifier(self):
+        return self.email or self.sessionid
+
 
 def trip_plan_filename(session_info):
-    if session_info.email:
-        user_namespace_identifier = session_info.email
-    else:
-        user_namespace_identifier = session_info.sessionid
-    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (user_namespace_identifier, session_info.active_map_id))
+    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (session_info.user_identifier, session_info.active_map_id))
 
 def load_trip_plan(session_info):
     return load_trip_plan_from_filename(trip_plan_filename(session_info))
@@ -111,11 +119,7 @@ def load_trip_plan_from_filename(fname):
 
 def load_all_trip_plans(session_info):
     data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
-    if session_info.email:
-        user_namespace_identifier = session_info.email
-    else:
-        user_namespace_identifier = session_info.sessionid
-    fname_prefix = 'trip_plan_%s_' % user_namespace_identifier
+    fname_prefix = 'trip_plan_%s_' % session_info.user_identifier
     trip_plans = []
     for fname in os.listdir(data_dir):
         if fname.startswith(fname_prefix):

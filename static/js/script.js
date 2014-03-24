@@ -5,7 +5,6 @@ function hostnameFromUrl(url) {
 function EntityModel(entityData) {
   this.data = entityData;
   this.marker = makeMarker(entityData);
-  this.infowindow = makeInfowindow(entityData);
   this.currentImgUrl = entityData['photo_urls'] && entityData['photo_urls'][0];
   this.currentImgUrlIndex = 0;
 
@@ -16,6 +15,15 @@ function EntityModel(entityData) {
   this.advanceImg = function() {
     this.currentImgUrlIndex = (this.currentImgUrlIndex + 1) % this.data['photo_urls'].length;
     this.currentImgUrl = this.data['photo_urls'][this.currentImgUrlIndex];
+  };
+
+  this.makeInfowindow = function() {
+    if (this.infowindow) {
+      this.infowindow.close();
+    }
+    var infowindowContent = '<b>' + entityData['name'] + '</b>';
+    this.infowindow = new google.maps.InfoWindow({content: infowindowContent});
+    return this.infowindow;
   };
 }
 
@@ -31,11 +39,6 @@ function makeMarker(entity) {
   return new google.maps.Marker(markerData);
 }
 
-function makeInfowindow(entity) {
-  var infowindowContent = '<b>' + entity['name'] + '</b>';
-  return new google.maps.InfoWindow({content: infowindowContent});
-}
-
 
 function EntityTypeCtrl($scope, $map, $mapBounds) {
   var me = this;
@@ -44,7 +47,9 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
 
   $scope.$on('closeallinfowindows', function() {
     $.each($scope.entityModels, function(i, entityModel) {
-      entityModel.infowindow.close();
+      if (entityModel.infowindow) {
+        entityModel.infowindow.close();
+      }
     });
   });
 
@@ -73,7 +78,7 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     $scope.$emit('asktocloseallinfowindows');
     $.each($scope.entityModels, function(i, entityModel) {
       if (entityModel.data['name'] == entityName) {
-        entityModel.infowindow.open($map, entityModel.marker);
+        entityModel.makeInfowindow().open($map, entityModel.marker);
       }
     });
   };
@@ -85,6 +90,10 @@ function EntityCtrl($scope, $http) {
   $scope.openEditEntity = function() {
     $scope.editing = true;
   }
+
+  $scope.cancelEditing = function() {
+    $scope.editing = false;
+  };
 
   $scope.saveEntityEdit = function() {
     $http.post('/editentity', $scope.entityModel.data).success(function(response) {

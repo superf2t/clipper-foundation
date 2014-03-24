@@ -49,13 +49,14 @@ def trip_plan():
     session_info = decode_session(request.cookies)
     trip_plan = data.load_trip_plan(session_info)
     trip_plan_json = json.dumps(trip_plan.to_json_obj()) if trip_plan else None
-    response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json)
+    response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json,
+        allow_editing=trip_plan and trip_plan.editable_by(session_info))
     return process_response(response, request, session_info)
 
 @app.route('/editentity', methods=['POST'])
 def editentity():
     session_info = decode_session(request.cookies)
-    if not sessionid:
+    if not session_info.user_identifier:
         raise Exception('No sessionid found')
     try:
         input_entity = data.Entity.from_json_obj(request.json)
@@ -104,7 +105,7 @@ def handle_clipping(url, session_info):
     trip_plan = data.load_trip_plan(session_info)
     result = None
     if not trip_plan:
-        trip_plan = data.TripPlan('My First Trip')
+        trip_plan = data.TripPlan('My First Trip', creator=session_info.user_identifier)
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)
