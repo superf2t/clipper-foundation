@@ -11,55 +11,112 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body ng-controller="RootCtrl">
-  <div id="entity-container">
-    <h2 class="trip-title">{{plan.name}}</h2>
-    {% for entity_type in plan.TYPES_IN_ORDER %}
-      {% if plan.entities_for_type(entity_type) %}
-        <div ng-init='entityType = "{{entity_type}}"; entities = {{plan.entities_json_str_for_type(entity_type)}}'>
-          <div class="one-entity-type" ng-controller="EntityTypeCtrl">
-            <h3 ng-click="toggleSection()" class="entity-type-header">
-              <a href="javascript:void(0)">{{entity_type}}</a>
-            </h3>
-            <div class="columns" ng-show="show">
-              <div ng-repeat="entityModel in entityModels">
-                <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
-                  <div class="one-entity-title">[[entityModel.data['name'] ]]</div>
-                  <div class="one-entity-content">
-                    <img class="entity-main-img" ng-src="[[entityModel.data['primary_photo_url'] ]]"/>
-                  </div>
-                  <div>
-                    Rating: [[entityModel.data['rating'] ]]
-                  </div>
-                  <div class="entity-description"
-                    ng-show="entityModel.hasDescription() && !editing">
-                    <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
-                  </div>
-                  <div ng-show="editing">
-                    <textarea ng-model="entityModel.data['description']" class="entity-description-input"></textarea>
-                    <button ng-click="saveEntityEdit()">Save</button>
-                  </div>
-                  <div>
-                    Clipped from <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
-                  </div>
-                  {% if allow_editing %}
-                    <div class="entity-edit-link" ng-show="!editing">
-                      <a href="javascript:void(0)" ng-click="openEditEntity(entityModel.data['name'])">Edit</a>
+  <div class="header container">
+    <div class="upper-header row">
+      <div class="col-md-3 header-title">{{plan.name}}</div>
+      <div class="col-md-6 url-box"><input type="text" class="form-control" placeholder="paste a url"/></div>
+      <div class="col-md-3 my-trip-plans-links">My Trip Plans</div>
+    </div>
+    <div class="lower-header container" ng-controller="NavigationCtrl">
+      <div class="row navigation-links">
+        <div class="col-md-4">
+          <a href="javascript:void(0)" ng-click="navigate('Hotel')">Hotels</a>
+        </div>
+        <div class="col-md-4">
+          <a href="javascript:void(0)" ng-click="navigate('Restaurant')">Restaurants</a>
+        </div>
+        <div class="col-md-4">
+          <a href="javascript:void(0)" ng-click="navigate('Attraction')">Attractions</a>
+        </div>
+      </div>
+    </div>
+  </div> 
+
+  <div>
+    <div id="entity-container">
+      {% if plan.clipped_pages %}
+        <div ng-controller="ClippedPagesCtrl">
+          <h3>Clipped Pages</h3>
+          <div>
+            These are pages you clipped but we're unable to automatically parse.  Click on each to extract locations from the page.
+          </div>
+          {% for clipped_page in plan.clipped_pages %}
+            <div>
+              <a href="javascript:void(0)"
+                ng-click="openPageForClipping('{{clipped_page.source_url}}')">
+                {{clipped_page.title}}
+              </a>
+            </div>
+          {% endfor %}
+          <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
+          </iframe>
+        </div>
+      {% endif %}
+
+
+      {% for entity_type in plan.TYPES_IN_ORDER %}
+        {% if plan.entities_for_type(entity_type) %}
+          <div ng-init='entityType = "{{entity_type}}"; entities = {{plan.entities_json_str_for_type(entity_type)}}'>
+            <div class="one-entity-type" ng-controller="EntityTypeCtrl">
+              <a id="{{entity_type}}" class="offset-anchor"></a>
+              <h3 ng-click="toggleSection()" class="entity-type-header">
+                <a href="javascript:void(0)">{{entity_type}}</a>
+              </h3>
+              <div class="columns" ng-show="show">
+                <div ng-repeat="entityModel in entityModels">
+                  <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
+                    <div class="one-entity-title" ng-show="!editing">
+                      [[entityModel.data['name'] ]]
                     </div>
-                  {% endif %}
+                    <div class="edit-entity-title" ng-show="editing">
+                      <input type="text" class="form-control" ng-model="entityModel.data['name']"/>
+                    </div>
+                    <div class="one-entity-content">
+                      <img class="entity-main-img" ng-src="[[entityModel.currentImgUrl]]"
+                        ng-click="entityModel.advanceImg()"/>
+                    </div>
+                    <div>
+                      Rating: [[entityModel.data['rating'] ]]
+                    </div>
+                    <div class="entity-description"
+                      ng-show="entityModel.hasDescription() && !editing">
+                      <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
+                    </div>
+                    <div ng-show="editing">
+                      <textarea ng-model="entityModel.data['description']" class="entity-description-input"></textarea>
+                    </div>
+                    <div>
+                      Clipped from <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
+                    </div>
+                    {% if allow_editing %}
+                      <div class="entity-edit-controls">
+                        <a href="javascript:void(0)"
+                          ng-click="openEditEntity()"
+                          ng-show="!editing">
+                          Edit
+                        </a>
+                        <button ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                        <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
+                          Cancel
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      {% endif %}
-    {% endfor %}
-    <div class="left-footer">
-      Copyright 2014 Unicycle Labs
+        {% endif %}
+      {% endfor %}
+      <div class="left-footer">
+        Copyright 2014 Unicycle Labs
+      </div>
+
+    <div id="map-container">
+      <div id="map">
+      </div>
     </div>
 
-  <div id="map-container">
-    <div id="map">
-    </div>
   </div>
 
   <script>

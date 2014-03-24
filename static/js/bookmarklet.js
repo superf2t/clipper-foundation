@@ -21,14 +21,40 @@
   }
 
   function clipUrl(url) {
+    if (window['__tcOverlay']) {
+      window['__tcOverlay'].remove();
+    }
     $.ajax(absUrl('/clip'), {
       data: {url: url},
       dataType: 'jsonp'
-    }).done(function(response){
-      alert(response['message']);
+    }).done(function(response) {
+      var handlerActive = true;
+      window['__tcSpinner'].remove();
+      var div = window['__tcOverlay'] = $(response['html']);
+      $(document.body).append(div);
+      $(document.body).on('click', function(event) {
+        if (!handlerActive) return;
+        if (!div.has(event.target).exists()) {
+          handlerActive = false;
+          div.remove();
+          div = null;
+        }
+      })
     });
   }
 
+  function showSpinner() {
+    var spinnerDiv = $('<div>').css({
+      position: 'fixed',
+      top: 50,
+      right: 50,
+      zIndex: 10000
+    }).append($('<img>').attr('src', absUrl('/static/img/spinner.gif')));
+    window['__tcSpinner'] = spinnerDiv;
+    $(document.body).append(spinnerDiv);
+  }
+
+  showSpinner();
   clipUrl(window.location.href);
 
   });

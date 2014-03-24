@@ -1,8 +1,11 @@
+import json
 import re
 import urllib2
 import urlparse
 
 from lxml import etree
+
+import crossreference
 
 def fail_returns_none(fn):
     def wrapped(self):
@@ -10,6 +13,14 @@ def fail_returns_none(fn):
             return fn(self)
         except:
             return None
+    return wrapped
+
+def fail_returns_empty(fn):
+    def wrapped(self):
+        try:
+            return fn(self)
+        except:
+            return ()
     return wrapped
 
 class ScrapedPage(object):
@@ -53,6 +64,17 @@ class ScrapedPage(object):
     def get_primary_photo(self):
         return self.root.find(self.PRIMARY_PHOTO_XPATH).get('src')
 
+    @fail_returns_empty
+    def get_photos(self):
+        return ()
+
+    @fail_returns_none
+    def get_site_specific_entity_id(self):
+        return None
+
+    def is_base_scraper(self):
+        return type(self) == ScrapedPage
+
     def debug_string(self):
         return '''
 Entity name: %s
@@ -60,11 +82,13 @@ Entity type: %s
 Address: %s
 Rating: %s
 Primary photo url: %s
+Photo urls: %s
         ''' % (self.get_entity_name(),
             self.get_entity_type(),
             self.get_address(),
             self.get_rating(),
-            self.get_primary_photo())
+            self.get_primary_photo(),
+            self.get_photos())
 
 class TripAdvisorScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
@@ -73,11 +97,11 @@ class TripAdvisorScraper(ScrapedPage):
 
     @fail_returns_none
     def get_entity_type(self):
-        if '/Hotel_Review' in url:
+        if '/Hotel_Review' in self.url:
             return 'Hotel'
-        elif '/Restaurant_Review' in url:
+        elif '/Restaurant_Review' in self.url:
             return 'Restaurant'
-        elif '/Attraction_Review' in url:
+        elif '/Attraction_Review' in self.url:
             return 'Attraction'
         return super(TripAdvisorScraper, self).get_entity_type()
 
@@ -85,12 +109,48 @@ class TripAdvisorScraper(ScrapedPage):
     def get_rating(self):
         return self.root.find('body//div[@rel="v:rating"]//img').get('content')
 
+    @fail_returns_none
     def get_primary_photo(self):
-        for img_xpath in ('body//img[@class="photo_image"]', 'body//img[@id="HERO_PHOTO"]'):
-            img_node = self.root.find(img_xpath)
-            if img_node is not None:
-                return img_node.get('src')
+        try:
+            img_url = self.root.find('body//img[@class="photo_image"]').get('src')
+        except:
+            img_url = None
+        if img_url:
+            return img_url
+        for script in self.root.findall('body//script'):
+            if 'lazyImgs' in script.text:
+                lines = script.text.split('\n')
+                for line in lines:
+                    if 'HERO_PHOTO' in line:
+                        some_json = json.loads(line)
+                        return some_json['data']
         return None
+
+    @fail_returns_empty
+    def get_photos(self):
+        urls = []
+        try:
+            url = self.root.find('body//img[@class="photo_image"]').get('src')
+            if url:
+                urls.append(url)
+        except:
+            pass
+        for script in self.root.findall('body//script'):
+            if script.text and 'lazyImgs' in script.text:
+                lines = script.text.split('\n')
+                for line in lines:
+                    for elem_id in ('HERO_PHOTO', 'THUMB_PHOTO'):
+                        if elem_id in line:
+                            line = line.strip().strip(',')
+                            some_json = json.loads(line)
+                            urls.append(some_json['data'])
+                break
+        if self.get_entity_type() == 'Hotel':
+            hotelsdotcom_url = crossreference.find_hotelsdotcom_url(self.get_entity_name())
+            if hotelsdotcom_url:
+                additional_urls = build_scraper(hotelsdotcom_url).get_photos()
+                urls.extend(additional_urls)
+        return urls
 
 
 class YelpScraper(ScrapedPage):
@@ -116,6 +176,21 @@ class YelpScraper(ScrapedPage):
     def get_primary_photo(self):
         return super(YelpScraper, self).get_primary_photo().replace('ls.jpg', 'l.jpg')
 
+    @fail_returns_empty
+    def get_photos(self):
+        urls = []
+        photo_page_url = 'http://www.yelp.com/biz_photos/' + self.get_site_specific_entity_id()
+        photos_root = parse_tree(photo_page_url).getroot()
+        for thumb_img in photos_root.findall('body//div[@id="photo-thumbnails"]//a/img'):
+            urls.append(thumb_img.get('src').replace('ms.jpg', 'l.jpg'))
+        return urls
+
+    @fail_returns_none
+    def get_site_specific_entity_id(self):
+        path = urlparse.urlparse(self.url).path
+        return path.split('/')[2]
+
+
 class HotelsDotComScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
@@ -139,6 +214,11 @@ class HotelsDotComScraper(ScrapedPage):
         rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), method='text').strip()
         return rating_fraction_str.split('/')[0].strip()
 
+    @fail_returns_empty
+    def get_photos(self):
+        carousel_thumbnails = self.root.findall('body//div[@id="hotel-photos"]//ol[@class="thumbnails"]//li//a')
+        return [thumb.get('href') for thumb in carousel_thumbnails]
+
 class AirbnbScraper(ScrapedPage):
     NAME_XPATH = 'body//div[@id="listing_name"]'
     ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
@@ -160,6 +240,14 @@ class AirbnbScraper(ScrapedPage):
     def get_rating(self):
         return self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content')
 
+    @fail_returns_empty
+    def get_photos(self):
+        thumbs = self.root.findall('body//div[@id="photos"]//div[@class="thumbnails-viewport"]//li//a')
+        return [thumb.get('href') for thumb in thumbs]
+
+
+class HomeawayScraper(ScrapedPage):
+    NAME_XPATH = 'body//h1'
 
 def tostring_with_breaks(element):
     modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
@@ -175,16 +263,18 @@ def parse_tree(url):
 def build_scraper(url):
     tree = parse_tree(url)
     host = urlparse.urlparse(url).netloc.lower()
-    scraper = None
+    scraper_class = ScrapedPage
     if 'tripadvisor.com' in host:
-        scraper = TripAdvisorScraper(url, tree)
+        scraper_class = TripAdvisorScraper
     elif 'yelp.com' in host:
-        scraper = YelpScraper(url, tree)
+        scraper_class = YelpScraper
     elif 'hotels.com' in host:
-        scraper = HotelsDotComScraper(url, tree)
+        scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
-        scraper = AirbnbScraper(url, tree)
-    return scraper
+        scraper_class = AirbnbScraper
+    elif 'homeaway.com' in host:
+        scraper_class = HomeawayScraper
+    return scraper_class(url, tree)
 
 if __name__ == '__main__':
     for url in (
@@ -196,6 +286,8 @@ if __name__ == '__main__':
             'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
             'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
             'https://www.airbnb.com/rooms/2407670',
-            'https://www.airbnb.com/rooms/2576604'):
+            'https://www.airbnb.com/rooms/2576604',
+            'http://www.homeaway.com/vacation-rental/p8647vb',
+            ):
         scraper = build_scraper(url)
         print scraper.debug_string()

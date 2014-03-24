@@ -5,8 +5,21 @@ html, body {
   background-color: #F4F4F4;
 }
 
-.trip-title {
-  margin-left: 20px;
+.header-title {
+  font-size: 14pt;
+  font-weight: bold;
+}
+
+.url-box input {
+  text-align: center;
+}
+
+.my-trip-plans-links {
+  text-align: right;
+}
+
+.navigation-links {
+  text-align: center;
 }
 
 .one-entity {
@@ -36,6 +49,7 @@ html, body {
 
 .entity-main-img {
   width: 100%;
+  cursor: pointer;
 }
 
 .entity-description {
@@ -43,7 +57,7 @@ html, body {
   padding-bottom: 10px;
 }
 
-.entity-edit-link {
+.entity-edit-controls {
   text-align: right;
   padding-top: 5px;
 }
@@ -54,7 +68,7 @@ html, body {
 
 #entity-container {
   width: 50%;
-  margin: 0;
+  margin-top: 71px;
 }
 
 .columns {
@@ -72,12 +86,31 @@ html, body {
 }
 
 .columns:hover .one-entity:hover {
-  opacity: 0.8;
+  border: 1px solid #A4C5F3;
 }
 
 .entity-type-header {
   cursor: pointer;
   margin-left: 20px;
+}
+
+.header {
+  width: 100%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  border-bottom: 1px solid black;
+  background-color: #F4F4F4;
+}
+
+.upper-header {
+  width: 100%;
+  height: 40px;
+}
+
+.lower-header {
+  width: 100%;
+  height: 20px;
 }
 
 .left-footer {
@@ -86,14 +119,27 @@ html, body {
   text-align: center;
 }
 
+.offset-anchor {
+  position: relative;
+  top: -61px;
+  display: block;
+  visibility: hidden;
+}
+
 #map-container {
   position: fixed;
   width: 50%;
   height: 100%;
   left: 50%;
-  top: 0px;
+  top: 61px;
 }
 
 #map {
   width: 100%;
   height: 100%;
+}
+
+.clipping-iframe {
+  width: 500px;
+  height: 400px;
+}

@@ -1,0 +1,69 @@
+<div>
+  <style type="text/css">
+    .__tc-modal {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 10000;
+      width: 300px;
+      height: 100px;
+      padding: 10px;
+      background-color: #ADBBC9;
+      font-family: Arial sans-serif;
+      font-size: 12pt;
+      font-weight: normal;
+      opacity: 0.8;
+      border-radius: 5px;
+      border: 1px solid black;
+    }
+    .__tc-title {
+      font-weight: bold;
+      font-size: 14pt;
+    }
+    .__tc-inline-trip-plan-name {
+      font-style: italic;
+    }
+    .__tc-active-trip-plan-chooser {
+      padding-top: 10px;
+    }
+  </style>
+  <div class="__tc-modal">
+    <div class="__tc-title">Clipper Results</div>
+    {% if clip_result.status == clip_result.STATUS_SUCCESS_KNOWN_SOURCE %}
+      <div>
+        Successfully clipped "{{clip_result.entity.name}}" to
+        <span class="__tc-inline-trip-plan-name">{{clip_result.trip_plan.name}}</span>
+        <a href="javascript:void(0)">undo</a>
+      </div>
+    {% elif clip_result.status == clip_result.STATUS_SAVED_FOR_LATER %}
+      <div>
+        We don't recognize this website so we've saved this url for you to clip manually.  Visit <a href="{{base_url}}">TravelClipper</a> when you're done clipping.
+      </div>
+    {% elif clip_result.status == clip_result.STATUS_ALREADY_CLIPPED_URL %}
+      <div>You've already clipped this page to your trip plan.</div>
+    {% else %}
+      <div>An error occurred during clipping.  Please try again.</div>
+    {% endif %}
+    {% if clip_result.trip_plan %}
+      <div class="__tc-active-trip-plan-chooser">
+        <div>
+          Active trip plan: <span>{{clip_result.trip_plan.name}}</span>.
+        </div>
+        <div>
+          <div>
+            Change:
+            <select>
+              {% for trip_plan in all_trip_plans %}
+              <option>{{trip_plan.name}}</option>
+              {% endfor %}
+              <option>Create new trip plan</option>
+            </select>
+          </div>
+          <div>
+            <button>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
