@@ -54,13 +54,15 @@ class ClippedPage(serializable.Serializable):
         self.title = title
 
 class TripPlan(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name', serializable.objlistf('entities', Entity),
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
+        serializable.objlistf('entities', Entity),
         serializable.objlistf('clipped_pages', ClippedPage),
         'creator', serializable.listf('editors'))
 
     TYPES_IN_ORDER = ('Hotel', 'Restaurant', 'Attraction')
 
-    def __init__(self, name=None, entities=(), clipped_pages=(), creator=None, editors=()):
+    def __init__(self, trip_plan_id=None, name=None, entities=(), clipped_pages=(), creator=None, editors=()):
+        self.trip_plan_id = trip_plan_id
         self.name = name
         self.entities = entities or []
         self.clipped_pages = clipped_pages or []
@@ -91,9 +93,9 @@ class TripPlan(serializable.Serializable):
         return str(self.creator) in (session_info.email, str(session_info.sessionid))
 
 class SessionInfo(object):
-    def __init__(self, email=None, active_map_id=None, sessionid=None, set_on_response=False):
+    def __init__(self, email=None, active_trip_plan_id=None, sessionid=None, set_on_response=False):
         self.email = email
-        self.active_map_id = active_map_id
+        self.active_trip_plan_id = active_trip_plan_id
         self.sessionid = sessionid
         self.set_on_response = set_on_response
 
@@ -102,11 +104,14 @@ class SessionInfo(object):
         return self.email or self.sessionid
 
 
-def trip_plan_filename(session_info):
-    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (session_info.user_identifier, session_info.active_map_id))
+def trip_plan_filename_from_session_info(session_info):
+    return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)
+
+def trip_plan_filename(user_identifier, trip_plan_id):
+    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (user_identifier, trip_plan_id))
 
 def load_trip_plan(session_info):
-    return load_trip_plan_from_filename(trip_plan_filename(session_info))
+    return load_trip_plan_from_filename(trip_plan_filename_from_session_info(session_info))
 
 def load_trip_plan_from_filename(fname):
     try:
@@ -117,10 +122,19 @@ def load_trip_plan_from_filename(fname):
     trip_plan_file.close()
     return TripPlan.from_json_obj(json_data)
 
-def load_all_trip_plans(session_info):
+def load_trip_plan_by_id(trip_plan_id):
     data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
+    suffix = '_%s.json' % trip_plan_id
+    for fname in os.listdir(data_dir):
+        if fname.endswith(suffix):
+            full_fname = os.path.join(constants.PROJECTPATH, 'local_data', fname)
+            return load_trip_plan_from_filename(full_fname)
+    return None
+
+def load_all_trip_plans(session_info):
+    trip_plans = []    
     fname_prefix = 'trip_plan_%s_' % session_info.user_identifier
-    trip_plans = []
+    data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
     for fname in os.listdir(data_dir):
         if fname.startswith(fname_prefix):
             full_fname = os.path.join(constants.PROJECTPATH, 'local_data', fname)
@@ -129,7 +143,7 @@ def load_all_trip_plans(session_info):
                 trip_plans.append(trip_plan)
     return trip_plans
 
-def save_trip_plan(trip_plan, session_info):
-    trip_plan_file = open(trip_plan_filename(session_info), 'w')
+def save_trip_plan(trip_plan):
+    trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
     json_obj = trip_plan.to_json_obj()
     json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))

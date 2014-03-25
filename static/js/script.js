@@ -108,6 +108,16 @@ function EntityCtrl($scope, $http) {
 }
 
 function RootCtrl($scope) {
+  $scope.accountDropdownOpen = false;
+
+  $scope.openAccountDropdown = function() {
+    $scope.accountDropdownOpen = true;
+  }
+
+  $scope.loadTripPlan = function(tripPlanIdStr) {
+    location.href = '/trip_plan/' + tripPlanIdStr;
+  }
+
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
   });
@@ -130,6 +140,7 @@ function NavigationCtrl($scope, $location, $anchorScroll) {
     $anchorScroll();
   };
 }
+
 
 function createMap() {
   var mapOptions = {

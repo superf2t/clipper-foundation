@@ -157,6 +157,15 @@ html, body {
   visibility: hidden;
 }
 
+.account-dropdown {
+  position: fixed;
+  z-index: 10000;
+  top: 20px;
+  right: 100px;
+  background-color: white;
+  padding: 20px;
+}
+
 #map-container {
   position: fixed;
   width: 50%;
