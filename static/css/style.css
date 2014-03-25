@@ -5,11 +5,18 @@ html, body {
   background-color: #FFFFFF;
 }
 
+/* AngularJS and Bootstrap fix */
+
+.nav, .pagination, .carousel, .panel-title a { 
+  cursor: pointer; 
+}
+
 /* Navigation */
 
 #upper-navbar {
   min-height: 30px;
   background-color: #FFFFFF;
+  margin-bottom: 0px;
 }
 
 #logo {
@@ -35,13 +42,13 @@ html, body {
 #lower-navbar {
   position: fixed;
   top: 30px;
-  min-height: 40px;
+  min-height: 42px;
   background-color: #3b97d3;
 }
 
 .lower-nav {
   width: 100%;
-  height: 40px;
+  height: 42px;
 }
 
 .navigation-link {
@@ -81,11 +88,39 @@ html, body {
 
 /* Main Container */
 
+#entity-container {
+  width: 50%;
+  margin-top: 73px;
+}
+
+.columns:hover .one-entity:hover {
+  border: 1px solid #A4C5F3;
+}
+
+.entity-type-header {
+  cursor: pointer;
+  margin: 0px;
+  padding: 10px 20px;
+}
+
+.columns {
+  -webkit-column-count: 2;
+  -webkit-column-gap: 10px;
+  -webkit-column-fill: auto;
+  -moz-column-count: 2;
+  -moz-column-gap: 10px;
+  -moz-column-fill: auto;
+  column-count: 2;
+  column-gap: 10px;
+  column-fill: auto;
+  height: 100%;
+  padding: 0 20px;
+}
+
 .one-entity {
   background: #FFFFFF;
   border: 1px solid #DDDDDD;
   border-radius: 4px;
-  box-shadow: 0px 1px 2px rgba(34, 25, 25, 0.4);
   margin: 0 2px 15px;
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
@@ -106,7 +141,8 @@ html, body {
   top: -3px;
 }
 
-.entity-main-img {
+.entity-img {
+  margin: auto;
   width: 100%;
   cursor: pointer;
 }
@@ -125,34 +161,6 @@ html, body {
   width: 100%;
 }
 
-#entity-container {
-  width: 50%;
-  margin-top: 70px;
-}
-
-.columns {
-  -webkit-column-count: 2;
-  -webkit-column-gap: 10px;
-  -webkit-column-fill: auto;
-  -moz-column-count: 2;
-  -moz-column-gap: 10px;
-  -moz-column-fill: auto;
-  column-count: 2;
-  column-gap: 15px;
-  column-fill: auto;
-  height: 100%;
-  padding: 0 20px;
-}
-
-.columns:hover .one-entity:hover {
-  border: 1px solid #A4C5F3;
-}
-
-.entity-type-header {
-  cursor: pointer;
-  margin-left: 20px;
-}
-
 .left-footer {
   margin-top: 20px;
   margin-bottom: 10px;
@@ -161,7 +169,7 @@ html, body {
 
 .offset-anchor {
   position: relative;
-  top: -70px;
+  top: -73px;
   display: block;
   visibility: hidden;
 }
@@ -170,7 +178,7 @@ html, body {
   position: fixed;
   z-index: 10000;
   top: 20px;
-  right: 100px;
+  right: 0px;
   background-color: white;
   padding: 20px;
 }
