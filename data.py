@@ -80,6 +80,9 @@ class TripPlan(serializable.Serializable):
             return ''
         return json.dumps([e.to_json_obj() for e in entities])
 
+    def settings_json(self):
+        return EditTripPlanRequest(self.trip_plan_id, name=self.name).to_json_str()
+
     def contains_url(self, url):
         for entity in self.entities:
             if entity.source_url == url:
@@ -91,6 +94,25 @@ class TripPlan(serializable.Serializable):
 
     def editable_by(self, session_info):
         return str(self.creator) in (session_info.email, str(session_info.sessionid))
+
+
+class EditTripPlanRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'trip_plan_id_str', 'name')
+
+    # We have a separate field for the id as a string because javascript
+    # truncates long ints
+    def __init__(self, trip_plan_id=None, trip_plan_id_str=None, name=None):
+        self.name = name
+        if trip_plan_id_str:
+            self.trip_plan_id_str = trip_plan_id_str
+            self.trip_plan_id = int(trip_plan_id_str)
+        else:
+            self.trip_plan_id = trip_plan_id
+            self.trip_plan_id_str = str(trip_plan_id)
+
+    def initialize(self):
+        if self.trip_plan_id_str:
+            self.trip_plan_id = int(self.trip_plan_id_str)
 
 class SessionInfo(object):
     def __init__(self, email=None, active_trip_plan_id=None, sessionid=None, set_on_response=False):

@@ -82,9 +82,33 @@ def editentity():
         if entity.source_url == input_entity.source_url:
             trip_plan.entities[i] = input_entity
             break
-    data.save_trip_plan(trip_plan, session_info)
+    data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
+@app.route('/edittripplan', methods=['POST'])
+def edittripplan():
+    session_info = decode_session(request.cookies)
+    if not session_info.user_identifier:
+        raise Exception('No sessionid found')
+    status = None
+    print request.json
+    try:
+        edit_request = data.EditTripPlanRequest.from_json_obj(request.json)
+    except Exception as e:
+        print e
+        return json.jsonify(status='Could not parse an EditTripPlanRequest from the input')
+    if not edit_request.trip_plan_id:
+        return json.jsonify(status='No valid id in the EditTripPlanRequest')
+    trip_plan = data.load_trip_plan_by_id(edit_request.trip_plan_id)
+    if not trip_plan:
+        return json.jsonify(status='No trip plan found with id %s' % edit_request.trip_plan_id)
+    if not trip_plan.editable_by(session_info):
+        return json.jsonify(status='User is not allowed to edit this trip plan')
+    if not edit_request.name:
+        return json.jsonify(status='Cannot save a trip plan without a name')
+    trip_plan.name = edit_request.name
+    data.save_trip_plan(trip_plan)
+    return json.jsonify(status='Success')
 
 @app.route('/getbookmarklet')
 def getbookmarklet():

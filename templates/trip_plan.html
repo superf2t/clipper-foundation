@@ -13,7 +13,15 @@
 <body ng-controller="RootCtrl">
   <div class="header container">
     <div class="upper-header row">
-      <div class="col-md-3 header-title">{{plan.name}}</div>
+      <div class="col-md-3 header-title">
+        <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
+        <input class="form-control" ng-show="editingTripPlanSettings" type="text"
+          ng-model="editableTripPlanSettings.name"/>
+        <a href="javascript:void(0)" ng-click="editTripPlanSettings()" ng-show="!editingTripPlanSettings">
+          <img class="pencil-edit" src="/static/img/pencil.png"/>
+        </a>
+        <button ng-click="saveTripPlanSettings()" ng-show="editingTripPlanSettings">Save</button>
+      </div>
       <div class="col-md-6 url-box"><input type="text" class="form-control" placeholder="paste a url"/></div>
       <div class="col-md-3 my-trip-plans-links">
         <a href="javascript:void(0)" ng-click="openAccountDropdown()">My Trip Plans</a>
@@ -34,7 +42,6 @@
     </div>
   </div> 
 
-  <div>
     <div id="entity-container">
       {% if plan.clipped_pages %}
         <div ng-controller="ClippedPagesCtrl">
@@ -114,11 +121,11 @@
         Copyright 2014 Unicycle Labs
       </div>
 
-    <div id="map-container">
-      <div id="map">
-      </div>
     </div>
 
+  <div id="map-container">
+    <div id="map">
+    </div>
   </div>
 
   {# This is below the map in the DOM so that it appears visually on top #}
@@ -139,7 +146,7 @@
   </div>
 
   <script>
-    initApp();
+    initApp({{plan.settings_json()|safe}});
   </script>
 </body>
 </html>

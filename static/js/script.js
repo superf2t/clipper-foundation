@@ -107,8 +107,10 @@ function EntityCtrl($scope, $http) {
   }
 }
 
-function RootCtrl($scope) {
+function RootCtrl($scope, $http, $tripPlanSettings) {
   $scope.accountDropdownOpen = false;
+  $scope.editingTripPlanSettings = false;
+  $scope.editableTripPlanSettings = $tripPlanSettings;
 
   $scope.openAccountDropdown = function() {
     $scope.accountDropdownOpen = true;
@@ -117,6 +119,23 @@ function RootCtrl($scope) {
   $scope.loadTripPlan = function(tripPlanIdStr) {
     location.href = '/trip_plan/' + tripPlanIdStr;
   }
+
+  $scope.editTripPlanSettings = function() {
+    $scope.editingTripPlanSettings = true;
+  };
+
+  $scope.saveTripPlanSettings = function() {
+    $http.post('/edittripplan', $scope.editableTripPlanSettings)
+      .success(function(response) {
+        if (response['status'] != 'Success') {
+          alert(response['status']);
+        }
+      })
+      .error(function() {
+        alert('Failed to save edits');
+      });
+    $scope.editingTripPlanSettings = false;
+  };
 
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
@@ -150,15 +169,17 @@ function createMap() {
   return new google.maps.Map($('#map')[0], mapOptions);
 }
 
-window['initApp'] = function() {
+window['initApp'] = function(tripPlanSettings) {
+  angular.module('initialDataModule', [])
+    .value('$tripPlanSettings', tripPlanSettings);
   angular.module('mapModule', [])
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
-  angular.module('appModule', ['mapModule'], function($interpolateProvider) {
+  angular.module('appModule', ['mapModule', 'initialDataModule'], function($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
-    .controller('RootCtrl', ['$scope', RootCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$tripPlanSettings',RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])

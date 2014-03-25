@@ -22,6 +22,11 @@ html, body {
   text-align: center;
 }
 
+.pencil-edit {
+  width: 25px;
+  height: 25px;
+}
+
 .one-entity {
   background: #FFFFFF;
   border: 1px solid #DDDDDD;
