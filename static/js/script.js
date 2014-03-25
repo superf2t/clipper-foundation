@@ -196,6 +196,7 @@ function RootCtrl($scope, $http, $timeout, $tripPlan, $tripPlanSettings) {
           alert(response['status']);
         } else {
           document.title = $scope.editableTripPlanSettings['name'];
+          planModel.data['name'] = $scope.editableTripPlanSettings['name'];
         }
       })
       .error(function() {
