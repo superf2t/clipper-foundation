@@ -37,8 +37,8 @@ def clip():
     url = request.values['url']
     clip_result = handle_clipping(url, session_info)
     all_trip_plans = data.load_all_trip_plans(session_info)
-    modal_html = str(render_template('clipper_results_modal.html',
-        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL))
+    modal_html = render_template('clipper_results_modal.html',
+        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
