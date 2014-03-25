@@ -44,12 +44,25 @@ def clip():
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
+@app.route('/trip_plan/<int:trip_plan_id>')
+def trip_plan_by_id(trip_plan_id):
+    session_info = decode_session(request.cookies)
+    return trip_plan_with_session_info(session_info, trip_plan_id)
+
 @app.route('/trip_plan')
 def trip_plan():
     session_info = decode_session(request.cookies)
-    trip_plan = data.load_trip_plan(session_info)
+    return trip_plan_with_session_info(session_info)
+
+def trip_plan_with_session_info(session_info, trip_plan_id=None):
+    if trip_plan_id:
+        trip_plan = data.load_trip_plan_by_id(trip_plan_id)
+    else:
+        trip_plan = data.load_trip_plan(session_info)
     trip_plan_json = json.dumps(trip_plan.to_json_obj()) if trip_plan else None
+    all_trip_plans = data.load_all_trip_plans(session_info)
     response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json,
+        all_trip_plans=all_trip_plans,
         allow_editing=trip_plan and trip_plan.editable_by(session_info))
     return process_response(response, request, session_info)
 
@@ -105,7 +118,7 @@ def handle_clipping(url, session_info):
     trip_plan = data.load_trip_plan(session_info)
     result = None
     if not trip_plan:
-        trip_plan = data.TripPlan('My First Trip', creator=session_info.user_identifier)
+        trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)
@@ -124,32 +137,32 @@ def handle_clipping(url, session_info):
             source_url=url)
         trip_plan.entities.append(entity)
         result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity, trip_plan)
-    data.save_trip_plan(trip_plan, session_info)
+    data.save_trip_plan(trip_plan)
     return result
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
     return struct.unpack('Q', sessionid)[0]
 
-def generate_map_id():
+def generate_trip_plan_id():
     return generate_sessionid()
 
 def decode_session(cookies):
     email = cookies.get('email')
     try:
-        active_map_id = int(cookies.get('active_map_id'))
+        active_trip_plan_id = int(cookies.get('active_trip_plan_id'))
     except:
-        active_map_id = None
+        active_trip_plan_id = None
     try:
         sessionid = int(cookies.get('sessionid'))
     except:
         sessionid = None
-    session_info = data.SessionInfo(email, active_map_id, sessionid)
+    session_info = data.SessionInfo(email, active_trip_plan_id, sessionid)
     if not session_info.sessionid:
         session_info.sessionid = generate_sessionid()
         session_info.set_on_response = True
-    if not session_info.active_map_id:
-        session_info.active_map_id = generate_map_id()
+    if not session_info.active_trip_plan_id:
+        session_info.active_trip_plan_id = generate_trip_plan_id()
         session_info.set_on_response = True
     return session_info
 
@@ -158,8 +171,8 @@ def process_response(response, request=None, session_info=None):
     if session_info and session_info.set_on_response:
         if session_info.email and session_info.email != request.cookies.get('email'):
             response.set_cookie('email', session_info.email)
-        if session_info.active_map_id and session_info.active_map_id != request.cookies.get('active_map_id'):
-            response.set_cookie('active_map_id', str(session_info.active_map_id))
+        if session_info.active_trip_plan_id and session_info.active_trip_plan_id != request.cookies.get('active_trip_plan_id'):
+            response.set_cookie('active_trip_plan_id', str(session_info.active_trip_plan_id))
         if session_info.sessionid and session_info.sessionid != request.cookies.get('sessionid'):
             response.set_cookie('sessionid', str(session_info.sessionid))
     return response

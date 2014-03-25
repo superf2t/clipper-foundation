@@ -15,7 +15,9 @@
     <div class="upper-header row">
       <div class="col-md-3 header-title">{{plan.name}}</div>
       <div class="col-md-6 url-box"><input type="text" class="form-control" placeholder="paste a url"/></div>
-      <div class="col-md-3 my-trip-plans-links">My Trip Plans</div>
+      <div class="col-md-3 my-trip-plans-links">
+        <a href="javascript:void(0)" ng-click="openAccountDropdown()">My Trip Plans</a>
+      </div>
     </div>
     <div class="lower-header container" ng-controller="NavigationCtrl">
       <div class="row navigation-links">
@@ -117,6 +119,23 @@
       </div>
     </div>
 
+  </div>
+
+  {# This is below the map in the DOM so that it appears visually on top #}
+  <div ng-show="accountDropdownOpen">
+    <div class="account-dropdown">
+      {% for trip_plan in all_trip_plans %}
+        <div>
+          {# We use a string for the trip plan here because javascript truncates long ints #}
+          <a href="javascript:void(0)" ng-click="loadTripPlan('{{trip_plan.trip_plan_id}}')">
+            {{trip_plan.name}}
+          </a>
+        </div>
+      {% endfor %}
+      <div>
+        Create new trip plan
+      </div>
+    </div>
   </div>
 
   <script>
