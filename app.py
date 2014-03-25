@@ -64,6 +64,12 @@ def trip_plan_with_session_info(session_info, trip_plan_id=None):
         allow_editing=trip_plan and trip_plan.editable_by(session_info))
     return process_response(response, request, session_info)
 
+@app.route('/trip_plan_ajax/<int:trip_plan_id>')
+def trip_plan_ajax(trip_plan_id):
+    session_info = decode_session(request.cookies)
+    trip_plan = data.load_trip_plan_by_id(trip_plan_id)
+    return json.jsonify(trip_plan=trip_plan and trip_plan.to_json_obj())
+
 @app.route('/editentity', methods=['POST'])
 def editentity():
     session_info = decode_session(request.cookies)

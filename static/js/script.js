@@ -5,6 +5,7 @@ function hostnameFromUrl(url) {
 function EntityModel(entityData) {
   this.data = entityData;
   this.marker = makeMarker(entityData);
+  this.infowindow = null;
   this.currentImgUrl = entityData['photo_urls'] && entityData['photo_urls'][0];
   this.currentImgUrlIndex = 0;
 
@@ -24,6 +25,15 @@ function EntityModel(entityData) {
     var infowindowContent = '<b>' + entityData['name'] + '</b>';
     this.infowindow = new google.maps.InfoWindow({content: infowindowContent});
     return this.infowindow;
+  };
+
+  this.clearMarker = function() {
+    this.marker.setMap(null);
+    this.marker = null;
+    if (this.infowindow) {
+      this.infowindow.close();
+      this.infowindow = null;
+    }
   };
 }
 
@@ -58,6 +68,25 @@ function TripPlanModel(tripPlanData) {
     });
     return entities;
   };
+
+  // An approximate check of equality that only checks certain fields.
+  this.fastEquals = function(otherModel) {
+    if (this.data['name'] != otherModel.data['name']) {
+      return false;
+    }
+    var currentSourceUrls = $.map(this.data['entities'], function(entity) {
+      return entity['source_url'];
+    });
+    var newSourceUrls = $.map(otherModel.data['entities'], function(entity) {
+      return entity['source_url'];
+    });
+    if (currentSourceUrls.length != newSourceUrls.length) {
+      return false;
+    }
+    currentSourceUrls.sort();
+    newSourceUrls.sort();
+    return angular.equals(currentSourceUrls, newSourceUrls);
+  };
 }
 
 function EntityTypeCtrl($scope, $map, $mapBounds) {
@@ -73,7 +102,13 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     });
   });
 
-  $.each($scope.entities, function(i, entity) {
+  $scope.$on('clearallmarkers', function() {
+    $.each($scope.entityModels, function(i, entityModel) {
+      entityModel.clearMarker();
+    });
+  });
+
+  $.each($scope.planModel.entitiesForType($scope.entityType), function(i, entity) {
     $scope.entityModels.push(new EntityModel(entity));
   });
   $.each($scope.entityModels, function(i, entityModel) {
@@ -92,6 +127,10 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     $.each($scope.entityModels, function(i, entityModel) {
       entityModel.marker.setMap($scope.show ? $map : null);
     });
+  };
+
+  $scope.hasEntities = function() {
+    return $scope.entityModels && $scope.entityModels.length;
   };
 
   $scope.openInfowindow = function(entityName) {
@@ -127,7 +166,7 @@ function EntityCtrl($scope, $http) {
   }
 }
 
-function RootCtrl($scope, $http, $tripPlan, $tripPlanSettings) {
+function RootCtrl($scope, $http, $timeout, $tripPlan, $tripPlanSettings) {
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
@@ -163,6 +202,31 @@ function RootCtrl($scope, $http, $tripPlan, $tripPlanSettings) {
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
   });
+
+  this.refresh = function() {
+    // TODO: Don't refresh if the user is currently editing.
+    $http.get('/trip_plan_ajax/' + $tripPlanSettings['trip_plan_id_str'])
+      .success(function(response) {
+        var newModel = new TripPlanModel(response['trip_plan']);
+        if (!$scope.planModel || !$scope.planModel.fastEquals(newModel)) {
+          $scope.$broadcast('clearallmarkers');
+          // Angular's dirty-checking does not seem to pick up that the
+          // model has changed if we just assign to the new model...
+          $scope.planModel = null;
+          $timeout(function() {
+            $scope.planModel = newModel;
+          });
+        }
+      });
+  };
+
+  var me = this;
+  var refreshInterval = 5000;
+  function refreshPoll() {
+    me.refresh();
+    $timeout(refreshPoll, refreshInterval);
+  }
+  $timeout(refreshPoll, refreshInterval);
 }
 
 
@@ -203,7 +267,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
-    .controller('RootCtrl', ['$scope', '$http', '$tripPlan', '$tripPlanSettings', RootCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$tripPlan', '$tripPlanSettings', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])

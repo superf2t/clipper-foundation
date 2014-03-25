@@ -74,9 +74,9 @@
  
 
     <div ng-repeat="entityType in planModel.ENTITY_TYPES_IN_ORDER">
-      <div ng-init="entities = planModel.entitiesForType(entityType)">
-        <div ng-if="entities && entities.length">
-          <div class="one-entity-type" ng-controller="EntityTypeCtrl">
+      <div ng-controller="EntityTypeCtrl">
+        <div ng-if="hasEntities()">
+          <div class="one-entity-type">
             <a id="[[entityType]]" class="offset-anchor"></a>
             <h3 ng-click="toggleSection()" class="entity-type-header">
               <a href="javascript:void(0)">[[entityType]]</a>
