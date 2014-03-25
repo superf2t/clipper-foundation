@@ -225,13 +225,13 @@ function RootCtrl($scope, $http, $timeout, $tripPlan, $tripPlanSettings) {
       });
   };
 
-  // var me = this;
-  // var refreshInterval = 5000;
-  // function refreshPoll() {
-  //   me.refresh();
-  //   $timeout(refreshPoll, refreshInterval);
-  // }
-  // $timeout(refreshPoll, refreshInterval);
+  var me = this;
+  var refreshInterval = 5000;
+  function refreshPoll() {
+    me.refresh();
+    $timeout(refreshPoll, refreshInterval);
+  }
+  $timeout(refreshPoll, refreshInterval);
 }
 
 
