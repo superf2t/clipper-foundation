@@ -7,14 +7,12 @@ from flask import make_response
 from flask import render_template
 from flask import request
 
+import constants
 import data
 import geocode
 import scraper
 
 app = Flask(__name__)
-
-#BASE_URL = 'http://127.0.0.1:5000'
-BASE_URL = 'https://travelclipper.ngrok.com'
 
 debug = True
 if not debug:
@@ -40,7 +38,7 @@ def clip():
     clip_result = handle_clipping(url, session_info)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = str(render_template('clipper_results_modal.html',
-        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=BASE_URL))
+        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL))
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
@@ -110,10 +108,16 @@ def edittripplan():
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
+@app.route('/bookmarklet.js')
+def bookmarklet_js():
+    response = make_response(render_template('bookmarklet.js', host=constants.HOST))
+    response.headers['Content-Type'] = 'application/javascript'
+    return response
+
 @app.route('/getbookmarklet')
 def getbookmarklet():
     template_vars = {
-        'bookmarklet_url': BASE_URL + '/static/js/bookmarklet.js'
+        'bookmarklet_url': constants.BASE_URL + '/bookmarklet.js'
     }
     return render_template('getbookmarklet.html', **template_vars)
 
