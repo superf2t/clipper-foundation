@@ -11,27 +11,39 @@
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body ng-controller="RootCtrl">
-  <div class="header container">
-    <div class="upper-header row">
-      <div class="col-md-3 header-title">{{plan.name}}</div>
-      <div class="col-md-6 url-box"><input type="text" class="form-control" placeholder="paste a url"/></div>
-      <div class="col-md-3 my-trip-plans-links">My Trip Plans</div>
+  <nav class="navbar navbar-default navbar-fixed-top" id="upper-navbar">
+    <div class="upper-nav container">
+      <div class="row">
+        <div class="col-md-3" id="logo">Travel Clipper</div>
+        <div class="col-md-6" id="trip-plan-title">{{plan.name}}</div>
+        <div class="col-md-3" id="my-account-link">My Account</div>
+      </div>
     </div>
-    <div class="lower-header container" ng-controller="NavigationCtrl">
-      <div class="row navigation-links">
-        <div class="col-md-4">
+  </nav> 
+  <nav class="navbar navbar-fixed-top" id="lower-navbar">
+    <div class="lower-nav container" ng-controller="NavigationCtrl">
+      <div class="row">
+        <div class="col-md-1 navigation-link">
           <a href="javascript:void(0)" ng-click="navigate('Hotel')">Hotels</a>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-1 navigation-link">
           <a href="javascript:void(0)" ng-click="navigate('Restaurant')">Restaurants</a>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-1 navigation-link">
           <a href="javascript:void(0)" ng-click="navigate('Attraction')">Attractions</a>
+        </div>
+        <div class="col-md-6" id="url-box"><input type="text" class="form-control" placeholder="Enter a URL to add to your clipboard"/></div>
+        <div class="col-me-3" id="list-map-btns">
+          <button type="button" class="btn btn-default btn-sm nav-btn">
+            <span class="glyphicon glyphicon-picture"></span>
+          </button>
+          <button type="button" class="btn btn-default btn-sm nav-btn">
+            <span class="glyphicon glyphicon-globe"></span>
+          </button>
         </div>
       </div>
     </div>
-  </div> 
-
+  </nav>
   <div>
     <div id="entity-container">
       {% if plan.clipped_pages %}
