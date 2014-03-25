@@ -7,14 +7,12 @@ from flask import make_response
 from flask import render_template
 from flask import request
 
+import constants
 import data
 import geocode
 import scraper
 
 app = Flask(__name__)
-
-#BASE_URL = 'http://127.0.0.1:5000'
-BASE_URL = 'https://kauaitrip.ngrok.com'
 
 debug = True
 if not debug:
@@ -40,7 +38,7 @@ def clip():
     clip_result = handle_clipping(url, session_info)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = str(render_template('clipper_results_modal.html',
-        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=BASE_URL))
+        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL))
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
@@ -82,14 +80,44 @@ def editentity():
         if entity.source_url == input_entity.source_url:
             trip_plan.entities[i] = input_entity
             break
-    data.save_trip_plan(trip_plan, session_info)
+    data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
+@app.route('/edittripplan', methods=['POST'])
+def edittripplan():
+    session_info = decode_session(request.cookies)
+    if not session_info.user_identifier:
+        raise Exception('No sessionid found')
+    status = None
+    print request.json
+    try:
+        edit_request = data.EditTripPlanRequest.from_json_obj(request.json)
+    except Exception as e:
+        print e
+        return json.jsonify(status='Could not parse an EditTripPlanRequest from the input')
+    if not edit_request.trip_plan_id:
+        return json.jsonify(status='No valid id in the EditTripPlanRequest')
+    trip_plan = data.load_trip_plan_by_id(edit_request.trip_plan_id)
+    if not trip_plan:
+        return json.jsonify(status='No trip plan found with id %s' % edit_request.trip_plan_id)
+    if not trip_plan.editable_by(session_info):
+        return json.jsonify(status='User is not allowed to edit this trip plan')
+    if not edit_request.name:
+        return json.jsonify(status='Cannot save a trip plan without a name')
+    trip_plan.name = edit_request.name
+    data.save_trip_plan(trip_plan)
+    return json.jsonify(status='Success')
+
+@app.route('/bookmarklet.js')
+def bookmarklet_js():
+    response = make_response(render_template('bookmarklet.js', host=constants.HOST))
+    response.headers['Content-Type'] = 'application/javascript'
+    return response
 
 @app.route('/getbookmarklet')
 def getbookmarklet():
     template_vars = {
-        'bookmarklet_url': BASE_URL + '/static/js/bookmarklet.js'
+        'bookmarklet_url': constants.BASE_URL + '/bookmarklet.js'
     }
     return render_template('getbookmarklet.html', **template_vars)
 

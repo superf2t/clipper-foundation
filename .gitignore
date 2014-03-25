@@ -37,3 +37,6 @@ nosetests.xml
 
 # Local Data
 local_data/*
+
+# Local Settings
+constants_override.py

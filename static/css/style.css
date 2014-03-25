@@ -71,6 +71,15 @@ html, body {
   color: #FFFFFF;
 }
 
+#trip-plan-title-input {
+  width: 60%;
+}
+
+.pencil-edit {
+  width: 25px;
+  height: 25px;
+}
+
 /* Main Container */
 
 #entity-container {

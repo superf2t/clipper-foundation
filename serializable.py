@@ -34,7 +34,7 @@ class Serializable(object):
     PUBLIC_FIELDS = {}
 
     def to_json_str(self):
-        return json.dumps(self.json_obj())
+        return json.dumps(self.to_json_obj())
 
     def to_json_obj(self):
         obj = {}
