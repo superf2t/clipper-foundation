@@ -175,7 +175,7 @@ window['initApp'] = function(tripPlanSettings) {
   angular.module('mapModule', [])
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
-  angular.module('appModule', ['mapModule', 'initialDataModule'], function($interpolateProvider) {
+  angular.module('appModule', ['mapModule', 'initialDataModule', 'ui.bootstrap'], function($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
