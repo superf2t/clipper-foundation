@@ -141,7 +141,8 @@ html, body {
   top: -3px;
 }
 
-.entity-main-img {
+.entity-img {
+  margin: auto;
   width: 100%;
   cursor: pointer;
 }

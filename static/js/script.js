@@ -5,8 +5,12 @@ function hostnameFromUrl(url) {
 function EntityModel(entityData) {
   this.data = entityData;
   this.marker = makeMarker(entityData);
-  this.currentImgUrl = entityData['photo_urls'] && entityData['photo_urls'][0];
-  this.currentImgUrlIndex = 0;
+  this.carouselInterval = -1;
+  this.slides = $.map(entityData['photo_urls'], function(imageUrl) {
+    return {
+      image: imageUrl
+    };
+  });
 
   this.hasDescription = function() {
     return this.data['description'] && this.data['description'].length;
@@ -192,6 +196,23 @@ function createMap() {
   return new google.maps.Map($('#map')[0], mapOptions);
 }
 
+function ngScrollToOnClick($parse) {
+  return {
+      restrict: 'AEC',
+      link: function(scope, elem, attrs) {
+        var getScrollToIdFn = $parse(attrs.ngScrollToOnClick);
+        if (getScrollToIdFn) {
+          elem.on('click', function() {
+            var scrollToId = getScrollToIdFn();
+            $('html, body').animate({
+              scrollTop: ($("#" + scrollToId).offset().top - 73)
+            }, 500);
+          });
+        }
+      }
+  };
+}
+
 window['initApp'] = function(tripPlan, tripPlanSettings) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -203,6 +224,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
+    .directive('ngScrollToOnClick', ngScrollToOnClick)
     .controller('RootCtrl', ['$scope', '$http', '$tripPlan', '$tripPlanSettings', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
