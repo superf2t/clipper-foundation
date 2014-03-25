@@ -40,6 +40,26 @@ function makeMarker(entity) {
 }
 
 
+function TripPlanModel(tripPlanData) {
+  this.data = tripPlanData;
+
+  this.hasClippedPages = function() {
+    return this.data['clipped_pages'] && this.data['clipped_pages'].length;
+  };
+
+  this.ENTITY_TYPES_IN_ORDER = ['Hotel', 'Restaurant', 'Attraction'];
+
+  this.entitiesForType = function(entityType) {
+    var entities = [];
+    $.each(this.data['entities'], function(i, entity) {
+      if (entity['entity_type'] == entityType) {
+        entities.push(entity);
+      }
+    });
+    return entities;
+  };
+}
+
 function EntityTypeCtrl($scope, $map, $mapBounds) {
   var me = this;
   $scope.entityModels = [];
@@ -107,7 +127,8 @@ function EntityCtrl($scope, $http) {
   }
 }
 
-function RootCtrl($scope, $http, $tripPlanSettings) {
+function RootCtrl($scope, $http, $tripPlan, $tripPlanSettings) {
+  $scope.planModel = new TripPlanModel($tripPlan);
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = $tripPlanSettings;
@@ -129,6 +150,8 @@ function RootCtrl($scope, $http, $tripPlanSettings) {
       .success(function(response) {
         if (response['status'] != 'Success') {
           alert(response['status']);
+        } else {
+          document.title = $scope.editableTripPlanSettings['name'];
         }
       })
       .error(function() {
@@ -169,8 +192,9 @@ function createMap() {
   return new google.maps.Map($('#map')[0], mapOptions);
 }
 
-window['initApp'] = function(tripPlanSettings) {
+window['initApp'] = function(tripPlan, tripPlanSettings) {
   angular.module('initialDataModule', [])
+    .value('$tripPlan', tripPlan)
     .value('$tripPlanSettings', tripPlanSettings);
   angular.module('mapModule', [])
     .value('$map', createMap())
@@ -179,7 +203,7 @@ window['initApp'] = function(tripPlanSettings) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
-    .controller('RootCtrl', ['$scope', '$http', '$tripPlanSettings',RootCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$tripPlan', '$tripPlanSettings', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
