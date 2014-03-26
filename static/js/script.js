@@ -92,6 +92,10 @@ function TripPlanModel(tripPlanData) {
     newSourceUrls.sort();
     return angular.equals(currentSourceUrls, newSourceUrls);
   };
+
+  this.isEmpty = function() {
+    return this.data['entities'].length == 0;
+  };
 }
 
 function EntityTypeCtrl($scope, $map, $mapBounds) {
