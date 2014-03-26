@@ -85,8 +85,11 @@ class TripPlan(serializable.Serializable):
             if self.entities[i].source_url == source_url:
                 return self.entities.pop(i)
 
+    def as_settings(self):
+        return TripPlanSettings(str(self.trip_plan_id), name=self.name)        
+
     def settings_json(self):
-        return TripPlanSettings(str(self.trip_plan_id), name=self.name).to_json_str()
+        return self.as_settings().to_json_str()
 
     def contains_url(self, url):
         for entity in self.entities:

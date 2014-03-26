@@ -171,18 +171,18 @@
         </form>
       </div>
     </li>
-    {% for trip_plan in all_trip_plans %}
-      <li>
-        {% if trip_plan.trip_plan_id == plan.trip_plan_id %}
-          {{trip_plan.name}}
-        {% else %}
-          {# We use a string for the trip plan here because javascript truncates long ints #}
-          <a href="javascript:void(0)" ng-click="loadTripPlan('{{trip_plan.trip_plan_id}}')">
-            {{trip_plan.name}}
+    <li ng-repeat="tripPlanSettings in allTripPlansSettings">
+      <span ng-if="tripPlanSettings['trip_plan_id_str'] == currentTripPlanSettings['trip_plan_id_str']">
+        {# Use the name from the shared settings container so it will auto update 
+           if the user edits it inline. #}
+        [[currentTripPlanSettings['name'] ]]
+      </span>
+      <span ng-if="tripPlanSettings['trip_plan_id_str'] != currentTripPlanSettings['trip_plan_id_str']">
+          <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlanSettings['trip_plan_id_str'])">
+            [[tripPlanSettings['name'] ]]
           </a>
-        {% endif %}
-      </li>
-    {% endfor %}
+        </span>
+    </li>
     <li class="create-new-trip-dropdown-link">
       <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create new trip plan</a>
     </li>
@@ -216,6 +216,7 @@
   <script>
     initApp({{plan.to_json_str()|safe}},
       {{plan.settings_json()|safe}},
+      {{all_trip_plans_settings_json|safe}},
       {{account_info.to_json_str()|safe}});
   </script>
 </body>

@@ -366,10 +366,12 @@ function ngScrollToOnClick($parse) {
   };
 }
 
-function AccountDropdownCtrl($scope, $http, $accountInfo) {
+function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettings, $allTripPlansSettings) {
   $scope.accountInfo = $accountInfo;
   $scope.accountInfo.loggedIn = !!$accountInfo['email'];
   $scope.showLoginForm = !$scope.accountInfo.loggedIn;
+  $scope.currentTripPlanSettings = $currentTripPlanSettings;
+  $scope.allTripPlansSettings = $allTripPlansSettings;
 
   $scope.doLogin = function() {
     if ($scope.accountInfo['email']) {
@@ -401,10 +403,11 @@ function AccountDropdownCtrl($scope, $http, $accountInfo) {
   };
 }
 
-window['initApp'] = function(tripPlan, tripPlanSettings, accountInfo) {
+window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanSettings', tripPlanSettings)
+    .value('$allTripPlansSettings', allTripPlansSettings)
     .value('$accountInfo', accountInfo);
   angular.module('mapModule', [])
     .value('$map', createMap())
@@ -415,7 +418,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, accountInfo) {
   })
     .directive('ngScrollToOnClick', ngScrollToOnClick)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', RootCtrl])
-    .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', AccountDropdownCtrl])
+    .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
