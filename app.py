@@ -29,12 +29,8 @@ if not debug:
 EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
 
 @app.route('/')
-def home():
-    return render_template('home.html')
-
-@app.route('/clipper')
-def clipper():
-    return render_template('clipper.html')
+def index():
+    return render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
 
 @app.route('/clip')
 def clip():
@@ -236,14 +232,6 @@ def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
     response.headers['Content-Type'] = 'application/javascript'
     return response
-
-@app.route('/getbookmarklet')
-def getbookmarklet():
-    template_vars = {
-        'bookmarklet_url': constants.BASE_URL + '/bookmarklet.js'
-    }
-    return render_template('getbookmarklet.html', **template_vars)
-
 
 @app.route('/trip_plan_kauai')
 def trip_plan_kauai():
