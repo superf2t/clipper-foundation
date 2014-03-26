@@ -99,6 +99,8 @@ def to_json_obj(obj):
     else:
         raise SerializationError('Object is not JSON-serializable: %s' % obj)
 
+def to_json_str(obj):
+    return json.dumps(to_json_obj(obj))
 
 class Field(object):
     def __init__(self, name, cls=None, is_list=False):

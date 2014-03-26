@@ -85,8 +85,11 @@ class TripPlan(serializable.Serializable):
             if self.entities[i].source_url == source_url:
                 return self.entities.pop(i)
 
+    def as_settings(self):
+        return TripPlanSettings(str(self.trip_plan_id), name=self.name)        
+
     def settings_json(self):
-        return EditTripPlanRequest(self.trip_plan_id, name=self.name).to_json_str()
+        return self.as_settings().to_json_str()
 
     def contains_url(self, url):
         for entity in self.entities:
@@ -100,43 +103,46 @@ class TripPlan(serializable.Serializable):
     def editable_by(self, session_info):
         return str(self.creator) in (session_info.email, str(session_info.sessionid))
 
+class TripPlanSettings(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
+
+    def __init__(self, trip_plan_id_str=None, name=None):
+        self.trip_plan_id_str = trip_plan_id_str
+        self.name = name
+
+
+class EditEntityRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', serializable.objf('entity', Entity))
+
+    def __init__(self, trip_plan_id_str=None, entity=None):
+        self.trip_plan_id_str = trip_plan_id_str
+        self.entity = entity
+
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
 
 class EditTripPlanRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'trip_plan_id_str', 'name')
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
 
-    # We have a separate field for the id as a string because javascript
-    # truncates long ints
     def __init__(self, trip_plan_id=None, trip_plan_id_str=None, name=None):
+        self.trip_plan_id_str = trip_plan_id_str
         self.name = name
-        if trip_plan_id_str:
-            self.trip_plan_id_str = trip_plan_id_str
-            self.trip_plan_id = int(trip_plan_id_str)
-        else:
-            self.trip_plan_id = trip_plan_id
-            self.trip_plan_id_str = str(trip_plan_id)
 
-    def initialize(self):
-        if self.trip_plan_id_str:
-            self.trip_plan_id = int(self.trip_plan_id_str)
-
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
 
 class DeleteEntityRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'trip_plan_id_str', 'source_url')
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'source_url')
 
-    # We have a separate field for the id as a string because javascript
-    # truncates long ints
-    def __init__(self, trip_plan_id=None, trip_plan_id_str=None, source_url=None):
+    def __init__(self, trip_plan_id_str=None, source_url=None):
+        self.trip_plan_id_str = trip_plan_id_str
         self.source_url = source_url
-        if trip_plan_id_str:
-            self.trip_plan_id_str = trip_plan_id_str
-            self.trip_plan_id = int(trip_plan_id_str)
-        else:
-            self.trip_plan_id = trip_plan_id
-            self.trip_plan_id_str = str(trip_plan_id)
 
-    def initialize(self):
-        if self.trip_plan_id_str:
-            self.trip_plan_id = int(self.trip_plan_id_str)
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
 
 
 class SessionInfo(object):
@@ -149,6 +155,15 @@ class SessionInfo(object):
     @property
     def user_identifier(self):
         return self.email or self.sessionid
+
+
+class AccountInfo(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('email', 'active_trip_plan_id', 'active_trip_plan_name')
+
+    def __init__(self, email=None, active_trip_plan_id=None, active_trip_plan_name=None):
+        self.email = email
+        self.active_trip_plan_id = active_trip_plan_id
+        self.active_trip_plan_name = active_trip_plan_name
 
 
 def trip_plan_filename_from_session_info(session_info):
@@ -194,3 +209,10 @@ def save_trip_plan(trip_plan):
     trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
     json_obj = trip_plan.to_json_obj()
     json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))
+
+def change_creator(trip_plan, new_creator):
+    old_fname = trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id)
+    trip_plan.creator = new_creator
+    save_trip_plan(trip_plan)
+    os.remove(old_fname)
+    return trip_plan

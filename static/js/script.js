@@ -160,7 +160,11 @@ function EntityCtrl($scope, $http, $tripPlanSettings) {
   };
 
   $scope.saveEntityEdit = function() {
-    $http.post('/editentity', $scope.entityModel.data).success(function(response) {
+    var editRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'entity': $scope.entityModel.data
+    }
+    $http.post('/editentity', editRequest).success(function(response) {
       if (response['status'] != 'Success') {
         alert('Failed to save edits');
       }
@@ -194,7 +198,9 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
-  $scope.editableTripPlanSettings = $tripPlanSettings;
+  $scope.editableTripPlanSettings = {
+    name: $tripPlanSettings['name']
+  };
   $scope.refreshState = {
     paused: false
   };
@@ -204,12 +210,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
     statusCode: null
   };
 
-  $scope.openAccountDropdown = function() {
-    $scope.accountDropdownOpen = true;
-  }
-
-  $scope.loadTripPlan = function(tripPlanIdStr) {
-    location.href = '/trip_plan/' + tripPlanIdStr;
+  $scope.toggleAccountDropdown = function() {
+    $scope.accountDropdownOpen = !$scope.accountDropdownOpen;
   }
 
   $scope.editTripPlanSettings = function() {
@@ -217,13 +219,19 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
   };
 
   $scope.saveTripPlanSettings = function() {
-    $http.post('/edittripplan', $scope.editableTripPlanSettings)
+    var editRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'name': $scope.editableTripPlanSettings.name
+    };
+    $http.post('/edittripplan', editRequest)
       .success(function(response) {
         if (response['status'] != 'Success') {
           alert(response['status']);
         } else {
-          document.title = $scope.editableTripPlanSettings['name'];
-          planModel.data['name'] = $scope.editableTripPlanSettings['name'];
+          var newName = $scope.editableTripPlanSettings.name;
+          document.title = newName;
+          $scope.planModel.data['name'] = newName;
+          $tripPlanSettings['name'] = newName;
         }
       })
       .error(function() {
@@ -358,10 +366,49 @@ function ngScrollToOnClick($parse) {
   };
 }
 
-window['initApp'] = function(tripPlan, tripPlanSettings) {
+function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettings, $allTripPlansSettings) {
+  $scope.accountInfo = $accountInfo;
+  $scope.accountInfo.loggedIn = !!$accountInfo['email'];
+  $scope.showLoginForm = !$scope.accountInfo.loggedIn;
+  $scope.currentTripPlanSettings = $currentTripPlanSettings;
+  $scope.allTripPlansSettings = $allTripPlansSettings;
+
+  $scope.doLogin = function() {
+    if ($scope.accountInfo['email']) {
+      var loginRequest = {email: $scope.accountInfo['email']};
+      $http.post('/login_and_migrate_ajax', loginRequest)
+        .success(function(response) {
+          if (response['status'] == 'Success') {
+            location.href = location.href;
+          } else {
+            alert('Login failed')
+          }
+        })
+        .error(function() {
+          alert('Login failed');
+        });
+    }
+  };
+
+  $scope.loadTripPlan = function(tripPlanIdStr) {
+    location.href = '/trip_plan/' + tripPlanIdStr;
+  };
+
+  $scope.createNewTripPlan = function() {
+    $http.post('/new_trip_plan_ajax', {})
+      .success(function(response) {
+        var newTripPlanIdStr = response['new_trip_plan_id_str'];
+        $scope.loadTripPlan(newTripPlanIdStr)
+      });
+  };
+}
+
+window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanSettings', tripPlanSettings);
+    .value('$tripPlanSettings', tripPlanSettings)
+    .value('$allTripPlansSettings', allTripPlansSettings)
+    .value('$accountInfo', accountInfo);
   angular.module('mapModule', [])
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
@@ -371,6 +418,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings) {
   })
     .directive('ngScrollToOnClick', ngScrollToOnClick)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', RootCtrl])
+    .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
