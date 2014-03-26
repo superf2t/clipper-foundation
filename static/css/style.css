@@ -278,3 +278,10 @@ html, body {
   width: 500px;
   height: 400px;
 }
+
+/* Modals */
+
+.clipping-status-modal {
+  padding: 30px;
+  text-align: center;
+}

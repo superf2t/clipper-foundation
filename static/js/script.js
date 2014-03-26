@@ -121,7 +121,7 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
-      entityModel.infowindow.open($map, marker);
+      entityModel.makeInfowindow().open($map, marker);
     });
   });
   // TODO: Move this after all have initialized.
@@ -148,7 +148,7 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
   };
 }
 
-function EntityCtrl($scope, $http) {
+function EntityCtrl($scope, $http, $tripPlanSettings) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -168,14 +168,41 @@ function EntityCtrl($scope, $http) {
       alert('Failed to save edits');
     });
     $scope.editing = false;
-  }
+  };
+
+  $scope.deleteEntity = function() {
+    var deleteRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'source_url': $scope.entityModel.data['source_url']
+    };
+    $http.post('/deleteentity', deleteRequest)
+      .success(function(response) {
+        if (response['status'] == 'Success') {
+          $scope.refresh();
+        } else {
+          alert('Failed to delete entity');
+        }
+      })
+      .error(function() {
+        alert('Failed to delete entity')
+      });
+  };
 }
 
-function RootCtrl($scope, $http, $timeout, $tripPlan, $tripPlanSettings) {
+function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings) {
+  var me = this;
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = $tripPlanSettings;
+  $scope.refreshState = {
+    paused: false
+  };
+  $scope.clipState = {
+    url: null,
+    clipping: false,
+    statusCode: null
+  };
 
   $scope.openAccountDropdown = function() {
     $scope.accountDropdownOpen = true;
@@ -209,10 +236,63 @@ function RootCtrl($scope, $http, $timeout, $tripPlan, $tripPlanSettings) {
     $scope.$broadcast('closeallinfowindows');
   });
 
-  this.refresh = function() {
+  $scope.clipUrlChanged = function() {
+    // Ugly hack to wrap this in a timeout; without it, the paste
+    // event fires before the input has been populated with the pasted
+    // data, so both [text input].val() and $scope.clipState.url
+    // are empty.
+    $timeout(function() {
+      if (!$scope.clipState.url) {
+        return;
+      }
+      $scope.clipState.clipping = true;
+      var modal = $modal.open({
+        templateUrl: 'clipping-modal-template',
+        scope: $scope
+      });
+      me.clip($scope.clipState.url, function(response) {
+        $scope.clipState.url = '';
+        $scope.clipState.clipping = false;
+        $scope.clipState.statusCode = response['clip_status'];
+        $scope.clipState.entity = response['entity'];
+        $timeout(function() {
+          modal.close();
+        }, 3000);
+      }, function() {
+        $scope.clipState.url = '';
+        $scope.clipState.clipping = false;
+        $scope.clipState.statusCode = 0; // Error code
+        $timeout(function() {
+          modal.close();
+        }, 3000);
+      });
+    });
+  };
+
+  this.clip = function(url, opt_successCallback, opt_errorCallback) {
+    $scope.refreshState.paused = true;
+    var postUrl = '/clip_ajax/' + $tripPlanSettings['trip_plan_id_str'];
+    $http.post(postUrl, {url: url})
+      .success(function(response) {
+        $scope.refreshState.paused = false;
+        me.refresh()
+        if (opt_successCallback) {
+          opt_successCallback(response);
+        }
+      })
+      .error(opt_errorCallback);
+  };
+
+  this.refresh = $scope.refresh = function() {
+    if ($scope.refreshState.paused) {
+      return;
+    }
     // TODO: Don't refresh if the user is currently editing.
     $http.get('/trip_plan_ajax/' + $tripPlanSettings['trip_plan_id_str'])
       .success(function(response) {
+        if ($scope.refreshState.paused) {
+          return;
+        }
         var newModel = new TripPlanModel(response['trip_plan']);
         if (!$scope.planModel || !$scope.planModel.fastEquals(newModel)) {
           $scope.$broadcast('clearallmarkers');
@@ -226,7 +306,6 @@ function RootCtrl($scope, $http, $timeout, $tripPlan, $tripPlanSettings) {
       });
   };
 
-  var me = this;
   var refreshInterval = 5000;
   function refreshPoll() {
     me.refresh();
@@ -291,9 +370,9 @@ window['initApp'] = function(tripPlan, tripPlanSettings) {
     $interpolateProvider.endSymbol(']]');
   })
     .directive('ngScrollToOnClick', ngScrollToOnClick)
-    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$tripPlan', '$tripPlanSettings', RootCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
-    .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
+    .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .filter('hostname', function() {
