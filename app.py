@@ -4,6 +4,7 @@ import uuid
 from flask import Flask
 from flask import json
 from flask import make_response
+from flask import redirect
 from flask import render_template
 from flask import request
 
@@ -59,7 +60,12 @@ def trip_plan_by_id(trip_plan_id):
 @app.route('/trip_plan')
 def trip_plan():
     session_info = decode_session(request.cookies)
-    return trip_plan_with_session_info(session_info)
+    trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
+    if not trip_plan:
+        trip_plan = create_default_trip_plan(session_info)
+        data.save_trip_plan(trip_plan)
+    response = redirect('/trip_plan/%s' % session_info.active_trip_plan_id)
+    return process_response(response, request, session_info)
 
 def trip_plan_with_session_info(session_info, trip_plan_id=None):
     if trip_plan_id:
@@ -68,9 +74,19 @@ def trip_plan_with_session_info(session_info, trip_plan_id=None):
         trip_plan = data.load_trip_plan(session_info)
     trip_plan_json = json.dumps(trip_plan.to_json_obj()) if trip_plan else None
     all_trip_plans = data.load_all_trip_plans(session_info)
+    active_trip_plan = None
+    for plan in all_trip_plans:
+        if plan.trip_plan_id == session_info.active_trip_plan_id:
+            active_trip_plan = plan
+            break
+    account_info = data.AccountInfo(session_info.email,
+        active_trip_plan_id=active_trip_plan.trip_plan_id if active_trip_plan else None,
+        active_trip_plan_name=active_trip_plan.name if active_trip_plan else None)
     response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json,
         all_trip_plans=all_trip_plans,
-        allow_editing=trip_plan and trip_plan.editable_by(session_info))
+        session_info=session_info,
+        allow_editing=trip_plan and trip_plan.editable_by(session_info),
+        account_info=account_info)
     return process_response(response, request, session_info)
 
 @app.route('/trip_plan_ajax/<int:trip_plan_id>')
@@ -78,6 +94,19 @@ def trip_plan_ajax(trip_plan_id):
     session_info = decode_session(request.cookies)
     trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     return json.jsonify(trip_plan=trip_plan and trip_plan.to_json_obj())
+
+@app.route('/new_trip_plan_ajax', methods=['POST'])
+def new_trip_plan_ajax():
+    session_info = decode_session(request.cookies)
+    if not session_info.email:
+        raise Exception('User is not logged in')
+    new_trip_plan_id = generate_trip_plan_id()
+    session_info.active_trip_plan_id = new_trip_plan_id
+    session_info.set_on_response = True
+    trip_plan = create_default_trip_plan(session_info)
+    data.save_trip_plan(trip_plan)
+    response = json.jsonify(new_trip_plan_id_str=str(session_info.active_trip_plan_id))
+    return process_response(response, request, session_info)
 
 @app.route('/editentity', methods=['POST'])
 def editentity():
@@ -142,6 +171,21 @@ def edittripplan():
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
+@app.route('/login_and_migrate_ajax', methods=['POST'])
+def login_and_migrate_ajax():
+    session_info = decode_session(request.cookies)
+    email = request.json['email']
+    if not email:
+        raise Exception('Invalid email during login')
+    if not session_info.email:
+        all_trip_plans = data.load_all_trip_plans(session_info) or []
+        for trip_plan in all_trip_plans:
+            data.change_creator(trip_plan, email)
+    session_info.email = email
+    session_info.set_on_response = True
+    response = json.jsonify(status='Success')
+    return process_response(response, request, session_info)
+
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
@@ -176,11 +220,14 @@ class ClipResult(object):
         self.entity = entity
         self.trip_plan = trip_plan
 
+def create_default_trip_plan(session_info):
+    return data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
+
 def handle_clipping(url, session_info):
     trip_plan = data.load_trip_plan(session_info)
     result = None
     if not trip_plan:
-        trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
+        trip_plan = create_default_trip_plan(session_info)
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)
@@ -232,12 +279,15 @@ def process_response(response, request=None, session_info=None):
     response = make_response(response)
     if session_info and session_info.set_on_response:
         if session_info.email and session_info.email != request.cookies.get('email'):
-            response.set_cookie('email', session_info.email)
+            set_cookie(response, 'email', session_info.email)
         if session_info.active_trip_plan_id and session_info.active_trip_plan_id != request.cookies.get('active_trip_plan_id'):
-            response.set_cookie('active_trip_plan_id', str(session_info.active_trip_plan_id))
+            set_cookie(response, 'active_trip_plan_id', str(session_info.active_trip_plan_id))
         if session_info.sessionid and session_info.sessionid != request.cookies.get('sessionid'):
-            response.set_cookie('sessionid', str(session_info.sessionid))
+            set_cookie(response, 'sessionid', str(session_info.sessionid))
     return response
+
+def set_cookie(response, key, value):
+    response.set_cookie(key, value, expires=constants.COOKIE_EXPIRATION_TIME, domain=constants.HOST)
 
 def make_jsonp_response(request_obj, response_json_obj):
     callback_name = request_obj.args.get('callback')

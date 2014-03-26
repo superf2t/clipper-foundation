@@ -29,7 +29,7 @@
           </a>
         </div>
         <div class="col-md-3" id="my-account-link">
-          <a href="javascript:void(0)" ng-click="openAccountDropdown()">My Trip Plans</a>
+          <a href="javascript:void(0)" ng-click="toggleAccountDropdown()">My Trip Plans</a>
         </div>
       </div>
     </div>
@@ -156,21 +156,37 @@
   </div>
 
   {# This is below the map in the DOM so that it appears visually on top #}
-  <div ng-show="accountDropdownOpen">
-    <div class="account-dropdown">
-      {% for trip_plan in all_trip_plans %}
-        <div>
+  <ul ng-show="accountDropdownOpen" class="account-dropdown" ng-controller="AccountDropdownCtrl">
+    <li class="account-dropdown-login-info">
+      <div ng-show="accountInfo.loggedIn && !showLoginForm">
+        Logged in as <span class="logged-in-email">[[accountInfo['email'] ]]</span>
+        &nbsp;<a href="javascript:void(0)" ng-click="showLoginForm = true">change</a>
+      </div>
+      <div ng-show="showLoginForm">
+        <form role="form" ng-submit="doLogin()">
+          <input type="text" class="form-control"
+            ng-model="accountInfo['email']"
+            placeholder="enter your email address to fake a login"/>
+          <button type="submit()" class="btn btn-default">login</button>
+        </form>
+      </div>
+    </li>
+    {% for trip_plan in all_trip_plans %}
+      <li>
+        {% if trip_plan.trip_plan_id == plan.trip_plan_id %}
+          {{trip_plan.name}}
+        {% else %}
           {# We use a string for the trip plan here because javascript truncates long ints #}
           <a href="javascript:void(0)" ng-click="loadTripPlan('{{trip_plan.trip_plan_id}}')">
             {{trip_plan.name}}
           </a>
-        </div>
-      {% endfor %}
-      <div>
-        Create new trip plan
-      </div>
-    </div>
-  </div>
+        {% endif %}
+      </li>
+    {% endfor %}
+    <li class="create-new-trip-dropdown-link">
+      <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create new trip plan</a>
+    </li>
+  </ul>
 
   <script type="text/ng-template" id="clipping-modal-template">
     <div class="clipping-status-modal">
@@ -198,7 +214,9 @@
   </script>
 
   <script>
-    initApp({{plan.to_json_str()|safe}}, {{plan.settings_json()|safe}});
+    initApp({{plan.to_json_str()|safe}},
+      {{plan.settings_json()|safe}},
+      {{account_info.to_json_str()|safe}});
   </script>
 </body>
 </html>

@@ -236,9 +236,6 @@ html, body {
   border-color: #2D73A0;
 }
 
-
-
-
 .left-footer {
   margin-top: 20px;
   margin-bottom: 10px;
@@ -255,10 +252,25 @@ html, body {
 .account-dropdown {
   position: fixed;
   z-index: 10000;
+  width: 300px;
   top: 20px;
   right: 0px;
   background-color: white;
   padding: 20px;
+  list-style: none;
+}
+
+.account-dropdown-login-info {
+  padding-bottom: 10px;
+}
+
+.create-new-trip-dropdown-link {
+  padding-top: 10px;
+  font-weight: bold;
+}
+
+.logged-in-email {
+  font-weight: bold;
 }
 
 #map-container {

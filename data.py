@@ -154,6 +154,15 @@ class SessionInfo(object):
         return self.email or self.sessionid
 
 
+class AccountInfo(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('email', 'active_trip_plan_id', 'active_trip_plan_name')
+
+    def __init__(self, email=None, active_trip_plan_id=None, active_trip_plan_name=None):
+        self.email = email
+        self.active_trip_plan_id = active_trip_plan_id
+        self.active_trip_plan_name = active_trip_plan_name
+
+
 def trip_plan_filename_from_session_info(session_info):
     return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)
 
@@ -197,3 +206,10 @@ def save_trip_plan(trip_plan):
     trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
     json_obj = trip_plan.to_json_obj()
     json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))
+
+def change_creator(trip_plan, new_creator):
+    old_fname = trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id)
+    trip_plan.creator = new_creator
+    save_trip_plan(trip_plan)
+    os.remove(old_fname)
+    return trip_plan
