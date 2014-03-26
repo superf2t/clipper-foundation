@@ -56,39 +56,27 @@
     }
   </style>
   <script>
-    (function() {
-      function elem(id) {
-        return document.getElementById(id);
-      }
-
-      function hide(id) {
-        elem(id).style.display = 'none';
-      }
-
-      function show(id) {
-        elem(id).style.display = '';
-      }
-
+    (function($) {
       function selectTripPlan() {
-        var selectElem = document.getElementById('__tc-trip-plans');
+        var selectElem = $('#__tc-trip-plans')[0];
         var tripPlanId = selectElem[selectElem.selectedIndex].value;
         var url = '{{base_url}}/make_active/' + tripPlanId;
         var popup = window.open(url);
         popup.onunload = function() {
           if (tripPlanId == '0') {
-            hide('__tc-change-trip-plan-confirmation');
-            show('__tc-new-trip-plan-confirmation');
+            $('#__tc-change-trip-plan-confirmation').hide();
+            $('#__tc-new-trip-plan-confirmation').show();
           } else {
-            hide('__tc-new-trip-plan-confirmation');
-            var tripPlanName = selectElem[selectElem.selectedIndex].getAttribute('tc:trip-plan-name');
-            show('__tc-change-trip-plan-confirmation');
-            elem('__tc-active-trip-plan-confirmation-plan-name').innerHTML = tripPlanName;
+            $('#__tc-new-trip-plan-confirmation').hide();
+            var tripPlanName = $(selectElem[selectElem.selectedIndex]).attr('tc:trip-plan-name');
+            $('#__tc-change-trip-plan-confirmation').show();
+            $('#__tc-active-trip-plan-confirmation-plan-name').html(tripPlanName);
           }
         }
       }
 
       window['__tcSelectTripPlan'] = selectTripPlan;
-    })();
+    })(window['__tc$']);
   </script>
   <div class="__tc-modal">
     <div class="__tc-title">Travel Clipper</div>
@@ -155,7 +143,7 @@
         </div>
         <div id="__tc-new-trip-plan-confirmation" style="display:none">
           Successfully created a new trip plan for your future clippings.
-          Visit <a href="{{base_url}}/trip_plan">{{base_url}}/trip_plan</a>
+          Visit <a href="{{base_url}}/trip_plan" target="_blank">{{base_url}}/trip_plan</a>
           to view and edit it.
         </div>
       </div>
