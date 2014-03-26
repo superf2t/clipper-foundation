@@ -79,24 +79,23 @@ def trip_plan_ajax(trip_plan_id):
     trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     return json.jsonify(trip_plan=trip_plan and trip_plan.to_json_obj())
 
-# TODO: Rewrite this to pass the trip plan id as an input.
 @app.route('/editentity', methods=['POST'])
 def editentity():
     session_info = decode_session(request.cookies)
     if not session_info.user_identifier:
         raise Exception('No sessionid found')
     try:
-        input_entity = data.Entity.from_json_obj(request.json)
+        edit_request = data.EditEntityRequest.from_json_obj(request.json)
     except:
-        raise Exception('Could not parse an Entity from the input')
-    trip_plan = data.load_trip_plan(session_info)
+        raise Exception('Could not parse an EditEntityEntity from the input')
+    trip_plan = data.load_trip_plan_by_id(edit_request.trip_plan_id)
     if not trip_plan:
-        raise Exception('No trip plan found for this session')
+        raise Exception('No trip plan found for the given id')
     if not trip_plan.editable_by(session_info):
         raise Exception('Trip plan not editable by current user')
     for i, entity in enumerate(trip_plan.entities):
-        if entity.source_url == input_entity.source_url:
-            trip_plan.entities[i] = input_entity
+        if entity.source_url == edit_request.entity.source_url:
+            trip_plan.entities[i] = edit_request.entity
             break
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')

@@ -86,7 +86,7 @@ class TripPlan(serializable.Serializable):
                 return self.entities.pop(i)
 
     def settings_json(self):
-        return EditTripPlanRequest(self.trip_plan_id, name=self.name).to_json_str()
+        return TripPlanSettings(str(self.trip_plan_id), name=self.name).to_json_str()
 
     def contains_url(self, url):
         for entity in self.entities:
@@ -100,43 +100,46 @@ class TripPlan(serializable.Serializable):
     def editable_by(self, session_info):
         return str(self.creator) in (session_info.email, str(session_info.sessionid))
 
+class TripPlanSettings(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
+
+    def __init__(self, trip_plan_id_str=None, name=None):
+        self.trip_plan_id_str = trip_plan_id_str
+        self.name = name
+
+
+class EditEntityRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', serializable.objf('entity', Entity))
+
+    def __init__(self, trip_plan_id_str=None, entity=None):
+        self.trip_plan_id_str = trip_plan_id_str
+        self.entity = entity
+
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
 
 class EditTripPlanRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'trip_plan_id_str', 'name')
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
 
-    # We have a separate field for the id as a string because javascript
-    # truncates long ints
     def __init__(self, trip_plan_id=None, trip_plan_id_str=None, name=None):
+        self.trip_plan_id_str = trip_plan_id_str
         self.name = name
-        if trip_plan_id_str:
-            self.trip_plan_id_str = trip_plan_id_str
-            self.trip_plan_id = int(trip_plan_id_str)
-        else:
-            self.trip_plan_id = trip_plan_id
-            self.trip_plan_id_str = str(trip_plan_id)
 
-    def initialize(self):
-        if self.trip_plan_id_str:
-            self.trip_plan_id = int(self.trip_plan_id_str)
-
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
 
 class DeleteEntityRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'trip_plan_id_str', 'source_url')
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'source_url')
 
-    # We have a separate field for the id as a string because javascript
-    # truncates long ints
-    def __init__(self, trip_plan_id=None, trip_plan_id_str=None, source_url=None):
+    def __init__(self, trip_plan_id_str=None, source_url=None):
+        self.trip_plan_id_str = trip_plan_id_str
         self.source_url = source_url
-        if trip_plan_id_str:
-            self.trip_plan_id_str = trip_plan_id_str
-            self.trip_plan_id = int(trip_plan_id_str)
-        else:
-            self.trip_plan_id = trip_plan_id
-            self.trip_plan_id_str = str(trip_plan_id)
 
-    def initialize(self):
-        if self.trip_plan_id_str:
-            self.trip_plan_id = int(self.trip_plan_id_str)
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
 
 
 class SessionInfo(object):

@@ -160,7 +160,11 @@ function EntityCtrl($scope, $http, $tripPlanSettings) {
   };
 
   $scope.saveEntityEdit = function() {
-    $http.post('/editentity', $scope.entityModel.data).success(function(response) {
+    var editRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'entity': $scope.entityModel.data
+    }
+    $http.post('/editentity', editRequest).success(function(response) {
       if (response['status'] != 'Success') {
         alert('Failed to save edits');
       }
@@ -194,7 +198,9 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
-  $scope.editableTripPlanSettings = $tripPlanSettings;
+  $scope.editableTripPlanSettings = {
+    name: $tripPlanSettings['name']
+  };
   $scope.refreshState = {
     paused: false
   };
@@ -217,13 +223,19 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
   };
 
   $scope.saveTripPlanSettings = function() {
-    $http.post('/edittripplan', $scope.editableTripPlanSettings)
+    var editRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'name': $scope.editableTripPlanSettings.name
+    };
+    $http.post('/edittripplan', editRequest)
       .success(function(response) {
         if (response['status'] != 'Success') {
           alert(response['status']);
         } else {
-          document.title = $scope.editableTripPlanSettings['name'];
-          planModel.data['name'] = $scope.editableTripPlanSettings['name'];
+          var newName = $scope.editableTripPlanSettings.name;
+          document.title = newName;
+          $scope.planModel.data['name'] = newName;
+          $tripPlanSettings['name'] = newName;
         }
       })
       .error(function() {
