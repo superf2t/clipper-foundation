@@ -12,6 +12,7 @@
     }
   })(window,document,"1.10.0",function($,L){
 
+  window['__tc$'] = $;
   var HOST = '{{host}}';
 
   function absUrl(relativeUrl) {
