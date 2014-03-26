@@ -40,7 +40,9 @@ def clipper():
 def clip():
     session_info = decode_session(request.cookies)
     url = request.values['url']
-    clip_result = handle_clipping(url, session_info)
+    if not data.load_trip_plan_by_id(session_info.active_trip_plan_id):
+        data.create_default_trip_plan(session_info)
+    clip_result = handle_clipping(url, session_info.active_trip_plan_id)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = render_template('clipper_results_modal.html',
         clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
@@ -51,7 +53,7 @@ def clip():
 def clip_ajax(trip_plan_id):
     session_info = decode_session(request.cookies)
     url = request.json['url']
-    clip_result = handle_clipping(url, session_info)
+    clip_result = handle_clipping(url, trip_plan_id)
     response = json.jsonify(clip_status=clip_result.status,
         entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
     return process_response(response, request, session_info)
@@ -229,11 +231,11 @@ class ClipResult(object):
 def create_default_trip_plan(session_info):
     return data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
 
-def handle_clipping(url, session_info):
-    trip_plan = data.load_trip_plan(session_info)
+def handle_clipping(url, trip_plan_id):
+    trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     result = None
     if not trip_plan:
-        trip_plan = create_default_trip_plan(session_info)
+        raise Exception('No trip plan found with id %s' % trip_plan_id)
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)
