@@ -19,25 +19,39 @@
   }
 
   function clipUrl(url) {
-    if (window['__tcOverlay']) {
-      window['__tcOverlay'].remove();
-    }
+    clearOverlay();
     $.ajax(absUrl('/clip'), {
       data: {url: url},
       dataType: 'jsonp'
-    }).done(function(response) {
-      var handlerActive = true;
-      window['__tcSpinner'].remove();
-      var div = window['__tcOverlay'] = $(response['html']);
-      $(document.body).append(div);
-      $(document.body).on('click', function(event) {
-        if (!handlerActive) return;
-        if (!div.has(event.target).exists()) {
-          handlerActive = false;
-          div.remove();
-          div = null;
-        }
-      })
+    }).done(handleResponse);
+  }
+
+  function undoClipUrl(url) {
+    clearOverlay();
+    $.ajax(absUrl('/undoclip'), {
+      data: {url: url},
+      dataType: 'jsonp'
+    }).done(handleResponse);
+  };
+
+  function clearOverlay() {
+    if (window['__tcOverlay']) {
+      window['__tcOverlay'].remove();
+    }
+  }
+
+  function handleResponse(response) {
+    var handlerActive = true;
+    window['__tcSpinner'].remove();
+    var div = window['__tcOverlay'] = $(response['html']);
+    $(document.body).append(div);
+    $(document.body).on('click', function(event) {
+      if (!handlerActive) return;
+      if (!div.has(event.target).length) {
+        handlerActive = false;
+        div.remove();
+        div = null;
+      }
     });
   }
 
@@ -61,6 +75,10 @@
     window['__tcSpinner'] = spinnerDiv;
     $(document.body).append(spinnerDiv);
   }
+
+  window['__tch'] = {
+    undoClip: undoClipUrl
+  };
 
   showSpinner();
   clipUrl(window.location.href);

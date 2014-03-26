@@ -40,7 +40,9 @@ def clipper():
 def clip():
     session_info = decode_session(request.cookies)
     url = request.values['url']
-    clip_result = handle_clipping(url, session_info)
+    if not data.load_trip_plan_by_id(session_info.active_trip_plan_id):
+        data.create_default_trip_plan(session_info)
+    clip_result = handle_clipping(url, session_info.active_trip_plan_id)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = render_template('clipper_results_modal.html',
         clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
@@ -51,9 +53,46 @@ def clip():
 def clip_ajax(trip_plan_id):
     session_info = decode_session(request.cookies)
     url = request.json['url']
-    clip_result = handle_clipping(url, session_info)
+    clip_result = handle_clipping(url, trip_plan_id)
     response = json.jsonify(clip_status=clip_result.status,
         entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
+    return process_response(response, request, session_info)
+
+@app.route('/undoclip')
+def undoclip():
+    session_info = decode_session(request.cookies)
+    url = request.values['url']
+    clip_status = ClipResult.STATUS_ERROR
+    trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
+    if not trip_plan:
+        clip_status.ClipResult.STATUS_NO_TRIP_PLAN_FOUND
+        entity = None
+    else:
+        entity = trip_plan.remove_entity_by_source_url(url)
+        data.save_trip_plan(trip_plan)
+        clip_status = ClipResult.STATUS_UNDO_SUCCESS
+    clip_result = ClipResult(clip_status, entity=entity, trip_plan=trip_plan)
+    all_trip_plans = data.load_all_trip_plans(session_info)
+    modal_html = render_template('clipper_results_modal.html',
+        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
+    response = make_jsonp_response(request, {'html': modal_html})
+    return process_response(response, request, session_info)
+
+@app.route('/make_active/<int:trip_plan_id>')
+def make_active(trip_plan_id):
+    session_info = decode_session(request.cookies)
+    if trip_plan_id == 0:
+        new_trip_plan_id = generate_trip_plan_id()
+        session_info.active_trip_plan_id = new_trip_plan_id
+        session_info.set_on_response = True
+        trip_plan = create_default_trip_plan(session_info)
+        data.save_trip_plan(trip_plan)
+    else:
+        trip_plan = data.load_trip_plan_by_id(trip_plan_id)
+        if trip_plan and trip_plan.editable_by(session_info) and trip_plan_id != session_info.active_trip_plan_id:
+            session_info.active_trip_plan_id = trip_plan_id
+            session_info.set_on_response = True
+    response = render_template('make_active_response.html')
     return process_response(response, request, session_info)
 
 @app.route('/trip_plan/<int:trip_plan_id>')
@@ -220,6 +259,8 @@ class ClipResult(object):
     STATUS_SUCCESS_KNOWN_SOURCE = 1
     STATUS_SAVED_FOR_LATER = 2
     STATUS_ALREADY_CLIPPED_URL = 3
+    STATUS_NO_TRIP_PLAN_FOUND = 4
+    STATUS_UNDO_SUCCESS = 5
 
     def __init__(self, status, entity=None, trip_plan=None):
         self.status = status
@@ -229,11 +270,11 @@ class ClipResult(object):
 def create_default_trip_plan(session_info):
     return data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
 
-def handle_clipping(url, session_info):
-    trip_plan = data.load_trip_plan(session_info)
+def handle_clipping(url, trip_plan_id):
+    trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     result = None
     if not trip_plan:
-        trip_plan = create_default_trip_plan(session_info)
+        raise Exception('No trip plan found with id %s' % trip_plan_id)
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)

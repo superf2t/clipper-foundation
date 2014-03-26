@@ -84,6 +84,7 @@ class TripPlan(serializable.Serializable):
         for i in range(len(self.entities)):
             if self.entities[i].source_url == source_url:
                 return self.entities.pop(i)
+        return None
 
     def as_settings(self):
         return TripPlanSettings(str(self.trip_plan_id), name=self.name)        
@@ -102,6 +103,9 @@ class TripPlan(serializable.Serializable):
 
     def editable_by(self, session_info):
         return str(self.creator) in (session_info.email, str(session_info.sessionid))
+
+    def trip_plan_url(self):
+        return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
 
 class TripPlanSettings(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
