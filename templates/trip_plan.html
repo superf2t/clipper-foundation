@@ -20,10 +20,12 @@
           <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
           <form class="form-inline" role="form" onsubmit="return false" ng-show="editingTripPlanSettings">
             <input class="form-control" id="trip-plan-title-input" type="text" ng-model="editableTripPlanSettings.name"/>
-            <button ng-click="saveTripPlanSettings()">Save</button>
+            <button class="btn btn-save-changes" ng-click="saveTripPlanSettings()">Save</button>
           </form>
           <a href="javascript:void(0)" ng-click="editTripPlanSettings()" ng-show="!editingTripPlanSettings">
-            <img class="pencil-edit" src="/static/img/pencil.png"/>
+            <button type="button" class="btn btn-sm" id="edit-title-btn">
+              <span class="glyphicon glyphicon-pencil"></span>
+            </button>
           </a>
         </div>
         <div class="col-md-3" id="my-account-link">
@@ -78,7 +80,6 @@
         <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
         </iframe>
       </div>
- 
 
     <div ng-repeat="entityType in planModel.ENTITY_TYPES_IN_ORDER">
       <div ng-controller="EntityTypeCtrl">
@@ -86,16 +87,16 @@
           <div class="one-entity-type">
             <a id="[[entityType]]" class="offset-anchor"></a>
             <h3 ng-click="toggleSection()" class="entity-type-header">
-              <a href="javascript:void(0)">[[entityType]]</a>
+              <a href="javascript:void(0)">[[entityType]]
+                <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
+                <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
+              </a>
             </h3>
             <div class="columns" ng-show="show">
               <div ng-repeat="entityModel in entityModels">
                 <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
-                  <div class="one-entity-title" ng-show="!editing">
+                  <div class="one-entity-title">
                     [[entityModel.data['name'] ]]
-                  </div>
-                  <div class="edit-entity-title" ng-show="editing">
-                    <input type="text" class="form-control" ng-model="entityModel.data['name']"/>
                   </div>
                   <carousel class="one-entity-carousel" interval="entityModel.carouselInterval">
                     <slide ng-repeat="slide in entityModel.slides" active="slide.active">
@@ -104,7 +105,7 @@
                       </span>
                     </slide>
                   </carousel>
-                  <div>
+                  <div class="one-entity-rating">
                     Rating: [[entityModel.data['rating'] ]]
                   </div>
                   <div class="entity-description"
@@ -112,10 +113,10 @@
                     <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
                   </div>
                   <div ng-show="editing">
-                    <textarea ng-model="entityModel.data['description']" class="entity-description-input"></textarea>
+                    <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
                   </div>
-                  <div>
-                    Clipped from <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
+                  <div class="one-entity-source">
+                    From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
                   </div>
                   {% if allow_editing %}
                     <div class="entity-edit-controls">
@@ -127,9 +128,9 @@
                       <a href="javascript:void(0)"
                         ng-click="openEditEntity()"
                         ng-show="!editing">
-                        Edit
+                        <span class="glyphicon glyphicon-pencil"></span>
                       </a>
-                      <button ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                      <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
                       <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
                         Cancel
                       </a>

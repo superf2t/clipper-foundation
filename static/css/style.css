@@ -29,14 +29,26 @@ html, body {
   font-weight: bold;
 }
 
+
+
 #my-account-link {
   text-align: right;
   padding: 4px 30px;
 }
 
+#my-account-link a:hover {
+  text-decoration: none;
+}
+
 .upper-nav {
   width: 100%;
   height: 30px;
+}
+
+#edit-title-btn {
+  background-color: #FFFFFF;
+  position: relative;
+  top: -2px;
 }
 
 #lower-navbar {
@@ -53,11 +65,19 @@ html, body {
 
 .navigation-link {
   text-align: center;
-  padding: 10px 0px;
+  padding: 11px 0px;
+}
+
+.navigation-link:hover {
+  background-color: #2D73A0;
 }
 
 .navigation-link a {
   color: #FFFFFF;
+}
+
+.navigation-link a:hover {
+  text-decoration: none;
 }
 
 #url-box input {
@@ -75,10 +95,20 @@ html, body {
 .nav-btn {
   background-color: #3b97d3;
   color: #FFFFFF;
+  border-color: #2D73A0;
+}
+
+.nav-btn:hover {
+  background-color: #2D73A0;
+  color: #FFFFFF;
+  border-color: #2D73A0;
 }
 
 #trip-plan-title-input {
-  width: 60%;
+  width: 300px;
+  height: 24px;
+  position: relative;
+  top: -1px;
 }
 
 .pencil-edit {
@@ -93,14 +123,25 @@ html, body {
   margin-top: 73px;
 }
 
-.columns:hover .one-entity:hover {
-  border: 1px solid #A4C5F3;
+.one-entity-type {
+  margin-bottom: 20px;
 }
 
 .entity-type-header {
   cursor: pointer;
   margin: 0px;
-  padding: 10px 20px;
+  padding: 10px 10px;
+}
+
+.entity-type-header a:hover {
+  text-decoration: none;
+}
+
+.toggle-chevron {
+  position: relative;
+  font-size: 0.6em;
+  float: right;
+  top: 6px;
 }
 
 .columns {
@@ -114,31 +155,44 @@ html, body {
   column-gap: 10px;
   column-fill: auto;
   height: 100%;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
 .one-entity {
-  background: #FFFFFF;
+  background-color: #FFFFFF;
   border: 1px solid #DDDDDD;
   border-radius: 4px;
-  margin: 0 2px 15px;
+  margin: 0 0px 10px;
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
   column-break-inside: avoid;
-  padding: 5px 10px;
   background: -webkit-linear-gradient(45deg, #FFF, #F9F9F9);
-  opacity: 1;  
+  opacity: 1;
+  padding-bottom: 5px;
+}
+
+.columns:hover .one-entity:hover {
+  /*border: 1px solid #A4C5F3;*/
 }
 
 .one-entity-title {
   margin: 5px;
-  font-size: 1.2em;
+  font-size: 1.1em;
+  text-align: center;
 }
 
 .one-entity-type-img {
   float: right;
   position: relative;
   top: -3px;
+}
+
+.one-entity-rating {
+  margin: 5px 5px;
+}
+
+.one-entity-source {
+  margin: 5px 5px;
 }
 
 .entity-img {
@@ -148,18 +202,42 @@ html, body {
 }
 
 .entity-description {
+  margin: 5px;
   padding-top: 10px;
   padding-bottom: 10px;
 }
 
 .entity-edit-controls {
+  position: relative;
+  float: right;
   text-align: right;
-  padding-top: 5px;
+  margin: 5px 5px;
+  top: -30px;
 }
 
 .entity-description-input {
-  width: 100%;
+  width: calc(100% - 10px);
+  margin: 10px 5px;
+  padding: 5px;
 }
+
+.btn-save-changes {
+  padding: 2px 3px;
+  position: relative;
+  top: -1px;
+  background-color: #3b97d3;
+  color: #FFFFFF;
+  border-color: #2D73A0;
+}
+
+.btn-save-changes:hover {
+  background-color: #2D73A0;
+  color: #FFFFFF;
+  border-color: #2D73A0;
+}
+
+
+
 
 .left-footer {
   margin-top: 20px;
