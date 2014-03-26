@@ -148,7 +148,7 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
   };
 }
 
-function EntityCtrl($scope, $http) {
+function EntityCtrl($scope, $http, $tripPlanSettings) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -168,7 +168,25 @@ function EntityCtrl($scope, $http) {
       alert('Failed to save edits');
     });
     $scope.editing = false;
-  }
+  };
+
+  $scope.deleteEntity = function() {
+    var deleteRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'source_url': $scope.entityModel.data['source_url']
+    };
+    $http.post('/deleteentity', deleteRequest)
+      .success(function(response) {
+        if (response['status'] == 'Success') {
+          $scope.refresh();
+        } else {
+          alert('Failed to delete entity');
+        }
+      })
+      .error(function() {
+        alert('Failed to delete entity')
+      });
+  };
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings) {
@@ -265,7 +283,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
       .error(opt_errorCallback);
   };
 
-  this.refresh = function() {
+  this.refresh = $scope.refresh = function() {
     if ($scope.refreshState.paused) {
       return;
     }
@@ -354,7 +372,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings) {
     .directive('ngScrollToOnClick', ngScrollToOnClick)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', RootCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
-    .controller('EntityCtrl', ['$scope', '$http', EntityCtrl])
+    .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .filter('hostname', function() {

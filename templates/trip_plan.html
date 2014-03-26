@@ -120,6 +120,11 @@
                   {% if allow_editing %}
                     <div class="entity-edit-controls">
                       <a href="javascript:void(0)"
+                        ng-click="deleteEntity()"
+                        ng-show="!editing">
+                        <span class="glyphicon glyphicon-trash"></span>
+                      </a>
+                      <a href="javascript:void(0)"
                         ng-click="openEditEntity()"
                         ng-show="!editing">
                         Edit

@@ -80,6 +80,11 @@ class TripPlan(serializable.Serializable):
             return ''
         return json.dumps([e.to_json_obj() for e in entities])
 
+    def remove_entity_by_source_url(self, source_url):
+        for i in range(len(self.entities)):
+            if self.entities[i].source_url == source_url:
+                return self.entities.pop(i)
+
     def settings_json(self):
         return EditTripPlanRequest(self.trip_plan_id, name=self.name).to_json_str()
 
@@ -113,6 +118,26 @@ class EditTripPlanRequest(serializable.Serializable):
     def initialize(self):
         if self.trip_plan_id_str:
             self.trip_plan_id = int(self.trip_plan_id_str)
+
+
+class DeleteEntityRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'trip_plan_id_str', 'source_url')
+
+    # We have a separate field for the id as a string because javascript
+    # truncates long ints
+    def __init__(self, trip_plan_id=None, trip_plan_id_str=None, source_url=None):
+        self.source_url = source_url
+        if trip_plan_id_str:
+            self.trip_plan_id_str = trip_plan_id_str
+            self.trip_plan_id = int(trip_plan_id_str)
+        else:
+            self.trip_plan_id = trip_plan_id
+            self.trip_plan_id_str = str(trip_plan_id)
+
+    def initialize(self):
+        if self.trip_plan_id_str:
+            self.trip_plan_id = int(self.trip_plan_id_str)
+
 
 class SessionInfo(object):
     def __init__(self, email=None, active_trip_plan_id=None, sessionid=None, set_on_response=False):

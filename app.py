@@ -79,6 +79,7 @@ def trip_plan_ajax(trip_plan_id):
     trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     return json.jsonify(trip_plan=trip_plan and trip_plan.to_json_obj())
 
+# TODO: Rewrite this to pass the trip plan id as an input.
 @app.route('/editentity', methods=['POST'])
 def editentity():
     session_info = decode_session(request.cookies)
@@ -91,10 +92,29 @@ def editentity():
     trip_plan = data.load_trip_plan(session_info)
     if not trip_plan:
         raise Exception('No trip plan found for this session')
+    if not trip_plan.editable_by(session_info):
+        raise Exception('Trip plan not editable by current user')
     for i, entity in enumerate(trip_plan.entities):
         if entity.source_url == input_entity.source_url:
             trip_plan.entities[i] = input_entity
             break
+    data.save_trip_plan(trip_plan)
+    return json.jsonify(status='Success')
+
+@app.route('/deleteentity', methods=['POST'])
+def deleteentity():
+    session_info = decode_session(request.cookies)
+    if not session_info.user_identifier:
+        raise Exception('No sessionid found')
+    delete_request = data.DeleteEntityRequest.from_json_obj(request.json)
+    if not delete_request:
+        raise Exception('Could not parse a delete request from the input')
+    trip_plan = data.load_trip_plan_by_id(delete_request.trip_plan_id)
+    if not trip_plan:
+        raise Exception('No trip plan found')
+    if not trip_plan.editable_by(session_info):
+        raise Exception('Trip plan not editable by current user')
+    trip_plan.remove_entity_by_source_url(delete_request.source_url)
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
