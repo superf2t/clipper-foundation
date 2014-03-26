@@ -6,63 +6,92 @@
       right: 20px;
       z-index: 10000;
       width: 300px;
-      height: 100px;
+      height: 200px;
       padding: 10px;
-      background-color: #ADBBC9;
-      font-family: Arial sans-serif;
-      font-size: 12pt;
+      background-color: #FFFFFF;
+      font-family: 'Arial', 'sans-serif';
+      font-size: 11pt;
       font-weight: normal;
-      opacity: 0.8;
+      opacity: 0.9;
       border-radius: 5px;
-      border: 1px solid black;
     }
     .__tc-title {
       font-weight: bold;
-      font-size: 14pt;
+      font-size: 12pt;
+      color: #3b97d3;
+      padding: 10px;
+    }
+    .__tc-clip-result {
+      padding: 10px;
     }
     .__tc-inline-trip-plan-name {
-      font-style: italic;
+      font-style: bold;
     }
     .__tc-active-trip-plan-chooser {
-      padding-top: 10px;
+      padding: 10px;
+    }
+    .__tc-select-prompt {
+      margin-bottom: 5px;
+    }
+    .__tc-submit-btn {
+      position: relative;
+      left: 220px;
+      top: -25px;
+      background-color: #3b97d3;
+      color: #FFFFFF;
+      border-color: #2D73A0;
+      display: inline-block;
+      margin-bottom: 0;
+      font-weight: 400;
+      text-align: center;
+      vertical-align: middle;
+      cursor: pointer;
+      background-image: none;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      padding: 4px 6px;
+      line-height: 1.42857143;
+      border-radius: 4px;
+      overflow: visible;
     }
   </style>
   <div class="__tc-modal">
-    <div class="__tc-title">Clipper Results</div>
+    <div class="__tc-title">Travel Clipper</div>
     {% if clip_result.status == clip_result.STATUS_SUCCESS_KNOWN_SOURCE %}
-      <div>
+      <div class="__tc-clip-result">
         Successfully clipped "{{clip_result.entity.name}}" to
         <span class="__tc-inline-trip-plan-name">{{clip_result.trip_plan.name}}</span>
-        <a href="javascript:void(0)">undo</a>
+        <br>
+        <br>
+        Made a mistake? <a href="javascript:void(0)">Undo</a>
       </div>
     {% elif clip_result.status == clip_result.STATUS_SAVED_FOR_LATER %}
-      <div>
-        We don't recognize this website so we've saved this url for you to clip manually.  Visit <a href="{{base_url}}">TravelClipper</a> when you're done clipping.
+      <div class="__tc-clip-result">
+        We don't recognize this website so we've saved this URL for you to clip manually.  Visit <a href="{{base_url}}">TravelClipper</a> when you're done clipping.
       </div>
     {% elif clip_result.status == clip_result.STATUS_ALREADY_CLIPPED_URL %}
-      <div>You've already clipped this page to your trip plan.</div>
+      <div class="__tc-clip-result">You've already clipped this page to your trip plan.</div>
     {% else %}
-      <div>An error occurred during clipping.  Please try again.</div>
+      <div class="__tc-clip-result">An error occurred during clipping.  Please try again.</div>
     {% endif %}
     {% if clip_result.trip_plan %}
       <div class="__tc-active-trip-plan-chooser">
         <div>
-          Active trip plan: <span>{{clip_result.trip_plan.name}}</span>.
-        </div>
-        <div>
-          <div>
-            Change:
-            <select>
-              {% for trip_plan in all_trip_plans %}
-              <option>{{trip_plan.name}}</option>
-              {% endfor %}
-              <option>Create new trip plan</option>
-            </select>
+          <div class="__tc-select-prompt">
+            Select a different trip plan?
           </div>
-          <div>
-            <button>
-          </div>
+          <select>
+            {% for trip_plan in all_trip_plans %}
+            <option>{{trip_plan.name}}</option>
+            {% endfor %}
+            <option>Create new trip plan</option>
+          </select>
         </div>
+        <a href="javascript:void(0)">
+          <div class="__tc-submit-btn">
+            Submit
+          </div>
+        </a>
       </div>
     {% endif %}
   </div>

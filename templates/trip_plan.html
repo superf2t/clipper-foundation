@@ -37,14 +37,22 @@
   <nav class="navbar navbar-fixed-top" id="lower-navbar">
     <div class="lower-nav container" ng-controller="NavigationCtrl">
       <div class="row">
-        <div class="col-md-1 navigation-link">
-          <a href="javascript:void(0)" ng-scroll-to-on-click="'Hotel'">Hotels</a>
-        </div>
-        <div class="col-md-1 navigation-link">
-          <a href="javascript:void(0)" ng-scroll-to-on-click="'Restaurant'">Restaurants</a>
-        </div>
-        <div class="col-md-1 navigation-link">
-          <a href="javascript:void(0)" ng-scroll-to-on-click="'Attraction'">Attractions</a>
+        <div class="entity-nav">
+          <a href="javascript:void(0)" ng-scroll-to-on-click="'Hotel'">
+            <div class="col-md-1 navigation-link">
+              Hotels
+            </div>
+          </a>
+          <a href="javascript:void(0)" ng-scroll-to-on-click="'Restaurant'">
+            <div class="col-md-1 navigation-link">
+              Restaurants
+            </div>
+          </a>
+          <a href="javascript:void(0)" ng-scroll-to-on-click="'Attraction'">
+            <div class="col-md-1 navigation-link">
+              Attractions
+            </div>
+          </a>
         </div>
         <div class="col-md-6" id="url-box">
           <input type="text" class="form-control"
@@ -87,7 +95,7 @@
           <div class="one-entity-type">
             <a id="[[entityType]]" class="offset-anchor"></a>
             <h3 ng-click="toggleSection()" class="entity-type-header">
-              <a href="javascript:void(0)">[[entityType]]
+              <a href="javascript:void(0)">[[entityType]]s
                 <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
                 <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
               </a>
@@ -175,7 +183,7 @@
   <script type="text/ng-template" id="clipping-modal-template">
     <div class="clipping-status-modal">
       <div ng-show="clipState.clipping">
-        Clipping...
+        Clipping to your trip plan...
         <div>
           <img src="/static/img/spinner.gif"/>
         </div>
@@ -188,7 +196,7 @@
           Successfully clipped "[[clipState.entity['name'] ]]""
         </div>
         <div ng-if="clipState.statusCode == 2">
-          We don't recognize this website so we've saved this url for you to clip manually.
+          We don't recognize this website so we've saved this URL for you to clip manually.
         </div>
         <div ng-if="clipState.statusCode == 3">
           You've already clipped this page to your trip plan.

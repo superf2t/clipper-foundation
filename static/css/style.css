@@ -63,6 +63,10 @@ html, body {
   height: 42px;
 }
 
+.entity-nav a {
+  color: #FFFFFF;
+}
+
 .navigation-link {
   text-align: center;
   padding: 11px 0px;
@@ -70,10 +74,6 @@ html, body {
 
 .navigation-link:hover {
   background-color: #2D73A0;
-}
-
-.navigation-link a {
-  color: #FFFFFF;
 }
 
 .navigation-link a:hover {

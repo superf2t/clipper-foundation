@@ -44,10 +44,20 @@
   function showSpinner() {
     var spinnerDiv = $('<div>').css({
       position: 'fixed',
-      top: 50,
-      right: 50,
-      zIndex: 10000
-    }).append($('<img>').attr('src', absUrl('/static/img/spinner.gif')));
+      top: 20,
+      right: 20,
+      zIndex: 10000,
+      width: 300,
+      height: 200,
+      padding: 10,
+      backgroundColor: '#FFFFFF',
+      opacity: 0.9,
+      borderRadius: 4      
+    }).append($('<img>').attr('src', absUrl('/static/img/spinner.gif')).css({
+      position: 'relative',
+      top: 25,
+      left: 50
+    }));
     window['__tcSpinner'] = spinnerDiv;
     $(document.body).append(spinnerDiv);
   }
