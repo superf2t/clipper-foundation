@@ -125,7 +125,9 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     });
   });
   // TODO: Move this after all have initialized.
-  $map.fitBounds($mapBounds);
+  if (!$mapBounds.isEmpty()) {
+    $map.fitBounds($mapBounds);
+  }
 
   $scope.toggleSection = function() {
     $scope.show = !$scope.show;
@@ -343,8 +345,8 @@ function NavigationCtrl($scope, $location, $anchorScroll) {
 
 function createMap() {
   var mapOptions = {
-    center: new google.maps.LatLng(-25.363882,131.044922),
-    zoom: 8
+    center: new google.maps.LatLng(0, 0),
+    zoom: 2
   };
   return new google.maps.Map($('#map')[0], mapOptions);
 }
