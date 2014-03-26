@@ -40,3 +40,6 @@ local_data/*
 
 # Local Settings
 constants_override.py
+
+# Mac OS
+.DS_Store
