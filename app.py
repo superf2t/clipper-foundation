@@ -42,6 +42,15 @@ def clip():
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
+@app.route('/clip_ajax/<int:trip_plan_id>', methods=['POST'])
+def clip_ajax(trip_plan_id):
+    session_info = decode_session(request.cookies)
+    url = request.json['url']
+    clip_result = handle_clipping(url, session_info)
+    response = json.jsonify(clip_status=clip_result.status,
+        entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
+    return process_response(response, request, session_info)
+
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
     session_info = decode_session(request.cookies)

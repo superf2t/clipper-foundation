@@ -44,7 +44,13 @@
         <div class="col-md-1 navigation-link">
           <a href="javascript:void(0)" ng-scroll-to-on-click="'Attraction'">Attractions</a>
         </div>
-        <div class="col-md-6" id="url-box"><input type="text" class="form-control" placeholder="Enter a URL to add to your clipboard"/></div>
+        <div class="col-md-6" id="url-box">
+          <input type="text" class="form-control"
+            placeholder="Paste a URL to add to your trip plan"
+            ng-model="clipState.url"
+            ng-disabled="clipState.clipping"
+            ng-paste="clipUrlChanged()"/>
+        </div>
         <div class="col-me-3" id="list-map-btns">
           <button type="button" class="btn btn-default btn-sm nav-btn">
             <span class="glyphicon glyphicon-picture"></span>
@@ -159,6 +165,31 @@
       </div>
     </div>
   </div>
+
+  <script type="text/ng-template" id="clipping-modal-template">
+    <div class="clipping-status-modal">
+      <div ng-show="clipState.clipping">
+        Clipping...
+        <div>
+          <img src="/static/img/spinner.gif"/>
+        </div>
+      </div>
+      <div ng-show="!clipState.clipping">
+        <div ng-if="clipState.statusCode == 0">
+          An error occurred during clipping.  Please try again.
+        </div>
+        <div ng-if="clipState.statusCode == 1">
+          Successfully clipped "[[clipState.entity['name'] ]]""
+        </div>
+        <div ng-if="clipState.statusCode == 2">
+          We don't recognize this website so we've saved this url for you to clip manually.
+        </div>
+        <div ng-if="clipState.statusCode == 3">
+          You've already clipped this page to your trip plan.
+        </div>
+      </div>
+    </div>
+  </script>
 
   <script>
     initApp({{plan.to_json_str()|safe}}, {{plan.settings_json()|safe}});
