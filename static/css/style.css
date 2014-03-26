@@ -20,7 +20,9 @@ html, body {
 }
 
 #logo {
-  padding: 4px 30px;
+  padding: 3px 30px;
+  font-family: 'Raleway';
+  font-size: 1.2em;
 }
 
 #trip-plan-title {

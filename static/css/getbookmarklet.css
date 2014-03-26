@@ -1,0 +1,65 @@
+html, body {
+  width: 100%;
+  font-family: 'Roboto';
+}
+
+body {
+  background-image: url(/static/img/bookmarklet-bg-md.jpg);
+}
+
+.logo {
+  font-family: 'Raleway';
+  font-size: 3.0em;
+  color: #f8f8f8;
+  margin: 0 15px;
+  padding: 20px 0px;
+}
+
+.clipper-install-directions {
+  background: #f8f8f8;
+  padding: 30px 30px;
+  margin: 0 15px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 0 #fff;
+  color: #000000;
+  font-size: 1.1em;
+}
+
+.plan-trip-directions {
+  margin-top: 40px;
+}
+
+.directions-step {
+  background: #f8f8f8;
+  padding: 30px 30px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 0 #fff;
+  color: #000000;
+}
+
+.step-title {
+  font-family: 'Raleway';
+  font-size: 1.3em;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.detail {
+  font-size: 1.1em;
+}
+
+.btn-bookmarklet {
+  margin-right: 20px;
+}
+
+@media (min-width: 1441px) {
+  body {
+    background-image: url(/static/img/bookmarklet-bg-lg.jpg);
+  }
+}
+
+@media (max-width: 1440px) and (min-width: 901px) {
+  body {
+    background-image: url(/static/img/bookmarklet-bg-long.jpg);
+  }
+}

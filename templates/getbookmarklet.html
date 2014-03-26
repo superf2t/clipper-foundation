@@ -2,13 +2,56 @@
 <html>
 <head>
   <title>Travel Clipper</title>
-  <link type="text/css" rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/getbookmarklet.css">
 </head>
 <body>
-  <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
-    Travel Clipper
-  </a> (drag me to your bookmarks bar)
+  <div class="container">
+    <div class="row">
+      <div class="logo">
+        Travel Clipper
+      </div>
+      <div class="clipper-install-directions">
+        <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
+          <button class="btn btn-primary btn-bookmarklet">
+            Travel Clipper
+          </button>
+        </a> <-- Drag me to your Bookmarks Bar to get started
+      </div>
+      <div class="plan-trip-directions">
+        <div class="col-md-4">
+          <div class="directions-step">
+            <div class="step-title"> 
+              Visit Travel Sites Across the Web
+            </div>
+            <p class="detail">
+              Look up prospective points of interest on Hotels.com, Airbnb, Yelp, Tripadvisor, and other popular travel websites
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="directions-step">
+            <div class="step-title">
+              Clip Points of Interest Instantly
+            </div>
+            <p class="detail">
+              Save by clicking the clipper in your browser bookmarks or pasting the URL of the website onto your Trip Plan
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="directions-step">
+            <div class="step-title">
+              Instantly Create Your Trip Plan
+            </div>
+            <p class="detail">
+              Browse your points of interest on Guide and Map view - use your Trip Plan to organize and plan your next vacation
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
