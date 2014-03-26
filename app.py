@@ -1,4 +1,5 @@
 import struct
+import re
 import uuid
 
 from flask import Flask
@@ -24,6 +25,8 @@ if not debug:
     file_handler = logging.FileHandler(projectpath + '/app.log')
     file_handler.setLevel(logging.WARNING)
     app.logger.addHandler(file_handler)
+
+EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
 
 @app.route('/')
 def home():
@@ -177,8 +180,9 @@ def edittripplan():
 def login_and_migrate_ajax():
     session_info = decode_session(request.cookies)
     email = request.json['email']
-    if not email:
-        raise Exception('Invalid email during login')
+    if not email or not EMAIL_RE.match(email):
+        return json.jsonify(status='Invalid email')
+    email = email.lower()
     if not session_info.email:
         all_trip_plans = data.load_all_trip_plans(session_info) or []
         for trip_plan in all_trip_plans:

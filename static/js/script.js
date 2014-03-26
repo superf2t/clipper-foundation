@@ -380,6 +380,8 @@ function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettin
         .success(function(response) {
           if (response['status'] == 'Success') {
             location.href = location.href;
+          } else if (response['status'] == 'Invalid email') {
+            alert('Please enter a valid email address');
           } else {
             alert('Login failed')
           }
@@ -395,6 +397,10 @@ function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettin
   };
 
   $scope.createNewTripPlan = function() {
+    if (!$scope.accountInfo.loggedIn) {
+      alert('Please log in before creating additional trip plans');
+      return;
+    }
     $http.post('/new_trip_plan_ajax', {})
       .success(function(response) {
         var newTripPlanIdStr = response['new_trip_plan_id_str'];
