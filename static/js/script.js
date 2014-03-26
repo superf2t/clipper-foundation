@@ -121,7 +121,7 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
-      entityModel.infowindow.open($map, marker);
+      entityModel.makeInfowindow().open($map, marker);
     });
   });
   // TODO: Move this after all have initialized.
