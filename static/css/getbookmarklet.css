@@ -25,8 +25,13 @@ body {
   font-size: 1.1em;
 }
 
+#btn-bookmarklet {
+  margin-right: 20px;
+}
+
 .plan-trip-directions {
   margin-top: 40px;
+  height: 200px;
 }
 
 .directions-step {
@@ -48,8 +53,19 @@ body {
   font-size: 1.1em;
 }
 
-.btn-bookmarklet {
-  margin-right: 20px;
+.call-to-action {
+  margin-top: 100px;
+  text-align: center;
+  color: #ffffff;
+}
+
+.call-to-action a {
+  color: #ffffff;
+}
+
+#cta-btn {
+  font-size: 1.6em;
+  font-family: 'Raleway';
 }
 
 @media (min-width: 1441px) {
