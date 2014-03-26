@@ -58,6 +58,26 @@ def clip_ajax(trip_plan_id):
         entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
     return process_response(response, request, session_info)
 
+@app.route('/undoclip')
+def undoclip():
+    session_info = decode_session(request.cookies)
+    url = request.values['url']
+    clip_status = ClipResult.STATUS_ERROR
+    trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
+    if not trip_plan:
+        clip_status.ClipResult.STATUS_NO_TRIP_PLAN_FOUND
+        entity = None
+    else:
+        entity = trip_plan.remove_entity_by_source_url(url)
+        data.save_trip_plan(trip_plan)
+        clip_status = ClipResult.STATUS_UNDO_SUCCESS
+    clip_result = ClipResult(clip_status, entity=entity, trip_plan=trip_plan)
+    all_trip_plans = data.load_all_trip_plans(session_info)
+    modal_html = render_template('clipper_results_modal.html',
+        clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
+    response = make_jsonp_response(request, {'html': modal_html})
+    return process_response(response, request, session_info)
+
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
     session_info = decode_session(request.cookies)
@@ -222,6 +242,8 @@ class ClipResult(object):
     STATUS_SUCCESS_KNOWN_SOURCE = 1
     STATUS_SAVED_FOR_LATER = 2
     STATUS_ALREADY_CLIPPED_URL = 3
+    STATUS_NO_TRIP_PLAN_FOUND = 4
+    STATUS_UNDO_SUCCESS = 5
 
     def __init__(self, status, entity=None, trip_plan=None):
         self.status = status

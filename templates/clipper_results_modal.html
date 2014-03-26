@@ -61,9 +61,13 @@
       <div class="__tc-clip-result">
         Successfully clipped "{{clip_result.entity.name}}" to
         <span class="__tc-inline-trip-plan-name">{{clip_result.trip_plan.name}}</span>
-        <br>
-        <br>
-        Made a mistake? <a href="javascript:void(0)">Undo</a>
+        <br/>
+        <br/>
+        Made a mistake?
+        <a href="javascript:void(0)"
+          onclick="__tch.undoClip(location.href)">
+          Undo
+        </a>
       </div>
     {% elif clip_result.status == clip_result.STATUS_SAVED_FOR_LATER %}
       <div class="__tc-clip-result">
@@ -71,6 +75,12 @@
       </div>
     {% elif clip_result.status == clip_result.STATUS_ALREADY_CLIPPED_URL %}
       <div class="__tc-clip-result">You've already clipped this page to your trip plan.</div>
+    {% elif clip_result.status == clip_result.STATUS_NO_TRIP_PLAN_FOUND %}
+      <div class="__tc-clip-result">We couldn't find a trip plan.</div>
+    {% elif clip_result.status == clip_result.STATUS_UNDO_SUCCESS %}
+      <div class="__tc-clip-result">
+        Successfully removed "{{clip_result.entity.name}}" from
+        <span class="__tc-inline-trip-plan-name">{{clip_result.trip_plan.name}}</span>
     {% else %}
       <div class="__tc-clip-result">An error occurred during clipping.  Please try again.</div>
     {% endif %}
