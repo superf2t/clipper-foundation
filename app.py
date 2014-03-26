@@ -78,6 +78,23 @@ def undoclip():
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
+@app.route('/make_active/<int:trip_plan_id>')
+def make_active(trip_plan_id):
+    session_info = decode_session(request.cookies)
+    if trip_plan_id == 0:
+        new_trip_plan_id = generate_trip_plan_id()
+        session_info.active_trip_plan_id = new_trip_plan_id
+        session_info.set_on_response = True
+        trip_plan = create_default_trip_plan(session_info)
+        data.save_trip_plan(trip_plan)
+    else:
+        trip_plan = data.load_trip_plan_by_id(trip_plan_id)
+        if trip_plan and trip_plan.editable_by(session_info) and trip_plan_id != session_info.active_trip_plan_id:
+            session_info.active_trip_plan_id = trip_plan_id
+            session_info.set_on_response = True
+    response = render_template('make_active_response.html')
+    return process_response(response, request, session_info)
+
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
     session_info = decode_session(request.cookies)

@@ -6,7 +6,7 @@
       right: 20px;
       z-index: 10000;
       width: 300px;
-      height: 200px;
+      height: 250px;
       padding: 10px;
       background-color: #FFFFFF;
       font-family: 'Arial', 'sans-serif';
@@ -55,12 +55,49 @@
       overflow: visible;
     }
   </style>
+  <script>
+    (function() {
+      function elem(id) {
+        return document.getElementById(id);
+      }
+
+      function hide(id) {
+        elem(id).style.display = 'none';
+      }
+
+      function show(id) {
+        elem(id).style.display = '';
+      }
+
+      function selectTripPlan() {
+        var selectElem = document.getElementById('__tc-trip-plans');
+        var tripPlanId = selectElem[selectElem.selectedIndex].value;
+        var url = '{{base_url}}/make_active/' + tripPlanId;
+        var popup = window.open(url);
+        popup.onunload = function() {
+          if (tripPlanId == '0') {
+            hide('__tc-change-trip-plan-confirmation');
+            show('__tc-new-trip-plan-confirmation');
+          } else {
+            hide('__tc-new-trip-plan-confirmation');
+            var tripPlanName = selectElem[selectElem.selectedIndex].getAttribute('tc:trip-plan-name');
+            show('__tc-change-trip-plan-confirmation');
+            elem('__tc-active-trip-plan-confirmation-plan-name').innerHTML = tripPlanName;
+          }
+        }
+      }
+
+      window['__tcSelectTripPlan'] = selectTripPlan;
+    })();
+  </script>
   <div class="__tc-modal">
     <div class="__tc-title">Travel Clipper</div>
     {% if clip_result.status == clip_result.STATUS_SUCCESS_KNOWN_SOURCE %}
       <div class="__tc-clip-result">
         Successfully clipped "{{clip_result.entity.name}}" to
-        <span class="__tc-inline-trip-plan-name">{{clip_result.trip_plan.name}}</span>
+        <span class="__tc-inline-trip-plan-name">
+          <a href="{{clip_result.trip_plan.trip_plan_url()}}" target="_blank">{{clip_result.trip_plan.name}}</a>
+        </span>
         <br/>
         <br/>
         Made a mistake?
@@ -80,7 +117,10 @@
     {% elif clip_result.status == clip_result.STATUS_UNDO_SUCCESS %}
       <div class="__tc-clip-result">
         Successfully removed "{{clip_result.entity.name}}" from
-        <span class="__tc-inline-trip-plan-name">{{clip_result.trip_plan.name}}</span>
+        <span class="__tc-inline-trip-plan-name">
+          <a href="{{clip_result.trip_plan.trip_plan_url()}}" target="_blank">{{clip_result.trip_plan.name}}</a>
+        </span>
+      </div>
     {% else %}
       <div class="__tc-clip-result">An error occurred during clipping.  Please try again.</div>
     {% endif %}
@@ -90,18 +130,34 @@
           <div class="__tc-select-prompt">
             Select a different trip plan?
           </div>
-          <select>
+          <select id="__tc-trip-plans">
             {% for trip_plan in all_trip_plans %}
-            <option>{{trip_plan.name}}</option>
+            <option value="{{trip_plan.trip_plan_id}}"
+              tc:trip-plan-name="{{trip_plan.name}}"
+              {% if trip_plan.trip_plan_id == clip_result.trip_plan.trip_plan_id %}
+              selected="1"
+              {% endif %}
+              >
+              {{trip_plan.name}}
+            </option>
             {% endfor %}
-            <option>Create new trip plan</option>
+            <option value="0">Create new trip plan</option>
           </select>
         </div>
         <a href="javascript:void(0)">
-          <div class="__tc-submit-btn">
+          <div class="__tc-submit-btn" onclick="__tcSelectTripPlan()">
             Submit
           </div>
         </a>
+        <div id="__tc-change-trip-plan-confirmation" style="display:none">
+          Successfully changed the active trip plan to
+          "<span id="__tc-active-trip-plan-confirmation-plan-name"></span>"
+        </div>
+        <div id="__tc-new-trip-plan-confirmation" style="display:none">
+          Successfully created a new trip plan for your future clippings.
+          Visit <a href="{{base_url}}/trip_plan">{{base_url}}/trip_plan</a>
+          to view and edit it.
+        </div>
       </div>
     {% endif %}
   </div>

@@ -104,6 +104,9 @@ class TripPlan(serializable.Serializable):
     def editable_by(self, session_info):
         return str(self.creator) in (session_info.email, str(session_info.sessionid))
 
+    def trip_plan_url(self):
+        return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
+
 class TripPlanSettings(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
 
