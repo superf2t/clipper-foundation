@@ -30,7 +30,9 @@ EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[
 
 @app.route('/')
 def index():
-    return render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
+    session_info = decode_session(request.cookies)
+    response = render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
+    return process_response(response, request, session_info)
 
 @app.route('/clip')
 def clip():
