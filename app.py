@@ -29,20 +29,16 @@ if not debug:
 EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
 
 @app.route('/')
-def home():
-    return render_template('home.html')
-
-@app.route('/clipper')
-def clipper():
-    return render_template('clipper.html')
+def index():
+    return render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
 
 @app.route('/clip')
 def clip():
     session_info = decode_session(request.cookies)
     url = request.values['url']
     if not data.load_trip_plan_by_id(session_info.active_trip_plan_id):
-        data.create_default_trip_plan(session_info)
-    clip_result = handle_clipping(url, session_info.active_trip_plan_id)
+        create_and_save_default_trip_plan(session_info)
+    clip_result = handle_clipping(url, session_info.active_trip_plan_id, session_info)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = render_template('clipper_results_modal.html',
         clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
@@ -53,7 +49,7 @@ def clip():
 def clip_ajax(trip_plan_id):
     session_info = decode_session(request.cookies)
     url = request.json['url']
-    clip_result = handle_clipping(url, trip_plan_id)
+    clip_result = handle_clipping(url, trip_plan_id, session_info)
     response = json.jsonify(clip_status=clip_result.status,
         entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
     return process_response(response, request, session_info)
@@ -85,8 +81,7 @@ def make_active(trip_plan_id):
         new_trip_plan_id = generate_trip_plan_id()
         session_info.active_trip_plan_id = new_trip_plan_id
         session_info.set_on_response = True
-        trip_plan = create_default_trip_plan(session_info)
-        data.save_trip_plan(trip_plan)
+        trip_plan = create_and_save_default_trip_plan(session_info)
     else:
         trip_plan = data.load_trip_plan_by_id(trip_plan_id)
         if trip_plan and trip_plan.editable_by(session_info) and trip_plan_id != session_info.active_trip_plan_id:
@@ -106,7 +101,6 @@ def trip_plan():
     trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
     if not trip_plan:
         trip_plan = create_default_trip_plan(session_info)
-        data.save_trip_plan(trip_plan)
     response = redirect('/trip_plan/%s' % session_info.active_trip_plan_id)
     return process_response(response, request, session_info)
 
@@ -147,8 +141,7 @@ def new_trip_plan_ajax():
     new_trip_plan_id = generate_trip_plan_id()
     session_info.active_trip_plan_id = new_trip_plan_id
     session_info.set_on_response = True
-    trip_plan = create_default_trip_plan(session_info)
-    data.save_trip_plan(trip_plan)
+    trip_plan = create_and_save_default_trip_plan(session_info)
     response = json.jsonify(new_trip_plan_id_str=str(session_info.active_trip_plan_id))
     return process_response(response, request, session_info)
 
@@ -222,7 +215,10 @@ def login_and_migrate_ajax():
     if not email or not EMAIL_RE.match(email):
         return json.jsonify(status='Invalid email')
     email = email.lower()
-    if not session_info.email:
+    if session_info.email:
+        session_info.active_trip_plan_id = None
+        session_info.clear_active_trip_plan_id = True
+    else:
         all_trip_plans = data.load_all_trip_plans(session_info) or []
         for trip_plan in all_trip_plans:
             data.change_creator(trip_plan, email)
@@ -236,14 +232,6 @@ def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
     response.headers['Content-Type'] = 'application/javascript'
     return response
-
-@app.route('/getbookmarklet')
-def getbookmarklet():
-    template_vars = {
-        'bookmarklet_url': constants.BASE_URL + '/bookmarklet.js'
-    }
-    return render_template('getbookmarklet.html', **template_vars)
-
 
 @app.route('/trip_plan_kauai')
 def trip_plan_kauai():
@@ -267,14 +255,18 @@ class ClipResult(object):
         self.entity = entity
         self.trip_plan = trip_plan
 
-def create_default_trip_plan(session_info):
-    return data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
+def create_and_save_default_trip_plan(session_info):
+    trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
+    data.save_trip_plan(trip_plan)
+    return trip_plan
 
-def handle_clipping(url, trip_plan_id):
+def handle_clipping(url, trip_plan_id, session_info):
     trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     result = None
     if not trip_plan:
         raise Exception('No trip plan found with id %s' % trip_plan_id)
+    if not trip_plan.editable_by(session_info):
+        raise Exception('User does not have permission to clip to this trip plan')
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
     scr = scraper.build_scraper(url)
@@ -329,6 +321,8 @@ def process_response(response, request=None, session_info=None):
             set_cookie(response, 'email', session_info.email)
         if session_info.active_trip_plan_id and session_info.active_trip_plan_id != request.cookies.get('active_trip_plan_id'):
             set_cookie(response, 'active_trip_plan_id', str(session_info.active_trip_plan_id))
+        elif session_info.clear_active_trip_plan_id:
+            set_cookie(response, 'active_trip_plan_id', '')
         if session_info.sessionid and session_info.sessionid != request.cookies.get('sessionid'):
             set_cookie(response, 'sessionid', str(session_info.sessionid))
     return response

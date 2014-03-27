@@ -25,6 +25,11 @@ html, body {
   font-size: 1.2em;
 }
 
+#logo a, #logo a:hover {
+  color: #000;
+  text-decoration: none;
+}
+
 #trip-plan-title {
   text-align: center;
   font-size: 14pt;
