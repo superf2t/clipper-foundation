@@ -101,7 +101,7 @@ def trip_plan():
     session_info = decode_session(request.cookies)
     trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
     if not trip_plan:
-        trip_plan = create_default_trip_plan(session_info)
+        trip_plan = create_and_save_default_trip_plan(session_info)
     response = redirect('/trip_plan/%s' % session_info.active_trip_plan_id)
     return process_response(response, request, session_info)
 
