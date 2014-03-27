@@ -11,7 +11,6 @@ from flask import request
 
 import constants
 import data
-import geocode
 import scraper
 import serializable
 
@@ -278,7 +277,7 @@ def handle_clipping(url, trip_plan_id, session_info):
         result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER, trip_plan=trip_plan)
     else:
         address = scr.get_address()
-        location = geocode.lookup_latlng(address)
+        location = scr.lookup_location()
         latlng = data.LatLng.from_json_obj(location.latlng_json()) if location else None
         address_precision = 'Precise' if location and location.is_precise() else 'Imprecise'
         entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
