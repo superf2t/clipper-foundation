@@ -201,16 +201,23 @@
   <ul ng-show="accountDropdownOpen" class="account-dropdown" ng-controller="AccountDropdownCtrl">
     <li class="account-dropdown-login-info">
       <div ng-show="accountInfo.loggedIn && !showLoginForm">
-        Logged in as <span class="logged-in-email">[[accountInfo['email'] ]]</span>
-        &nbsp;<a href="javascript:void(0)" ng-click="showLoginForm = true">change</a>
+        <span class="logged-in-email">[[accountInfo['email'] ]]</span>
+        <span class="logout-link">
+          <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
+        </span>
       </div>
       <div ng-show="showLoginForm">
         <form role="form" ng-submit="doLogin()">
-          <input type="text" class="form-control"
+          <input type="text" class="form-control email-entry-input"
             ng-model="accountInfo['email']"
-            placeholder="enter your email address to fake a login"/>
-          <button type="submit()" class="btn btn-default">login</button>
+            placeholder="Enter your email address to login"/>
+          <button type="submit()" class="btn btn-primary btn-login">Login</button>
         </form>
+      </div>
+    </li>
+    <li ng-show="allTripPlansSettings">
+      <div class="my-trip-plans-heading">
+        My Trip Plans
       </div>
     </li>
     <li ng-repeat="tripPlanSettings in allTripPlansSettings">
@@ -226,7 +233,7 @@
         </span>
     </li>
     <li class="create-new-trip-dropdown-link">
-      <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create new trip plan</a>
+      <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create New Trip Plan</a>
     </li>
   </ul>
 
