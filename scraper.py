@@ -49,10 +49,6 @@ class ScrapedPage(object):
         return tostring_with_breaks(addr_elem).strip()
 
     @fail_returns_none
-    def get_address_precision(self):
-        return 'Precise'
-
-    @fail_returns_none
     def get_entity_type(self):
         return self.root.find(self.ENTITY_TYPE_XPATH).text.strip()
 
@@ -231,10 +227,6 @@ class AirbnbScraper(ScrapedPage):
     def get_entity_type(self):
         # TODO: Changing to 'Lodging' and add a subtype
         return 'Hotel'
-
-    @fail_returns_none
-    def get_address_precision(self):
-        return 'Imprecise'
 
     @fail_returns_none
     def get_rating(self):
