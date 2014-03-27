@@ -56,11 +56,13 @@
           </a>
         </div>
         <div class="col-md-6" id="url-box">
+          {% if allow_editing %}
           <input type="text" class="form-control"
             placeholder="Paste a URL to add to your trip plan"
             ng-model="clipState.url"
             ng-disabled="clipState.clipping"
             ng-paste="clipUrlChanged()"/>
+          {% endif %}
         </div>
         <div class="col-me-3" id="list-map-btns">
           <button type="button" class="btn btn-default btn-sm nav-btn">
