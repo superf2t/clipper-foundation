@@ -415,6 +415,30 @@ function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettin
   };
 }
 
+function CarouselCtrl($scope) {
+  var urls = $scope.entityModel.data['photo_urls'];
+  var currentIndex = 0;
+  $scope.currentImgUrl = urls[currentIndex];
+
+  $scope.hasPrevImg = function() {
+    return currentIndex > 0;
+  };
+
+  $scope.hasNextImg = function() {
+    return currentIndex < (urls.length - 1);
+  };
+
+  $scope.nextImg = function() {
+    currentIndex += 1;
+    $scope.currentImgUrl = urls[currentIndex];
+  };
+
+  $scope.prevImg = function() {
+    currentIndex -= 1;
+    $scope.currentImgUrl = urls[currentIndex];
+  };
+}
+
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -435,6 +459,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
+    .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);

@@ -94,13 +94,8 @@
                   <div class="one-entity-title">
                     [[entityModel.data['name'] ]]
                   </div>
-                  <carousel class="one-entity-carousel" interval="entityModel.carouselInterval">
-                    <slide ng-repeat="slide in entityModel.slides" active="slide.active">
-                      <span ng-if="slide.active">
-                        <img ng-src="[[slide.image]]" class="entity-img">
-                      </span>
-                    </slide>
-                  </carousel>
+                  <div ng-include="'carousel-template'">
+                  </div>
                   <div class="one-entity-rating">
                     Rating: [[entityModel.data['rating'] ]]
                   </div>
@@ -259,6 +254,18 @@
           You've already clipped this page to your trip plan.
         </div>
       </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="carousel-template">
+    <div ng-controller="CarouselCtrl" class="carousel">
+      <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+        <span class="icon-prev"></span>
+      </a>
+      <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+      <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+        <span class="icon-next"></span>
+      </a>
     </div>
   </script>
 
