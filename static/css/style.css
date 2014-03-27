@@ -273,20 +273,41 @@ html, body {
   position: fixed;
   z-index: 10000;
   width: 300px;
-  top: 20px;
+  top: 30px;
   right: 0px;
   background-color: white;
   padding: 20px;
   list-style: none;
+  background: -webkit-linear-gradient(45deg, #FFF, #F9F9F9);
+
 }
 
 .account-dropdown-login-info {
   padding-bottom: 10px;
 }
 
+.email-entry-input {
+  width: 75%;
+}
+
+.logout-link {
+  position: relative;
+  float: right;
+}
+
+.btn-login {
+  position: relative;
+  float: right;
+  top: -34px;
+}
+
+.my-trip-plans-heading {
+  font-size: 1.2em;
+  padding-bottom: 10px;
+}
+
 .create-new-trip-dropdown-link {
   padding-top: 10px;
-  font-weight: bold;
 }
 
 .logged-in-email {
