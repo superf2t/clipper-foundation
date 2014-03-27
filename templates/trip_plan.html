@@ -65,10 +65,12 @@
           {% endif %}
         </div>
         <div class="col-me-3" id="list-map-btns">
-          <button type="button" class="btn btn-default btn-sm nav-btn">
+          <button type="button" class="btn btn-default btn-sm nav-btn"
+            ng-click="pageStateModel.showGuideView()">
             <span class="glyphicon glyphicon-picture"></span>
           </button>
-          <button type="button" class="btn btn-default btn-sm nav-btn">
+          <button type="button" class="btn btn-default btn-sm nav-btn"
+            ng-click="pageStateModel.showMapView()">
             <span class="glyphicon glyphicon-globe"></span>
           </button>
         </div>
@@ -76,121 +78,139 @@
     </div>
   </nav>
 
-  <div id="entity-container">
-    <div ng-repeat="entityType in planModel.ENTITY_TYPES_IN_ORDER">
-      <div ng-controller="EntityTypeCtrl">
-        <div ng-if="hasEntities()">
-          <div class="one-entity-type">
-            <a id="[[entityType]]" class="offset-anchor"></a>
-            <h3 ng-click="toggleSection()" class="entity-type-header">
-              <a href="javascript:void(0)">[[entityType]]s
-                <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
-                <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
-              </a>
-            </h3>
-            <div class="columns" ng-show="show">
-              <div ng-repeat="entityModel in entityModels">
-                <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
-                  <div class="one-entity-title">
-                    [[entityModel.data['name'] ]]
-                  </div>
-                  <div ng-include="'carousel-template'">
-                  </div>
-                  <div class="one-entity-rating">
-                    Rating: [[entityModel.data['rating'] ]]
-                  </div>
-                  <div class="entity-description"
-                    ng-show="entityModel.hasDescription() && !editing">
-                    <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
-                  </div>
-                  <div ng-show="editing">
-                    <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
-                  </div>
-                  <div class="one-entity-source">
-                    From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
-                  </div>
-                  {% if allow_editing %}
-                    <div class="entity-edit-controls">
-                      <a href="javascript:void(0)"
-                        ng-click="deleteEntity()"
-                        ng-show="!editing">
-                        <span class="glyphicon glyphicon-trash"></span>
-                      </a>
-                      <a href="javascript:void(0)"
-                        ng-click="openEditEntity()"
-                        ng-show="!editing">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                      </a>
-                      <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
-                      <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
-                        Cancel
-                      </a>
+  <div ng-show="pageStateModel.inMapView()">
+
+    <div id="entity-container">
+      <div ng-repeat="entityType in planModel.ENTITY_TYPES_IN_ORDER">
+        <div ng-controller="EntityTypeCtrl">
+          <div ng-if="hasEntities()">
+            <div class="one-entity-type">
+              <a id="[[entityType]]" class="offset-anchor"></a>
+              <h3 ng-click="toggleSection()" class="entity-type-header">
+                <a href="javascript:void(0)">[[entityType]]s
+                  <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
+                  <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
+                </a>
+              </h3>
+              <div class="columns" ng-show="show">
+                <div ng-repeat="entityModel in entityModels">
+                  <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
+                    <div class="one-entity-title">
+                      [[entityModel.data['name'] ]]
                     </div>
-                  {% endif %}
+                    <div ng-include="'carousel-template'">
+                    </div>
+                    <div class="one-entity-rating">
+                      Rating: [[entityModel.data['rating'] ]]
+                    </div>
+                    <div class="entity-description"
+                      ng-show="entityModel.hasDescription() && !editing">
+                      <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
+                    </div>
+                    <div ng-show="editing">
+                      <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
+                    </div>
+                    <div class="one-entity-source">
+                      From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
+                    </div>
+                    {% if allow_editing %}
+                      <div class="entity-edit-controls">
+                        <a href="javascript:void(0)"
+                          ng-click="deleteEntity()"
+                          ng-show="!editing">
+                          <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+                        <a href="javascript:void(0)"
+                          ng-click="openEditEntity()"
+                          ng-show="!editing">
+                          <span class="glyphicon glyphicon-pencil"></span>
+                        </a>
+                        <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                        <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
+                          Cancel
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+      <div ng-if="planModel.hasClippedPages()" ng-controller="ClippedPagesCtrl" class="clipped-pages-section">
+        <h3 class="clipped-pages-header">Clipped Pages</h3>
+        <div class="clipped-pages">
+          <div>
+            We didn't recognize these clips. We're adding support to these pages soon.
+          </div>
+          <div ng-repeat="clippedPage in planModel.data['clipped_pages']">
+            <a href="javascript:void(0)"
+              ng-click="openPageForClipping(clippedPage['source_url'])">
+              [[clippedPage['title'] ]]
+            </a>
+          </div>
+          <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
+          </iframe>
+        </div>
+      </div>
+      <div ng-if="planModel.isEmpty()">
+        <div class="getting-started-directions">
+          <div class="welcome">
+            Welcome to your New Trip Plan
+          </div>
+          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
+            <button class="btn btn-info" id="btn-bookmarklet">
+              Travel Clipper
+            </button>
+          </a> <-- If you haven't already, drag me to your Bookmarks Bar
+          <div class="step">
+            Step 1
+          </div>
+          <p>
+            Pick a travel destination then browse popular travel websites for hotel, restaurant, and attraction options
+          </p>
+          <div class="step">
+            Step 2
+          </div>
+          <p>
+            Clip to this Trip Plan by using the clipper or by pasting the URL of the website you want to save in the URL input above
+          </p>
+          <div class="step">
+            Step 3
+          </div>
+          <p>
+            Come back to this Trip Plan and your bookmarked points of interest will instantly be ready for you to browse and manage
+          </p>
+        </div>
+      </div>
+
+      <div class="left-footer">
+        Copyright 2014 Unicycle Labs
+      </div>
+
     </div>
-    <div ng-if="planModel.hasClippedPages()" ng-controller="ClippedPagesCtrl" class="clipped-pages-section">
-      <h3 class="clipped-pages-header">Clipped Pages</h3>
-      <div class="clipped-pages">
-        <div>
-          We didn't recognize these clips. We're adding support to these pages soon.
-        </div>
-        <div ng-repeat="clippedPage in planModel.data['clipped_pages']">
-          <a href="javascript:void(0)"
-            ng-click="openPageForClipping(clippedPage['source_url'])">
-            [[clippedPage['title'] ]]
-          </a>
-        </div>
-        <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
-        </iframe>
+
+    <div id="map-container">
+      <div id="map">
       </div>
     </div>
-    <div ng-if="planModel.isEmpty()">
-      <div class="getting-started-directions">
-        <div class="welcome">
-          Welcome to your New Trip Plan
+
+  </div>  {# end map view #}
+
+  <div ng-show="pageStateModel.inGuideView()" ng-controller="GuideViewCtrl">
+
+    <div class="guide-view-container">
+      <div ng-repeat="entityType in planModel.ENTITY_TYPES_IN_ORDER">
+        <div ng-controller="GuideViewEntityTypeCtrl">
+          <div ng-if="hasEntities()">
+            <div>[[entityType]]s</div>
+          </div>
         </div>
-        <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
-          <button class="btn btn-info" id="btn-bookmarklet">
-            Travel Clipper
-          </button>
-        </a> <-- If you haven't already, drag me to your Bookmarks Bar
-        <div class="step">
-          Step 1
-        </div>
-        <p>
-          Pick a travel destination then browse popular travel websites for hotel, restaurant, and attraction options
-        </p>
-        <div class="step">
-          Step 2
-        </div>
-        <p>
-          Clip to this Trip Plan by using the clipper or by pasting the URL of the website you want to save in the URL input above
-        </p>
-        <div class="step">
-          Step 3
-        </div>
-        <p>
-          Come back to this Trip Plan and your bookmarked points of interest will instantly be ready for you to browse and manage
-        </p>
       </div>
     </div>
 
-    <div class="left-footer">
-      Copyright 2014 Unicycle Labs
-    </div>
-
-  </div>
-
-  <div id="map-container">
-    <div id="map">
-    </div>
-  </div>
+  </div> {# end guide view #}
 
   {# This is below the map in the DOM so that it appears visually on top #}
   <ul ng-show="accountDropdownOpen" class="account-dropdown" ng-controller="AccountDropdownCtrl">

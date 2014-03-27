@@ -340,6 +340,13 @@ html, body {
   height: 400px;
 }
 
+/* Guide View */
+
+.guide-view-container {
+  width: 100%;
+  margin-top: 73px;
+}
+
 /* Modals */
 
 .clipping-status-modal {

@@ -199,8 +199,32 @@ function EntityCtrl($scope, $http, $tripPlanSettings) {
   };
 }
 
+function PageStateModel() {
+  var GUIDE_VIEW = 1;
+  var MAP_VIEW = 2;
+
+  this.view = MAP_VIEW;
+
+  this.inGuideView = function() {
+    return this.view == GUIDE_VIEW;
+  };
+
+  this.inMapView = function() {
+    return this.view == MAP_VIEW;
+  };
+
+  this.showGuideView = function() {
+    this.view = GUIDE_VIEW;
+  };
+
+  this.showMapView = function() {
+    this.view = MAP_VIEW;
+  };
+}
+
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings) {
   var me = this;
+  $scope.pageStateModel = new PageStateModel();
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
@@ -439,6 +463,24 @@ function CarouselCtrl($scope) {
   };
 }
 
+function GuideViewCtrl($scope) {
+
+}
+
+function GuideViewEntityTypeCtrl($scope) {
+  var me = this;
+  $scope.entityModels = [];
+  $scope.show = true;
+
+  $.each($scope.planModel.entitiesForType($scope.entityType), function(i, entity) {
+    $scope.entityModels.push(new EntityModel(entity));
+  });
+
+  $scope.hasEntities = function() {
+    return $scope.entityModels && $scope.entityModels.length;
+  };
+}
+
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -460,6 +502,8 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
+    .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
+    .controller('GuideViewEntityTypeCtrl', ['$scope', GuideViewEntityTypeCtrl])
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);
