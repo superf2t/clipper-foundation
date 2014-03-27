@@ -161,7 +161,7 @@ class YelpScraper(ScrapedPage):
     @fail_returns_none
     def get_entity_type(self):
         categories_parent = self.root.find('body//span[@class="category-str-list"]')
-        categories_str = etree.tostring(categories_parent, method='text')
+        categories_str = etree.tostring(categories_parent, encoding='unicode', method='text')
         categories = [c.strip().lower() for c in categories_str.split(',')]
         if 'hotel' in categories or 'hotels' in categories:
             return 'Hotel'
@@ -211,7 +211,7 @@ class HotelsDotComScraper(ScrapedPage):
     @fail_returns_none
     def get_rating(self):
         # Looks like "4.5 / 5"
-        rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), method='text').strip()
+        rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), encoding='unicode', method='text').strip()
         return rating_fraction_str.split('/')[0].strip()
 
     @fail_returns_empty
@@ -252,7 +252,7 @@ class HomeawayScraper(ScrapedPage):
 def tostring_with_breaks(element):
     modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
     new_element = etree.fromstring(modified_html)
-    return etree.tostring(new_element, method='text')
+    return etree.tostring(new_element, encoding='unicode', method='text')
 
 def parse_tree(url):
     html = urllib2.urlopen(url)
@@ -278,16 +278,17 @@ def build_scraper(url):
 
 if __name__ == '__main__':
     for url in (
-            'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
-            'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
-            'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
-            'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
-            'http://www.yelp.com/biz/ikes-place-san-francisco',
-            'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
-            'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
-            'https://www.airbnb.com/rooms/2407670',
-            'https://www.airbnb.com/rooms/2576604',
-            'http://www.homeaway.com/vacation-rental/p8647vb',
-            ):
+        'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
+        'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
+        'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
+        'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
+        'http://www.yelp.com/biz/ikes-place-san-francisco',
+        'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
+        'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
+        'https://www.airbnb.com/rooms/2407670',
+        'https://www.airbnb.com/rooms/2576604',
+        'https://www.airbnb.com/rooms/1581737',
+        'http://www.homeaway.com/vacation-rental/p8647vb',
+        ):
         scraper = build_scraper(url)
         print scraper.debug_string()
