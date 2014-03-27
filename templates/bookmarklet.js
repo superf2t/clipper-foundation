@@ -27,12 +27,17 @@
     }).done(handleResponse);
   }
 
-  function undoClipUrl(url) {
+  function undoClipUrl(url, opt_callback) {
     clearOverlay();
     $.ajax(absUrl('/undoclip'), {
       data: {url: url},
       dataType: 'jsonp'
-    }).done(handleResponse);
+    }).done(function(response) {
+      handleResponse(response);
+      if (opt_callback) {
+        opt_callback();
+      }
+    })
   };
 
   function clearOverlay() {

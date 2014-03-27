@@ -31,8 +31,6 @@ html, body {
   font-weight: bold;
 }
 
-
-
 #my-account-link {
   text-align: right;
   padding: 4px 30px;
@@ -171,6 +169,21 @@ html, body {
   background: -webkit-linear-gradient(45deg, #FFF, #F9F9F9);
   opacity: 1;
   padding-bottom: 5px;
+}
+
+.getting-started-directions {
+  padding: 20px 40px;
+  font-size: 1.1em;
+}
+
+.welcome {
+  font-size: 1.6em;
+  margin-bottom: 10px;
+}
+
+.step {
+  font-size: 1.3em;
+  margin-top: 20px;
 }
 
 .columns:hover .one-entity:hover {

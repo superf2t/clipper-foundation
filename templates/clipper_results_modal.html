@@ -6,7 +6,6 @@
       right: 20px;
       z-index: 10000;
       width: 300px;
-      height: 250px;
       padding: 10px;
       background-color: #FFFFFF;
       font-family: 'Arial', 'sans-serif';
@@ -21,7 +20,7 @@
       color: #3b97d3;
       padding: 10px;
     }
-    .__tc-clip-result {
+    .__tc-clip-result, #__tc-change-trip-plan-confirmation, #__tc-new-trip-plan-confirmation {
       padding: 10px;
     }
     .__tc-inline-trip-plan-name {
@@ -57,6 +56,8 @@
   </style>
   <script>
     (function($) {
+      var ns = window['__tch'];
+
       function selectTripPlan() {
         var selectElem = $('#__tc-trip-plans')[0];
         var tripPlanId = selectElem[selectElem.selectedIndex].value;
@@ -64,9 +65,11 @@
         var popup = window.open(url);
         popup.onunload = function() {
           if (tripPlanId == '0') {
+            $('.__tc-hide-after-submit').hide();
             $('#__tc-change-trip-plan-confirmation').hide();
             $('#__tc-new-trip-plan-confirmation').show();
           } else {
+            $('.__tc-hide-after-submit').hide();
             $('#__tc-new-trip-plan-confirmation').hide();
             var tripPlanName = $(selectElem[selectElem.selectedIndex]).attr('tc:trip-plan-name');
             $('#__tc-change-trip-plan-confirmation').show();
@@ -75,13 +78,20 @@
         }
       }
 
+      function undo() {
+        ns.undoClip(location.href, function() {
+          $('.__tc-hide-after-undo').hide();
+        });
+      }
+
       window['__tcSelectTripPlan'] = selectTripPlan;
+      window['__tcUndo'] = undo;
     })(window['__tc$']);
   </script>
   <div class="__tc-modal">
     <div class="__tc-title">Travel Clipper</div>
     {% if clip_result.status == clip_result.STATUS_SUCCESS_KNOWN_SOURCE %}
-      <div class="__tc-clip-result">
+      <div class="__tc-clip-result __tc-hide-after-submit">
         Successfully clipped "{{clip_result.entity.name}}" to
         <span class="__tc-inline-trip-plan-name">
           <a href="{{clip_result.trip_plan.trip_plan_url()}}" target="_blank">{{clip_result.trip_plan.name}}</a>
@@ -90,30 +100,30 @@
         <br/>
         Made a mistake?
         <a href="javascript:void(0)"
-          onclick="__tch.undoClip(location.href)">
+          onclick="__tcUndo()">
           Undo
         </a>
       </div>
     {% elif clip_result.status == clip_result.STATUS_SAVED_FOR_LATER %}
-      <div class="__tc-clip-result">
+      <div class="__tc-clip-result __tc-hide-after-submit">
         We don't recognize this website so we've saved this URL for you to clip manually.  Visit <a href="{{base_url}}">TravelClipper</a> when you're done clipping.
       </div>
     {% elif clip_result.status == clip_result.STATUS_ALREADY_CLIPPED_URL %}
-      <div class="__tc-clip-result">You've already clipped this page to your trip plan.</div>
+      <div class="__tc-clip-result __tc-hide-after-submit">You've already clipped this page to your trip plan.</div>
     {% elif clip_result.status == clip_result.STATUS_NO_TRIP_PLAN_FOUND %}
-      <div class="__tc-clip-result">We couldn't find a trip plan.</div>
+      <div class="__tc-clip-result __tc-hide-after-submit">We couldn't find a trip plan.</div>
     {% elif clip_result.status == clip_result.STATUS_UNDO_SUCCESS %}
-      <div class="__tc-clip-result">
+      <div class="__tc-clip-result __tc-hide-after-submit">
         Successfully removed "{{clip_result.entity.name}}" from
         <span class="__tc-inline-trip-plan-name">
           <a href="{{clip_result.trip_plan.trip_plan_url()}}" target="_blank">{{clip_result.trip_plan.name}}</a>
         </span>
       </div>
     {% else %}
-      <div class="__tc-clip-result">An error occurred during clipping.  Please try again.</div>
+      <div class="__tc-clip-result __tc-hide-after-submit">An error occurred during clipping.  Please try again.</div>
     {% endif %}
     {% if clip_result.trip_plan %}
-      <div class="__tc-active-trip-plan-chooser">
+      <div class="__tc-active-trip-plan-chooser __tc-hide-after-submit __tc-hide-after-undo">
         <div>
           <div class="__tc-select-prompt">
             Select a different trip plan?
@@ -137,15 +147,15 @@
             Submit
           </div>
         </a>
-        <div id="__tc-change-trip-plan-confirmation" style="display:none">
-          Successfully changed the active trip plan to
-          "<span id="__tc-active-trip-plan-confirmation-plan-name"></span>"
-        </div>
-        <div id="__tc-new-trip-plan-confirmation" style="display:none">
-          Successfully created a new trip plan for your future clippings.
-          Visit <a href="{{base_url}}/trip_plan" target="_blank">{{base_url}}/trip_plan</a>
-          to view and edit it.
-        </div>
+      </div>
+      <div id="__tc-change-trip-plan-confirmation" style="display:none">
+        Your clips will now be saved to the trip plan:
+        "<span id="__tc-active-trip-plan-confirmation-plan-name"></span>"
+      </div>
+      <div id="__tc-new-trip-plan-confirmation" style="display:none">
+        Your new trip plan has been created.
+        Visit <a href="{{base_url}}/trip_plan" target="_blank">{{base_url}}/trip_plan</a>
+        to view and edit.
       </div>
     {% endif %}
   </div>
