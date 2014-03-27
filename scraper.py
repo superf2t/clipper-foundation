@@ -6,6 +6,7 @@ import urlparse
 from lxml import etree
 
 import crossreference
+import geocode
 
 def fail_returns_none(fn):
     def wrapped(self):
@@ -23,12 +24,28 @@ def fail_returns_empty(fn):
             return ()
     return wrapped
 
+class LocationResolutionStrategy(object):
+    ADDRESS = 1
+    ENTITY_NAME_WITH_GEOCODER = 2
+    ENTITY_NAME_WITH_PLACE_SEARCH = 3
+
+    def __init__(self, ordered_choices):
+        self.ordered_choices = tuple(ordered_choices)
+
+    @classmethod
+    def from_options(cls, *choices):
+        return LocationResolutionStrategy(choices)
+
+
 class ScrapedPage(object):
     PAGE_TITLE_XPATH = 'head/title'
     NAME_XPATH = None
     ADDRESS_XPATH = None
     ENTITY_TYPE_XPATH = None
     PRIMARY_PHOTO_XPATH = None
+
+    LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
+        LocationResolutionStrategy.ADDRESS)
 
     def __init__(self, url, tree):
         self.url = url
@@ -68,6 +85,9 @@ class ScrapedPage(object):
     def get_site_specific_entity_id(self):
         return None
 
+    def lookup_location(self):
+        return lookup_location(self)
+
     def is_base_scraper(self):
         return type(self) == ScrapedPage
 
@@ -78,18 +98,23 @@ Entity type: %s
 Address: %s
 Rating: %s
 Primary photo url: %s
-Photo urls: %s
-        ''' % (self.get_entity_name(),
-            self.get_entity_type(),
-            self.get_address(),
-            self.get_rating(),
-            self.get_primary_photo(),
-            self.get_photos())
+Photo urls: %s''' % (
+    self.get_entity_name(),
+    self.get_entity_type(),
+    self.get_address(),
+    self.get_rating(),
+    self.get_primary_photo(),
+    self.get_photos())
 
 class TripAdvisorScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
     ENTITY_TYPE_XPATH = 'body//address//span[@class="placeTypeText"]'
+
+    LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
+        LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
+        LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH,
+        LocationResolutionStrategy.ADDRESS)
 
     @fail_returns_none
     def get_entity_type(self):
@@ -191,6 +216,9 @@ class HotelsDotComScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
 
+    LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
+        LocationResolutionStrategy.ADDRESS, LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH)
+
     @fail_returns_none
     def get_address(self):
         addr_parent = self.root.find('body//div[@class="address-cntr"]/span[@class="adr"]')
@@ -268,6 +296,37 @@ def build_scraper(url):
         scraper_class = HomeawayScraper
     return scraper_class(url, tree)
 
+def lookup_location(scr):
+    locations = []
+    for option in scr.LOCATION_RESOLUTION_STRATEGY.ordered_choices:
+        if option == LocationResolutionStrategy.ADDRESS:
+            location = geocode.lookup_latlng(scr.get_address())
+            if location:
+                locations.append(location)
+        elif option == LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER:
+            location = geocode.lookup_latlng(scr.get_entity_name())
+            if location:
+                locations.append(location)
+        elif option == LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH:
+            location = geocode.lookup_place(scr.get_entity_name())
+            if location:
+                locations.append(location)
+    return pick_best_location(locations, scr.get_entity_name())
+
+def pick_best_location(locations, entity_name):
+    if not locations:
+        return None
+    for location in locations:
+        if location.is_clear_match(entity_name):
+            return location
+    for location in locations:
+        if location.is_name_match(entity_name):
+            return location
+    for location in locations:
+        if location.is_precise():
+            return location
+    return locations[0]
+
 if __name__ == '__main__':
     for url in (
         'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
@@ -284,3 +343,10 @@ if __name__ == '__main__':
         ):
         scraper = build_scraper(url)
         print scraper.debug_string()
+        location = scraper.lookup_location()
+        if location:
+            print location.get_name()
+            print location.latlng_json()
+        else:
+            print '(no location)'
+        print '-----'
