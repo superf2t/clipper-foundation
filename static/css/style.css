@@ -349,9 +349,43 @@ a:hover {
 
 /* Guide View */
 
-.guide-view-container {
+.guideview-container {
   width: 100%;
   margin-top: 73px;
+}
+
+.guideview-entity-type-header {
+  text-align: center;
+  font-weight: bold;
+  font-size: 24pt;
+  margin: auto;
+}
+
+.guideview-one-entity-title {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.guideview-entity-even {
+  background-color: #eee;
+}
+
+.guideview-entity-odd {
+  background-color: #fff;
+}
+
+.guideview-imgs-showcase {
+  width: 65%;
+  margin: 0 auto;
+}
+
+.guideview-img-masonry-brick {
+  width: calc(50% - 10px);
+  margin-bottom: 10px;
+}
+
+.guideview-masonry-img {
+  width: 100%;
 }
 
 .header-img {
@@ -359,26 +393,26 @@ a:hover {
   width: 100%;
 }
 
-#hotel-header-img {
+#Hotel-header-img {
   background-image: url(/static/img/hotel-header-md.jpg);
 }
 
-#restaurant-header-img {
+#Restaurant-header-img {
   background-image: url(/static/img/restaurant-header-md.jpg);
 }
 
-#activity-header-img {
+#Attraction-header-img {
   background-image: url(/static/img/activity-header-md.jpg);
 }
 
 @media (min-width: 1441px) {
-  #hotel-header-img {
+  #Hotel-header-img {
     background-image: url(/static/img/hotel-header-lg.jpg);
   }
-  #restaurant-header-img {
+  #Restaurant-header-img {
     background-image: url(/static/img/restaurant-header-lg.jpg);
   }
-  #activity-header-img {
+  #Attraction-header-img {
     background-image: url(/static/img/activity-header-lg.jpg);
   }
 }
