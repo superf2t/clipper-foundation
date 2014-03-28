@@ -107,6 +107,10 @@ a:hover {
   float: right;
 }
 
+.active-view-mode {
+  color: #428bca;
+}
+
 .nav-btn {
   border-color: #000000;
 }

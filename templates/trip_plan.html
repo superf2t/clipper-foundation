@@ -68,12 +68,14 @@
           {% endif %}
         </div>
         <div class="col-me-3" id="list-map-links">
-          <a href="javascript:void()" ng-click="showMapView()">
+          <a href="javascript:void()" ng-click="showMapView()"
+            ng-class="{'active-view-mode': pageStateModel.inMapView()}">
             <div id="map-view-link">
               <span class="glyphicon glyphicon-globe"></span>
             </div>
           </a>
-          <a href="javascript:void()" ng-click="showGuideView()">
+          <a href="javascript:void()" ng-click="showGuideView()"
+            ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
             <div id="guide-view-link">
               <span class="glyphicon glyphicon-picture"></span>
             </div>
