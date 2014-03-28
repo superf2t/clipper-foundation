@@ -221,9 +221,15 @@
                 </div>
                 <div ng-controller="GuideViewCarouselCtrl" class="guideview-imgs-showcase">
                   <div masonry="{ transitionDuration: '0.4s', gutter: 10 }">
+                    <a class="left carousel-control" ng-show="hasPrevImgs()" ng-click="prevImgs()" style="z-index: 1000">
+                      <span class="icon-prev"></span>
+                    </a>
                     <div class="masonry-brick guideview-img-masonry-brick" ng-repeat="imgUrl in activeImgUrls()">
                       <img ng-src="[[imgUrl]]" class="guideview-masonry-img"/>
                     </div>
+                    <a class="right carousel-control" ng-show="hasNextImgs()" ng-click="nextImgs()">
+                      <span class="icon-next"></span>
+                    </a>
                   </div>
                 </div>
               </div>
