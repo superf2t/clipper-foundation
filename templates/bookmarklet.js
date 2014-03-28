@@ -14,7 +14,7 @@
   var HOST = '{{host}}';
 
   function absUrl(relativeUrl) {
-    return '//' + HOST + relativeUrl;
+    return 'https://' + HOST + relativeUrl;
   }
 
   function clipUrl(url) {
