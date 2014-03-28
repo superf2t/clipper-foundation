@@ -229,13 +229,16 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
   };
 
   $scope.showGuideView = function() {
-    $scope.pageStateModel.showGuideView();
-    $scope.$broadcast('masonry.reload');
+    if (!$scope.pageStateModel.inGuideView()) {
+      $scope.pageStateModel.showGuideView();
+      $scope.$broadcast('masonry.reload');
+    }
   };
 
   $scope.showMapView = function() {
-    $scope.pageStateModel.showMapView();
-    $scope.$broadcast('masonry.reload');
+    if (!$scope.pageStateModel.inMapView()) {
+      $scope.pageStateModel.showMapView();
+    }
   };
 
   $scope.navAnchor = function(entityType) {
@@ -495,9 +498,29 @@ function GuideViewEntityCtrl($scope) {
 function GuideViewCarouselCtrl($scope) {
   var me = this;
   this.imgUrls = $scope.entityModel.data['photo_urls'];
+  this.currentPage = 0;
+  this.numImgsPerPage = 4;
 
   $scope.activeImgUrls = function() {
-    return me.imgUrls.slice(0, 4);
+    var startIndex = me.currentPage * me.numImgsPerPage;
+    var endIndex = startIndex + me.numImgsPerPage;
+    return me.imgUrls.slice(startIndex, endIndex);
+  };
+
+  $scope.hasPrevImgs = function() {
+    return me.currentPage > 0;
+  };
+
+  $scope.hasNextImgs = function() {
+    return ((me.currentPage + 1) * me.numImgsPerPage) < me.imgUrls.length;
+  };
+
+  $scope.prevImgs = function() {
+    me.currentPage -= 1;
+  };
+
+  $scope.nextImgs = function() {
+    me.currentPage += 1;
   };
 }
 
