@@ -229,13 +229,16 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
   };
 
   $scope.showGuideView = function() {
-    $scope.pageStateModel.showGuideView();
-    $scope.$broadcast('masonry.reload');
+    if (!$scope.pageStateModel.inGuideView()) {
+      $scope.pageStateModel.showGuideView();
+      $scope.$broadcast('masonry.reload');
+    }
   };
 
   $scope.showMapView = function() {
-    $scope.pageStateModel.showMapView();
-    $scope.$broadcast('masonry.reload');
+    if (!$scope.pageStateModel.inMapView()) {
+      $scope.pageStateModel.showMapView();
+    }
   };
 
   $scope.navAnchor = function(entityType) {
