@@ -423,15 +423,6 @@ a:hover {
 
 @media (min-width: 761px) {
   .guideview-imgs-showcase {
-    height: 300px;
-  }
-  .guideview-carousel-control {
-    max-height: 300px;
-  }
-}
-
-@media (min-width: 971px) {
-  .guideview-imgs-showcase {
     height: 400px;
   }
   .guideview-carousel-control {
@@ -439,12 +430,21 @@ a:hover {
   }
 }
 
-@media (min-width: 1201px) {
+@media (min-width: 971px) {
   .guideview-imgs-showcase {
     height: 500px;
   }
   .guideview-carousel-control {
     max-height: 500px;
+  }
+}
+
+@media (min-width: 1201px) {
+  .guideview-imgs-showcase {
+    height: 620px;
+  }
+  .guideview-carousel-control {
+    max-height: 620px;
   }
 }
 
