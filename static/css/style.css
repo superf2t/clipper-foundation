@@ -347,6 +347,35 @@ html, body {
   margin-top: 73px;
 }
 
+.header-img {
+  height: 300px;
+  width: 100%;
+}
+
+#hotel-header-img {
+  background-image: url(/static/img/hotel-header-md.jpg);
+}
+
+#restaurant-header-img {
+  background-image: url(/static/img/restaurant-header-md.jpg);
+}
+
+#activity-header-img {
+  background-image: url(/static/img/activity-header-md.jpg);
+}
+
+@media (min-width: 1441px) {
+  #hotel-header-img {
+    background-image: url(/static/img/hotel-header-lg.jpg);
+  }
+  #restaurant-header-img {
+    background-image: url(/static/img/restaurant-header-lg.jpg);
+  }
+  #activity-header-img {
+    background-image: url(/static/img/activity-header-lg.jpg);
+  }
+}
+
 /* Modals */
 
 .clipping-status-modal {
