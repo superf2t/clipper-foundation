@@ -16,8 +16,7 @@ import serializable
 
 app = Flask(__name__)
 
-debug = True
-if not debug:
+if not constants.DEBUG:
     import logging
     import os
     projectpath = os.environ.get('PROJECTPATH') or '.'
@@ -340,5 +339,5 @@ def make_jsonp_response(request_obj, response_json_obj):
     return response
 
 if __name__ == '__main__':
-    app.debug = debug
+    app.debug = constants.DEBUG
     app.run()
