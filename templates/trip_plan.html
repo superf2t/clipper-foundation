@@ -26,14 +26,14 @@
             <input class="form-control" id="trip-plan-title-input" type="text" ng-model="editableTripPlanSettings.name"/>
             <button class="btn btn-save-changes" ng-click="saveTripPlanSettings()">Save</button>
           </form>
-          <a href="javascript:void(0)" ng-click="editTripPlanSettings()" ng-show="!editingTripPlanSettings">
-            <button type="button" class="btn btn-sm" id="edit-title-btn">
-              <span class="glyphicon glyphicon-pencil"></span>
-            </button>
+          <a href="javascript:void(0)" id="edit-title-link" ng-click="editTripPlanSettings()" ng-show="!editingTripPlanSettings">
+            <span class="glyphicon glyphicon-pencil"></span>
           </a>
         </div>
         <div class="col-md-3" id="my-account-link">
-          <a href="javascript:void(0)" ng-click="toggleAccountDropdown()">My Trip Plans</a>
+          <a href="javascript:void(0)" ng-click="toggleAccountDropdown()">
+            <span class="glyphicon glyphicon-user"></span>
+          </a>
         </div>
       </div>
     </div>
@@ -44,17 +44,17 @@
         <div class="entity-nav">
           <a href="javascript:void(0)" ng-scroll-to-on-click="navAnchor('Hotel')">
             <div class="col-md-1 navigation-link">
-              Hotels
+              HOTELS
             </div>
           </a>
           <a href="javascript:void(0)" ng-scroll-to-on-click="navAnchor('Restaurant')">
             <div class="col-md-1 navigation-link">
-              Restaurants
+              RESTAURANTS
             </div>
           </a>
           <a href="javascript:void(0)" ng-scroll-to-on-click="navAnchor('Attraction')">
             <div class="col-md-1 navigation-link">
-              Attractions
+              ATTRACTIONS
             </div>
           </a>
         </div>
@@ -67,15 +67,17 @@
             ng-paste="clipUrlChanged()"/>
           {% endif %}
         </div>
-        <div class="col-me-3" id="list-map-btns">
-          <button type="button" class="btn btn-default btn-sm nav-btn"
-            ng-click="showGuideView()">
-            <span class="glyphicon glyphicon-picture"></span>
-          </button>
-          <button type="button" class="btn btn-default btn-sm nav-btn"
-            ng-click="showMapView()">
-            <span class="glyphicon glyphicon-globe"></span>
-          </button>
+        <div class="col-me-3" id="list-map-links">
+          <a href="javascript:void()" ng-click="showMapView()">
+            <div id="map-view-link">
+              <span class="glyphicon glyphicon-globe"></span>
+            </div>
+          </a>
+          <a href="javascript:void()" ng-click="showGuideView()">
+            <div id="guide-view-link">
+              <span class="glyphicon glyphicon-picture"></span>
+            </div>
+          </a>
         </div>
       </div>
     </div>
@@ -208,7 +210,9 @@
         <div ng-controller="GuideViewEntityTypeCtrl">
           <div ng-if="hasEntities()">
             <a id="guideview-[[entityType]]" class="offset-anchor"></a>
-            <div class="guideview-entity-type-header">[[entityType]]s</div>
+            <div class="header-img" id="[[entityType]]-header-img">
+              <div class="guideview-entity-type-header">[[entityType]]s</div>
+            </div>
             <div ng-repeat="entityModel in entityModels">
               <div class="guideview-one-entity" ng-controller="GuideViewEntityCtrl"
                 ng-class="{'guideview-entity-even': $even, 'guideview-entity-odd': $odd}">

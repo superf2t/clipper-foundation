@@ -2,21 +2,38 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Roboto';
-  background-color: #FFFFFF;
+  background-color: #ebecec;
+  color: #666666;
 }
 
-/* AngularJS and Bootstrap fix */
+a {
+  color: #000000;
+}
 
-.nav, .pagination, .carousel, .panel-title a { 
-  cursor: pointer; 
+a:hover {
+  text-decoration: none;
+  color: #2D73A0;
 }
 
 /* Navigation */
 
 #upper-navbar {
   min-height: 30px;
-  background-color: #FFFFFF;
   margin-bottom: 0px;
+  background-color: #302B4C;
+}
+
+.upper-nav {
+  width: 100%;
+  height: 30px;
+}
+
+#upper-navbar a {
+  color: #FFFFFF;
+}
+
+#upper-navbar a:hover {
+  color: #2D73A0;
 }
 
 #logo {
@@ -25,42 +42,30 @@ html, body {
   font-size: 1.2em;
 }
 
-#logo a, #logo a:hover {
-  color: #000;
-  text-decoration: none;
-}
-
 #trip-plan-title {
   text-align: center;
   font-size: 14pt;
-  font-weight: bold;
+  color: #FFFFFF;
 }
 
 #my-account-link {
   text-align: right;
   padding: 4px 30px;
+  font-size: 1.2em;
 }
 
-#my-account-link a:hover {
-  text-decoration: none;
-}
-
-.upper-nav {
-  width: 100%;
-  height: 30px;
-}
-
-#edit-title-btn {
-  background-color: #FFFFFF;
-  position: relative;
-  top: -2px;
+#edit-title-link {
+  top:-1px;
+  font-size: 0.7em;
 }
 
 #lower-navbar {
   position: fixed;
-  top: 30px;
-  min-height: 42px;
-  background-color: #3b97d3;
+  top: 31px;
+  min-height: 41px;
+  box-shadow: 0px 1px #DDDDDD;
+  background-color: #FFFFFF;
+  background-size: 20px 20px;
 }
 
 .lower-nav {
@@ -69,7 +74,7 @@ html, body {
 }
 
 .entity-nav a {
-  color: #FFFFFF;
+  color: #000000;
 }
 
 .navigation-link {
@@ -92,21 +97,22 @@ html, body {
   height: 30px;
 }
 
-#list-map-btns {
+#list-map-links {
+  padding-right: 24px;
+}
+
+#guide-view-link, #map-view-link {
+  font-size: 1.2em;
+  padding: 10px 6px 8px 6px;
   float: right;
-  padding: 6px 30px 6px 6px;
 }
 
 .nav-btn {
-  background-color: #3b97d3;
-  color: #FFFFFF;
-  border-color: #2D73A0;
+  border-color: #000000;
 }
 
 .nav-btn:hover {
   background-color: #2D73A0;
-  color: #FFFFFF;
-  border-color: #2D73A0;
 }
 
 #trip-plan-title-input {
@@ -125,7 +131,7 @@ html, body {
 
 #entity-container {
   width: 50%;
-  margin-top: 73px;
+  margin-top: 74px;
 }
 
 .one-entity-type {
@@ -164,9 +170,8 @@ html, body {
 }
 
 .one-entity {
-  background-color: #FFFFFF;
+  text-shadow: 0 1px 0 #fff;  
   border: 1px solid #DDDDDD;
-  border-radius: 4px;
   margin: 0 0px 10px;
   -webkit-column-break-inside: avoid;
   -moz-column-break-inside: avoid;
@@ -205,8 +210,10 @@ html, body {
 
 .one-entity-title {
   margin: 5px;
-  font-size: 1.1em;
+  font-size: 1.2em;
   text-align: center;
+  font-family: 'Raleway';
+  color: #666666;
 }
 
 .one-entity-type-img {
@@ -272,7 +279,7 @@ html, body {
 
 .offset-anchor {
   position: relative;
-  top: -73px;
+  top: -74px;
   display: block;
   visibility: hidden;
 }
@@ -281,7 +288,7 @@ html, body {
   position: fixed;
   z-index: 10000;
   width: 300px;
-  top: 30px;
+  top: 31px;
   right: 0px;
   background-color: white;
   padding: 20px;
@@ -351,7 +358,7 @@ html, body {
   text-align: center;
   font-weight: bold;
   font-size: 24pt;
-  padding-top: 20px;
+  margin: auto;
 }
 
 .guideview-one-entity-title {
@@ -381,6 +388,34 @@ html, body {
   width: 100%;
 }
 
+.header-img {
+  height: 300px;
+  width: 100%;
+}
+
+#Hotel-header-img {
+  background-image: url(/static/img/hotel-header-md.jpg);
+}
+
+#Restaurant-header-img {
+  background-image: url(/static/img/restaurant-header-md.jpg);
+}
+
+#Attraction-header-img {
+  background-image: url(/static/img/activity-header-md.jpg);
+}
+
+@media (min-width: 1441px) {
+  #Hotel-header-img {
+    background-image: url(/static/img/hotel-header-lg.jpg);
+  }
+  #Restaurant-header-img {
+    background-image: url(/static/img/restaurant-header-lg.jpg);
+  }
+  #Attraction-header-img {
+    background-image: url(/static/img/activity-header-lg.jpg);
+  }
+}
 
 /* Modals */
 
