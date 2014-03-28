@@ -2,6 +2,8 @@ import os
 
 PROJECTPATH = os.environ.get('PROJECTPATH')
 
+DEBUG = False
+
 HOST = 'travelclipper.unicyclelabs.com';
 BASE_URL = 'https://' + HOST
 
