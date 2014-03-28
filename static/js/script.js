@@ -7,20 +7,8 @@ function EntityModel(entityData) {
   this.marker = makeMarker(entityData);
   this.infowindow = null;
 
-  this.carouselInterval = -1;
-  this.slides = $.map(entityData['photo_urls'], function(imageUrl) {
-    return {
-      image: imageUrl
-    };
-  });
-
   this.hasDescription = function() {
     return this.data['description'] && this.data['description'].length;
-  };
-
-  this.advanceImg = function() {
-    this.currentImgUrlIndex = (this.currentImgUrlIndex + 1) % this.data['photo_urls'].length;
-    this.currentImgUrl = this.data['photo_urls'][this.currentImgUrlIndex];
   };
 
   this.makeInfowindow = function() {
@@ -240,6 +228,26 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
     statusCode: null
   };
 
+  $scope.showGuideView = function() {
+    $scope.pageStateModel.showGuideView();
+    $scope.$broadcast('masonry.reload');
+  };
+
+  $scope.showMapView = function() {
+    $scope.pageStateModel.showMapView();
+    $scope.$broadcast('masonry.reload');
+  };
+
+  $scope.navAnchor = function(entityType) {
+    if ($scope.pageStateModel.inMapView()) {
+      return 'mapview-' + entityType;
+    } else if ($scope.pageStateModel.inGuideView()) {
+      return 'guideview-' + entityType;
+    } else {
+      return '';
+    }
+  };
+
   $scope.toggleAccountDropdown = function() {
     $scope.accountDropdownOpen = !$scope.accountDropdownOpen;
   }
@@ -386,7 +394,7 @@ function ngScrollToOnClick($parse) {
         var getScrollToIdFn = $parse(attrs.ngScrollToOnClick);
         if (getScrollToIdFn) {
           elem.on('click', function() {
-            var scrollToId = getScrollToIdFn();
+            var scrollToId = getScrollToIdFn(scope);
             $('html, body').animate({
               scrollTop: ($("#" + scrollToId).offset().top - 73)
             }, 500);
@@ -481,6 +489,18 @@ function GuideViewEntityTypeCtrl($scope) {
   };
 }
 
+function GuideViewEntityCtrl($scope) {
+}
+
+function GuideViewCarouselCtrl($scope) {
+  var me = this;
+  this.imgUrls = $scope.entityModel.data['photo_urls'];
+
+  $scope.activeImgUrls = function() {
+    return me.imgUrls.slice(0, 4);
+  };
+}
+
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -490,7 +510,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
   angular.module('mapModule', [])
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
-  angular.module('appModule', ['mapModule', 'initialDataModule', 'ui.bootstrap'], function($interpolateProvider) {
+  angular.module('appModule', ['mapModule', 'initialDataModule', 'ui.bootstrap', 'wu.masonry'], function($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
@@ -504,6 +524,8 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewEntityTypeCtrl', ['$scope', GuideViewEntityTypeCtrl])
+    .controller('GuideViewEntityCtrl', ['$scope', GuideViewEntityCtrl])
+    .controller('GuideViewCarouselCtrl', ['$scope', GuideViewCarouselCtrl])
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);
