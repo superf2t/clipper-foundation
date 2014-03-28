@@ -191,7 +191,7 @@ function PageStateModel() {
   var GUIDE_VIEW = 1;
   var MAP_VIEW = 2;
 
-  this.view = GUIDE_VIEW;
+  this.view = MAP_VIEW;
 
   this.inGuideView = function() {
     return this.view == GUIDE_VIEW;
