@@ -1,16 +1,14 @@
 (function(e,a,g,h,f,c,b,d){
-  if(!(f=e.jQuery)||g>f.fn.jquery||h(f)){
-    c=a.createElement("script");
-    c.type="text/javascript";
-    c.src="http://ajax.googleapis.com/ajax/libs/jquery/"+g+"/jquery.min.js";
-    c.onload=c.onreadystatechange=function(){
-      if(!b&&(!(d=this.readyState)||d=="loaded"||d=="complete")){
-        h((f=e.jQuery).noConflict(1),b=1);
-        f(c).remove()}
-      };
-      document.body.appendChild(c);
-    }
-  })(window,document,"1.10.0",function($,L){
+  c=a.createElement("script");
+  c.type="text/javascript";
+  c.src="//ajax.googleapis.com/ajax/libs/jquery/"+g+"/jquery.min.js";
+  c.onload=c.onreadystatechange=function(){
+    if(!b&&(!(d=this.readyState)||d=="loaded"||d=="complete")){
+      h((f=e.jQuery).noConflict(1),b=1);
+      f(c).remove()}
+    };
+    document.body.appendChild(c);
+  })(window,document,"1.11.0",function($,L){
 
   window['__tc$'] = $;
   var HOST = '{{host}}';
