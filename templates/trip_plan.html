@@ -68,12 +68,14 @@
           {% endif %}
         </div>
         <div class="col-me-3" id="list-map-links">
-          <a href="javascript:void()" ng-click="showMapView()">
+          <a href="javascript:void()" ng-click="showMapView()"
+            ng-class="{'active-view-mode': pageStateModel.inMapView()}">
             <div id="map-view-link">
               <span class="glyphicon glyphicon-globe"></span>
             </div>
           </a>
-          <a href="javascript:void()" ng-click="showGuideView()">
+          <a href="javascript:void()" ng-click="showGuideView()"
+            ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
             <div id="guide-view-link">
               <span class="glyphicon glyphicon-picture"></span>
             </div>
@@ -106,7 +108,8 @@
                     <div ng-include="'carousel-template'">
                     </div>
                     <div class="one-entity-rating">
-                      Rating: [[entityModel.data['rating'] ]]
+                      <tc-star-rating value="[[entityModel.data['rating'] ]]">
+                      </tc-star-rating>
                     </div>
                     <div class="entity-description"
                       ng-show="entityModel.hasDescription() && !editing">
@@ -217,8 +220,10 @@
               <div class="guideview-one-entity" ng-controller="GuideViewEntityCtrl"
                 ng-class="{'guideview-entity-even': $even, 'guideview-entity-odd': $odd}">
                 <div class="guideview-one-entity-title">
-                  [[entityModel.data['name'] ]]
+                  <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['name'] ]]</a>
                 </div>
+                <div tc-star-rating value="[[entityModel.data['rating'] ]]" class="guideview-star-rating">
+                </div tc-star-rating>
                 <div ng-controller="GuideViewCarouselCtrl" class="guideview-imgs-showcase">
                   <div masonry="{ transitionDuration: 0, gutter: 10 }">
                     <a class="left carousel-control" ng-show="hasPrevImgs()" ng-click="prevImgs()" style="z-index: 1000">
@@ -315,6 +320,14 @@
       <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
         <span class="icon-next"></span>
       </a>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="star-rating-template">
+    <div>
+      <span ng-repeat="star in [1, 2, 3, 4, 5]">
+        <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
+      </span>
     </div>
   </script>
 
