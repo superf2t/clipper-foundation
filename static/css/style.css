@@ -20,7 +20,7 @@ a:hover {
 #upper-navbar {
   min-height: 30px;
   margin-bottom: 0px;
-  background-color: #302B4C;
+  background-color: #000000;
 }
 
 .upper-nav {
@@ -127,7 +127,7 @@ a:hover {
   height: 25px;
 }
 
-/* Main Container */
+/* Map View */
 
 #entity-container {
   width: 50%;
@@ -357,8 +357,9 @@ a:hover {
 .guideview-entity-type-header {
   text-align: center;
   font-weight: bold;
-  font-size: 24pt;
-  margin: auto;
+  font-size: 2.4em;
+  font-family: 'Raleway';
+  color: #FFFFFF;
 }
 
 .guideview-one-entity-title {
@@ -402,7 +403,7 @@ a:hover {
 }
 
 #Attraction-header-img {
-  background-image: url(/static/img/activity-header-md.jpg);
+  background-image: url(/static/img/attraction-header-md.jpg);
 }
 
 @media (min-width: 1441px) {
@@ -413,7 +414,7 @@ a:hover {
     background-image: url(/static/img/restaurant-header-lg.jpg);
   }
   #Attraction-header-img {
-    background-image: url(/static/img/activity-header-lg.jpg);
+    background-image: url(/static/img/attraction-header-lg.jpg);
   }
 }
 
