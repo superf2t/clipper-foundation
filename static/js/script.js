@@ -407,6 +407,16 @@ function ngScrollToOnClick($parse) {
   };
 }
 
+function tcStarRating() {
+  return {
+    restrict: 'AEC',
+    scope: {
+      value: '=value'
+    },
+    templateUrl: 'star-rating-template'
+  };
+}
+
 function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettings, $allTripPlansSettings) {
   $scope.accountInfo = $accountInfo;
   $scope.accountInfo.loggedIn = !!$accountInfo['email'];
@@ -538,6 +548,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     $interpolateProvider.endSymbol(']]');
   })
     .directive('ngScrollToOnClick', ngScrollToOnClick)
+    .directive('tcStarRating', tcStarRating)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
