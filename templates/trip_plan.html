@@ -220,8 +220,8 @@
                 <div class="guideview-one-entity-title">
                   <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['name'] ]]</a>
                 </div>
-                  <tc-star-rating value="[[entityModel.data['rating'] ]]" style="text-align:center">
-                  </tc-star-rating>
+                <div tc-star-rating value="[[entityModel.data['rating'] ]]" class="guideview-star-rating">
+                </div tc-star-rating>
                 <div ng-controller="GuideViewCarouselCtrl" class="guideview-imgs-showcase">
                   <div masonry="{ transitionDuration: 0, gutter: 10 }">
                     <a class="left carousel-control" ng-show="hasPrevImgs()" ng-click="prevImgs()" style="z-index: 1000">

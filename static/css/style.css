@@ -370,9 +370,14 @@ a:hover {
 
 .guideview-one-entity-title {
   text-align: center;
-  margin: 20px 0;
+  margin: 20px 0 10px 0;
   font-size: 1.6em;
   font-family: 'Raleway';
+}
+
+.guideview-star-rating {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 .guideview-entity-even {
