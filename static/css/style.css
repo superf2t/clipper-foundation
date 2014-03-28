@@ -386,15 +386,22 @@ a:hover {
 .guideview-imgs-showcase {
   width: 65%;
   margin: 0 auto;
+  height: 600px;
+  overflow: hidden;
 }
 
 .guideview-img-masonry-brick {
-  width: calc(50% - 10px);
+  width: calc(50% - 5px);
   margin-bottom: 10px;
 }
 
 .guideview-masonry-img {
   width: 100%;
+}
+
+.guideview-carousel-control {
+  height: calc(100% - 10px);
+  max-height: 600px;
 }
 
 .header-img {
@@ -414,6 +421,33 @@ a:hover {
   background-image: url(/static/img/attraction-header-md.jpg);
 }
 
+@media (min-width: 761px) {
+  .guideview-imgs-showcase {
+    height: 300px;
+  }
+  .guideview-carousel-control {
+    max-height: 300px;
+  }
+}
+
+@media (min-width: 971px) {
+  .guideview-imgs-showcase {
+    height: 400px;
+  }
+  .guideview-carousel-control {
+    max-height: 400px;
+  }
+}
+
+@media (min-width: 1201px) {
+  .guideview-imgs-showcase {
+    height: 500px;
+  }
+  .guideview-carousel-control {
+    max-height: 500px;
+  }
+}
+
 @media (min-width: 1441px) {
   #Hotel-header-img {
     background-image: url(/static/img/hotel-header-lg.jpg);
@@ -423,6 +457,21 @@ a:hover {
   }
   #Attraction-header-img {
     background-image: url(/static/img/attraction-header-lg.jpg);
+  }
+  .guideview-imgs-showcase {
+    height: 700px;
+  }
+  .guideview-carousel-control {
+    max-height: 700px;
+  }
+}
+
+@media (min-width: 1601px) {
+  .guideview-imgs-showcase {
+    height: 800px;
+  }
+  .guideview-carousel-control {
+    max-height: 800px;
   }
 }
 
