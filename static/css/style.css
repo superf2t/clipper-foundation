@@ -413,6 +413,21 @@ a:hover {
   max-height: 600px;
 }
 
+.guideview-entity-info {
+  font-size: 12pt;
+  margin: 20px auto 0 auto;
+  max-width: 50%;
+}
+
+.guideview-entity-description {
+  text-align: center;
+}
+
+.guideview-entity-edit-controls {
+  text-align: center;
+  margin-top: 5px;
+}
+
 .header-img {
   height: 300px;
   width: 100%;

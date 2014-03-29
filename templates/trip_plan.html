@@ -68,13 +68,13 @@
           {% endif %}
         </div>
         <div class="col-me-3" id="list-map-links">
-          <a href="javascript:void()" ng-click="showMapView()"
+          <a href="javascript:void(0)" ng-click="showMapView()"
             ng-class="{'active-view-mode': pageStateModel.inMapView()}">
             <div id="map-view-link">
               <span class="glyphicon glyphicon-globe"></span>
             </div>
           </a>
-          <a href="javascript:void()" ng-click="showGuideView()"
+          <a href="javascript:void(0)" ng-click="showGuideView()"
             ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
             <div id="guide-view-link">
               <span class="glyphicon glyphicon-picture"></span>
@@ -217,7 +217,7 @@
               <div class="guideview-entity-type-header">[[entityType]]s</div>
             </div>
             <div ng-repeat="entityModel in entityModels">
-              <div class="guideview-one-entity" ng-controller="GuideViewEntityCtrl"
+              <div class="guideview-one-entity" ng-controller="EntityCtrl"
                 ng-class="{'guideview-entity-even': $even, 'guideview-entity-odd': $odd}">
                 <div class="guideview-one-entity-title">
                   <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['name'] ]]</a>
@@ -237,6 +237,37 @@
                     </a>
                   </div>
                 </div>
+
+                <div class="guideview-entity-info">
+                  <div class="guideview-entity-description"
+                    ng-show="entityModel.hasDescription() && !editing">
+                    <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
+                  </div>
+                  <div ng-show="editing">
+                    <textarea ng-model="entityModel.data['description']"
+                      class="form-control guideview-entity-description-input">
+                    </textarea>
+                  </div>
+                  {% if allow_editing %}
+                    <div class="guideview-entity-edit-controls">
+                      <a href="javascript:void(0)"
+                        ng-click="deleteEntity()"
+                        ng-show="!editing">
+                        <span class="glyphicon glyphicon-trash"></span>
+                      </a>
+                      <a href="javascript:void(0)"
+                        ng-click="openEditEntity()"
+                        ng-show="!editing">
+                        <span class="glyphicon glyphicon-pencil"></span>
+                      </a>
+                      <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                      <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
+                        Cancel
+                      </a>
+                    </div>
+                  {% endif %}
+                </div>
+
               </div>
             </div>
           </div>
