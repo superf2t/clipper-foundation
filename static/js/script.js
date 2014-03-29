@@ -502,9 +502,6 @@ function GuideViewEntityTypeCtrl($scope) {
   };
 }
 
-function GuideViewEntityCtrl($scope) {
-}
-
 function GuideViewCarouselCtrl($scope) {
   var me = this;
   this.imgUrls = $scope.entityModel.data['photo_urls'];
@@ -558,7 +555,6 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewEntityTypeCtrl', ['$scope', GuideViewEntityTypeCtrl])
-    .controller('GuideViewEntityCtrl', ['$scope', GuideViewEntityCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', GuideViewCarouselCtrl])
     .filter('hostname', function() {
       return function(input) {
