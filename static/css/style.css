@@ -275,9 +275,9 @@ a:hover {
   border-color: #2D73A0;
 }
 
-.left-footer {
+.mapview-footer {
   margin-top: 20px;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
   text-align: center;
 }
 
@@ -400,8 +400,8 @@ a:hover {
 }
 
 .guideview-img-masonry-brick {
-  width: calc(50% - 5px);
-  margin-bottom: 10px;
+  width: calc(50% - 3px);
+  margin-bottom: 6px;
 }
 
 .guideview-masonry-img {
@@ -409,7 +409,7 @@ a:hover {
 }
 
 .guideview-carousel-control {
-  height: calc(100% - 10px);
+  height: calc(100% - 6px);
   max-height: 600px;
 }
 
@@ -429,6 +429,13 @@ a:hover {
 #Attraction-header-img {
   background-image: url(/static/img/attraction-header-md.jpg);
 }
+
+.guideview-footer {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
 
 @media (min-width: 761px) {
   .guideview-imgs-showcase {
