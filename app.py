@@ -9,9 +9,9 @@ from flask import redirect
 from flask import render_template
 from flask import request
 
+import clip_logic
 import constants
 import data
-import scraper
 import serializable
 
 app = Flask(__name__)
@@ -38,7 +38,7 @@ def clip():
     url = request.values['url']
     if not data.load_trip_plan_by_id(session_info.active_trip_plan_id):
         create_and_save_default_trip_plan(session_info)
-    clip_result = handle_clipping(url, session_info.active_trip_plan_id, session_info)
+    clip_result = clip_logic.handle_clipping(url, session_info.active_trip_plan_id, session_info)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = render_template('clipper_results_modal.html',
         clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
@@ -49,7 +49,7 @@ def clip():
 def clip_ajax(trip_plan_id):
     session_info = decode_session(request.cookies)
     url = request.json['url']
-    clip_result = handle_clipping(url, trip_plan_id, session_info)
+    clip_result = clip_logic.handle_clipping(url, trip_plan_id, session_info)
     response = json.jsonify(clip_status=clip_result.status,
         entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
     return process_response(response, request, session_info)
@@ -58,16 +58,16 @@ def clip_ajax(trip_plan_id):
 def undoclip():
     session_info = decode_session(request.cookies)
     url = request.values['url']
-    clip_status = ClipResult.STATUS_ERROR
+    clip_status = clip_logic.ClipResult.STATUS_ERROR
     trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
     if not trip_plan:
-        clip_status.ClipResult.STATUS_NO_TRIP_PLAN_FOUND
+        clip_status = clip_logic.ClipResult.STATUS_NO_TRIP_PLAN_FOUND
         entity = None
     else:
         entity = trip_plan.remove_entity_by_source_url(url)
         data.save_trip_plan(trip_plan)
-        clip_status = ClipResult.STATUS_UNDO_SUCCESS
-    clip_result = ClipResult(clip_status, entity=entity, trip_plan=trip_plan)
+        clip_status = clip_logic.ClipResult.STATUS_UNDO_SUCCESS
+    clip_result = clip_logic.ClipResult(clip_status, entity=entity, trip_plan=trip_plan)
     all_trip_plans = data.load_all_trip_plans(session_info)
     modal_html = render_template('clipper_results_modal.html',
         clip_result=clip_result, all_trip_plans=all_trip_plans, base_url=constants.BASE_URL)
@@ -232,63 +232,12 @@ def login_and_migrate_ajax():
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
     response.headers['Content-Type'] = 'application/javascript'
-    return response
-
-@app.route('/trip_plan_kauai')
-def trip_plan_kauai():
-    kauai_trip_plan_id = 'kauai'
-    trip_plan = data.load_trip_plan(kauai_trip_plan_id)
-    response = render_template('trip_plan.html',
-        plan=trip_plan, plan_json=json.dumps(trip_plan.to_json_obj()),
-        allow_editing=False)
-    return response    
-
-class ClipResult(object):
-    STATUS_ERROR = 0
-    STATUS_SUCCESS_KNOWN_SOURCE = 1
-    STATUS_SAVED_FOR_LATER = 2
-    STATUS_ALREADY_CLIPPED_URL = 3
-    STATUS_NO_TRIP_PLAN_FOUND = 4
-    STATUS_UNDO_SUCCESS = 5
-
-    def __init__(self, status, entity=None, trip_plan=None):
-        self.status = status
-        self.entity = entity
-        self.trip_plan = trip_plan
+    return response 
 
 def create_and_save_default_trip_plan(session_info):
     trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
     data.save_trip_plan(trip_plan)
     return trip_plan
-
-def handle_clipping(url, trip_plan_id, session_info):
-    trip_plan = data.load_trip_plan_by_id(trip_plan_id)
-    result = None
-    if not trip_plan:
-        raise Exception('No trip plan found with id %s' % trip_plan_id)
-    if not trip_plan.editable_by(session_info):
-        raise Exception('User does not have permission to clip to this trip plan')
-    if trip_plan.contains_url(url):
-        return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
-    scr = scraper.build_scraper(url)
-    if scr.is_base_scraper():
-        clipped_page = data.ClippedPage(source_url=url, title=scr.get_page_title())
-        trip_plan.clipped_pages.append(clipped_page)
-        result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER, trip_plan=trip_plan)
-    else:
-        address = scr.get_address()
-        location = scr.lookup_location()
-        latlng = data.LatLng.from_json_obj(location.latlng_json()) if location else None
-        address_precision = 'Precise' if location and location.is_precise() else 'Imprecise'
-        entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
-            address=scr.get_address(), latlng=latlng, 
-            address_precision=address_precision, rating=scr.get_rating(),
-            primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
-            source_url=url)
-        trip_plan.entities.append(entity)
-        result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity, trip_plan)
-    data.save_trip_plan(trip_plan)
-    return result
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
