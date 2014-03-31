@@ -124,7 +124,8 @@ def trip_plan_with_session_info(session_info, trip_plan_id=None):
         all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
         session_info=session_info,
         allow_editing=trip_plan and trip_plan.editable_by(session_info),
-        account_info=account_info)
+        account_info=account_info,
+        bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
     return process_response(response, request, session_info)
 
 @app.route('/trip_plan_ajax/<int:trip_plan_id>')
