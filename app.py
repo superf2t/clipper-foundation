@@ -13,6 +13,7 @@ import clip_logic
 import constants
 import data
 import serializable
+import values
 
 app = Flask(__name__)
 
@@ -120,12 +121,14 @@ def trip_plan_with_session_info(session_info, trip_plan_id=None):
     account_info = data.AccountInfo(session_info.email,
         active_trip_plan_id=active_trip_plan.trip_plan_id if active_trip_plan else None,
         active_trip_plan_name=active_trip_plan.name if active_trip_plan else None)
+    ordered_categories = [values.Category.LODGING, values.Category.FOOD_AND_DRINK, values.Category.ATTRACTIONS]
     response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json,
         all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
         session_info=session_info,
         allow_editing=trip_plan and trip_plan.editable_by(session_info),
         account_info=account_info,
-        bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
+        bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
+        ordered_categories_json=serializable.to_json_str(ordered_categories))
     return process_response(response, request, session_info)
 
 @app.route('/trip_plan_ajax/<int:trip_plan_id>')

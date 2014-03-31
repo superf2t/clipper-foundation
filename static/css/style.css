@@ -433,15 +433,15 @@ a:hover {
   width: 100%;
 }
 
-#Hotel-header-img {
+#lodging-header-img {
   background-image: url(/static/img/hotel-header-md.jpg);
 }
 
-#Restaurant-header-img {
+#food_and_drink-header-img {
   background-image: url(/static/img/restaurant-header-md.jpg);
 }
 
-#Attraction-header-img {
+#attractions-header-img {
   background-image: url(/static/img/attraction-header-md.jpg);
 }
 

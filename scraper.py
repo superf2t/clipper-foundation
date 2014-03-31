@@ -7,6 +7,7 @@ from lxml import etree
 
 import crossreference
 import geocode
+import values
 
 def fail_returns_none(fn):
     def wrapped(self):
@@ -41,7 +42,6 @@ class ScrapedPage(object):
     PAGE_TITLE_XPATH = 'head/title'
     NAME_XPATH = None
     ADDRESS_XPATH = None
-    ENTITY_TYPE_XPATH = None
     PRIMARY_PHOTO_XPATH = None
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
@@ -66,8 +66,12 @@ class ScrapedPage(object):
         return tostring_with_breaks(addr_elem).strip()
 
     @fail_returns_none
-    def get_entity_type(self):
-        return self.root.find(self.ENTITY_TYPE_XPATH).text.strip()
+    def get_category(self):
+        return None
+
+    @fail_returns_none
+    def get_sub_category(self):
+        return None
 
     @fail_returns_none
     def get_rating(self):
@@ -94,13 +98,15 @@ class ScrapedPage(object):
     def debug_string(self):
         return '''
 Entity name: %s
-Entity type: %s
+Category: %s
+SubCategory: %s
 Address: %s
 Rating: %s
 Primary photo url: %s
 Photo urls: %s''' % (
     self.get_entity_name(),
-    self.get_entity_type(),
+    self.get_category(),
+    self.get_sub_category(),
     self.get_address(),
     self.get_rating(),
     self.get_primary_photo(),
@@ -109,7 +115,6 @@ Photo urls: %s''' % (
 class TripAdvisorScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
-    ENTITY_TYPE_XPATH = 'body//address//span[@class="placeTypeText"]'
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
         LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
@@ -117,14 +122,25 @@ class TripAdvisorScraper(ScrapedPage):
         LocationResolutionStrategy.ADDRESS)
 
     @fail_returns_none
-    def get_entity_type(self):
+    def get_category(self):
         if '/Hotel_Review' in self.url:
-            return 'Hotel'
+            return values.Category.LODGING
         elif '/Restaurant_Review' in self.url:
-            return 'Restaurant'
+            return values.Category.FOOD_AND_DRINK
         elif '/Attraction_Review' in self.url:
-            return 'Attraction'
-        return super(TripAdvisorScraper, self).get_entity_type()
+            return values.Category.ATTRACTION
+        return None
+
+    # TODO: Make this more specific
+    @fail_returns_none
+    def get_sub_category(self):
+        if '/Hotel_Review' in self.url:
+            return values.SubCategory.HOTEL
+        elif '/Restaurant_Review' in self.url:
+            return values.Category.RESTAURANT
+        elif '/Attraction_Review' in self.url:
+            return None
+        return None
 
     @fail_returns_none
     def get_rating(self):
@@ -166,7 +182,7 @@ class TripAdvisorScraper(ScrapedPage):
                             some_json = json.loads(line)
                             urls.append(some_json['data'])
                 break
-        if self.get_entity_type() == 'Hotel':
+        if self.get_category == values.Category.LODGING:
             hotelsdotcom_url = crossreference.find_hotelsdotcom_url(self.get_entity_name())
             if hotelsdotcom_url:
                 additional_urls = build_scraper(hotelsdotcom_url).get_photos()
@@ -180,14 +196,29 @@ class YelpScraper(ScrapedPage):
     PRIMARY_PHOTO_XPATH = 'body//div[@class="showcase-photos"]//div[@class="showcase-photo-box"]//img'
 
     @fail_returns_none
-    def get_entity_type(self):
+    def get_category(self):
         categories_parent = self.root.find('body//span[@class="category-str-list"]')
         categories_str = etree.tostring(categories_parent, encoding='unicode', method='text')
         categories = [c.strip().lower() for c in categories_str.split(',')]
-        if 'hotel' in categories or 'hotels' in categories:
-            return 'Hotel'
+        if 'hotel' in categories or 'hotels' in categories or 'bed & breakfast' in categories:
+            return values.Category.LODGING
         else:
-            return 'Restaurant'
+            return values.Category.FOOD_AND_DRINK
+
+    @fail_returns_none
+    def get_sub_category(self):
+        categories_parent = self.root.find('body//span[@class="category-str-list"]')
+        categories_str = etree.tostring(categories_parent, encoding='unicode', method='text')
+        categories = [c.strip().lower() for c in categories_str.split(',')]
+        if 'bed & breakfast' in categories:
+            return values.SubCategory.BED_AND_BREAKFAST
+        elif 'hotel' in categories or 'hotels' in categories:
+            return values.SubCategory.HOTEL
+        else:
+            for category in categories:
+                if 'bar' in category:
+                    return values.SubCategory.BAR
+            return values.SubCategory.RESTAURANT
 
     @fail_returns_none
     def get_rating(self):
@@ -229,8 +260,11 @@ class HotelsDotComScraper(ScrapedPage):
         country = tostring_with_breaks(addr_parent.find('span[@class="country-name"]')).strip().strip(',')
         return '%s %s %s' % (street_addr, postal_addr, country)
 
-    def get_entity_type(self):
-        return 'Hotel'
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        return values.SubCategory.HOTEL
 
     @fail_returns_none
     def get_rating(self):
@@ -252,9 +286,11 @@ class AirbnbScraper(ScrapedPage):
     def get_entity_name(self):
         return 'Airbnb: ' + super(AirbnbScraper, self).get_entity_name()
 
-    def get_entity_type(self):
-        # TODO: Changing to 'Lodging' and add a subtype
-        return 'Hotel'
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        return values.SubCategory.PRIVATE_RENTAL
 
     @fail_returns_none
     def get_rating(self):

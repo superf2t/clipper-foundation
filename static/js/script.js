@@ -50,12 +50,10 @@ function TripPlanModel(tripPlanData) {
     return this.data['clipped_pages'] && this.data['clipped_pages'].length;
   };
 
-  this.ENTITY_TYPES_IN_ORDER = ['Hotel', 'Restaurant', 'Attraction'];
-
-  this.entitiesForType = function(entityType) {
+  this.entitiesForCategory = function(category) {
     var entities = [];
     $.each(this.data['entities'], function(i, entity) {
-      if (entity['entity_type'] == entityType) {
+      if (entity['category'] && entity['category']['category_id'] == category['category_id']) {
         entities.push(entity);
       }
     });
@@ -86,7 +84,7 @@ function TripPlanModel(tripPlanData) {
   };
 }
 
-function EntityTypeCtrl($scope, $map, $mapBounds) {
+function CategoryCtrl($scope, $map, $mapBounds) {
   var me = this;
   $scope.entityModels = [];
   $scope.show = true;
@@ -105,7 +103,7 @@ function EntityTypeCtrl($scope, $map, $mapBounds) {
     });
   });
 
-  $.each($scope.planModel.entitiesForType($scope.entityType), function(i, entity) {
+  $.each($scope.planModel.entitiesForCategory($scope.category), function(i, entity) {
     $scope.entityModels.push(new EntityModel(entity));
   });
   $.each($scope.entityModels, function(i, entityModel) {
@@ -210,10 +208,11 @@ function PageStateModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings) {
+function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings, $categories) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = new TripPlanModel($tripPlan);
+  $scope.orderedCategories = $categories;
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = {
@@ -241,11 +240,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings)
     }
   };
 
-  $scope.navAnchor = function(entityType) {
+  $scope.navAnchor = function(categoryName) {
     if ($scope.pageStateModel.inMapView()) {
-      return 'mapview-' + entityType;
+      return 'mapview-' + categoryName;
     } else if ($scope.pageStateModel.inGuideView()) {
-      return 'guideview-' + entityType;
+      return 'guideview-' + categoryName;
     } else {
       return '';
     }
@@ -375,8 +374,8 @@ function ClippedPagesCtrl($scope) {
 
 
 function NavigationCtrl($scope, $location, $anchorScroll) {
-  $scope.navigate = function(entityType) {
-    $location.hash(entityType)
+  $scope.navigate = function(categoryName) {
+    $location.hash(categoryName)
     $anchorScroll();
   };
 }
@@ -488,12 +487,12 @@ function GuideViewCtrl($scope) {
 
 }
 
-function GuideViewEntityTypeCtrl($scope) {
+function GuideViewCategoryCtrl($scope) {
   var me = this;
   $scope.entityModels = [];
   $scope.show = true;
 
-  $.each($scope.planModel.entitiesForType($scope.entityType), function(i, entity) {
+  $.each($scope.planModel.entitiesForCategory($scope.category), function(i, entity) {
     $scope.entityModels.push(new EntityModel(entity));
   });
 
@@ -531,11 +530,12 @@ function GuideViewCarouselCtrl($scope) {
   };
 }
 
-window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo) {
+window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo, categories) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanSettings', tripPlanSettings)
     .value('$allTripPlansSettings', allTripPlansSettings)
+    .value('$categories', categories)
     .value('$accountInfo', accountInfo);
   angular.module('mapModule', [])
     .value('$map', createMap())
@@ -546,15 +546,15 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
   })
     .directive('ngScrollToOnClick', ngScrollToOnClick)
     .directive('tcStarRating', tcStarRating)
-    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', RootCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$categories', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
-    .controller('EntityTypeCtrl', ['$scope', '$map', '$mapBounds', EntityTypeCtrl])
+    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', CategoryCtrl])
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
-    .controller('GuideViewEntityTypeCtrl', ['$scope', GuideViewEntityTypeCtrl])
+    .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', GuideViewCarouselCtrl])
     .filter('hostname', function() {
       return function(input) {

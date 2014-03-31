@@ -33,7 +33,8 @@ def handle_clipping(url, trip_plan_id, session_info, offline=False):
         location = scr.lookup_location()
         latlng = data.LatLng.from_json_obj(location.latlng_json()) if location else None
         address_precision = 'Precise' if location and location.is_precise() else 'Imprecise'
-        entity = data.Entity(name=scr.get_entity_name(), entity_type=scr.get_entity_type(),
+        entity = data.Entity(name=scr.get_entity_name(),
+            category=scr.get_category(), sub_category=scr.get_sub_category(),
             address=scr.get_address(), latlng=latlng, 
             address_precision=address_precision, rating=scr.get_rating(),
             primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),

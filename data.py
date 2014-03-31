@@ -3,6 +3,7 @@ import os
 
 import constants
 import serializable
+import values
 
 class LatLng(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('lat', 'lng')
@@ -18,17 +19,51 @@ ENTITY_TYPE_TO_ICON_URL = {
     'Nightlife': 'bar_coktail.png',
 }
 
+SUB_CATEGORY_NAME_TO_ICON_URL = {
+    values.SubCategory.HOTEL.name: 'lodging_0star.png',
+    values.SubCategory.PRIVATE_RENTAL.name: 'lodging_0star.png',
+    values.SubCategory.RESTAURANT.name: 'restaurant.png',
+    values.SubCategory.BAR.name: 'bar_coktail.png',
+}
+
+CATEGORY_NAME_TO_ICON_URL = {
+    values.Category.LODGING.name: 'lodging_0star.png',
+    values.Category.FOOD_AND_DRINK.name: 'restaurant.png',
+    values.Category.ATTRACTIONS.name: 'sight-2.png',
+}
+
+# For backwards compatibility
+ENTITY_TYPE_TO_CATEGORY = {
+    'Hotel': values.Category.LODGING,
+    'Restaurant': values.Category.FOOD_AND_DRINK,
+    'Attraction': values.Category.ATTRACTIONS,
+}
+
+# For backwards compatibility
+ENTITY_TYPE_TO_SUB_CATEGORY = {
+    'Hotel': values.SubCategory.HOTEL,
+    'Restaurant': values.SubCategory.RESTAURANT,
+    'Attraction': None  # TODO
+}
+
 class Entity(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 'address',
+    PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 
+        serializable.objf('category', values.Category),
+        serializable.objf('sub_category', values.SubCategory),
+        'address',
         serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
         'source_url', 'icon_url')
 
-    def __init__(self, name=None, entity_type=None, address=None, latlng=None,
+    def __init__(self, name=None, entity_type=None,
+            category=None, sub_category=None,
+            address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None):
         self.name = name
-        self.entity_type = entity_type
+        self.entity_type = entity_type  # Deprecated
+        self.category = category
+        self.sub_category = sub_category
         self.address = address
         self.latlng = latlng
         self.address_precision = address_precision
@@ -41,7 +76,17 @@ class Entity(serializable.Serializable):
         self.initialize()
 
     def initialize(self):
-        icon_url = ENTITY_TYPE_TO_ICON_URL.get(self.entity_type)
+        if self.entity_type and not self.category:
+            self.category = ENTITY_TYPE_TO_CATEGORY.get(self.entity_type)
+            self.sub_category = ENTITY_TYPE_TO_SUB_CATEGORY.get(self.entity_type)
+        self.set_icon_url()
+
+    def set_icon_url(self):
+        icon_url = ''
+        if self.sub_category:
+            icon_url = SUB_CATEGORY_NAME_TO_ICON_URL.get(self.sub_category.name)
+        elif self.category:
+            icon_url = CATEGORY_NAME_TO_ICON_URL.get(self.category.name)
         if self.address_precision == 'Imprecise':
             icon_url = icon_url.replace('.', '_imprecise.')
         self.icon_url = icon_url
