@@ -127,6 +127,12 @@ class TripPlan(serializable.Serializable):
             return ''
         return json.dumps([e.to_json_obj() for e in entities])
 
+    def entity_by_source_url(self, source_url):
+        for entity in self.entities:
+            if entity.source_url == source_url:
+                return entity
+        return None
+
     def remove_entity_by_source_url(self, source_url):
         for i in range(len(self.entities)):
             if self.entities[i].source_url == source_url:

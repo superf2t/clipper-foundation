@@ -25,19 +25,6 @@
     }).done(handleResponse);
   }
 
-  function undoClipUrl(url, opt_callback) {
-    clearOverlay();
-    $.ajax(absUrl('/undoclip'), {
-      data: {url: url},
-      dataType: 'jsonp'
-    }).done(function(response) {
-      handleResponse(response);
-      if (opt_callback) {
-        opt_callback();
-      }
-    })
-  };
-
   function clearOverlay() {
     if (window['__tcOverlay']) {
       window['__tcOverlay'].remove();
@@ -79,10 +66,6 @@
     window['__tcSpinner'] = spinnerDiv;
     $(document.body).append(spinnerDiv);
   }
-
-  window['__tch'] = {
-    undoClip: undoClipUrl
-  };
 
   showSpinner();
   clipUrl(window.location.href);
