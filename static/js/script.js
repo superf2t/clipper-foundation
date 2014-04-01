@@ -482,7 +482,7 @@ function GuideViewCategoryCtrl($scope) {
   };
 }
 
-function GuideViewCarouselCtrl($scope) {
+function GuideViewCarouselCtrl($scope, $timeout) {
   var me = this;
   this.imgUrls = $scope.entityModel.data['photo_urls'];
   this.currentPage = 0;
@@ -504,10 +504,18 @@ function GuideViewCarouselCtrl($scope) {
 
   $scope.prevImgs = function() {
     me.currentPage -= 1;
+    me.refreshMasonry();
   };
 
   $scope.nextImgs = function() {
     me.currentPage += 1;
+    me.refreshMasonry();
+  };
+
+  this.refreshMasonry = function() {
+    $timeout(function() {
+      $scope.$broadcast('masonry.reload');
+    });
   };
 }
 
@@ -893,7 +901,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
-    .controller('GuideViewCarouselCtrl', ['$scope', GuideViewCarouselCtrl])
+    .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);
