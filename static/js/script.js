@@ -2,10 +2,8 @@ function hostnameFromUrl(url) {
   return $('<a>').attr('href', url)[0].hostname;
 }
 
-function EntityModel(entityData) {
+function EntityModel(entityData, editable) {
   this.data = entityData;
-  this.marker = makeMarker(entityData);
-  this.infowindow = null;
 
   this.hasDescription = function() {
     return this.data['description'] && this.data['description'].length;
@@ -30,20 +28,24 @@ function EntityModel(entityData) {
       this.infowindow = null;
     }
   };
-}
 
-function makeMarker(entity) {
-  var latlng = new google.maps.LatLng(entity['latlng']['lat'], entity['latlng']['lng']);
-  var entityName = entity['name'];
-  var markerData = {
-    position: latlng,
-    map: null,
-    title: entityName,
-    icon: '/static/img/' + entity['icon_url']
-  };
-  return new google.maps.Marker(markerData);
-}
+  this.makeMarker =  function() {
+    var entity = this.data;
+    var latlng = new google.maps.LatLng(entity['latlng']['lat'], entity['latlng']['lng']);
+    var entityName = entity['name'];
+    var markerData = {
+      position: latlng,
+      map: null,
+      title: entityName,
+      icon: '/static/img/' + entity['icon_url'],
+      draggable: editable
+    };
+    return new google.maps.Marker(markerData);
+  }
 
+  this.marker = this.makeMarker();
+  this.infowindow = null;
+}
 
 function TripPlanModel(tripPlanData) {
   this.data = tripPlanData;
@@ -86,7 +88,7 @@ function TripPlanModel(tripPlanData) {
   };
 }
 
-function CategoryCtrl($scope, $map, $mapBounds) {
+function CategoryCtrl($scope, $map, $mapBounds, $http, $tripPlanSettings, $allowEditing) {
   var me = this;
   $scope.entityModels = [];
   $scope.show = true;
@@ -106,7 +108,7 @@ function CategoryCtrl($scope, $map, $mapBounds) {
   });
 
   $.each($scope.planModel.entitiesForCategory($scope.category), function(i, entity) {
-    $scope.entityModels.push(new EntityModel(entity));
+    $scope.entityModels.push(new EntityModel(entity, $allowEditing));
   });
   $.each($scope.entityModels, function(i, entityModel) {
     var marker = entityModel.marker;
@@ -115,11 +117,26 @@ function CategoryCtrl($scope, $map, $mapBounds) {
     google.maps.event.addListener(marker, 'click', function() {
       entityModel.makeInfowindow().open($map, marker);
     });
+    google.maps.event.addListener(marker, 'dragend', function() {
+      entityModel.data['latlng']['lat'] = marker.getPosition().lat();
+      entityModel.data['latlng']['lng'] = marker.getPosition().lng();
+      me.saveEntity(entityModel.data);
+    });
   });
   // TODO: Move this after all have initialized.
   if (!$mapBounds.isEmpty()) {
     $map.fitBounds($mapBounds);
   }
+
+  this.saveEntity = function(entityData) {
+    var editRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'entity': entityData
+    }
+    $http.post('/editentity', editRequest).error(function() {
+      alert('Failed to save new marker location');
+    });
+  };
 
   $scope.toggleSection = function() {
     $scope.show = !$scope.show;
@@ -871,13 +888,14 @@ function bnLazySrc( $window, $document, $rootScope ) {
     });
 }
 
-window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo, categories) {
+window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo, categories, allowEditing) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanSettings', tripPlanSettings)
     .value('$allTripPlansSettings', allTripPlansSettings)
     .value('$categories', categories)
-    .value('$accountInfo', accountInfo);
+    .value('$accountInfo', accountInfo)
+    .value('$allowEditing', allowEditing);
 
   angular.module('mapModule', [])
     .value('$map', createMap())
@@ -894,7 +912,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
   })
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$categories', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
-    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', CategoryCtrl])
+    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])

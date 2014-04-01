@@ -63,7 +63,7 @@
     (function($) {
       var ns = window['__tch'];
 
-      var shouldUndoWhenChangingMaps = {% if will_undo_if_user_changes_trip_plan %}true{% else %}false{% endif %};
+      var shouldUndoWhenChangingMaps = {{will_undo_if_user_changes_trip_plan|jsbool}};
 
       function selectTripPlan() {
         var selectElem = $('#__tc-trip-plans')[0];

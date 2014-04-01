@@ -27,6 +27,8 @@ if not constants.DEBUG:
 
 EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
 
+app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
+
 @app.route('/')
 def index():
     session_info = decode_session(request.cookies)
