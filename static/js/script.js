@@ -212,9 +212,6 @@ function PageStateModel() {
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings, $categories) {
   var me = this;
-  window['root'] = this;
-  this.$scope = $scope;
-
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.orderedCategories = $categories;
@@ -400,33 +397,6 @@ function createMap() {
   return new google.maps.Map($('#map')[0], mapOptions);
 }
 
-function ngScrollToOnClick($parse) {
-  return {
-      restrict: 'AEC',
-      link: function(scope, elem, attrs) {
-        var getScrollToIdFn = $parse(attrs.ngScrollToOnClick);
-        if (getScrollToIdFn) {
-          elem.on('click', function() {
-            var scrollToId = getScrollToIdFn(scope);
-            $('html, body').animate({
-              scrollTop: ($("#" + scrollToId).offset().top - 73)
-            }, 500);
-          });
-        }
-      }
-  };
-}
-
-function tcStarRating() {
-  return {
-    restrict: 'AEC',
-    scope: {
-      value: '=value'
-    },
-    templateUrl: 'star-rating-template'
-  };
-}
-
 function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettings, $allTripPlansSettings) {
   $scope.accountInfo = $accountInfo;
   $scope.accountInfo.loggedIn = !!$accountInfo['email'];
@@ -538,6 +508,35 @@ function GuideViewCarouselCtrl($scope) {
 
   $scope.nextImgs = function() {
     me.currentPage += 1;
+  };
+}
+
+// Directives
+
+function tcScrollToOnClick($parse) {
+  return {
+      restrict: 'AEC',
+      link: function(scope, elem, attrs) {
+        var getScrollToIdFn = $parse(attrs.tcScrollToOnClick);
+        if (getScrollToIdFn) {
+          elem.on('click', function() {
+            var scrollToId = getScrollToIdFn(scope);
+            $('html, body').animate({
+              scrollTop: ($("#" + scrollToId).offset().top - 73)
+            }, 500);
+          });
+        }
+      }
+  };
+}
+
+function tcStarRating() {
+  return {
+    restrict: 'AEC',
+    scope: {
+      value: '=value'
+    },
+    templateUrl: 'star-rating-template'
   };
 }
 
@@ -871,16 +870,20 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .value('$allTripPlansSettings', allTripPlansSettings)
     .value('$categories', categories)
     .value('$accountInfo', accountInfo);
+
   angular.module('mapModule', [])
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
-  angular.module('appModule', ['mapModule', 'initialDataModule', 'ui.bootstrap', 'wu.masonry'], function($interpolateProvider) {
+
+  angular.module('directivesModule', [])
+    .directive('tcScrollToOnClick', tcScrollToOnClick)
+    .directive('tcStarRating', tcStarRating)
+    .directive('bnLazySrc', bnLazySrc);
+
+  angular.module('appModule', ['mapModule', 'initialDataModule', 'directivesModule', 'ui.bootstrap', 'wu.masonry'], function($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
-    .directive('ngScrollToOnClick', ngScrollToOnClick)
-    .directive('tcStarRating', tcStarRating)
-    .directive('bnLazySrc', bnLazySrc)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$categories', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', CategoryCtrl])
