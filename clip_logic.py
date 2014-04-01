@@ -23,6 +23,12 @@ def handle_clipping(url, trip_plan_id, session_info, offline=False):
         raise Exception('User does not have permission to clip to this trip plan')
     if trip_plan.contains_url(url):
         return ClipResult(ClipResult.STATUS_ALREADY_CLIPPED_URL, trip_plan=trip_plan)
+    result = scrape_and_build_entity(url, trip_plan)
+    data.save_trip_plan(trip_plan)
+    return result
+
+def scrape_and_build_entity(url, trip_plan):
+    result = None
     scr = scraper.build_scraper(url)
     if scr.is_base_scraper():
         clipped_page = data.ClippedPage(source_url=url, title=scr.get_page_title())
@@ -40,6 +46,5 @@ def handle_clipping(url, trip_plan_id, session_info, offline=False):
             primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
             source_url=url)
         trip_plan.entities.append(entity)
-        result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity, trip_plan)
-    data.save_trip_plan(trip_plan)
+        result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity, trip_plan)    
     return result

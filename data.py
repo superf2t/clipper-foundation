@@ -3,7 +3,9 @@ import os
 
 import constants
 import serializable
+import struct
 import values
+import uuid
 
 class LatLng(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('lat', 'lng')
@@ -215,6 +217,10 @@ class AccountInfo(serializable.Serializable):
         self.active_trip_plan_id = active_trip_plan_id
         self.active_trip_plan_name = active_trip_plan_name
 
+
+def generate_trip_plan_id():
+    randid = uuid.uuid4().bytes[:8]
+    return struct.unpack('Q', randid)[0]
 
 def trip_plan_filename_from_session_info(session_info):
     return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)

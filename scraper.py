@@ -121,14 +121,13 @@ class TripAdvisorScraper(ScrapedPage):
         LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH,
         LocationResolutionStrategy.ADDRESS)
 
-    @fail_returns_none
     def get_category(self):
         if '/Hotel_Review' in self.url:
             return values.Category.LODGING
         elif '/Restaurant_Review' in self.url:
             return values.Category.FOOD_AND_DRINK
         elif '/Attraction_Review' in self.url:
-            return values.Category.ATTRACTION
+            return values.Category.ATTRACTIONS
         return None
 
     # TODO: Make this more specific

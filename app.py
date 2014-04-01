@@ -79,7 +79,7 @@ def undoclip():
 def make_active(trip_plan_id):
     session_info = decode_session(request.cookies)
     if trip_plan_id == 0:
-        new_trip_plan_id = generate_trip_plan_id()
+        new_trip_plan_id = data.generate_trip_plan_id()
         session_info.active_trip_plan_id = new_trip_plan_id
         session_info.set_on_response = True
         trip_plan = create_and_save_default_trip_plan(session_info)
@@ -142,7 +142,7 @@ def new_trip_plan_ajax():
     session_info = decode_session(request.cookies)
     if not session_info.email:
         raise Exception('User is not logged in')
-    new_trip_plan_id = generate_trip_plan_id()
+    new_trip_plan_id = data.generate_trip_plan_id()
     session_info.active_trip_plan_id = new_trip_plan_id
     session_info.set_on_response = True
     trip_plan = create_and_save_default_trip_plan(session_info)
@@ -246,9 +246,6 @@ def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
     return struct.unpack('Q', sessionid)[0]
 
-def generate_trip_plan_id():
-    return generate_sessionid()
-
 def decode_session(cookies):
     email = cookies.get('email')
     try:
@@ -264,7 +261,7 @@ def decode_session(cookies):
         session_info.sessionid = generate_sessionid()
         session_info.set_on_response = True
     if not session_info.active_trip_plan_id:
-        session_info.active_trip_plan_id = generate_trip_plan_id()
+        session_info.active_trip_plan_id = data.generate_trip_plan_id()
         session_info.set_on_response = True
     return session_info
 

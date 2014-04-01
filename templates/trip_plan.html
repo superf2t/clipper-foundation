@@ -44,12 +44,12 @@
         <div class="entity-nav">
           <a href="javascript:void(0)" ng-scroll-to-on-click="navAnchor('lodging')">
             <div class="col-md-1 navigation-link">
-              HOTELS
+              LODGING
             </div>
           </a>
           <a href="javascript:void(0)" ng-scroll-to-on-click="navAnchor('food_and_drink')">
             <div class="col-md-1 navigation-link">
-              RESTAURANTS
+              FOOD &amp; DRINK
             </div>
           </a>
           <a href="javascript:void(0)" ng-scroll-to-on-click="navAnchor('attractions')">
@@ -113,7 +113,7 @@
                     </div>
                     <div class="entity-description"
                       ng-show="entityModel.hasDescription() && !editing">
-                      <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
+                      <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
                     </div>
                     <div ng-show="editing">
                       <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
@@ -248,7 +248,7 @@
                 <div class="guideview-entity-info">
                   <div class="guideview-entity-description"
                     ng-show="entityModel.hasDescription() && !editing">
-                    <div style="white-space:pre">[[entityModel.data['description'] ]]</div>
+                    <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
                   </div>
                   <div ng-show="editing">
                     <textarea ng-model="entityModel.data['description']"
