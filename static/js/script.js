@@ -21,8 +21,10 @@ function EntityModel(entityData) {
   };
 
   this.clearMarker = function() {
-    this.marker.setMap(null);
-    this.marker = null;
+    if (this.marker) {
+      this.marker.setMap(null);
+      this.marker = null;
+    }
     if (this.infowindow) {
       this.infowindow.close();
       this.infowindow = null;
@@ -210,6 +212,9 @@ function PageStateModel() {
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings, $categories) {
   var me = this;
+  window['root'] = this;
+  this.$scope = $scope;
+
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.orderedCategories = $categories;
@@ -346,9 +351,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings,
           $scope.$broadcast('clearallmarkers');
           // Angular's dirty-checking does not seem to pick up that the
           // model has changed if we just assign to the new model...
+          // Similarly, since the main iteration in the template is done
+          // over 'orderedCategories', we must reset that variable
+          // after a refresh for Angular to detect that it should re-iterate
+          // over that part of the DOM.
           $scope.planModel = null;
+          $scope.orderedCategories = null;
           $timeout(function() {
             $scope.planModel = newModel;
+            $scope.orderedCategories = $categories;
           });
         }
       });
