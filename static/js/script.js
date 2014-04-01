@@ -1,5 +1,9 @@
 function hostnameFromUrl(url) {
-  return $('<a>').attr('href', url)[0].hostname;
+  var fullHost = $('<a>').attr('href', url)[0].hostname;
+  if (fullHost.substring(0, 4) == 'www.') {
+    return fullHost.substring(4);
+  }
+  return fullHost;
 }
 
 function EntityModel(entityData, editable) {
