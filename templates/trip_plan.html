@@ -237,7 +237,7 @@
                       <span class="icon-prev"></span>
                     </a>
                     <div class="masonry-brick guideview-img-masonry-brick" ng-repeat="imgUrl in activeImgUrls()">
-                      <img ng-src="[[imgUrl]]" class="guideview-masonry-img"/>
+                      <img bn-lazy-src="[[imgUrl]]" class="guideview-masonry-img"/>
                     </div>
                     <a class="right carousel-control guideview-carousel-control" ng-show="hasNextImgs()" ng-click="nextImgs()">
                       <span class="icon-next"></span>
@@ -357,7 +357,7 @@
       <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
         <span class="icon-prev"></span>
       </a>
-      <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+      <img bn-lazy-src="[[currentImgUrl]]" class="entity-img"/>
       <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
         <span class="icon-next"></span>
       </a>
