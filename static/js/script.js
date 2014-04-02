@@ -244,7 +244,7 @@ function TemplateToStringRenderer($rootScope, $templateCache, $compile) {
     if (!template) {
       throw 'No template with name ' + templateName;
     }
-    var scope = $rootScope.$new();
+    var scope = $rootScope.$new(true);
     if (scopeVariables) {
       $.extend(scope, scopeVariables);
     }
@@ -349,6 +349,12 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings,
         alert('Failed to save edits');
       });
     $scope.editingTripPlanSettings = false;
+  };
+
+  $scope.openAddPlaceModal = function() {
+    var modal = $modal.open({
+      templateUrl: 'add-place-modal-template',
+    });
   };
 
   $scope.$on('asktocloseallinfowindows', function() {
@@ -591,6 +597,17 @@ function GuideViewCarouselCtrl($scope, $timeout) {
     $timeout(function() {
       $scope.$broadcast('masonry.reload');
     });
+  };
+}
+
+function AddPlaceModalCtrl($scope) {
+  $scope.placeText = '';
+  $scope.placeResult = null;
+  window['ps'] = $scope;
+
+  $scope.placeChanged = function(newPlace) {
+    console.log("place changed");
+    console.log(newPlace);
   };
 }
 
@@ -946,6 +963,27 @@ function bnLazySrc( $window, $document, $rootScope ) {
     });
 }
 
+function tcGooglePlaceAutocomplete($parse) {
+  return {
+    link: function(scope, element, attrs, model) {
+      var placeChangeFn = $parse(attrs.onPlaceChange);
+      var options = {
+        types: [],
+        componentRestrictions: {}
+      };
+      var gPlace = new google.maps.places.Autocomplete(element[0], options);
+
+      google.maps.event.addListener(gPlace, 'place_changed', function() {
+        if (placeChangeFn) {
+          placeChangeFn(scope, {$newPlace: gPlace.getPlace()});
+        };
+      });
+
+    }
+  };
+}
+
+
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo, categories, allowEditing) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -962,7 +1000,8 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
   angular.module('directivesModule', [])
     .directive('tcScrollToOnClick', tcScrollToOnClick)
     .directive('tcStarRating', tcStarRating)
-    .directive('bnLazySrc', bnLazySrc);
+    .directive('bnLazySrc', bnLazySrc)
+    .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete);
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'directivesModule', 'ui.bootstrap', 'wu.masonry'], function($interpolateProvider) {
     $interpolateProvider.startSymbol('[[');
@@ -978,6 +1017,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
+    .controller('AddPlaceModalCtrl', AddPlaceModalCtrl)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .filter('hostname', function() {
       return function(input) {

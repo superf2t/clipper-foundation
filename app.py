@@ -139,7 +139,8 @@ def trip_plan_with_session_info(session_info, trip_plan_id=None):
         allow_editing=trip_plan and trip_plan.editable_by(session_info),
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
-        ordered_categories_json=serializable.to_json_str(ordered_categories))
+        ordered_categories_json=serializable.to_json_str(ordered_categories),
+        admin_mode=request.values.get('admin'))
     return process_response(response, request, session_info)
 
 @app.route('/trip_plan_ajax/<int:trip_plan_id>')

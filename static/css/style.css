@@ -520,3 +520,12 @@ a:hover {
   padding: 30px;
   text-align: center;
 }
+
+.add-place-modal {
+  padding: 30px;
+  height: 500px;
+}
+
+.pac-container {
+  z-index: 1100;
+}
