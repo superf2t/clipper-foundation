@@ -336,7 +336,7 @@ a:hover {
 #map-container {
   position: fixed;
   width: 50%;
-  height: 100%;
+  height: calc(100% - 73px);
   left: 50%;
   top: 70px;
 }

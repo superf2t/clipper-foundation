@@ -409,11 +409,17 @@ function NavigationCtrl($scope, $location, $anchorScroll) {
   };
 }
 
-
 function createMap() {
   var mapOptions = {
     center: new google.maps.LatLng(0, 0),
-    zoom: 2
+    zoom: 2,
+    panControl: false,
+    scaleControl: true,
+    streetViewControl: false,
+    mapTypeControlOptions: {
+      mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
+      position: google.maps.ControlPosition.RIGHT_BOTTOM
+    }
   };
   return new google.maps.Map($('#map')[0], mapOptions);
 }
