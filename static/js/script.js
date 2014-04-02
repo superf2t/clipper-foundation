@@ -13,11 +13,10 @@ function EntityModel(entityData, editable) {
     return this.data['description'] && this.data['description'].length;
   };
 
-  this.makeInfowindow = function() {
+  this.makeInfowindow = function(infowindowContent) {
     if (this.infowindow) {
       this.infowindow.close();
     }
-    var infowindowContent = '<b>' + entityData['name'] + '</b>';
     this.infowindow = new google.maps.InfoWindow({content: infowindowContent});
     return this.infowindow;
   };
@@ -35,6 +34,9 @@ function EntityModel(entityData, editable) {
 
   this.makeMarker =  function() {
     var entity = this.data;
+    if (!entity['latlng']) {
+      return null;
+    }
     var latlng = new google.maps.LatLng(entity['latlng']['lat'], entity['latlng']['lng']);
     var entityName = entity['name'];
     var markerData = {
@@ -46,6 +48,14 @@ function EntityModel(entityData, editable) {
     };
     return new google.maps.Marker(markerData);
   }
+
+  this.isPreciseLocation = function() {
+    return this.data['address_precision'] == 'Precise';
+  };
+
+  this.hasLocation = function() {
+    return !!this.data['latlng'];
+  };
 
   this.marker = this.makeMarker();
   this.infowindow = null;
@@ -92,7 +102,7 @@ function TripPlanModel(tripPlanData) {
   };
 }
 
-function CategoryCtrl($scope, $map, $mapBounds, $http, $tripPlanSettings, $allowEditing) {
+function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer, $tripPlanSettings, $allowEditing) {
   var me = this;
   $scope.entityModels = [];
   $scope.show = true;
@@ -116,10 +126,13 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $tripPlanSettings, $allow
   });
   $.each($scope.entityModels, function(i, entityModel) {
     var marker = entityModel.marker;
+    if (!marker) {
+      return;
+    }
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
-      entityModel.makeInfowindow().open($map, marker);
+      me.createInfowindow(entityModel, marker, true);
     });
     google.maps.event.addListener(marker, 'dragend', function() {
       entityModel.data['latlng']['lat'] = marker.getPosition().lat();
@@ -145,7 +158,9 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $tripPlanSettings, $allow
   $scope.toggleSection = function() {
     $scope.show = !$scope.show;
     $.each($scope.entityModels, function(i, entityModel) {
-      entityModel.marker.setMap($scope.show ? $map : null);
+      if (entityModel.marker) {
+        entityModel.marker.setMap($scope.show ? $map : null);
+      }
     });
   };
 
@@ -156,10 +171,17 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $tripPlanSettings, $allow
   $scope.openInfowindow = function(entityName) {
     $scope.$emit('asktocloseallinfowindows');
     $.each($scope.entityModels, function(i, entityModel) {
-      if (entityModel.data['name'] == entityName) {
-        entityModel.makeInfowindow().open($map, entityModel.marker);
+      if (entityModel.data['name'] == entityName && entityModel.hasLocation()) {
+        me.createInfowindow(entityModel, entityModel.marker);
       }
     });
+  };
+
+  this.createInfowindow = function(entityModel, marker, opt_nonAngularOrigin) {
+    var infowindowContent = $templateToStringRenderer.render('infowindow-template', {
+      entity: entityModel
+    }, opt_nonAngularOrigin);
+    entityModel.makeInfowindow(infowindowContent[0]).open($map, marker);
   };
 }
 
@@ -205,6 +227,32 @@ function EntityCtrl($scope, $http, $tripPlanSettings) {
       .error(function() {
         alert('Failed to delete entity')
       });
+  };
+}
+
+function TemplateToStringRenderer($rootScope, $templateCache, $compile) {
+
+  // nonAngularOrigin means that this template is being rendered in response
+  // to an event that originated outside of Angular, for example a click
+  // on a Google Maps marker which is handled by the Maps event system.
+  // In this case, since we're using Angular templates, we must manually
+  // $apply the scope of the template to complete rendering.  We cannot
+  // do this in all cases though because if the event originated within
+  // Angular than we are already in the midst of a $digest cycle.
+  this.render = function(templateName, scopeVariables, nonAngularOrigin) {
+    var template = $templateCache.get(templateName);
+    if (!template) {
+      throw 'No template with name ' + templateName;
+    }
+    var scope = $rootScope.$new();
+    if (scopeVariables) {
+      $.extend(scope, scopeVariables);
+    }
+    var node = $compile(template)(scope);
+    if (nonAngularOrigin) {
+      scope.$apply();
+    }
+    return node;
   };
 }
 
@@ -922,7 +970,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
   })
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$categories', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
-    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
+    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http', '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
@@ -930,6 +978,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
+    .service('$templateToStringRenderer', TemplateToStringRenderer)
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);

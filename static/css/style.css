@@ -254,6 +254,10 @@ a:hover {
   top: -30px;
 }
 
+.entity-info-text {
+  margin: 5px;
+}
+
 .entity-description-input {
   width: calc(100% - 10px);
   margin: 10px 5px;
@@ -344,6 +348,10 @@ a:hover {
 #map {
   width: 100%;
   height: 100%;
+}
+
+.infowindow-warning-text {
+  margin-top: 10px;
 }
 
 .clipping-iframe {

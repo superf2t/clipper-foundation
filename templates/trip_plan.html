@@ -115,6 +115,12 @@
                       ng-show="entityModel.hasDescription() && !editing">
                       <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
                     </div>
+                    <div ng-if="!entityModel.isPreciseLocation()" class="text-warning entity-info-text">
+                      Location on map is approximate
+                    </div>
+                    <div ng-if="!entityModel.hasLocation()" class="text-warning entity-info-text">
+                      Unable to get a location for this item
+                    </div>
                     <div ng-show="editing">
                       <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
                     </div>
@@ -369,6 +375,17 @@
       <span ng-repeat="star in [1, 2, 3, 4, 5]">
         <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
       </span>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="infowindow-template">
+    <div>
+      <div>
+        <b>[[entity.data['name'] ]]</b>
+      </div>
+      <div ng-if="!entity.isPreciseLocation()" class="text-warning infowindow-warning-text">
+        Location on map is approximate
+      </div>
     </div>
   </script>
 
