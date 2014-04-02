@@ -15,7 +15,13 @@ import data
 import serializable
 import values
 
-app = Flask(__name__)
+class MyFlask(Flask):
+    def get_send_file_max_age(self, name):
+        if name in ('js/script.js', 'css/style.css'):
+            return 0
+        return super(MyFlask, self).get_send_file_max_age(name)
+
+app = MyFlask(__name__)
 
 if not constants.DEBUG:
     import logging
