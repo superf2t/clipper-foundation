@@ -122,7 +122,7 @@
                       ng-show="entityModel.hasDescription() && !editing">
                       <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
                     </div>
-                    <div ng-if="!entityModel.isPreciseLocation()" class="text-warning entity-info-text">
+                    <div ng-if="entityModel.hasLocation() && !entityModel.isPreciseLocation()" class="text-warning entity-info-text">
                       Location on map is approximate
                     </div>
                     <div ng-if="!entityModel.hasLocation()" class="text-warning entity-info-text">
