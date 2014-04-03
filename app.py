@@ -182,6 +182,24 @@ def editentity():
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
+@app.route('/createentity', methods=['POST'])
+def createentity():
+    session_info = decode_session(request.cookies)
+    if not session_info.user_identifier:
+        raise Exception('No sessionid found')
+    try:
+        create_request = data.CreateEntityRequest.from_json_obj(request.json)
+    except:
+        raise Exception('Could not parse a CreateEntityEntity from the input')
+    trip_plan = data.load_trip_plan_by_id(create_request.trip_plan_id)
+    if not trip_plan:
+        raise Exception('No trip plan found for the given id')
+    if not trip_plan.editable_by(session_info):
+        raise Exception('Trip plan not editable by current user')
+    trip_plan.entities.append(create_request.entity)
+    data.save_trip_plan(trip_plan)
+    return json.jsonify(status='Success')
+
 @app.route('/deleteentity', methods=['POST'])
 def deleteentity():
     session_info = decode_session(request.cookies)

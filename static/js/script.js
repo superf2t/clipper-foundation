@@ -627,7 +627,7 @@ function categoryToIconUrl(categoryName, subCategoryName, precision) {
   return iconUrl;
 }
 
-function AddPlaceModalCtrl($scope, $http, $timeout, $datatypeValues) {
+function AddPlaceModalCtrl($scope, $http, $timeout, $tripPlanSettings, $datatypeValues) {
   var me = this;
   $scope.placeResult = null;
   $scope.entityModel = null;
@@ -713,6 +713,23 @@ function AddPlaceModalCtrl($scope, $http, $timeout, $datatypeValues) {
   $scope.categoryChanged = function() {
     $scope.entityModel.data['sub_category'] = null;
     $scope.updateMarkerIcon();
+  };
+
+  $scope.saveNewEntity = function() {
+    var createRequest = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'entity': $scope.entityModel.data
+    }
+    $http.post('/createentity', createRequest).success(function(response) {
+      if (response['status'] != 'Success') {
+        alert('Failed to save entity');
+      } else {
+        $scope.$close();
+        $scope.refresh();
+      }
+    }).error(function() {
+      alert('Failed to save entity');
+    });
   };
 
   this.updateMapAndMarker = function(entityData) {
@@ -1132,7 +1149,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
-    .controller('AddPlaceModalCtrl', ['$scope', '$http', '$timeout', '$datatypeValues', AddPlaceModalCtrl])
+    .controller('AddPlaceModalCtrl', ['$scope', '$http', '$timeout', '$tripPlanSettings', '$datatypeValues', AddPlaceModalCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .filter('hostname', function() {
       return function(input) {

@@ -90,7 +90,7 @@
     <div id="entity-container">
 
       {% if admin_mode and allow_editing %}
-      <div>
+      <div class="add-place-button">
         <button class="btn btn-info" ng-click="openAddPlaceModal()">Add a place manually</button>
       </div>
       {% endif %}
@@ -399,7 +399,8 @@
   <script type="text/ng-template" id="add-place-modal-template">
     <div ng-controller="AddPlaceModalCtrl" class="add-place-modal">
       <div ng-show="showPlaceSearchInput()">
-        <input type="text" tc-google-place-autocomplete class="form-control" on-place-change="placeChanged($newPlace)"/>
+        <input type="text" class="form-control" placeholder="Search for a place name or address"
+          tc-google-place-autocomplete on-place-change="placeChanged($newPlace)"/>
       </div>
       <div ng-show="!showPlaceSearchInput()">
         <a ng-click="forceShowSearchInput()" href="javascript:void(0)">
@@ -407,9 +408,9 @@
           Search for a different place
         </a>
       </div>
-      <div ng-show="!entityModel">
+      <div ng-show="!entityModel && !searching" class="add-place-manual-link">
         <a ng-click="forceShowEditInputs()" href="javascript:void(0)">
-          Manually fill in fields
+          Or manually fill in fields
         </a>
       </div>
       <div ng-show="searching">
@@ -453,6 +454,9 @@
           <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']" ng-change="updateMarkerIcon()"/>
           Imprecise
         </form>
+        <div class="add-place-save-button">
+          <button class="btn btn-info" ng-click="saveNewEntity()">Save</button>
+        </div>
       </div>
     </div>
   </script>

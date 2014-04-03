@@ -182,6 +182,17 @@ class EditEntityRequest(serializable.Serializable):
     def trip_plan_id(self):
         return int(self.trip_plan_id_str)
 
+class CreateEntityRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', serializable.objf('entity', Entity))
+
+    def __init__(self, trip_plan_id_str=None, entity=None):
+        self.trip_plan_id_str = trip_plan_id_str
+        self.entity = entity
+
+    @property
+    def trip_plan_id(self):
+        return int(self.trip_plan_id_str)
+
 class EditTripPlanRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
 

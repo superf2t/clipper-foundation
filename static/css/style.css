@@ -516,6 +516,10 @@ a:hover {
 
 /* Modals */
 
+.add-place-button {
+  padding: 10px;
+}
+
 .clipping-status-modal {
   padding: 30px;
   text-align: center;
@@ -539,6 +543,14 @@ a:hover {
 #add-place-modal-map {
   width: 100%;
   height: 100%;
+}
+
+.add-place-manual-link {
+  margin-top: 10px;
+}
+
+.add-place-save-button {
+  margin-top: 10px;
 }
 
 .pac-container {
