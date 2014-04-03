@@ -786,11 +786,13 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   $scope.loading = false;
   $scope.rawInputText = '';
 
-  $scope.showOmnibox = function() {
-    $scope.active = true;
-    $timeout(function() {
-      $('#add-place-omnibox').focus();
-    });
+  $scope.toggleOmnibox = function() {
+    $scope.active = !$scope.active;
+    if ($scope.active) {
+      $timeout(function() {
+        $('#add-place-omnibox').focus();
+      });
+    }
   };
 
   $scope.placeChanged = function(newPlace) {
@@ -837,6 +839,7 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
 
   this.openAddPlaceConfirmation = function(entityData) {
     $scope.active = false;
+    $scope.rawInputText = '';
     var scope = $scope.$new(true);
     scope.entityModel = new EntityModel(entityData);
     scope.ed = scope.entityModel.data;
@@ -847,9 +850,28 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   };
 }
 
-function AddPlaceConfirmationCtrl($scope, $http, $dataRefreshManager, $tripPlanSettings) {
+function AddPlaceConfirmationCtrl($scope, $http,
+    $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
+
+  $scope.categories = $datatypeValues['categories'];
+  $scope.subCategories = $datatypeValues['sub_categories'];
+  $scope.editingFields = false;
+
+  $scope.openEditFields = function() {
+    $scope.editingFields = true;
+  };
+
   $scope.cancelConfirmation = function() {
     $scope.$close();
+  };
+
+  $scope.categoryChanged = function() {
+    $scope.ed['sub_category'] = null;
+    $scope.updateMarkerIcon();
+  };
+
+  $scope.updateMarkerIcon = function() {
+    // TODO
   };
 
   $scope.saveNewEntity = function() {
@@ -1286,7 +1308,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', EditPlaceModalCtrl])
     .controller('AddPlaceCtrl', ['$scope', '$http', '$timeout', '$modal', AddPlaceCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope', '$http', 
-      '$dataRefreshManager', '$tripPlanSettings', AddPlaceConfirmationCtrl])
+      '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$entityEditModalOpener', EntityEditModalOpener)
     .service('$dataRefreshManager', DataRefreshManager)

@@ -558,9 +558,26 @@ a:hover {
   padding-bottom: 10px;
 }
 
+.apc-edit-mode .apc-rating {
+  padding-top: 10px;
+}
+
+.apc-edit-mode .apc-category {
+  padding-top: 10px;
+}
+
+.apc-edit-mode .apc-sub-category {
+  padding-top: 10px;
+}
+
 .apc-controls {
   padding-top: 20px;
   text-align: right;
+}
+
+.apc-control-edit-link {
+  float: left;
+  padding-top: 7px;
 }
 
 /* Modals */

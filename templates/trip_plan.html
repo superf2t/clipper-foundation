@@ -92,7 +92,7 @@
       {% if admin_mode and allow_editing %}
       <div ng-controller="AddPlaceCtrl">
         <div class="add-place-button">
-          <button class="btn btn-info" ng-click="showOmnibox()">Add a place</button>
+          <button class="btn btn-info" ng-click="toggleOmnibox()">Add a place</button>
         </div>
         <div ng-show="!loadingData">
           <div ng-show="active" class="add-place-overlay">
@@ -490,32 +490,85 @@
 
   <script type="text/ng-template" id="add-place-confirmation-template">
     <div ng-controller="AddPlaceConfirmationCtrl" class="add-place-confirmation">
-      <div class="apc-place-name">
-        [[ed['name'] ]]
-      </div>
-      <div class="apc-address">
-        [[ed['address'] ]]
-      </div>
+      <div ng-show="!editingFields">
+        <div class="apc-place-name">
+          [[ed['name'] ]]
+        </div>
+        <div class="apc-address">
+          [[ed['address'] ]]
+        </div>
 
-      <div class="container-fluid">
-        <div class="row">
-          <div class="col-md-6 flush-left">
-            <div class="apc-photo-container">
-              <div ng-include="'carousel-template'">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6 flush-left">
+              <div class="apc-photo-container">
+                <div ng-include="'carousel-template'">
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="apc-place-details">
+                <div class="apc-rating">
+                  <tc-star-rating value="[[ed['rating'] ]]">
+                  </tc-star-rating>
+                </div>
+                <div class="apc-category">
+                  Category: [[ed['category']['display_name'] ]]
+                </div>
+                <div class="apc-sub-category">
+                  SubCategory: [[ed['sub_category']['display_name'] ]]
+                </div>
               </div>
             </div>
           </div>
-          <div class="col-md-6">
-            <div class="apc-place-details">
-              <div class="apc-rating">
-                <tc-star-rating value="[[ed['rating'] ]]">
-                </tc-star-rating>
+        </div>
+      </div>
+
+      <div ng-show="editingFields" class="apc-edit-mode">
+        <div class="apc-place-name">
+          <input type="text" ng-model="ed['name']" class="form-control"/>
+        </div>
+        <div class="apc-address">
+          <input type="text" ng-model="ed['address']" class="form-control"/>
+        </div>
+
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-6 flush-left">
+              <div class="apc-photo-container">
+                <img ng-src="[[ed['photo_urls'][0] ]]" style="max-width: 100%"/>
               </div>
-              <div class="apc-category">
-                Category: [[ed['category']['display_name'] ]]
-              </div>
-              <div class="apc-sub-category">
-                SubCategory: [[ed['sub_category']['display_name'] ]]
+            </div>
+            <div class="col-md-6">
+              <div class="apc-place-details">
+                <div class="apc-description">
+                  Description
+                  <textarea class="form-control" ng-model="ed['description']">
+                  </textarea>
+                </div>
+                <div class="apc-rating">
+                  <form class="form-inline" role="form">
+                    Rating <input type="number" ng-model="ed['rating']" class="form-control"/>
+                  </form>
+                </div>
+                <div class="apc-category">
+                  <form class="form-inline" role="form">
+                    Category
+                    <select class="form-control" ng-model="ed['category']"
+                      ng-options="c['display_name'] for c in categories track by c['category_id']"
+                      ng-change="categoryChanged()">
+                    </select>
+                  </form>
+                </div>
+                <div class="apc-sub-category">
+                  <form class="form-inline" role="form">
+                    SubCategory
+                    <select class="form-control" ng-model="entityModel.data['sub_category']"
+                      ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+                      ng-change="updateMarkerIcon()">
+                    </select>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -523,13 +576,19 @@
       </div>
 
       <div class="apc-controls">
-        <button class="btn btn-info" ng-click="saveNewEntity()">
-          Add to Trip Plan
-        </button>
-        <button class="btn" ng-click="cancelConfirmation()">
-          Cancel
-        </button>
+        <div class="apc-control-edit-link">
+          <a ng-click="openEditFields()" ng-show="!editingFields" href="javascript:void(0)">Edit</a>
+        </div>
+        <div class="apc-control-buttons">
+          <button class="btn btn-info" ng-click="saveNewEntity()">
+            Add to Trip Plan
+          </button>
+          <button class="btn" ng-click="cancelConfirmation()">
+            Cancel
+          </button>
+        </div>
       </div>
+
     </div>
   </script>
 
