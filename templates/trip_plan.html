@@ -233,7 +233,7 @@
 
   </div>  {# end map view #}
 
-  <div ng-show="pageStateModel.inGuideView()" ng-controller="GuideViewCtrl">
+  <div ng-if="pageStateModel.inGuideView()" ng-controller="GuideViewCtrl">
 
     <div class="guideview-container">
       <div ng-repeat="category in orderedCategories">
