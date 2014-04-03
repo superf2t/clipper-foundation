@@ -398,7 +398,54 @@
 
   <script type="text/ng-template" id="add-place-modal-template">
     <div ng-controller="AddPlaceModalCtrl" class="add-place-modal">
-      <input type="text" tc-google-place-autocomplete class="form-control" on-place-change="placeChanged($newPlace)"/>
+      <div ng-show="showPlaceSearchInput()">
+        <input type="text" tc-google-place-autocomplete class="form-control" on-place-change="placeChanged($newPlace)"/>
+      </div>
+      <div ng-show="!showPlaceSearchInput()">
+        <a ng-click="forceShowSearchInput()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-chevron-up"></span>
+          Search for a different place
+        </a>
+      </div>
+      <div ng-show="!entityModel">
+        <a ng-click="forceShowEditInputs()" href="javascript:void(0)">
+          Manually fill in fields
+        </a>
+      </div>
+      <div ng-show="searching">
+        <img src="/static/img/spinner.gif"/>
+      </div>
+      <div ng-show="entityModel">
+        Name
+        <input type="text" class="form-control" ng-model="entityModel.data['name']"/>
+        Address
+        <input type="text" class="form-control" ng-model="entityModel.data['address']"/>
+        Rating
+        <input type="number" class="form-control" ng-model="entityModel.data['rating']"/>
+        Source url
+        <input type="text" class="form-control" ng-model="entityModel.data['source_url']"/>
+        Photo urls (one per line)
+        <textarea class="form-control" ng-model="entityModel.rawPhotoUrlText">
+        </textarea>
+        Description
+        <textarea class="form-control" ng-model="entityModel.data['description']">
+        </textarea>
+        <form class="form-inline" role="form">
+          Location precision
+          <input type="radio" class="form-control" value="Precise" ng-model="entityModel.data['address_precision']"/>
+          Precise
+          <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']"/>
+          Imprecise
+        </form>
+        Category
+        <select class="form-control" ng-model="entityModel.data['category']"
+          ng-options="c['display_name'] for c in categories track by c['category_id']">
+        </select>
+        SubCategory
+        <select class="form-control" ng-model="entityModel.data['sub_category']"
+          ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']">
+        </select>
+      </div>
     </div>
   </script>
 
@@ -407,7 +454,7 @@
       {{plan.settings_json()|safe}},
       {{all_trip_plans_settings_json|safe}},
       {{account_info.to_json_str()|safe}},
-      {{ordered_categories_json|safe}},
+      {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}});
   </script>
 </body>

@@ -279,11 +279,12 @@ function PageStateModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings, $categories) {
+function RootCtrl($scope, $http, $timeout, $modal,
+    $tripPlan, $tripPlanSettings, $datatypeValues) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = new TripPlanModel($tripPlan);
-  $scope.orderedCategories = $categories;
+  $scope.orderedCategories = $datatypeValues['categories'];
   $scope.accountDropdownOpen = false;
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = {
@@ -431,7 +432,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, $tripPlanSettings,
           $scope.orderedCategories = null;
           $timeout(function() {
             $scope.planModel = newModel;
-            $scope.orderedCategories = $categories;
+            $scope.orderedCategories = $datatypeValues['categories'];
           });
         }
       });
@@ -600,14 +601,51 @@ function GuideViewCarouselCtrl($scope, $timeout) {
   };
 }
 
-function AddPlaceModalCtrl($scope) {
-  $scope.placeText = '';
+function AddPlaceModalCtrl($scope, $http, $datatypeValues) {
+  var me = this;
   $scope.placeResult = null;
-  window['ps'] = $scope;
+  $scope.entityModel = null;
+  $scope.categories = $datatypeValues['categories'];
+  $scope.subCategories = $datatypeValues['sub_categories'];
+  $scope.searching = false;
+  this.showPlaceSearchInput = true;
+
+  $scope.$watch('entityModel.rawPhotoUrlText', function(newValue) {
+    if (!$scope.entityModel || !newValue) {
+      return;
+    }
+    $scope.entityModel.data['photo_urls'] = newValue.split('\n');
+  });
 
   $scope.placeChanged = function(newPlace) {
-    console.log("place changed");
-    console.log(newPlace);
+    if (!newPlace || !newPlace['reference']) {
+      return;
+    }
+    $scope.searching = true;
+    $http.get('/google_place_to_entity?reference=' + newPlace['reference'])
+      .success(function(response) {
+        var entity = response['entity'];
+        if (entity) {
+          $scope.entityModel = new EntityModel(entity);
+          me.showPlaceSearchInput = false;
+        }
+        $scope.searching = false;
+      });
+  };
+
+  $scope.forceShowEditInputs = function() {
+    if (!$scope.entityModel) {
+      $scope.entityModel = new EntityModel({});
+    }
+    me.showPlaceSearchInput = false;
+  };
+
+  $scope.showPlaceSearchInput = function() {
+    return me.showPlaceSearchInput;
+  };
+
+  $scope.forceShowSearchInput = function() {
+    me.showPlaceSearchInput = true;
   };
 }
 
@@ -984,12 +1022,13 @@ function tcGooglePlaceAutocomplete($parse) {
 }
 
 
-window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, accountInfo, categories, allowEditing) {
+window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
+    accountInfo, datatypeValues, allowEditing) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanSettings', tripPlanSettings)
     .value('$allTripPlansSettings', allTripPlansSettings)
-    .value('$categories', categories)
+    .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing);
 
@@ -1007,7 +1046,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
-    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$categories', RootCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$datatypeValues', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http', '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
     .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
@@ -1017,7 +1056,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings, a
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
-    .controller('AddPlaceModalCtrl', AddPlaceModalCtrl)
+    .controller('AddPlaceModalCtrl', ['$scope', '$http', '$datatypeValues', AddPlaceModalCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .filter('hostname', function() {
       return function(input) {

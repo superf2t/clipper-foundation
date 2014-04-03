@@ -12,6 +12,7 @@ from flask import request
 import clip_logic
 import constants
 import data
+import google_places
 import serializable
 import values
 
@@ -132,14 +133,13 @@ def trip_plan_with_session_info(session_info, trip_plan_id=None):
     account_info = data.AccountInfo(session_info.email,
         active_trip_plan_id=active_trip_plan.trip_plan_id if active_trip_plan else None,
         active_trip_plan_name=active_trip_plan.name if active_trip_plan else None)
-    ordered_categories = [values.Category.LODGING, values.Category.FOOD_AND_DRINK, values.Category.ATTRACTIONS]
     response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json,
         all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
         session_info=session_info,
         allow_editing=trip_plan and trip_plan.editable_by(session_info),
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
-        ordered_categories_json=serializable.to_json_str(ordered_categories),
+        all_datatype_values=values.ALL_VALUES,
         admin_mode=request.values.get('admin'))
     return process_response(response, request, session_info)
 
@@ -248,6 +248,12 @@ def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
     response.headers['Content-Type'] = 'application/javascript'
     return response 
+
+@app.route('/google_place_to_entity')
+def google_place_to_entity():
+    reference = request.values['reference']
+    result = google_places.lookup_place_by_reference(reference)
+    return json.jsonify(entity=result.to_entity().to_json_obj() if result else None)
 
 def create_and_save_default_trip_plan(session_info):
     trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)

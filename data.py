@@ -55,14 +55,14 @@ class Entity(serializable.Serializable):
         'address',
         serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
-        'source_url', 'icon_url', 'google_reference_id')
+        'source_url', 'icon_url', 'google_reference')
 
     def __init__(self, name=None, entity_type=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
-            google_reference_id=None):
+            google_reference=None):
         self.name = name
         self.entity_type = entity_type  # Deprecated
         self.category = category
@@ -75,7 +75,7 @@ class Entity(serializable.Serializable):
         self.primary_photo_url = primary_photo_url
         self.photo_urls = photo_urls or []
         self.source_url = source_url
-        self.google_reference_id = google_reference_id
+        self.google_reference = google_reference
 
         self.initialize()
 

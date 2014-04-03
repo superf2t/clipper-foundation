@@ -30,3 +30,16 @@ SubCategory.HOTEL = SubCategory(1, 'hotel', 'Hotel')
 SubCategory.PRIVATE_RENTAL = SubCategory(2, 'private_rental', 'Private rental')
 SubCategory.RESTAURANT = SubCategory(3, 'restaurant', 'Restaurant')
 SubCategory.BAR = SubCategory(4, 'bar', 'Bar')
+
+class ValueCollection(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.objlistf('categories', Category),
+        serializable.objlistf('sub_categories', SubCategory))
+
+    def __init__(self, categories=(), sub_categories=()):
+        self.categories = categories
+        self.sub_categories = sub_categories
+
+ALL_VALUES = ValueCollection(
+    (Category.LODGING, Category.FOOD_AND_DRINK, Category.ATTRACTIONS),
+    (SubCategory.HOTEL, SubCategory.PRIVATE_RENTAL, SubCategory.RESTAURANT, SubCategory.BAR))

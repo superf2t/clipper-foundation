@@ -4,7 +4,7 @@ import string
 import urllib
 import urllib2
 
-API_KEY = 'AIzaSyDzW3qolS2BMtVZq1DmrUnsYGDZQ2VUw2k'
+import constants
 
 def lookup_latlng(address):
     if not address:
@@ -21,7 +21,7 @@ def lookup_place(query):
     if not query:
         return None
     url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?sensor=false&key=%s&query=%s' % (
-        API_KEY, urllib.quote(query.encode('utf-8')))
+        constants.GOOGLE_PLACES_API_KEY, urllib.quote(query.encode('utf-8')))
     response = urllib2.urlopen(url).read()
     data = json.loads(response)
     try:
