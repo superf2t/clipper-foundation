@@ -14,6 +14,7 @@ class LatLng(serializable.Serializable):
         self.lat = lat
         self.lng = lng
 
+# For backwards compatibility
 ENTITY_TYPE_TO_ICON_URL = {
     'Attraction': 'sight-2.png',
     'Restaurant': 'restaurant.png',

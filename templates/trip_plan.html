@@ -432,11 +432,13 @@
         </textarea>
         Category
         <select class="form-control" ng-model="entityModel.data['category']"
-          ng-options="c['display_name'] for c in categories track by c['category_id']">
+          ng-options="c['display_name'] for c in categories track by c['category_id']"
+          ng-change="categoryChanged()">
         </select>
         SubCategory
         <select class="form-control" ng-model="entityModel.data['sub_category']"
-          ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']">
+          ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+          ng-change="updateMarkerIcon()">
         </select>
         <div class="add-place-modal-map-header">
           Drag the marker to change the location
@@ -446,9 +448,9 @@
         </div>
         <form class="form-inline" role="form">
           Location precision
-          <input type="radio" class="form-control" value="Precise" ng-model="entityModel.data['address_precision']"/>
+          <input type="radio" class="form-control" value="Precise" ng-model="entityModel.data['address_precision']" ng-change="updateMarkerIcon()"/>
           Precise
-          <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']"/>
+          <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']" ng-change="updateMarkerIcon()"/>
           Imprecise
         </form>
       </div>

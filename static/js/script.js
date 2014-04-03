@@ -601,6 +601,32 @@ function GuideViewCarouselCtrl($scope, $timeout) {
   };
 }
 
+var SUB_CATEGORY_NAME_TO_ICON_URL = {
+    'hotel': 'lodging_0star.png',
+    'private_rental': 'lodging_0star.png',
+    'restaurant': 'restaurant.png',
+    'bar': 'bar_coktail.png'
+};
+
+var CATEGORY_NAME_TO_ICON_URL = {
+    'lodging': 'lodging_0star.png',
+    'food_and_drink': 'restaurant.png',
+    'attractions': 'sight-2.png'
+};
+
+function categoryToIconUrl(categoryName, subCategoryName, precision) {
+  var iconUrl = '';
+  if (subCategoryName) {
+    iconUrl = SUB_CATEGORY_NAME_TO_ICON_URL[subCategoryName];
+  } else if (categoryName) {
+    iconUrl = CATEGORY_NAME_TO_ICON_URL[categoryName];
+  }
+  if (precision == 'Imprecise') {
+    iconUrl = iconUrl.replace('.', '_imprecise.');
+  }
+  return iconUrl;
+}
+
 function AddPlaceModalCtrl($scope, $http, $timeout, $datatypeValues) {
   var me = this;
   $scope.placeResult = null;
@@ -672,6 +698,21 @@ function AddPlaceModalCtrl($scope, $http, $timeout, $datatypeValues) {
 
   $scope.forceShowSearchInput = function() {
     me.showPlaceSearchInput = true;
+  };
+
+  $scope.updateMarkerIcon = function() {
+    var data =  $scope.entityModel.data;
+    var iconUrl = categoryToIconUrl(
+      data['category'] && data['category']['name'],
+      data['sub_category'] && data['sub_category']['name'],
+      data['address_precision']);
+    $scope.entityModel.data['icon_url'] = iconUrl;
+    marker.setIcon('/static/img/' + iconUrl)
+  };
+
+  $scope.categoryChanged = function() {
+    $scope.entityModel.data['sub_category'] = null;
+    $scope.updateMarkerIcon();
   };
 
   this.updateMapAndMarker = function(entityData) {
