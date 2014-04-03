@@ -601,7 +601,7 @@ function GuideViewCarouselCtrl($scope, $timeout) {
   };
 }
 
-function AddPlaceModalCtrl($scope, $http, $datatypeValues) {
+function AddPlaceModalCtrl($scope, $http, $timeout, $datatypeValues) {
   var me = this;
   $scope.placeResult = null;
   $scope.entityModel = null;
@@ -609,6 +609,29 @@ function AddPlaceModalCtrl($scope, $http, $datatypeValues) {
   $scope.subCategories = $datatypeValues['sub_categories'];
   $scope.searching = false;
   this.showPlaceSearchInput = true;
+
+  var mapOptions = {
+    center: new google.maps.LatLng(0, 0),
+    zoom: 15,
+    panControl: false,
+    scaleControl: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+  var map = new google.maps.Map($('#add-place-modal-map')[0], mapOptions);
+  var marker = new google.maps.Marker({
+    draggable: true,
+    position: new google.maps.LatLng(0.0, 0.0),
+    map: map
+  });
+  google.maps.event.addListener(marker, 'dragend', function() {
+    var entityData = $scope.entityModel.data;
+    if (!entityData['latlng']) {
+      entityData['latlng'] = {};
+    }
+    entityData['latlng']['lat'] = marker.getPosition().lat();
+    entityData['latlng']['lng'] = marker.getPosition().lng();
+  });
 
   $scope.$watch('entityModel.rawPhotoUrlText', function(newValue) {
     if (!$scope.entityModel || !newValue) {
@@ -627,6 +650,9 @@ function AddPlaceModalCtrl($scope, $http, $datatypeValues) {
         var entity = response['entity'];
         if (entity) {
           $scope.entityModel = new EntityModel(entity);
+          $timeout(function() {
+            me.updateMapAndMarker(entity);
+          });
           me.showPlaceSearchInput = false;
         }
         $scope.searching = false;
@@ -646,6 +672,15 @@ function AddPlaceModalCtrl($scope, $http, $datatypeValues) {
 
   $scope.forceShowSearchInput = function() {
     me.showPlaceSearchInput = true;
+  };
+
+  this.updateMapAndMarker = function(entityData) {
+    google.maps.event.trigger(map, 'resize');
+    var latlng = new google.maps.LatLng(
+      entityData['latlng']['lat'], entityData['latlng']['lng']);
+    marker.setPosition(latlng);
+    marker.setIcon('/static/img/' + entityData['icon_url']);
+    map.setCenter(latlng);
   };
 }
 
@@ -1056,7 +1091,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
-    .controller('AddPlaceModalCtrl', ['$scope', '$http', '$datatypeValues', AddPlaceModalCtrl])
+    .controller('AddPlaceModalCtrl', ['$scope', '$http', '$timeout', '$datatypeValues', AddPlaceModalCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .filter('hostname', function() {
       return function(input) {

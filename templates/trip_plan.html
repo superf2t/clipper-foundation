@@ -430,13 +430,6 @@
         Description
         <textarea class="form-control" ng-model="entityModel.data['description']">
         </textarea>
-        <form class="form-inline" role="form">
-          Location precision
-          <input type="radio" class="form-control" value="Precise" ng-model="entityModel.data['address_precision']"/>
-          Precise
-          <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']"/>
-          Imprecise
-        </form>
         Category
         <select class="form-control" ng-model="entityModel.data['category']"
           ng-options="c['display_name'] for c in categories track by c['category_id']">
@@ -445,6 +438,19 @@
         <select class="form-control" ng-model="entityModel.data['sub_category']"
           ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']">
         </select>
+        <div class="add-place-modal-map-header">
+          Drag the marker to change the location
+        </div>
+        <div id="add-place-modal-map-container">
+          <div id="add-place-modal-map"></div>
+        </div>
+        <form class="form-inline" role="form">
+          Location precision
+          <input type="radio" class="form-control" value="Precise" ng-model="entityModel.data['address_precision']"/>
+          Precise
+          <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']"/>
+          Imprecise
+        </form>
       </div>
     </div>
   </script>
