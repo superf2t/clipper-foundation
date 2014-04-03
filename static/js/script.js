@@ -693,13 +693,6 @@ function EditPlaceModalCtrl($scope, $http, $timeout, $dataRefreshManager, $tripP
     entityData['latlng']['lng'] = marker.getPosition().lng();
   });
 
-  $scope.$watch('entityModel.rawPhotoUrlText', function(newValue) {
-    if (!$scope.entityModel || !newValue) {
-      return;
-    }
-    $scope.entityModel.data['photo_urls'] = newValue.split('\n');
-  });
-
   $scope.placeChanged = function(newPlace) {
     if (!newPlace || !newPlace['reference']) {
       return;
