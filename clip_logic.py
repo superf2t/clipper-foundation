@@ -36,16 +36,25 @@ def scrape_and_build_entity(url, trip_plan):
         trip_plan.clipped_pages.append(clipped_page)
         result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER, trip_plan=trip_plan)
     else:
-        address = scr.get_address()
-        location = scr.lookup_location()
-        latlng = data.LatLng.from_json_obj(location.latlng_json()) if location else None
-        address_precision = 'Precise' if location and location.is_precise() else 'Imprecise'
-        entity = data.Entity(name=scr.get_entity_name(),
-            category=scr.get_category(), sub_category=scr.get_sub_category(),
-            address=scr.get_address(), latlng=latlng, 
-            address_precision=address_precision, rating=scr.get_rating(),
-            primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
-            source_url=url)
+        entity = entity_from_scraper(scr, url)
         trip_plan.entities.append(entity)
         result = ClipResult(ClipResult.STATUS_SUCCESS_KNOWN_SOURCE, entity=entity, trip_plan=trip_plan)    
     return result
+
+def entity_from_scraper(scr, url):
+    address = scr.get_address()
+    location = scr.lookup_location()
+    latlng = data.LatLng.from_json_obj(location.latlng_json()) if location else None
+    address_precision = 'Precise' if location and location.is_precise() else 'Imprecise'
+    return data.Entity(name=scr.get_entity_name(),
+        category=scr.get_category(), sub_category=scr.get_sub_category(),
+        address=scr.get_address(), latlng=latlng, 
+        address_precision=address_precision, rating=scr.get_rating(),
+        primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
+        source_url=url)
+
+def scrape_entity_from_url(url):
+    scr = scraper.build_scraper(url)
+    if scr.is_base_scraper():
+        return None
+    return entity_from_scraper(scr, url)

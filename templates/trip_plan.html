@@ -90,8 +90,26 @@
     <div id="entity-container">
 
       {% if admin_mode and allow_editing %}
-      <div class="add-place-button">
-        <button class="btn btn-info" ng-click="openEditPlaceModal()">Add a place manually</button>
+      <div ng-controller="AddPlaceCtrl">
+        <div class="add-place-button">
+          <button class="btn btn-info" ng-click="showOmnibox()">Add a place</button>
+        </div>
+        <div ng-show="!loadingData">
+          <div ng-show="active" class="add-place-overlay">
+            <input type="text" class="form-control" placeholder="Search for a place name or address OR paste a url"
+            tc-google-place-autocomplete
+            id="add-place-omnibox"
+            ng-model="rawInputText"
+            on-place-change="placeChanged($newPlace)"
+            ng-paste="textPasted()"/>
+            <div class="add-place-manually-link">
+              <a href="javascript:void(0)">Or enter fields manually</a>
+            </div>
+          </div>
+        </div>
+        <div ng-show="loadingData">
+          <img src="/static/img/spinner.gif"/>
+        </div>
       </div>
       {% endif %}
 
@@ -466,6 +484,51 @@
         <div class="edit-place-save-button">
           <button class="btn btn-info" ng-click="saveEntity()">Save</button>
         </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="add-place-confirmation-template">
+    <div ng-controller="AddPlaceConfirmationCtrl" class="add-place-confirmation">
+      <div class="apc-place-name">
+        [[ed['name'] ]]
+      </div>
+      <div class="apc-address">
+        [[ed['address'] ]]
+      </div>
+
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-6 flush-left">
+            <div class="apc-photo-container">
+              <div ng-include="'carousel-template'">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="apc-place-details">
+              <div class="apc-rating">
+                <tc-star-rating value="[[ed['rating'] ]]">
+                </tc-star-rating>
+              </div>
+              <div class="apc-category">
+                Category: [[ed['category']['display_name'] ]]
+              </div>
+              <div class="apc-sub-category">
+                SubCategory: [[ed['sub_category']['display_name'] ]]
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="apc-controls">
+        <button class="btn btn-info" ng-click="saveNewEntity()">
+          Add to Trip Plan
+        </button>
+        <button class="btn" ng-click="cancelConfirmation()">
+          Cancel
+        </button>
       </div>
     </div>
   </script>

@@ -514,6 +514,55 @@ a:hover {
   }
 }
 
+/* Add Place Overlays */
+
+.add-place-overlay {
+  width: 400px;
+  height: 80px;
+  position: absolute;
+  z-index: 2;
+  padding: 10px;
+  margin-left: 10px;
+  border-radius: 3px;
+  background-color: #fff;
+}
+
+.add-place-manually-link {
+  margin-top: 10px;
+}
+
+.add-place-confirmation {
+  margin: 20px;
+}
+
+.add-place-confirmation .container-fluid {
+  padding: 0;
+}
+
+.add-place-confirmation .row {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.flush-left {
+  padding-left: 0;
+}
+
+.apc-place-name {
+  font-weight: bold;
+  font-size: 16pt;
+  padding-bottom: 10px;
+}
+
+.apc-address {
+  padding-bottom: 10px;
+}
+
+.apc-controls {
+  padding-top: 20px;
+  text-align: right;
+}
+
 /* Modals */
 
 .add-place-button {

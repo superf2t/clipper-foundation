@@ -6,6 +6,13 @@ function hostnameFromUrl(url) {
   return fullHost;
 }
 
+function looksLikeUrl(text) {
+  if (!text) {
+    return false;
+  }
+  return text.toLowerCase().substring(0, 4) == 'http';
+}
+
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
@@ -773,6 +780,96 @@ function EditPlaceModalCtrl($scope, $http, $timeout, $dataRefreshManager, $tripP
   };
 }
 
+function AddPlaceCtrl($scope, $http, $timeout, $modal) {
+  var me = this;
+  $scope.active = false;
+  $scope.loading = false;
+  $scope.rawInputText = '';
+
+  $scope.showOmnibox = function() {
+    $scope.active = true;
+    $timeout(function() {
+      $('#add-place-omnibox').focus();
+    });
+  };
+
+  $scope.placeChanged = function(newPlace) {
+    if (!newPlace || !newPlace['reference']) {
+      return;
+    }
+    me.loadEntityByGooglePlaceReference(newPlace['reference']);
+  };
+
+  $scope.textPasted = function() {
+    // Ugly hack to wrap this in a timeout; without it, the paste event
+    // fires before the input has been populated with the pasted data.
+    $timeout(function() {
+      if (!$scope.rawInputText || !looksLikeUrl($scope.rawInputText)) {
+        return;
+      }
+      me.loadEntityByUrl($scope.rawInputText);
+    });
+  };
+
+  this.loadEntityByUrl = function(url) {
+    $scope.loadingData = true;
+    $http.get('/url_to_entity?url=' + escape(url))
+      .success(function(response) {
+        var entity = response['entity'];
+        if (entity) {
+          me.openAddPlaceConfirmation(entity);
+        }
+        $scope.loadingData = false;
+      });
+  };
+
+  this.loadEntityByGooglePlaceReference = function(reference) {
+    $scope.loadingData = true;
+    $http.get('/google_place_to_entity?reference=' + reference)
+      .success(function(response) {
+        var entity = response['entity'];
+        if (entity) {
+          me.openAddPlaceConfirmation(entity);
+        }
+        $scope.loadingData = false;
+      });    
+  };
+
+  this.openAddPlaceConfirmation = function(entityData) {
+    $scope.active = false;
+    var scope = $scope.$new(true);
+    scope.entityModel = new EntityModel(entityData);
+    scope.ed = scope.entityModel.data;
+    $modal.open({
+      templateUrl: 'add-place-confirmation-template',
+      scope: scope
+    });
+  };
+}
+
+function AddPlaceConfirmationCtrl($scope, $http, $dataRefreshManager, $tripPlanSettings) {
+  $scope.cancelConfirmation = function() {
+    $scope.$close();
+  };
+
+  $scope.saveNewEntity = function() {
+    var request = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'entity': $scope.entityModel.data
+    }
+    $http.post('/createentity', request).success(function(response) {
+      if (response['status'] != 'Success') {
+        alert('Failed to save entity');
+      } else {
+        $scope.$close();
+        $dataRefreshManager.askToRefresh(true);
+      }
+    }).error(function() {
+      alert('Failed to save entity');
+    });
+  };
+}
+
 // Directives
 
 function tcScrollToOnClick($parse) {
@@ -1187,6 +1284,9 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
     .controller('EditPlaceModalCtrl', ['$scope', '$http', '$timeout',
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', EditPlaceModalCtrl])
+    .controller('AddPlaceCtrl', ['$scope', '$http', '$timeout', '$modal', AddPlaceCtrl])
+    .controller('AddPlaceConfirmationCtrl', ['$scope', '$http', 
+      '$dataRefreshManager', '$tripPlanSettings', AddPlaceConfirmationCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$entityEditModalOpener', EntityEditModalOpener)
     .service('$dataRefreshManager', DataRefreshManager)

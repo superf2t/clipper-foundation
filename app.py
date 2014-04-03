@@ -273,6 +273,12 @@ def google_place_to_entity():
     result = google_places.lookup_place_by_reference(reference)
     return json.jsonify(entity=result.to_entity().to_json_obj() if result else None)
 
+@app.route('/url_to_entity')
+def url_to_entity():
+    url = request.values['url']
+    entity = clip_logic.scrape_entity_from_url(url)
+    return json.jsonify(entity=entity.to_json_obj() if entity else None)
+
 def create_and_save_default_trip_plan(session_info):
     trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
     data.save_trip_plan(trip_plan)
