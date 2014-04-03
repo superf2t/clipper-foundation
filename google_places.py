@@ -1,4 +1,5 @@
 import json
+import httplib2
 import urllib2
 
 import constants
@@ -17,6 +18,14 @@ def lookup_place_by_reference(reference):
     except:
         return None
 
+def resolve_photo_url(photo_reference, maxwidth, maxheight):
+    h = httplib2.Http()
+    h.follow_redirects = False
+    url = 'https://maps.googleapis.com/maps/api/place/photo?sensor=false&key=%s&photoreference=%s&maxwidth=%s&maxheight=%s' % (
+        constants.GOOGLE_PLACES_API_KEY, photo_reference, maxwidth, maxheight)
+    response, body = h.request(url)
+    return response['location']
+
 class PlaceDetails(object):
     def __init__(self, place_json):
         self.place_json = place_json
@@ -33,8 +42,17 @@ class PlaceDetails(object):
             address_precision='Precise',  # TODO
             rating=js.get('rating'),
             source_url=js.get('url'),
+            photo_urls=PlaceDetails.make_photo_urls(js.get('photos', ())),
             google_reference=js['reference']
             )
+
+    @staticmethod
+    def make_photo_urls(photo_objs):
+        photo_urls = []
+        for obj in photo_objs:
+            url = resolve_photo_url(obj['photo_reference'], obj['width'], obj['height'])
+            photo_urls.append(url)
+        return photo_urls
 
     @staticmethod
     def types_to_category(places_api_types):

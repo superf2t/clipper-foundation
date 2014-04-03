@@ -434,7 +434,8 @@
         <input type="text" class="form-control" ng-model="entityModel.data['source_url']"
           ng-disabled="isEdit"/>
         Photo urls (one per line)
-        <textarea class="form-control" ng-model="entityModel.rawPhotoUrlText">
+        <textarea class="form-control" ng-model="entityModel.data['photo_urls']"
+          ng-list="'\n'">
         </textarea>
         Description
         <textarea class="form-control" ng-model="entityModel.data['description']">
