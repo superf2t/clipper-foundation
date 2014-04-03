@@ -185,7 +185,8 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer
   };
 }
 
-function EntityCtrl($scope, $http, $tripPlanSettings) {
+function EntityCtrl($scope, $http, $entityEditModalOpener,
+    $dataRefreshManager, $tripPlanSettings) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -194,6 +195,10 @@ function EntityCtrl($scope, $http, $tripPlanSettings) {
 
   $scope.cancelEditing = function() {
     $scope.editing = false;
+  };
+
+  $scope.openEditEntityModal = function() {
+    $entityEditModalOpener.open($scope.entityModel.data);
   };
 
   $scope.saveEntityEdit = function() {
@@ -219,7 +224,7 @@ function EntityCtrl($scope, $http, $tripPlanSettings) {
     $http.post('/deleteentity', deleteRequest)
       .success(function(response) {
         if (response['status'] == 'Success') {
-          $scope.refresh();
+          $dataRefreshManager.askToRefresh();
         } else {
           alert('Failed to delete entity');
         }
@@ -279,7 +284,7 @@ function PageStateModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal,
+function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
     $tripPlan, $tripPlanSettings, $datatypeValues) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
@@ -352,10 +357,8 @@ function RootCtrl($scope, $http, $timeout, $modal,
     $scope.editingTripPlanSettings = false;
   };
 
-  $scope.openAddPlaceModal = function() {
-    var modal = $modal.open({
-      templateUrl: 'add-place-modal-template',
-    });
+  $scope.openEditPlaceModal = function() {
+    $entityEditModalOpener.open();
   };
 
   $scope.$on('asktocloseallinfowindows', function() {
@@ -409,7 +412,7 @@ function RootCtrl($scope, $http, $timeout, $modal,
       .error(opt_errorCallback);
   };
 
-  this.refresh = $scope.refresh = function() {
+  this.refresh = function(opt_force) {
     if ($scope.refreshState.paused) {
       return;
     }
@@ -420,7 +423,7 @@ function RootCtrl($scope, $http, $timeout, $modal,
           return;
         }
         var newModel = new TripPlanModel(response['trip_plan']);
-        if (!$scope.planModel || !$scope.planModel.fastEquals(newModel)) {
+        if (opt_force || !$scope.planModel || !$scope.planModel.fastEquals(newModel)) {
           $scope.$broadcast('clearallmarkers');
           // Angular's dirty-checking does not seem to pick up that the
           // model has changed if we just assign to the new model...
@@ -437,6 +440,8 @@ function RootCtrl($scope, $http, $timeout, $modal,
         }
       });
   };
+
+  $scope.$on('refreshdata', this.refresh);
 
   var refreshInterval = 5000;
   function refreshPoll() {
@@ -627,14 +632,43 @@ function categoryToIconUrl(categoryName, subCategoryName, precision) {
   return iconUrl;
 }
 
-function AddPlaceModalCtrl($scope, $http, $timeout, $tripPlanSettings, $datatypeValues) {
+function EntityEditModalOpener($rootScope, $modal) {
+  this.open = function(opt_existingEntityData) {
+    var scope = null;
+    if (opt_existingEntityData) {
+      scope = $rootScope.$new(true);
+      scope.existingEntityData = angular.copy(opt_existingEntityData)
+    }
+    return $modal.open({
+      templateUrl: 'edit-place-modal-template',
+      scope: scope
+    });
+  };
+}
+
+function DataRefreshManager($rootScope) {
+  this.askToRefresh = function(opt_force) {
+    $rootScope.$broadcast('refreshdata', opt_force);
+  };
+}
+
+function EditPlaceModalCtrl($scope, $http, $timeout, $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
   var me = this;
+  if ($scope.existingEntityData) {
+    $scope.entityModel = new EntityModel($scope.existingEntityData);
+    $scope.isEdit = true;
+    $timeout(function() {
+      me.updateMapAndMarker($scope.entityModel.data);
+    });
+  } else {
+    $scope.entityModel = null;
+    $scope.isEdit = false;
+  }
   $scope.placeResult = null;
-  $scope.entityModel = null;
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
   $scope.searching = false;
-  this.showPlaceSearchInput = true;
+  this.showPlaceSearchInput = !$scope.isEdit;
 
   var mapOptions = {
     center: new google.maps.LatLng(0, 0),
@@ -644,7 +678,7 @@ function AddPlaceModalCtrl($scope, $http, $timeout, $tripPlanSettings, $datatype
     streetViewControl: false,
     mapTypeControl: false
   };
-  var map = new google.maps.Map($('#add-place-modal-map')[0], mapOptions);
+  var map = new google.maps.Map($('#edit-place-modal-map')[0], mapOptions);
   var marker = new google.maps.Marker({
     draggable: true,
     position: new google.maps.LatLng(0.0, 0.0),
@@ -715,17 +749,19 @@ function AddPlaceModalCtrl($scope, $http, $timeout, $tripPlanSettings, $datatype
     $scope.updateMarkerIcon();
   };
 
-  $scope.saveNewEntity = function() {
-    var createRequest = {
+  $scope.saveEntity = function() {
+    // For now, Create requests and Edit requests have identical structure.
+    var request = {
       'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
       'entity': $scope.entityModel.data
     }
-    $http.post('/createentity', createRequest).success(function(response) {
+    var url = $scope.isEdit ? '/editentity' : '/createentity';
+    $http.post(url, request).success(function(response) {
       if (response['status'] != 'Success') {
         alert('Failed to save entity');
       } else {
         $scope.$close();
-        $scope.refresh();
+        $dataRefreshManager.askToRefresh(true);
       }
     }).error(function() {
       alert('Failed to save entity');
@@ -734,11 +770,13 @@ function AddPlaceModalCtrl($scope, $http, $timeout, $tripPlanSettings, $datatype
 
   this.updateMapAndMarker = function(entityData) {
     google.maps.event.trigger(map, 'resize');
-    var latlng = new google.maps.LatLng(
-      entityData['latlng']['lat'], entityData['latlng']['lng']);
-    marker.setPosition(latlng);
-    marker.setIcon('/static/img/' + entityData['icon_url']);
-    map.setCenter(latlng);
+    if (entityData['latlng']) {
+      var latlng = new google.maps.LatLng(
+        entityData['latlng']['lat'], entityData['latlng']['lng']);
+      marker.setPosition(latlng);
+      marker.setIcon('/static/img/' + entityData['icon_url']);
+      map.setCenter(latlng);
+    }
   };
 }
 
@@ -1139,18 +1177,26 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     $interpolateProvider.startSymbol('[[');
     $interpolateProvider.endSymbol(']]');
   })
-    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal', '$tripPlan', '$tripPlanSettings', '$datatypeValues', RootCtrl])
-    .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo', '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
-    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http', '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
-    .controller('EntityCtrl', ['$scope', '$http', '$tripPlanSettings', EntityCtrl])
+    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
+      '$entityEditModalOpener', '$tripPlan', '$tripPlanSettings', 
+      '$datatypeValues', RootCtrl])
+    .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo',
+      '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
+    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http',
+      '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
+    .controller('EntityCtrl', ['$scope', '$http', '$entityEditModalOpener', 
+      '$dataRefreshManager', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
-    .controller('AddPlaceModalCtrl', ['$scope', '$http', '$timeout', '$tripPlanSettings', '$datatypeValues', AddPlaceModalCtrl])
+    .controller('EditPlaceModalCtrl', ['$scope', '$http', '$timeout',
+      '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', EditPlaceModalCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
+    .service('$entityEditModalOpener', EntityEditModalOpener)
+    .service('$dataRefreshManager', DataRefreshManager)
     .filter('hostname', function() {
       return function(input) {
         return hostnameFromUrl(input);

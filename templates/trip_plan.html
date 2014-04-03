@@ -91,7 +91,7 @@
 
       {% if admin_mode and allow_editing %}
       <div class="add-place-button">
-        <button class="btn btn-info" ng-click="openAddPlaceModal()">Add a place manually</button>
+        <button class="btn btn-info" ng-click="openEditPlaceModal()">Add a place manually</button>
       </div>
       {% endif %}
 
@@ -146,6 +146,13 @@
                           ng-show="!editing">
                           <span class="glyphicon glyphicon-pencil"></span>
                         </a>
+                        {% if admin_mode %}
+                        <a href="javascript:void(0)"
+                          ng-click="openEditEntityModal()"
+                          ng-show="!editing">
+                          <span class="glyphicon glyphicon-cog"></span>
+                        </a>
+                        {% endif %}
                         <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
                         <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
                           Cancel
@@ -396,19 +403,19 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="add-place-modal-template">
-    <div ng-controller="AddPlaceModalCtrl" class="add-place-modal">
+  <script type="text/ng-template" id="edit-place-modal-template">
+    <div ng-controller="EditPlaceModalCtrl" class="edit-place-modal">
       <div ng-show="showPlaceSearchInput()">
         <input type="text" class="form-control" placeholder="Search for a place name or address"
           tc-google-place-autocomplete on-place-change="placeChanged($newPlace)"/>
       </div>
-      <div ng-show="!showPlaceSearchInput()">
+      <div ng-show="!showPlaceSearchInput() && !isEdit">
         <a ng-click="forceShowSearchInput()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-chevron-up"></span>
           Search for a different place
         </a>
       </div>
-      <div ng-show="!entityModel && !searching" class="add-place-manual-link">
+      <div ng-show="!entityModel && !searching && !isEdit" class="edit-place-manual-link">
         <a ng-click="forceShowEditInputs()" href="javascript:void(0)">
           Or manually fill in fields
         </a>
@@ -424,7 +431,8 @@
         Rating
         <input type="number" class="form-control" ng-model="entityModel.data['rating']"/>
         Source url
-        <input type="text" class="form-control" ng-model="entityModel.data['source_url']"/>
+        <input type="text" class="form-control" ng-model="entityModel.data['source_url']"
+          ng-disabled="isEdit"/>
         Photo urls (one per line)
         <textarea class="form-control" ng-model="entityModel.rawPhotoUrlText">
         </textarea>
@@ -441,11 +449,11 @@
           ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
           ng-change="updateMarkerIcon()">
         </select>
-        <div class="add-place-modal-map-header">
+        <div class="edit-place-modal-map-header">
           Drag the marker to change the location
         </div>
-        <div id="add-place-modal-map-container">
-          <div id="add-place-modal-map"></div>
+        <div id="edit-place-modal-map-container">
+          <div id="edit-place-modal-map"></div>
         </div>
         <form class="form-inline" role="form">
           Location precision
@@ -454,8 +462,8 @@
           <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']" ng-change="updateMarkerIcon()"/>
           Imprecise
         </form>
-        <div class="add-place-save-button">
-          <button class="btn btn-info" ng-click="saveNewEntity()">Save</button>
+        <div class="edit-place-save-button">
+          <button class="btn btn-info" ng-click="saveEntity()">Save</button>
         </div>
       </div>
     </div>

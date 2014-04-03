@@ -525,31 +525,31 @@ a:hover {
   text-align: center;
 }
 
-.add-place-modal {
+.edit-place-modal {
   padding: 30px;
   height: 1000px;
 }
 
-.add-place-modal-map-header {
+.edit-place-modal-map-header {
   margin-top: 10px;
 }
 
-#add-place-modal-map-container {
+#edit-place-modal-map-container {
   margin: 10px auto 0 auto;
   width: 300px;
   height: 300px;
 }
 
-#add-place-modal-map {
+#edit-place-modal-map {
   width: 100%;
   height: 100%;
 }
 
-.add-place-manual-link {
+.edit-place-manual-link {
   margin-top: 10px;
 }
 
-.add-place-save-button {
+.edit-place-save-button {
   margin-top: 10px;
 }
 
