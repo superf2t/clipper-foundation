@@ -298,7 +298,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.orderedCategories = $datatypeValues['categories'];
   $scope.accountDropdownOpen = false;
-  $scope.omniboxVisible = false;
+  $scope.omniboxState = {visible: false};
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = {
     name: $tripPlanSettings['name']
@@ -313,8 +313,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
   };
 
   $scope.toggleOmnibox = function() {
-    $scope.omniboxVisible = !$scope.omniboxVisible;
-    if ($scope.omniboxVisible) {
+    $scope.omniboxState.visible = !$scope.omniboxState.visible;
+    if ($scope.omniboxState.visible) {
       $timeout(function() {
         $('#add-place-omnibox').focus();
       });
@@ -845,7 +845,7 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   };
 
   this.openAddPlaceConfirmation = function(entityData) {
-    $scope.omniboxVisible = false;
+    $scope.omniboxState.visible = false;
     $scope.rawInputText = '';
     var scope = $scope.$new(true);
     scope.entityModel = new EntityModel(entityData);

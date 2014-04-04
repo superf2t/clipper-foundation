@@ -78,22 +78,24 @@
   </nav>
 
   {% if admin_mode and allow_editing %}
-    <div ng-controller="AddPlaceCtrl" ng-if="omniboxVisible" class="omnibox-container">
-      <div ng-show="!loadingData">
-        <div>
-          <input type="text" class="form-control" placeholder="Search for a place name or address OR paste a url"
-          tc-google-place-autocomplete
-          id="add-place-omnibox"
-          ng-model="rawInputText"
-          on-place-change="placeChanged($newPlace)"
-          ng-paste="textPasted()"/>
-          <div class="add-place-manually-link">
-            <a href="javascript:void(0)">Or enter fields manually</a>
+    <div ng-show="omniboxState.visible">
+      <div ng-controller="AddPlaceCtrl" class="omnibox-container">
+        <div ng-show="!loadingData">
+          <div>
+            <input type="text" class="form-control" placeholder="Search for a place name or address OR paste a url"
+            tc-google-place-autocomplete
+            id="add-place-omnibox"
+            ng-model="rawInputText"
+            on-place-change="placeChanged($newPlace)"
+            ng-paste="textPasted()"/>
+            <div class="add-place-manually-link">
+              <a href="javascript:void(0)">Or enter fields manually</a>
+            </div>
           </div>
         </div>
-      </div>
-      <div ng-show="loadingData">
-        <img src="/static/img/spinner.gif"/>
+        <div ng-show="loadingData">
+          <img src="/static/img/spinner.gif"/>
+        </div>
       </div>
     </div>
   {% endif %}
