@@ -55,12 +55,14 @@
               </li>
             </ul>
           </li>
+          {% if allow_editing %}
           <li>
             <button type="button" class="btn btn-default navbar-btn"
               id="add-place-to-trip-btn" ng-click="toggleOmnibox()">
               Add Place to Trip
             </button>
           </li>
+          {% endif %}
         </ul>
         <ul class="nav navbar-nav navbar-right" id="header-site">
           <li>
@@ -77,7 +79,7 @@
     </div>
   </nav>
 
-  {% if admin_mode and allow_editing %}
+  {% if allow_editing %}
     <div ng-show="omniboxState.visible">
       <div ng-controller="AddPlaceCtrl" class="omnibox-container">
         <div ng-show="!loadingData">
@@ -153,13 +155,11 @@
                           ng-show="!editing">
                           <span class="glyphicon glyphicon-pencil"></span>
                         </a>
-                        {% if admin_mode %}
                         <a href="javascript:void(0)"
                           ng-click="openEditPlaceModal()"
                           ng-show="!editing">
                           <span class="glyphicon glyphicon-cog"></span>
                         </a>
-                        {% endif %}
                         <button class="btn btn-default btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
                         <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
                           Cancel
