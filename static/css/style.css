@@ -23,7 +23,7 @@ a:hover {
 }
 
 #travel-clipper-navbar {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 #header-plan-navigation {
@@ -32,7 +32,7 @@ a:hover {
 }
 
 #trip-plan-title {
-  min-width: 156px;
+  width: 206px;
 }
 
 #trip-plan-title a {
@@ -46,7 +46,7 @@ a:hover {
 #trip-plan-title-input {
   position: relative;
   top: 8px;
-  width: 150px;
+  width: 200px;
   margin: 0px 3px 0px 3px;
 }
 
@@ -74,8 +74,17 @@ a:hover {
 /* Map View */
 
 #entity-container {
+  position: fixed;
   width: 50%;
-  margin-top: 51px;
+  height: 100%;
+  overflow: scroll;
+  padding-top: 51px;
+}
+
+/* Temporary until I figure out a better solution or UI */
+
+#entity-container::-webkit-scrollbar { 
+    display: none; 
 }
 
 .one-entity-type {
@@ -146,10 +155,6 @@ a:hover {
 .step {
   font-size: 1.3em;
   margin-top: 20px;
-}
-
-.columns:hover .one-entity:hover {
-  /*border: 1px solid #A4C5F3;*/
 }
 
 .one-entity-title {
@@ -447,15 +452,21 @@ a:hover {
 /* Add Place Overlays */
 
 .omnibox-container {
-  width: 400px;
-  height: 80px;
-  position: absolute;
+  width: 460px;
+  height: 50px;
+  position: fixed;
   left: 125px;
   top: 52px;
   z-index: 1031;
   padding: 10px;
   margin-left: 10px;
   background-color: rgb(240, 240, 255);
+}
+
+#search-spinner {
+  position: fixed;
+  left: 560px;
+  top: 67px;
 }
 
 .add-place-manually-link {

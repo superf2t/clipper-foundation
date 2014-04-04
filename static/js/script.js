@@ -292,11 +292,12 @@ function PageStateModel() {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
-    $tripPlan, $tripPlanSettings, $datatypeValues) {
+    $tripPlan, $tripPlanSettings, $datatypeValues, $allowEditing) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.orderedCategories = $datatypeValues['categories'];
+  $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
   $scope.omniboxVisible = false;
   $scope.editingTripPlanSettings = false;
@@ -1298,7 +1299,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
   })
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$entityEditModalOpener', '$tripPlan', '$tripPlanSettings', 
-      '$datatypeValues', RootCtrl])
+      '$datatypeValues', '$allowEditing', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo',
       '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http',
