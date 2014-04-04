@@ -192,8 +192,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer
   };
 }
 
-function EntityCtrl($scope, $http, $entityEditModalOpener,
-    $dataRefreshManager, $tripPlanSettings) {
+function EntityCtrl($scope, $http, $dataRefreshManager, $tripPlanSettings) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -202,10 +201,6 @@ function EntityCtrl($scope, $http, $entityEditModalOpener,
 
   $scope.cancelEditing = function() {
     $scope.editing = false;
-  };
-
-  $scope.openEditEntityModal = function() {
-    $entityEditModalOpener.open($scope.entityModel.data);
   };
 
   $scope.saveEntityEdit = function() {
@@ -291,7 +286,7 @@ function PageStateModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
+function RootCtrl($scope, $http, $timeout, $modal,
     $tripPlan, $tripPlanSettings, $datatypeValues) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
@@ -379,10 +374,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
         alert('Failed to save edits');
       });
     $scope.editingTripPlanSettings = false;
-  };
-
-  $scope.openEditPlaceModal = function() {
-    $entityEditModalOpener.open();
   };
 
   $scope.$on('asktocloseallinfowindows', function() {
@@ -656,144 +647,9 @@ function categoryToIconUrl(categoryName, subCategoryName, precision) {
   return iconUrl;
 }
 
-function EntityEditModalOpener($rootScope, $modal) {
-  this.open = function(opt_existingEntityData) {
-    var scope = null;
-    if (opt_existingEntityData) {
-      scope = $rootScope.$new(true);
-      scope.existingEntityData = angular.copy(opt_existingEntityData)
-    }
-    return $modal.open({
-      templateUrl: 'edit-place-modal-template',
-      scope: scope
-    });
-  };
-}
-
 function DataRefreshManager($rootScope) {
   this.askToRefresh = function(opt_force) {
     $rootScope.$broadcast('refreshdata', opt_force);
-  };
-}
-
-function EditPlaceModalCtrl($scope, $http, $timeout, $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
-  var me = this;
-  if ($scope.existingEntityData) {
-    $scope.entityModel = new EntityModel($scope.existingEntityData);
-    $scope.isEdit = true;
-    $timeout(function() {
-      me.updateMapAndMarker($scope.entityModel.data);
-    });
-  } else {
-    $scope.entityModel = null;
-    $scope.isEdit = false;
-  }
-  $scope.placeResult = null;
-  $scope.categories = $datatypeValues['categories'];
-  $scope.subCategories = $datatypeValues['sub_categories'];
-  $scope.searching = false;
-  this.showPlaceSearchInput = !$scope.isEdit;
-
-  var mapOptions = {
-    center: new google.maps.LatLng(0, 0),
-    zoom: 15,
-    panControl: false,
-    scaleControl: false,
-    streetViewControl: false,
-    mapTypeControl: false
-  };
-  var map = new google.maps.Map($('#edit-place-modal-map')[0], mapOptions);
-  var marker = new google.maps.Marker({
-    draggable: true,
-    position: new google.maps.LatLng(0.0, 0.0),
-    map: map
-  });
-  google.maps.event.addListener(marker, 'dragend', function() {
-    var entityData = $scope.entityModel.data;
-    if (!entityData['latlng']) {
-      entityData['latlng'] = {};
-    }
-    entityData['latlng']['lat'] = marker.getPosition().lat();
-    entityData['latlng']['lng'] = marker.getPosition().lng();
-  });
-
-  $scope.placeChanged = function(newPlace) {
-    if (!newPlace || !newPlace['reference']) {
-      return;
-    }
-    $scope.searching = true;
-    $http.get('/google_place_to_entity?reference=' + newPlace['reference'])
-      .success(function(response) {
-        var entity = response['entity'];
-        if (entity) {
-          $scope.entityModel = new EntityModel(entity);
-          $timeout(function() {
-            me.updateMapAndMarker(entity);
-          });
-          me.showPlaceSearchInput = false;
-        }
-        $scope.searching = false;
-      });
-  };
-
-  $scope.forceShowEditInputs = function() {
-    if (!$scope.entityModel) {
-      $scope.entityModel = new EntityModel({});
-    }
-    me.showPlaceSearchInput = false;
-  };
-
-  $scope.showPlaceSearchInput = function() {
-    return me.showPlaceSearchInput;
-  };
-
-  $scope.forceShowSearchInput = function() {
-    me.showPlaceSearchInput = true;
-  };
-
-  $scope.updateMarkerIcon = function() {
-    var data =  $scope.entityModel.data;
-    var iconUrl = categoryToIconUrl(
-      data['category'] && data['category']['name'],
-      data['sub_category'] && data['sub_category']['name'],
-      data['address_precision']);
-    $scope.entityModel.data['icon_url'] = iconUrl;
-    marker.setIcon('/static/img/' + iconUrl)
-  };
-
-  $scope.categoryChanged = function() {
-    $scope.entityModel.data['sub_category'] = null;
-    $scope.updateMarkerIcon();
-  };
-
-  $scope.saveEntity = function() {
-    // For now, Create requests and Edit requests have identical structure.
-    var request = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
-      'entity': $scope.entityModel.data
-    }
-    var url = $scope.isEdit ? '/editentity' : '/createentity';
-    $http.post(url, request).success(function(response) {
-      if (response['status'] != 'Success') {
-        alert('Failed to save entity');
-      } else {
-        $scope.$close();
-        $dataRefreshManager.askToRefresh(true);
-      }
-    }).error(function() {
-      alert('Failed to save entity');
-    });
-  };
-
-  this.updateMapAndMarker = function(entityData) {
-    google.maps.event.trigger(map, 'resize');
-    if (entityData['latlng']) {
-      var latlng = new google.maps.LatLng(
-        entityData['latlng']['lat'], entityData['latlng']['lng']);
-      marker.setPosition(latlng);
-      marker.setIcon('/static/img/' + entityData['icon_url']);
-      map.setCenter(latlng);
-    }
   };
 }
 
@@ -857,15 +713,57 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   };
 }
 
-function AddPlaceConfirmationCtrl($scope, $http,
+function AddPlaceConfirmationCtrl($scope, $http, $timeout,
     $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
-
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
   $scope.editingFields = false;
 
+  this.makeMarker = function(entityData, map, draggable) {
+    var latlngJson = entityData['latlng'] || {};
+    var latlng = new google.maps.LatLng(
+      latlngJson['lat'] || 0.0, latlngJson['lng'] || 0.0);
+    return new google.maps.Marker({
+      draggable: draggable,
+      position: latlng,
+      icon: '/static/img/' + entityData['icon_url'],
+      map: map
+    });
+  };
+
+  var mapOptions = {
+    center: new google.maps.LatLng(0, 0),
+    zoom: 15,
+    panControl: false,
+    scaleControl: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+  var staticMap = new google.maps.Map($('#apc-static-map')[0], mapOptions);
+  var editableMap = new google.maps.Map($('#apc-editable-map')[0], mapOptions);
+  var staticMarker = this.makeMarker($scope.entityModel.data, staticMap, false);
+  var editableMarker = this.makeMarker($scope.entityModel.data, editableMap, true);
+  google.maps.event.addListener(editableMarker, 'dragend', function() {
+    var entityData = $scope.entityModel.data;
+    if (!entityData['latlng']) {
+      entityData['latlng'] = {};
+    }
+    entityData['latlng']['lat'] = editableMarker.getPosition().lat();
+    entityData['latlng']['lng'] = editableMarker.getPosition().lng();
+  });
+  $timeout(function() {
+    google.maps.event.trigger(staticMap, 'resize');
+    google.maps.event.trigger(editableMap, 'resize');
+    staticMap.setCenter(staticMarker.getPosition());
+    editableMap.setCenter(editableMarker.getPosition());    
+  });
+
   $scope.openEditFields = function() {
     $scope.editingFields = true;
+    $timeout(function(){
+      google.maps.event.trigger(editableMap, 'resize');
+      editableMap.setCenter(editableMarker.getPosition());      
+    });
   };
 
   $scope.cancelConfirmation = function() {
@@ -878,7 +776,13 @@ function AddPlaceConfirmationCtrl($scope, $http,
   };
 
   $scope.updateMarkerIcon = function() {
-    // TODO
+    var data =  $scope.entityModel.data;
+    var iconUrl = categoryToIconUrl(
+      data['category'] && data['category']['name'],
+      data['sub_category'] && data['sub_category']['name'],
+      data['address_precision']);
+    $scope.entityModel.data['icon_url'] = iconUrl;
+    editableMarker.setIcon('/static/img/' + iconUrl)
   };
 
   $scope.saveNewEntity = function() {
@@ -1297,13 +1201,13 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     $interpolateProvider.endSymbol(']]');
   })
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$entityEditModalOpener', '$tripPlan', '$tripPlanSettings', 
+      '$tripPlan', '$tripPlanSettings', 
       '$datatypeValues', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo',
       '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http',
       '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
-    .controller('EntityCtrl', ['$scope', '$http', '$entityEditModalOpener', 
+    .controller('EntityCtrl', ['$scope', '$http', 
       '$dataRefreshManager', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
@@ -1311,13 +1215,10 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
-    .controller('EditPlaceModalCtrl', ['$scope', '$http', '$timeout',
-      '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', EditPlaceModalCtrl])
     .controller('AddPlaceCtrl', ['$scope', '$http', '$timeout', '$modal', AddPlaceCtrl])
-    .controller('AddPlaceConfirmationCtrl', ['$scope', '$http', 
+    .controller('AddPlaceConfirmationCtrl', ['$scope', '$http', '$timeout',
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
-    .service('$entityEditModalOpener', EntityEditModalOpener)
     .service('$dataRefreshManager', DataRefreshManager)
     .filter('hostname', function() {
       return function(input) {

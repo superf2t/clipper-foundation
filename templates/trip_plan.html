@@ -410,73 +410,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="edit-place-modal-template">
-    <div ng-controller="EditPlaceModalCtrl" class="edit-place-modal">
-      <div ng-show="showPlaceSearchInput()">
-        <input type="text" class="form-control" placeholder="Search for a place name or address"
-          tc-google-place-autocomplete on-place-change="placeChanged($newPlace)"/>
-      </div>
-      <div ng-show="!showPlaceSearchInput() && !isEdit">
-        <a ng-click="forceShowSearchInput()" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-chevron-up"></span>
-          Search for a different place
-        </a>
-      </div>
-      <div ng-show="!entityModel && !searching && !isEdit" class="edit-place-manual-link">
-        <a ng-click="forceShowEditInputs()" href="javascript:void(0)">
-          Or manually fill in fields
-        </a>
-      </div>
-      <div ng-show="searching">
-        <img src="/static/img/spinner.gif"/>
-      </div>
-      <div ng-show="entityModel">
-        Name
-        <input type="text" class="form-control" ng-model="entityModel.data['name']"/>
-        Address
-        <input type="text" class="form-control" ng-model="entityModel.data['address']"/>
-        Rating
-        <input type="number" class="form-control" ng-model="entityModel.data['rating']"/>
-        Source url
-        <input type="text" class="form-control" ng-model="entityModel.data['source_url']"
-          ng-disabled="isEdit"/>
-        Photo urls (one per line)
-        <textarea class="form-control" ng-model="entityModel.data['photo_urls']"
-          ng-list="'\n'">
-        </textarea>
-        Description
-        <textarea class="form-control" ng-model="entityModel.data['description']">
-        </textarea>
-        Category
-        <select class="form-control" ng-model="entityModel.data['category']"
-          ng-options="c['display_name'] for c in categories track by c['category_id']"
-          ng-change="categoryChanged()">
-        </select>
-        SubCategory
-        <select class="form-control" ng-model="entityModel.data['sub_category']"
-          ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
-          ng-change="updateMarkerIcon()">
-        </select>
-        <div class="edit-place-modal-map-header">
-          Drag the marker to change the location
-        </div>
-        <div id="edit-place-modal-map-container">
-          <div id="edit-place-modal-map"></div>
-        </div>
-        <form class="form-inline" role="form">
-          Location precision
-          <input type="radio" class="form-control" value="Precise" ng-model="entityModel.data['address_precision']" ng-change="updateMarkerIcon()"/>
-          Precise
-          <input type="radio" class="form-control" value="Imprecise" ng-model="entityModel.data['address_precision']" ng-change="updateMarkerIcon()"/>
-          Imprecise
-        </form>
-        <div class="edit-place-save-button">
-          <button class="btn btn-info" ng-click="saveEntity()">Save</button>
-        </div>
-      </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="add-place-confirmation-template">
     <div ng-controller="AddPlaceConfirmationCtrl" class="add-place-confirmation">
       <div ng-show="!editingFields">
@@ -507,6 +440,17 @@
                 <div class="apc-sub-category">
                   SubCategory: [[ed['sub_category']['display_name'] ]]
                 </div>
+                <div ng-show="entityModel.hasLocation()">
+                  <div id="apc-static-map-container">
+                    <div id="apc-static-map"></div>
+                  </div>
+                  <div ng-if="!entityModel.isPreciseLocation()" class="text-warning">
+                    Location is approximate
+                  </div>
+                </div>
+                <div ng-if="!entityModel.hasLocation()" class="text-warning">
+                  Location unknown
+                </div>                
               </div>
             </div>
           </div>
@@ -558,6 +502,24 @@
                     </select>
                   </form>
                 </div>
+                <div class="apc-editable-map-header" ng-show="entityModel.hasLocation()">
+                  Drag the marker to change the location
+                </div>
+                <div id="apc-editable-map-container">
+                  <div id="apc-editable-map"></div>
+                </div>
+                <div ng-if="!entityModel.hasLocation()">
+                  <button class="btn btn-info">Add a marker to the map</button>
+                </div>
+                <div>
+                  Location precision
+                </div>
+                <form class="form-inline" role="form">
+                  <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
+                  Precise
+                  <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
+                  Imprecise
+                </form>                
               </div>
             </div>
           </div>
