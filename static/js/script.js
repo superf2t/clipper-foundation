@@ -192,7 +192,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer
   };
 }
 
-function EntityCtrl($scope, $http, $dataRefreshManager, $tripPlanSettings) {
+function EntityCtrl($scope, $http, $modal, $dataRefreshManager, $tripPlanSettings) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -201,6 +201,18 @@ function EntityCtrl($scope, $http, $dataRefreshManager, $tripPlanSettings) {
 
   $scope.cancelEditing = function() {
     $scope.editing = false;
+  };
+
+  $scope.openEditPlaceModal = function() {
+    var scope = $scope.$new(true);
+    scope.isEditOfExistingEntity = true;
+    var entityData = angular.copy($scope.entityModel.data);
+    scope.entityModel = new EntityModel(entityData);
+    scope.ed = scope.entityModel.data;
+    $modal.open({
+      templateUrl: 'add-place-confirmation-template',
+      scope: scope
+    });    
   };
 
   $scope.saveEntityEdit = function() {
@@ -715,9 +727,10 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
 
 function AddPlaceConfirmationCtrl($scope, $http, $timeout,
     $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
+  var me = this;
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
-  $scope.editingFields = false;
+  $scope.editingFields = $scope.isEditOfExistingEntity;
 
   this.makeMarker = function(entityData, map, draggable) {
     var latlngJson = entityData['latlng'] || {};
@@ -790,7 +803,19 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
       'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
       'entity': $scope.entityModel.data
     }
-    $http.post('/createentity', request).success(function(response) {
+    me.postChanges(request, '/createentity');    
+  };
+
+  $scope.saveChangesToExistingEntity = function() {
+    var request = {
+      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+      'entity': $scope.entityModel.data
+    }
+    me.postChanges(request, '/editentity');    
+  };  
+
+  this.postChanges = function(request, url) {
+    $http.post(url, request).success(function(response) {
       if (response['status'] != 'Success') {
         alert('Failed to save entity');
       } else {
@@ -1207,7 +1232,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
       '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
     .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http',
       '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
-    .controller('EntityCtrl', ['$scope', '$http', 
+    .controller('EntityCtrl', ['$scope', '$http', '$modal',
       '$dataRefreshManager', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])

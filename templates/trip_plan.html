@@ -155,7 +155,7 @@
                         </a>
                         {% if admin_mode %}
                         <a href="javascript:void(0)"
-                          ng-click="openEditEntityModal()"
+                          ng-click="openEditPlaceModal()"
                           ng-show="!editing">
                           <span class="glyphicon glyphicon-cog"></span>
                         </a>
@@ -531,9 +531,12 @@
           <a ng-click="openEditFields()" ng-show="!editingFields" href="javascript:void(0)">Edit</a>
         </div>
         <div class="apc-control-buttons">
-          <button class="btn btn-info" ng-click="saveNewEntity()">
+          <button class="btn btn-info" ng-click="saveNewEntity()" ng-show="!isEditOfExistingEntity">
             Add to Trip Plan
           </button>
+          <button class="btn btn-info" ng-click="saveChangesToExistingEntity()" ng-show="isEditOfExistingEntity">
+            Save Changes
+          </button>          
           <button class="btn" ng-click="cancelConfirmation()">
             Cancel
           </button>
