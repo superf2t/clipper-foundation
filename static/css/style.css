@@ -17,125 +17,65 @@ a:hover {
 
 /* Navigation */
 
-#upper-navbar {
-  min-height: 30px;
-  margin-bottom: 0px;
-  background-color: #000000;
-}
-
-.upper-nav {
-  width: 100%;
-  height: 30px;
-}
-
-#upper-navbar a {
-  color: #FFFFFF;
-}
-
-#upper-navbar a:hover {
-  color: #2D73A0;
-}
-
 #logo {
-  padding: 3px 30px;
   font-family: 'Raleway';
-  font-size: 1.2em;
+  font-size: 1.6em;
+}
+
+#travel-clipper-navbar {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+#header-plan-navigation {
+  background-color: rgba(240, 240, 255, 0.8);
+  padding: 0px 15px 0px 0px;
 }
 
 #trip-plan-title {
-  text-align: center;
-  font-size: 14pt;
-  color: #FFFFFF;
+  min-width: 156px;
 }
 
-#my-account-link {
-  text-align: right;
-  padding: 4px 30px;
-  font-size: 1.2em;
+#trip-plan-title a {
+    color: #000000;
 }
 
-#edit-title-link {
-  top:-1px;
-  font-size: 0.7em;
-}
-
-#lower-navbar {
-  position: fixed;
-  top: 31px;
-  min-height: 41px;
-  box-shadow: 0px 1px #DDDDDD;
-  background-color: #FFFFFF;
-  background-size: 20px 20px;
-}
-
-.lower-nav {
-  width: 100%;
-  height: 42px;
-}
-
-.entity-nav a {
-  color: #000000;
-}
-
-.navigation-link {
-  text-align: center;
-  padding: 11px 0px;
-}
-
-.navigation-link:hover {
-  background-color: #2D73A0;
-}
-
-.navigation-link a:hover {
-  text-decoration: none;
-}
-
-#url-box input {
-  position: relative;
-  top: 6px;
-  text-align: center;
-  height: 30px;
-}
-
-#list-map-links {
-  padding-right: 24px;
-}
-
-#guide-view-link, #map-view-link {
-  font-size: 1.2em;
-  padding: 10px 6px 8px 6px;
-  float: right;
-}
-
-.active-view-mode {
-  color: #428bca;
-}
-
-.nav-btn {
-  border-color: #000000;
-}
-
-.nav-btn:hover {
-  background-color: #2D73A0;
+#trip-plan-title a:hover {
+    color: #428bca;
 }
 
 #trip-plan-title-input {
-  width: 300px;
-  height: 24px;
   position: relative;
-  top: -1px;
+  top: 8px;
+  width: 150px;
+  margin: 0px 3px 0px 3px;
 }
 
-.pencil-edit {
-  width: 25px;
-  height: 25px;
+.view-mode-pill {
+  margin: 5px 2px;
+}
+
+#add-place-to-trip-btn {
+  margin-left: 5px;
+}
+
+#header-globe, #header-picture, #header-user {
+  font-size: 1.2em;
+  color: #000000;
+}
+
+#header-globe:hover, #header-picture:hover, #header-user:hover, #add-place-to-trip-btn:hover {
+  color: #428bca;
+}
+
+#header-globe {
+  padding-top: 1px;
 }
 
 /* Map View */
 
 #entity-container {
   width: 50%;
-  margin-top: 74px;
+  margin-top: 51px;
 }
 
 .one-entity-type {
@@ -268,15 +208,6 @@ a:hover {
   padding: 2px 3px;
   position: relative;
   top: -1px;
-  background-color: #3b97d3;
-  color: #FFFFFF;
-  border-color: #2D73A0;
-}
-
-.btn-save-changes:hover {
-  background-color: #2D73A0;
-  color: #FFFFFF;
-  border-color: #2D73A0;
 }
 
 .mapview-footer {
@@ -296,13 +227,12 @@ a:hover {
   position: fixed;
   z-index: 10000;
   width: 300px;
-  top: 31px;
+  top: 51px;
   right: 0px;
   background-color: white;
   padding: 20px;
   list-style: none;
-  background: -webkit-linear-gradient(45deg, #FFF, #F9F9F9);
-
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
 .account-dropdown-login-info {
@@ -340,9 +270,9 @@ a:hover {
 #map-container {
   position: fixed;
   width: 50%;
-  height: calc(100% - 73px);
+  height: calc(100% - 51px);
   left: 50%;
-  top: 70px;
+  top: 51px;
 }
 
 #map {
@@ -363,7 +293,7 @@ a:hover {
 
 .guideview-container {
   width: 100%;
-  margin-top: 74px;
+  margin-top: 51px;
 }
 
 .guideview-entity-type-header {

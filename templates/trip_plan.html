@@ -16,77 +16,65 @@
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
 <body ng-controller="RootCtrl">
-  <nav class="navbar navbar-default navbar-fixed-top" id="upper-navbar">
-    <div class="upper-nav container">
-      <div class="row">
-        <div class="col-md-3" id="logo"><a href="/">Travel Clipper</a></div>
-        <div class="col-md-6" id="trip-plan-title">
-          <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
-          <form class="form-inline" role="form" onsubmit="return false" ng-show="editingTripPlanSettings">
-            <input class="form-control" id="trip-plan-title-input" type="text" ng-model="editableTripPlanSettings.name"/>
-            <button class="btn btn-save-changes" ng-click="saveTripPlanSettings()">Save</button>
-          </form>
-          <a href="javascript:void(0)" id="edit-title-link" ng-click="editTripPlanSettings()" ng-show="!editingTripPlanSettings">
-            <span class="glyphicon glyphicon-pencil"></span>
-          </a>
-        </div>
-        <div class="col-md-3" id="my-account-link">
-          <a href="javascript:void(0)" ng-click="toggleAccountDropdown()">
-            <span class="glyphicon glyphicon-user"></span>
-          </a>
-        </div>
-      </div>
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="travel-clipper-navbar">
+    <div class="container-fluid">
+      <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="header-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" id="logo" href="#">TravelClip</a>
     </div>
-  </nav> 
-  <nav class="navbar navbar-fixed-top" id="lower-navbar">
-    <div class="lower-nav container" ng-controller="NavigationCtrl">
-      <div class="row">
-        <div class="entity-nav">
-          <a href="javascript:void(0)" tc-scroll-to-on-click="navAnchor('lodging')">
-            <div class="col-md-1 navigation-link">
-              LODGING
-            </div>
-          </a>
-          <a href="javascript:void(0)" tc-scroll-to-on-click="navAnchor('food_and_drink')">
-            <div class="col-md-1 navigation-link">
-              FOOD &amp; DRINK
-            </div>
-          </a>
-          <a href="javascript:void(0)" tc-scroll-to-on-click="navAnchor('attractions')">
-            <div class="col-md-1 navigation-link">
-              ATTRACTIONS
-            </div>
-          </a>
-        </div>
-        <div class="col-md-6" id="url-box">
-          {% if allow_editing %}
-          <input type="text" class="form-control"
-            placeholder="Paste a URL to add to your trip plan"
-            ng-model="clipState.url"
-            ng-disabled="clipState.clipping"
-            ng-paste="clipUrlChanged()"/>
-          {% endif %}
-        </div>
-        <div class="col-me-3" id="list-map-links">
-          <a href="javascript:void(0)" ng-click="showMapView()"
-            ng-class="{'active-view-mode': pageStateModel.inMapView()}">
-            <div id="map-view-link">
-              <span class="glyphicon glyphicon-globe"></span>
-            </div>
-          </a>
-          <a href="javascript:void(0)" ng-click="showGuideView()"
-            ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
-            <div id="guide-view-link">
-              <span class="glyphicon glyphicon-picture"></span>
-            </div>
-          </a>
-        </div>
+      <div class="collapse navbar-collapse" id="header-navbar-collapse">
+        <ul class="nav navbar-nav" id="header-plan-navigation">
+          <li id="trip-plan-title">
+            <a href="javascript:void(0)" id="edit-title-link" ng-click="editTripPlanSettings()" ng-show="!editingTripPlanSettings" tooltip="Edit Trip Title" tooltip-placement="bottom">
+              <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
+            </a>
+            <form class="form-inline" role="form" ng-submit="saveTripPlanSettings()" ng-show="editingTripPlanSettings">
+              <input class="form-control" id="trip-plan-title-input" type="text" ng-model="editableTripPlanSettings.name" ng-blur="saveTripPlanSettings()"/>
+            </form>
+          </li>
+          <li>
+            <ul class="nav nav-pills">
+              <li class="view-mode-pill" tooltip="Map" tooltip-placement="bottom">
+                <a href="javascript:void(0)" ng-click="showMapView()" 
+                ng-class="{'active-view-mode': pageStateModel.inMapView()}">
+                  <span class="glyphicon glyphicon-globe" id="header-globe"></span>
+                </a>
+              </li>
+              <li class="view-mode-pill" tooltip="Guide" tooltip-placement="bottom">
+                <a href="javascript:void(0)" ng-click="showGuideView()" 
+                ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
+                  <span class="glyphicon glyphicon-picture" id="header-picture"></span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <button type="button" class="btn btn-default navbar-btn" id="add-place-to-trip-btn">
+              Add Place to Trip
+            </button>
+          </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right" id="header-site">
+          <li>
+            <ul class="nav nav-pills">
+              <li class="view-mode-pill">
+                <a href="javascript:void(0)" ng-click="toggleAccountDropdown()">
+                  <span class="glyphicon glyphicon-user" id="header-user"></span>
+                </a>
+              </li>
+            <ul>
+          </li>
+        </ul>
       </div>
     </div>
   </nav>
 
   <div ng-show="pageStateModel.inMapView()">
-
     <div id="entity-container">
 
       {% if admin_mode and allow_editing %}
@@ -118,12 +106,12 @@
           <div ng-if="hasEntities()">
             <div class="one-entity-type">
               <a id="mapview-[[category['name'] ]]" class="offset-anchor"></a>
-              <h3 ng-click="toggleSection()" class="entity-type-header">
+              <h4 ng-click="toggleSection()" class="entity-type-header">
                 <a href="javascript:void(0)">[[category['display_name'] ]]
                   <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
                   <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
                 </a>
-              </h3>
+              </h4>
               <div class="columns" ng-show="show">
                 <div ng-repeat="entityModel in entityModels">
                   <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
@@ -141,10 +129,10 @@
                       <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
                     </div>
                     <div ng-if="entityModel.hasLocation() && !entityModel.isPreciseLocation()" class="text-warning entity-info-text">
-                      Location on map is approximate
+                      Location approximate
                     </div>
                     <div ng-if="!entityModel.hasLocation()" class="text-warning entity-info-text">
-                      Unable to get a location for this item
+                      Location unavailable
                     </div>
                     <div ng-show="editing">
                       <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
@@ -171,7 +159,7 @@
                           <span class="glyphicon glyphicon-cog"></span>
                         </a>
                         {% endif %}
-                        <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                        <button class="btn btn-default btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
                         <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
                           Cancel
                         </a>
@@ -339,7 +327,7 @@
           <input type="text" class="form-control email-entry-input"
             ng-model="accountInfo['email']"
             placeholder="Enter your email to login"/>
-          <button type="submit()" class="btn btn-primary btn-login">Login</button>
+          <button type="submit()" class="btn btn-default btn-login">Login</button>
         </form>
       </div>
     </li>
@@ -416,7 +404,7 @@
         <b>[[entity.data['name'] ]]</b>
       </div>
       <div ng-if="!entity.isPreciseLocation()" class="text-warning infowindow-warning-text">
-        Location on map is approximate
+        Location approximate
       </div>
     </div>
   </script>
