@@ -298,6 +298,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
   $scope.planModel = new TripPlanModel($tripPlan);
   $scope.orderedCategories = $datatypeValues['categories'];
   $scope.accountDropdownOpen = false;
+  $scope.omniboxVisible = false;
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = {
     name: $tripPlanSettings['name']
@@ -309,6 +310,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
     url: null,
     clipping: false,
     statusCode: null
+  };
+
+  $scope.toggleOmnibox = function() {
+    $scope.omniboxVisible = !$scope.omniboxVisible;
+    if ($scope.omniboxVisible) {
+      $timeout(function() {
+        $('#add-place-omnibox').focus();
+      });
+    }
   };
 
   $scope.showGuideView = function() {
@@ -340,9 +350,16 @@ function RootCtrl($scope, $http, $timeout, $modal, $entityEditModalOpener,
 
   $scope.editTripPlanSettings = function() {
     $scope.editingTripPlanSettings = true;
+    $timeout(function() {
+      $('#trip-plan-title-input').focus();
+    });
   };
 
   $scope.saveTripPlanSettings = function() {
+    if ($scope.editableTripPlanSettings.name == $tripPlanSettings['name']) {
+      $scope.editingTripPlanSettings = false;
+      return;
+    }
     var editRequest = {
       'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
       'name': $scope.editableTripPlanSettings.name
@@ -782,18 +799,8 @@ function EditPlaceModalCtrl($scope, $http, $timeout, $dataRefreshManager, $tripP
 
 function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   var me = this;
-  $scope.active = false;
   $scope.loading = false;
   $scope.rawInputText = '';
-
-  $scope.toggleOmnibox = function() {
-    $scope.active = !$scope.active;
-    if ($scope.active) {
-      $timeout(function() {
-        $('#add-place-omnibox').focus();
-      });
-    }
-  };
 
   $scope.placeChanged = function(newPlace) {
     if (!newPlace || !newPlace['reference']) {
@@ -838,7 +845,7 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   };
 
   this.openAddPlaceConfirmation = function(entityData) {
-    $scope.active = false;
+    $scope.omniboxVisible = false;
     $scope.rawInputText = '';
     var scope = $scope.$new(true);
     scope.entityModel = new EntityModel(entityData);

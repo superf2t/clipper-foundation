@@ -34,7 +34,9 @@
               <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
             </a>
             <form class="form-inline" role="form" ng-submit="saveTripPlanSettings()" ng-show="editingTripPlanSettings">
-              <input class="form-control" id="trip-plan-title-input" type="text" ng-model="editableTripPlanSettings.name" ng-blur="saveTripPlanSettings()"/>
+              <input class="form-control" id="trip-plan-title-input" type="text"
+                ng-model="editableTripPlanSettings.name"
+                ng-blur="saveTripPlanSettings()"/>
             </form>
           </li>
           <li>
@@ -54,7 +56,8 @@
             </ul>
           </li>
           <li>
-            <button type="button" class="btn btn-default navbar-btn" id="add-place-to-trip-btn">
+            <button type="button" class="btn btn-default navbar-btn"
+              id="add-place-to-trip-btn" ng-click="toggleOmnibox()">
               Add Place to Trip
             </button>
           </li>
@@ -74,33 +77,29 @@
     </div>
   </nav>
 
-  <div ng-show="pageStateModel.inMapView()">
-    <div id="entity-container">
-
-      {% if admin_mode and allow_editing %}
-      <div ng-controller="AddPlaceCtrl">
-        <div class="add-place-button">
-          <button class="btn btn-info" ng-click="toggleOmnibox()">Add a place</button>
-        </div>
-        <div ng-show="!loadingData">
-          <div ng-show="active" class="add-place-overlay">
-            <input type="text" class="form-control" placeholder="Search for a place name or address OR paste a url"
-            tc-google-place-autocomplete
-            id="add-place-omnibox"
-            ng-model="rawInputText"
-            on-place-change="placeChanged($newPlace)"
-            ng-paste="textPasted()"/>
-            <div class="add-place-manually-link">
-              <a href="javascript:void(0)">Or enter fields manually</a>
-            </div>
+  {% if admin_mode and allow_editing %}
+    <div ng-controller="AddPlaceCtrl" ng-if="omniboxVisible" class="omnibox-container">
+      <div ng-show="!loadingData">
+        <div>
+          <input type="text" class="form-control" placeholder="Search for a place name or address OR paste a url"
+          tc-google-place-autocomplete
+          id="add-place-omnibox"
+          ng-model="rawInputText"
+          on-place-change="placeChanged($newPlace)"
+          ng-paste="textPasted()"/>
+          <div class="add-place-manually-link">
+            <a href="javascript:void(0)">Or enter fields manually</a>
           </div>
         </div>
-        <div ng-show="loadingData">
-          <img src="/static/img/spinner.gif"/>
-        </div>
       </div>
-      {% endif %}
+      <div ng-show="loadingData">
+        <img src="/static/img/spinner.gif"/>
+      </div>
+    </div>
+  {% endif %}
 
+  <div ng-show="pageStateModel.inMapView()">
+    <div id="entity-container">
       <div ng-repeat="category in orderedCategories">
         <div ng-controller="CategoryCtrl">
           <div ng-if="hasEntities()">

@@ -446,15 +446,16 @@ a:hover {
 
 /* Add Place Overlays */
 
-.add-place-overlay {
+.omnibox-container {
   width: 400px;
   height: 80px;
   position: absolute;
-  z-index: 2;
+  left: 125px;
+  top: 52px;
+  z-index: 1031;
   padding: 10px;
   margin-left: 10px;
-  border-radius: 3px;
-  background-color: #fff;
+  background-color: rgb(240, 240, 255);
 }
 
 .add-place-manually-link {
