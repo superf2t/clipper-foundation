@@ -813,7 +813,7 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
       'entity': $scope.entityModel.data
     }
     me.postChanges(request, '/editentity');    
-  };  
+  };
 
   this.postChanges = function(request, url) {
     $http.post(url, request).success(function(response) {
@@ -826,6 +826,77 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
     }).error(function() {
       alert('Failed to save entity');
     });
+  };
+}
+
+function EditImagesCtrl($scope, $timeout) {
+  var me = this;
+  $scope.imgDragActive = false;
+  var pasteActive = false;
+  $scope.photoUrlInputText = ''
+  var urls = $scope.entityModel.data['photo_urls'];
+  var currentIndex = 0;
+  $scope.currentImgUrl = urls[currentIndex];
+
+  $scope.photoUrlDragEnter = function($event) {
+    $scope.imgDragActive = true;
+  };
+
+  $scope.photoUrlDropped = function($event) {
+    var imgUrl = $event.originalEvent.dataTransfer.getData('text/uri-list');
+    me.addImgUrl(imgUrl);
+    $event.stopPropagation();
+    $event.preventDefault();
+    $scope.imgDragActive = false;
+  };
+
+  $scope.photoUrlPasted = function() {
+    pasteActive = true;
+    $timeout(function() {
+      me.addImgUrl($scope.photoUrlInputText);
+      $scope.photoUrlInputText = '';
+      pasteActive = false;
+    });
+  };
+
+  $scope.photoUrlChanged = function() {
+    if (!pasteActive) {
+      $scope.photoUrlInputText = '';
+    }
+  };
+
+  this.addImgUrl = function(url) {
+    if (url) {
+      urls.splice(urls.length, 0, url);
+      currentIndex = urls.length - 1;
+      $scope.currentImgUrl = urls[currentIndex];
+    }
+  };
+
+  $scope.removeActiveImg = function() {
+    urls.splice(currentIndex, 1);
+    if (currentIndex >= urls.length) {
+      currentIndex = Math.max(urls.length - 1, 0);
+    }
+    $scope.currentImgUrl = urls[currentIndex];
+  };
+
+  $scope.hasPrevImg = function() {
+    return currentIndex > 0;
+  };
+
+  $scope.hasNextImg = function() {
+    return currentIndex < (urls.length - 1);
+  };
+
+  $scope.nextImg = function() {
+    currentIndex += 1;
+    $scope.currentImgUrl = urls[currentIndex];
+  };
+
+  $scope.prevImg = function() {
+    currentIndex -= 1;
+    $scope.currentImgUrl = urls[currentIndex];
   };
 }
 
@@ -1201,6 +1272,30 @@ function tcGooglePlaceAutocomplete($parse) {
   };
 }
 
+function tcDrop($parse) {
+  return {
+    restrict: 'AEC',
+    link: function(scope, elem, attrs) {
+      var onDropFn = $parse(attrs.tcDrop);
+      elem.on('drop', function(event) {
+        onDropFn(scope, {$event: event});
+      });
+    }
+  };
+}
+
+function tcDragEnter($parse) {
+  return {
+    restrict: 'AEC',
+    link: function(scope, elem, attrs) {
+      var onDragEnterFn = $parse(attrs.tcDragEnter);
+      elem.on('dragenter', function(event) {
+        onDragEnterFn(scope, {$event: event});
+      });
+    }
+  };
+}
+
 
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     accountInfo, datatypeValues, allowEditing) {
@@ -1220,12 +1315,16 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .directive('tcScrollToOnClick', tcScrollToOnClick)
     .directive('tcStarRating', tcStarRating)
     .directive('bnLazySrc', bnLazySrc)
-    .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete);
+    .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
+    .directive('tcDrop', tcDrop)
+    .directive('tcDragEnter', tcDragEnter);
 
-  angular.module('appModule', ['mapModule', 'initialDataModule', 'directivesModule', 'ui.bootstrap', 'wu.masonry'], function($interpolateProvider) {
-    $interpolateProvider.startSymbol('[[');
-    $interpolateProvider.endSymbol(']]');
-  })
+  angular.module('appModule', ['mapModule', 'initialDataModule',
+      'directivesModule', 'ui.bootstrap', 'wu.masonry'],
+      function($interpolateProvider) {
+        $interpolateProvider.startSymbol('[[');
+        $interpolateProvider.endSymbol(']]');
+      })
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlan', '$tripPlanSettings', 
       '$datatypeValues', '$allowEditing', RootCtrl])
@@ -1244,6 +1343,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .controller('AddPlaceCtrl', ['$scope', '$http', '$timeout', '$modal', AddPlaceCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope', '$http', '$timeout',
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
+    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .filter('hostname', function() {
