@@ -474,6 +474,13 @@ a:hover {
   margin-top: 10px;
 }
 
+
+/* Custom calculation to support 360px image/map */
+
+.modal-dialog {
+  width: 782px;
+}
+
 .add-place-confirmation {
   margin: 20px;
 }
@@ -488,17 +495,28 @@ a:hover {
 }
 
 .flush-left {
-  padding-left: 0;
+  padding-left: 0px;
+  padding-right: 10px;
+}
+
+.flush-right {
+  padding-right: 0px;
+  padding-left: 10px;
 }
 
 .apc-place-name {
   font-weight: bold;
   font-size: 16pt;
   padding-bottom: 10px;
+  font-family: 'Raleway';
 }
 
 .apc-address {
   padding-bottom: 10px;
+}
+
+.apc-place-details {
+  padding-top: 10px;
 }
 
 .apc-edit-mode .apc-rating {
@@ -520,7 +538,7 @@ a:hover {
 
 .apc-control-edit-link {
   float: left;
-  padding-top: 7px;
+  padding-top: 19px;
 }
 
 .apc-image-drop-target {
@@ -551,8 +569,8 @@ a:hover {
 
 #apc-static-map-container, #apc-editable-map-container {
   margin: 0 auto 0 auto;
-  width: 240px;
-  height: 240px;
+  width: 360px;
+  height: 270px;
 }
 
 #apc-static-map, #apc-editable-map {
