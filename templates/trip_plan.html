@@ -468,8 +468,30 @@
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-6 flush-left">
-              <div class="apc-photo-container">
-                <img ng-src="[[ed['photo_urls'][0] ]]" style="max-width: 100%"/>
+              <div class="apc-photo-container" ng-controller="EditImagesCtrl">
+                <div class="carousel">
+                  <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+                    <span class="icon-prev"></span>
+                  </a>
+                  <a class="apc-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-trash"></span>
+                  </a>
+                  <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+                  <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+                    <span class="icon-next"></span>
+                  </a>
+                </div>
+                <div class="apc-image-edit-container">
+                  <textarea type="text" placeholder="Drag images here or paste image urls"
+                    class="apc-image-drop-target"
+                    ng-model="photoUrlInputText"
+                    ng-paste="photoUrlPasted()"
+                    ng-class="{'apc-img-drag-active': imgDragActive}"
+                    tc-drag-enter="photoUrlDragEnter($event)"
+                    tc-drop="photoUrlDropped($event)"
+                    />
+                  </textarea>
+                </div>                
               </div>
             </div>
             <div class="col-md-6">
