@@ -831,6 +831,7 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
 function EditImagesCtrl($scope, $timeout) {
   var me = this;
   $scope.imgDragActive = false;
+  var pasteActive = false;
   $scope.photoUrlInputText = ''
   var urls = $scope.entityModel.data['photo_urls'];
   var currentIndex = 0;
@@ -848,11 +849,19 @@ function EditImagesCtrl($scope, $timeout) {
     $scope.imgDragActive = false;
   };
 
-  $scope.photoUrlPasted = function($event) {
+  $scope.photoUrlPasted = function() {
+    pasteActive = true;
     $timeout(function() {
       me.addImgUrl($scope.photoUrlInputText);
       $scope.photoUrlInputText = '';
+      pasteActive = false;
     });
+  };
+
+  $scope.photoUrlChanged = function() {
+    if (!pasteActive) {
+      $scope.photoUrlInputText = '';
+    }
   };
 
   this.addImgUrl = function(url) {
