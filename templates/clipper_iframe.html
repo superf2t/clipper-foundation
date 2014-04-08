@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <title>Travel Clipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="/static/js/imagesloaded.pkgd.min.js"></script>
+  <script src="/static/js/masonry.pkgd.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
+  <script src="/static/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+</head>
+<body ng-controller="ClipperRootCtrl">
+  <div>
+    [[ed['name'] ]]
+  </div>
+
+  <script>
+    initClipper(
+      {{entity.to_json_str()|safe}},
+      {{all_trip_plans_settings_json|safe}},
+      {{all_datatype_values.to_json_str()|safe}});
+  </script>
+</body>
+</html>

@@ -58,6 +58,18 @@ def clip():
     response = make_jsonp_response(request, {'html': modal_html})
     return process_response(response, request, session_info)
 
+@app.route('/clipper_iframe')
+def clipper_iframe():
+    session_info = decode_session(request.cookies)
+    url = request.values['url']
+    entity = clip_logic.scrape_entity_from_url(url)    
+    all_trip_plans = data.load_all_trip_plans(session_info)
+    all_trip_plans_settings = [tp.as_settings() for tp in all_trip_plans]
+    return render_template('clipper_iframe.html',
+        entity=entity,
+        all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
+        all_datatype_values=values.ALL_VALUES)
+
 @app.route('/clip_ajax/<int:trip_plan_id>', methods=['POST'])
 def clip_ajax(trip_plan_id):
     session_info = decode_session(request.cookies)

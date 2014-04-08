@@ -1295,6 +1295,25 @@ function tcDragEnter($parse) {
   };
 }
 
+function interpolator($interpolateProvider) {
+  $interpolateProvider.startSymbol('[[');
+  $interpolateProvider.endSymbol(']]');
+}
+
+angular.module('directivesModule', [])
+  .directive('tcScrollToOnClick', tcScrollToOnClick)
+  .directive('tcStarRating', tcStarRating)
+  .directive('bnLazySrc', bnLazySrc)
+  .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
+  .directive('tcDrop', tcDrop)
+  .directive('tcDragEnter', tcDragEnter);
+
+angular.module('filtersModule', [])
+  .filter('hostname', function() {
+    return function(input) {
+      return hostnameFromUrl(input);
+    }
+  });
 
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     accountInfo, datatypeValues, allowEditing) {
@@ -1310,20 +1329,9 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
 
-  angular.module('directivesModule', [])
-    .directive('tcScrollToOnClick', tcScrollToOnClick)
-    .directive('tcStarRating', tcStarRating)
-    .directive('bnLazySrc', bnLazySrc)
-    .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
-    .directive('tcDrop', tcDrop)
-    .directive('tcDragEnter', tcDragEnter);
-
   angular.module('appModule', ['mapModule', 'initialDataModule',
-      'directivesModule', 'ui.bootstrap', 'wu.masonry'],
-      function($interpolateProvider) {
-        $interpolateProvider.startSymbol('[[');
-        $interpolateProvider.endSymbol(']]');
-      })
+      'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
+      interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlan', '$tripPlanSettings', 
       '$datatypeValues', RootCtrl])
@@ -1344,13 +1352,30 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
-    .service('$dataRefreshManager', DataRefreshManager)
-    .filter('hostname', function() {
-      return function(input) {
-        return hostnameFromUrl(input);
-      }
-    });
+    .service('$dataRefreshManager', DataRefreshManager);
+
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);
+  });
+};
+
+function ClipperRootCtrl($scope, $entity) {
+  $scope.entityModel = new EntityModel($entity);
+  $scope.ed = $entity;
+}
+
+window['initClipper'] = function(entity, allTripPlanSettings, datatypeValues) {
+  angular.module('clipperInitialDataModule', [])
+    .value('$entity', entity)
+    .value('$tripPlanSettings', allTripPlanSettings)
+    .value('$datatypeValues', datatypeValues);
+
+  angular.module('clipperModule',
+      ['clipperInitialDataModule', 'directivesModule', 'filtersModule'],
+      interpolator)
+    .controller('ClipperRootCtrl', ['$scope', '$entity', ClipperRootCtrl]);
+
+  angular.element(document).ready(function() {
+    angular.bootstrap(document, ['clipperModule']);
   });
 };
