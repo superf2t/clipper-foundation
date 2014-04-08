@@ -15,15 +15,17 @@
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body" ondragenter="console.log('dragentering')">
-  <div class="clipper-trip-plan-selector">
-    Clip items to
-    <select class="form-control" ng-model="selectedTripPlan"
-      ng-options="tp['name'] for tp in allTripPlansSettings">
-    </select>
-  </div>
-  <div class="clipper-save-controls">
-    <button class="btn btn-info" ng-click="saveEntity()">Save</button>
-    <button class="btn" ng-click="dismissClipper()">Cancel</button>
+  <div  ng-if="clipperState.showControls()">
+    <div class="clipper-trip-plan-selector">
+      Clip items to
+      <select class="form-control" ng-model="selectedTripPlan"
+        ng-options="tp['name'] for tp in allTripPlansSettings">
+      </select>
+    </div>
+    <div class="clipper-save-controls">
+      <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+      <button class="btn" ng-click="dismissClipper()">Cancel</button>
+    </div>
   </div>
   <div ng-if="clipperState.newEntitySummary()">
     <div>
@@ -49,12 +51,33 @@
     </div>
   </div>
 
-  <div ng-if="clipperState.inEdit()">
+  <div ng-if="clipperState.inEdit()" ng-controller="ClipperEditorCtrl">
     <div class="clipper-editor-place-name">
       <input type="text" ng-model="ed['name']" class="form-control"/>
     </div>
     <div class="clipper-editor-address">
       <input type="text" ng-model="ed['address']" class="form-control"/>
+    </div>
+    <div class="clipper-editor-category">
+      <form class="form-inline" role="form">
+        Category
+        <select class="form-control" ng-model="ed['category']"
+          ng-options="c['display_name'] for c in categories track by c['category_id']"
+          ng-change="categoryChanged()">
+        </select>
+      </form>
+    </div>
+    <div class="clipper-editor-sub-category">
+      <form class="form-inline" role="form">
+        SubCategory
+        <select class="form-control" ng-model="ed['sub_category']"
+          ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+          ng-change="updateMarkerIcon()">
+        </select>
+      </form>
+    </div>
+    <div id="clipper-editor-map-container">
+      <div id="clipper-editor-map"></div>
     </div>
     <div class="clipper-editor-photo-container" ng-controller="EditImagesCtrl">
       <div class="carousel">
@@ -81,7 +104,12 @@
           />
         </textarea>
       </div>                
-    </div>    
+    </div>  
+    <div class="clipper-editor-description">
+      Description
+      <textarea class="form-control" ng-model="ed['description']">
+      </textarea>
+    </div>
   </div>
 
   <div ng-if="clipperState.successConfirmation()">

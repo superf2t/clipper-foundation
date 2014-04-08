@@ -1408,6 +1408,11 @@ function ClipperStateModel(initialStatus) {
   this.clipError = function() {
     return this.status == ClipperStateModel.CLIP_ERROR;
   };
+
+  this.showControls = function() {
+    return this.status == ClipperStateModel.SUMMARY
+      || this.status == ClipperStateModel.EDIT;
+  };
 }
 
 ClipperStateModel.SUMMARY = 1;
@@ -1415,7 +1420,8 @@ ClipperStateModel.EDIT = 2;
 ClipperStateModel.SUCCESS_CONFIRMATION = 3;
 ClipperStateModel.CLIP_ERROR = 4;
 
-function ClipperRootCtrl($scope, $timeout, $entitySaver, $entity, $allTripPlansSettings) {
+function ClipperRootCtrl($scope, $timeout, $entitySaver,
+    $entity, $allTripPlansSettings, $datatypeValues) {
   var foundEntity = false;
   if ($.isEmptyObject($entity)) {
     $scope.entityModel = new EntityModel({});
@@ -1428,6 +1434,8 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver, $entity, $allTripPlansS
   $scope.selectedTripPlan = $allTripPlansSettings[0];
   $scope.clipperState = new ClipperStateModel(
     foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.EDIT);
+  $scope.categories = $datatypeValues['categories'];
+  $scope.subCategories = $datatypeValues['sub_categories'];
 
   $scope.saveEntity = function() {
     var success = function(response) {
@@ -1454,6 +1462,59 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver, $entity, $allTripPlansS
   };
 }
 
+function ClipperEditorCtrl($scope, $timeout) {
+
+  this.makeMarker = function(entityData, map) {
+    var latlngJson = entityData['latlng'] || {};
+    var latlng = new google.maps.LatLng(
+      latlngJson['lat'] || 0.0, latlngJson['lng'] || 0.0);
+    return new google.maps.Marker({
+      draggable: true,
+      position: latlng,
+      icon: '/static/img/' + entityData['icon_url'],
+      map: map
+    });
+  };
+
+  var mapOptions = {
+    center: new google.maps.LatLng(0, 0),
+    zoom: 15,
+    panControl: false,
+    scaleControl: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+  var editableMap = new google.maps.Map($('#clipper-editor-map')[0], mapOptions);
+  var editableMarker = this.makeMarker($scope.entityModel.data, editableMap);
+  google.maps.event.addListener(editableMarker, 'dragend', function() {
+    var entityData = $scope.entityModel.data;
+    if (!entityData['latlng']) {
+      entityData['latlng'] = {};
+    }
+    entityData['latlng']['lat'] = editableMarker.getPosition().lat();
+    entityData['latlng']['lng'] = editableMarker.getPosition().lng();
+  });
+  $timeout(function() {
+    google.maps.event.trigger(editableMap, 'resize');
+    editableMap.setCenter(editableMarker.getPosition());    
+  });
+
+  $scope.categoryChanged = function() {
+    $scope.ed['sub_category'] = null;
+    $scope.updateMarkerIcon();
+  };
+
+  $scope.updateMarkerIcon = function() {
+    var data =  $scope.entityModel.data;
+    var iconUrl = categoryToIconUrl(
+      data['category'] && data['category']['name'],
+      data['sub_category'] && data['sub_category']['name'],
+      data['address_precision']);
+    $scope.entityModel.data['icon_url'] = iconUrl;
+    editableMarker.setIcon('/static/img/' + iconUrl)
+  };
+}
+
 window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$entity', entity)
@@ -1463,8 +1524,10 @@ window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$timeout', '$entitySaver', '$entity', '$allTripPlansSettings', ClipperRootCtrl])
+    .controller('ClipperRootCtrl', ['$scope', '$timeout', '$entitySaver',
+      '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
+    .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl]);
 
   angular.element(document).ready(function() {

@@ -646,6 +646,18 @@ a:hover {
   border-color: red;
 }
 
+#clipper-editor-map-container {
+  padding: 10px 0;
+  width: 100%;
+  height: 200px;
+  border: 1px solid #bbb;
+}
+
+#clipper-editor-map {
+  width: 100%;
+  height: 100%;
+}
+
 .pac-container {
   z-index: 1100;
 }
