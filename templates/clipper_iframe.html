@@ -18,7 +18,7 @@
   <div  ng-if="clipperState.showControls()">
     <div class="clipper-trip-plan-selector">
       Clip items to
-      <select class="form-control" ng-model="selectedTripPlan"
+      <select class="form-control" ng-model="selectedTripPlanState.tripPlan"
         ng-options="tp['name'] for tp in allTripPlansSettings">
       </select>
     </div>

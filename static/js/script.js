@@ -1431,7 +1431,9 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver,
   }
   $scope.ed = $scope.entityModel.data;
   $scope.allTripPlansSettings = $allTripPlansSettings;
-  $scope.selectedTripPlan = $allTripPlansSettings[0];
+  $scope.selectedTripPlanState = {
+    tripPlan: $allTripPlansSettings[0]
+  };
   $scope.clipperState = new ClipperStateModel(
     foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.EDIT);
   $scope.categories = $datatypeValues['categories'];
@@ -1449,8 +1451,8 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver,
     var error = function(response) {
       $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
     };
-    $entitySaver.saveNew($scope.selectedTripPlan['trip_plan_id_str'], $scope.ed,
-      success, error);
+    $entitySaver.saveNew($scope.selectedTripPlanState.tripPlan['trip_plan_id_str'],
+      $scope.ed, success, error);
   };
 
   $scope.openEditor = function() {
