@@ -1301,7 +1301,9 @@ function tcDrop($parse) {
     link: function(scope, elem, attrs) {
       var onDropFn = $parse(attrs.tcDrop);
       elem.on('drop', function(event) {
-        onDropFn(scope, {$event: event});
+        scope.$apply(function(){
+          onDropFn(scope, {$event: event});
+        });
       });
     }
   };
@@ -1313,7 +1315,9 @@ function tcDragEnter($parse) {
     link: function(scope, elem, attrs) {
       var onDragEnterFn = $parse(attrs.tcDragEnter);
       elem.on('dragenter', function(event) {
-        onDragEnterFn(scope, {$event: event});
+        scope.$apply(function() {
+          onDragEnterFn(scope, {$event: event});
+        });
       });
     }
   };
@@ -1412,18 +1416,18 @@ ClipperStateModel.SUCCESS_CONFIRMATION = 3;
 ClipperStateModel.CLIP_ERROR = 4;
 
 function ClipperRootCtrl($scope, $timeout, $entitySaver, $entity, $allTripPlansSettings) {
+  var foundEntity = false;
   if ($.isEmptyObject($entity)) {
     $scope.entityModel = new EntityModel({});
-    $scope.foundEntity = false;
   } else {
     $scope.entityModel = new EntityModel($entity);
-    $scope.foundEntity = true;
+    foundEntity = true;
   }
   $scope.ed = $scope.entityModel.data;
   $scope.allTripPlansSettings = $allTripPlansSettings;
   $scope.selectedTripPlan = $allTripPlansSettings[0];
   $scope.clipperState = new ClipperStateModel(
-    $scope.foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.EDIT);
+    foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.EDIT);
 
   $scope.saveEntity = function() {
     var success = function(response) {
@@ -1441,6 +1445,10 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver, $entity, $allTripPlansS
       success, error);
   };
 
+  $scope.openEditor = function() {
+    $scope.clipperState.status = ClipperStateModel.EDIT;
+  };
+
   $scope.dismissClipper = function() {
     window.parent.postMessage('tc-close-clipper', '*');
   };
@@ -1456,7 +1464,8 @@ window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
       interpolator)
     .controller('ClipperRootCtrl', ['$scope', '$timeout', '$entitySaver', '$entity', '$allTripPlansSettings', ClipperRootCtrl])
-    .controller('CarouselCtrl', ['$scope', CarouselCtrl]);
+    .controller('CarouselCtrl', ['$scope', CarouselCtrl])
+    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl]);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);

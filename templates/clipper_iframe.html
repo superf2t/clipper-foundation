@@ -14,38 +14,74 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="ClipperRootCtrl" class="clipper-body">
+<body ng-controller="ClipperRootCtrl" class="clipper-body" ondragenter="console.log('dragentering')">
+  <div class="clipper-trip-plan-selector">
+    Clip items to
+    <select class="form-control" ng-model="selectedTripPlan"
+      ng-options="tp['name'] for tp in allTripPlansSettings">
+    </select>
+  </div>
+  <div class="clipper-save-controls">
+    <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+    <button class="btn" ng-click="dismissClipper()">Cancel</button>
+  </div>
   <div ng-if="clipperState.newEntitySummary()">
-    <div class="clipper-trip-plan-selector">
-      Clip items to
-      <select class="form-control" ng-model="selectedTripPlan"
-        ng-options="tp['name'] for tp in allTripPlansSettings">
-      </select>
+    <div>
+      The following place is associated with this page:
     </div>
-    <div class="clipper-save-controls">
-      <button class="btn btn-info" ng-click="saveEntity()">Save</button>
-      <button class="btn" ng-click="dismissClipper()">Cancel</button>
-    </div>
-    <div ng-if="foundEntity">
-      <div>
-        The following place is associated with this page:
+    <div>
+      <div class="clipper-entity-name">
+        [[ed['name'] ]]
       </div>
-      <div>
-        <div class="clipper-entity-name">
-          [[ed['name'] ]]
-        </div>
-        <div class="clipper-summary-icon">
-          <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
-        </div>
-      </div>
-      <div class="clipper-entity-address">
-        [[ed['address'] ]]
-      </div>
-      <div class="clipper-summary-photo">
-        <div ng-include="'carousel-template'">
-        </div>
+      <div class="clipper-summary-icon">
+        <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
       </div>
     </div>
+    <div class="clipper-entity-address">
+      [[ed['address'] ]]
+    </div>
+    <div class="clipper-summary-photo">
+      <div ng-include="'carousel-template'">
+      </div>
+    </div>
+    <div>
+      <a ng-click="openEditor()" href="javascript:void(0)">Edit</a>
+    </div>
+  </div>
+
+  <div ng-if="clipperState.inEdit()">
+    <div class="clipper-editor-place-name">
+      <input type="text" ng-model="ed['name']" class="form-control"/>
+    </div>
+    <div class="clipper-editor-address">
+      <input type="text" ng-model="ed['address']" class="form-control"/>
+    </div>
+    <div class="clipper-editor-photo-container" ng-controller="EditImagesCtrl">
+      <div class="carousel">
+        <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+          <span class="icon-prev"></span>
+        </a>
+        <a class="clipper-editor-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-trash"></span>
+        </a>
+        <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+        <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+          <span class="icon-next"></span>
+        </a>
+      </div>
+      <div class="clipper-editor-image-edit-container">
+        <textarea type="text" placeholder="Drag images here or paste image urls"
+          class="clipper-editor-image-drop-target"
+          ng-class="{'clipper-editor-img-drag-active': imgDragActive}"          
+          ng-model="photoUrlInputText"
+          ng-paste="photoUrlPasted()"
+          ng-change="photoUrlChanged()"
+          tc-drag-enter="photoUrlDragEnter($event)"
+          tc-drop="photoUrlDropped($event)"
+          />
+        </textarea>
+      </div>                
+    </div>    
   </div>
 
   <div ng-if="clipperState.successConfirmation()">
