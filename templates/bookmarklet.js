@@ -34,7 +34,7 @@
     clearOverlay();
     var wrapper = window['__tcOverlay'] = $('<div>').css({
       width: 300,
-      height: 200,
+      height: 600,
       zIndex: 10000,
       backgroundColor: '#000',
       position: 'fixed',
@@ -53,7 +53,7 @@
     wrapper.draggable();
     var iframeContainer = $('<div>').css({
       width: 300,
-      height: 170,
+      height: 570,
       padding: 0,
       margin: 0,
       backgroundColor: '#fff',

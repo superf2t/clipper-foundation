@@ -1359,21 +1359,33 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
   });
 };
 
-function ClipperRootCtrl($scope, $entity) {
-  $scope.entityModel = new EntityModel($entity);
-  $scope.ed = $entity;
+function ClipperRootCtrl($scope, $entity, $allTripPlansSettings) {
+  if ($.isEmptyObject($entity)) {
+    $scope.entityModel = new EntityModel({});
+    $scope.foundEntity = false;
+  } else {
+    $scope.entityModel = new EntityModel($entity);
+    $scope.foundEntity = true;
+  }
+  $scope.ed = $scope.entityModel.data;
+  $scope.allTripPlansSettings = $allTripPlansSettings;
+  $scope.selectedTripPlan = $allTripPlansSettings[0];
+
+  $scope.saveEntity = function() {
+    console.log("saving");
+  };
 }
 
-window['initClipper'] = function(entity, allTripPlanSettings, datatypeValues) {
+window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$entity', entity)
-    .value('$tripPlanSettings', allTripPlanSettings)
+    .value('$allTripPlansSettings', allTripPlansSettings)
     .value('$datatypeValues', datatypeValues);
 
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$entity', ClipperRootCtrl]);
+    .controller('ClipperRootCtrl', ['$scope', '$entity', '$allTripPlansSettings', ClipperRootCtrl]);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);

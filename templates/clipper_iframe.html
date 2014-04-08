@@ -16,7 +16,24 @@
 </head>
 <body ng-controller="ClipperRootCtrl">
   <div>
-    [[ed['name'] ]]
+    Clip items to
+    <select class="form-control" ng-model="selectedTripPlan"
+      ng-options="tp['name'] for tp in allTripPlansSettings">
+    </select>
+  </div>
+  <div>
+    <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+  </div>
+  <div ng-if="foundEntity">
+    <div>
+      The following place is associated with this page:
+    </div>
+    <div>
+      [[ed['name'] ]]
+    </div>
+    <div>
+      [[ed['address'] ]]
+    </div>
   </div>
 
   <script>

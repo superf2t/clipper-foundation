@@ -64,7 +64,8 @@ def clipper_iframe():
     url = request.values['url']
     entity = clip_logic.scrape_entity_from_url(url)    
     all_trip_plans = data.load_all_trip_plans(session_info)
-    all_trip_plans_settings = [tp.as_settings() for tp in all_trip_plans]
+    sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    all_trip_plans_settings = [tp.as_settings() for tp in sorted_trip_plans]
     return render_template('clipper_iframe.html',
         entity=entity,
         all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
