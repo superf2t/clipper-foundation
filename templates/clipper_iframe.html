@@ -14,27 +14,63 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="ClipperRootCtrl">
-  <div>
-    Clip items to
-    <select class="form-control" ng-model="selectedTripPlan"
-      ng-options="tp['name'] for tp in allTripPlansSettings">
-    </select>
-  </div>
-  <div>
-    <button class="btn btn-info" ng-click="saveEntity()">Save</button>
-  </div>
-  <div ng-if="foundEntity">
-    <div>
-      The following place is associated with this page:
+<body ng-controller="ClipperRootCtrl" class="clipper-body">
+  <div ng-if="clipperState.newEntitySummary()">
+    <div class="clipper-trip-plan-selector">
+      Clip items to
+      <select class="form-control" ng-model="selectedTripPlan"
+        ng-options="tp['name'] for tp in allTripPlansSettings">
+      </select>
     </div>
-    <div>
+    <div class="clipper-save-controls">
+      <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+    </div>
+    <div ng-if="foundEntity">
+      <div>
+        The following place is associated with this page:
+      </div>
+      <div>
+        <div class="clipper-entity-name">
+          [[ed['name'] ]]
+        </div>
+        <div class="clipper-summary-icon">
+          <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
+        </div>
+      </div>
+      <div class="clipper-entity-address">
+        [[ed['address'] ]]
+      </div>
+      <div class="clipper-summary-photo">
+        <div ng-include="'carousel-template'">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div ng-if="clipperState.successConfirmation()">
+    <div class="clip-success-checkmark">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
+      <g>
+        <g>
+          <polygon points="94.587,27.48 31.657,86.15 31.217,85.68 18.847,72.41 0.566,52.81 14.106,40.19 32.387,59.79 81.776,13.74"/>
+        </g>
+      </g>
+      </svg>
+    </div>
+    <div class="clip-confirmation-entity-name">
       [[ed['name'] ]]
     </div>
     <div>
-      [[ed['address'] ]]
+      was successfully clipped to
+    </div>
+    <div class="clip-confirmation-trip-plan-name">
+      <a href="/trip_plan/[[selectedTripPlan['trip_plan_id_str'] ]]" target="_blank">
+        [[selectedTripPlan['name'] ]]
+      </a>
     </div>
   </div>
+
+  {% include 'widgets.html' %}
 
   <script>
     initClipper(

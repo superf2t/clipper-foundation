@@ -560,6 +560,44 @@ a:hover {
   color: #fff;
 }
 
+/* Clipper */
+
+.clipper-body {
+  padding: 10px;
+}
+
+.clipper-trip-plan-selector {
+  padding: 10px 0;
+}
+
+.clipper-save-controls {
+  margin-bottom: 10px;
+}
+
+.clipper-summary-icon {
+  position: relative;
+  top: -20px;
+  left: 88%;
+}
+
+.clipper-entity-name {
+  font-weight: bold;
+  font-size: 14pt;
+}
+
+.clip-confirmation-entity-name {
+  font-weight: bold;
+}
+
+.clip-confirmation-trip-plan-name {
+  font-weight: bold;
+  font-size: 14pt;
+}
+
+.clip-success-checkmark {
+  fill: green;
+}
+
 .pac-container {
   z-index: 1100;
 }

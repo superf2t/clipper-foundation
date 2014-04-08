@@ -810,7 +810,7 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
     var request = {
       'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
       'entity': $scope.entityModel.data
-    }
+    };
     me.postChanges(request, '/editentity');    
   };
 
@@ -896,6 +896,30 @@ function EditImagesCtrl($scope, $timeout) {
   $scope.prevImg = function() {
     currentIndex -= 1;
     $scope.currentImgUrl = urls[currentIndex];
+  };
+}
+
+// Services
+
+function EntitySaver($http) {
+  this.saveNew = function(tripPlanIdStr, entityData, opt_success, opt_error) {
+    var request = {
+      'trip_plan_id_str': tripPlanIdStr,
+      'entity': entityData
+    };
+    this.post('/createentity', request, opt_success, opt_error);
+  };
+
+  this.saveExisting = function(tripPlanIdStr, entityData, opt_success, opt_error) {
+    var request = {
+      'trip_plan_id_str': tripPlanIdStr,
+      'entity': entityData
+    };
+    this.post('/editentity', request, opt_success, opt_error);
+  };
+
+  this.post = function(url, request, opt_success, opt_error) {
+    $http.post(url, request).success(opt_success).error(opt_error);
   };
 }
 
@@ -1300,6 +1324,9 @@ function interpolator($interpolateProvider) {
   $interpolateProvider.endSymbol(']]');
 }
 
+angular.module('dataSaveModule', [])
+  .service('$entitySaver', ['$http', EntitySaver]);
+
 angular.module('directivesModule', [])
   .directive('tcScrollToOnClick', tcScrollToOnClick)
   .directive('tcStarRating', tcStarRating)
@@ -1359,7 +1386,32 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
   });
 };
 
-function ClipperRootCtrl($scope, $entity, $allTripPlansSettings) {
+function ClipperStateModel(initialStatus) {
+  this.status = initialStatus;
+
+  this.newEntitySummary = function() {
+    return this.status == ClipperStateModel.SUMMARY;
+  };
+
+  this.inEdit = function() {
+    return this.status == ClipperStateModel.EDIT;
+  };
+
+  this.successConfirmation = function() {
+    return this.status == ClipperStateModel.SUCCESS_CONFIRMATION;
+  };
+
+  this.clipError = function() {
+    return this.status == ClipperStateModel.CLIP_ERROR;
+  };
+}
+
+ClipperStateModel.SUMMARY = 1;
+ClipperStateModel.EDIT = 2;
+ClipperStateModel.SUCCESS_CONFIRMATION = 3;
+ClipperStateModel.CLIP_ERROR = 4;
+
+function ClipperRootCtrl($scope, $entitySaver, $entity, $allTripPlansSettings) {
   if ($.isEmptyObject($entity)) {
     $scope.entityModel = new EntityModel({});
     $scope.foundEntity = false;
@@ -1370,9 +1422,22 @@ function ClipperRootCtrl($scope, $entity, $allTripPlansSettings) {
   $scope.ed = $scope.entityModel.data;
   $scope.allTripPlansSettings = $allTripPlansSettings;
   $scope.selectedTripPlan = $allTripPlansSettings[0];
+  $scope.clipperState = new ClipperStateModel(
+    $scope.foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.EDIT);
 
   $scope.saveEntity = function() {
-    console.log("saving");
+    var success = function(response) {
+      if (response['status'] == 'Success') {
+        $scope.clipperState.status = ClipperStateModel.SUCCESS_CONFIRMATION;
+      } else {
+        $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
+      }
+    };
+    var error = function(response) {
+      $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
+    };
+    $entitySaver.saveNew($scope.selectedTripPlan['trip_plan_id_str'], $scope.ed,
+      success, error);
   };
 }
 
@@ -1383,9 +1448,10 @@ window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
     .value('$datatypeValues', datatypeValues);
 
   angular.module('clipperModule',
-      ['clipperInitialDataModule', 'directivesModule', 'filtersModule'],
+      ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$entity', '$allTripPlansSettings', ClipperRootCtrl]);
+    .controller('ClipperRootCtrl', ['$scope', '$entitySaver', '$entity', '$allTripPlansSettings', ClipperRootCtrl])
+    .controller('CarouselCtrl', ['$scope', CarouselCtrl]);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);
