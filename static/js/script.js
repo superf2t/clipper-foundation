@@ -1411,7 +1411,7 @@ ClipperStateModel.EDIT = 2;
 ClipperStateModel.SUCCESS_CONFIRMATION = 3;
 ClipperStateModel.CLIP_ERROR = 4;
 
-function ClipperRootCtrl($scope, $entitySaver, $entity, $allTripPlansSettings) {
+function ClipperRootCtrl($scope, $timeout, $entitySaver, $entity, $allTripPlansSettings) {
   if ($.isEmptyObject($entity)) {
     $scope.entityModel = new EntityModel({});
     $scope.foundEntity = false;
@@ -1429,6 +1429,7 @@ function ClipperRootCtrl($scope, $entitySaver, $entity, $allTripPlansSettings) {
     var success = function(response) {
       if (response['status'] == 'Success') {
         $scope.clipperState.status = ClipperStateModel.SUCCESS_CONFIRMATION;
+        $timeout($scope.dismissClipper, 3000);
       } else {
         $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
       }
@@ -1438,6 +1439,10 @@ function ClipperRootCtrl($scope, $entitySaver, $entity, $allTripPlansSettings) {
     };
     $entitySaver.saveNew($scope.selectedTripPlan['trip_plan_id_str'], $scope.ed,
       success, error);
+  };
+
+  $scope.dismissClipper = function() {
+    window.parent.postMessage('tc-close-clipper', '*');
   };
 }
 
@@ -1450,7 +1455,7 @@ window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$entitySaver', '$entity', '$allTripPlansSettings', ClipperRootCtrl])
+    .controller('ClipperRootCtrl', ['$scope', '$timeout', '$entitySaver', '$entity', '$allTripPlansSettings', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl]);
 
   angular.element(document).ready(function() {

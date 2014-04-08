@@ -74,9 +74,18 @@
     $(document.body).append(wrapper);
 
     $(document.body).on('click', function(event) {
-      if (!wrapper.has(event.target).length) {
+      if (wrapper && !wrapper.has(event.target).length) {
         wrapper.remove();
         wrapper = null;
+      }
+    });
+
+    $(window).on('message', function(event) {
+      if (event.originalEvent.data == 'tc-close-clipper') {
+        if (wrapper) {
+          wrapper.remove();
+          wrapper = null;
+        }
       }
     });
   }
