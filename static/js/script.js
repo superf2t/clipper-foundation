@@ -709,7 +709,7 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
           me.openAddPlaceConfirmation(entity);
         }
         $scope.loadingData = false;
-      });    
+      });
   };
 
   this.openAddPlaceConfirmation = function(entityData) {
@@ -834,8 +834,11 @@ function EditImagesCtrl($scope, $timeout) {
   var pasteActive = false;
   $scope.photoUrlInputText = ''
   var urls = $scope.entityModel.data['photo_urls'];
+  if (!urls) {
+    urls = $scope.entityModel.data['photo_urls'] = [];
+  }
   var currentIndex = 0;
-  $scope.currentImgUrl = urls[currentIndex];
+  $scope.currentImgUrl = urls.length ? urls[currentIndex] : '';
 
   $scope.photoUrlDragEnter = function($event) {
     $scope.imgDragActive = true;
@@ -1405,20 +1408,26 @@ function ClipperStateModel(initialStatus) {
     return this.status == ClipperStateModel.SUCCESS_CONFIRMATION;
   };
 
+  this.noAutoPlaceFound = function() {
+    return this.status == ClipperStateModel.NO_AUTO_PLACE_FOUND;
+  };
+
   this.clipError = function() {
     return this.status == ClipperStateModel.CLIP_ERROR;
   };
 
   this.showControls = function() {
     return this.status == ClipperStateModel.SUMMARY
-      || this.status == ClipperStateModel.EDIT;
+      || this.status == ClipperStateModel.EDIT
+      || this.status == ClipperStateModel.NO_AUTO_PLACE_FOUND;
   };
 }
 
 ClipperStateModel.SUMMARY = 1;
 ClipperStateModel.EDIT = 2;
 ClipperStateModel.SUCCESS_CONFIRMATION = 3;
-ClipperStateModel.CLIP_ERROR = 4;
+ClipperStateModel.NO_AUTO_PLACE_FOUND = 4;
+ClipperStateModel.CLIP_ERROR = 5;
 
 function ClipperRootCtrl($scope, $timeout, $entitySaver,
     $entity, $allTripPlansSettings, $datatypeValues) {
@@ -1435,7 +1444,7 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver,
     tripPlan: $allTripPlansSettings[0]
   };
   $scope.clipperState = new ClipperStateModel(
-    foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.EDIT);
+    foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.NO_AUTO_PLACE_FOUND);
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
 
@@ -1459,8 +1468,49 @@ function ClipperRootCtrl($scope, $timeout, $entitySaver,
     $scope.clipperState.status = ClipperStateModel.EDIT;
   };
 
+  $scope.openEditorWithEntity = function(entityData) {
+    $scope.entityModel = new EntityModel(entityData);
+    $scope.ed = entityData;
+    $scope.openEditor();
+  };
+
   $scope.dismissClipper = function() {
     window.parent.postMessage('tc-close-clipper', '*');
+  };
+}
+
+function ClipperOmniboxCtrl($scope, $http) {
+  var me = this;
+  $scope.loadingData = false;
+  $scope.entityNotFound = false;
+  $scope.rawInputText = '';
+
+  $scope.placeChanged = function(newPlace) {
+    if (!newPlace || !newPlace['reference']) {
+      return;
+    }
+    me.loadEntityByGooglePlaceReference(newPlace['reference']);
+  };
+
+  $scope.openEditManually = function() {
+    // This is a method defined on the parent scope, not ideal.    
+    $scope.openEditor();
+  };
+
+  this.loadEntityByGooglePlaceReference = function(reference) {
+    $scope.loadingData = true;
+    $http.get('/google_place_to_entity?reference=' + reference)
+      .success(function(response) {
+        var entity = response['entity'];
+        if (entity) {
+          // This is a method defined on the parent scope, not ideal.
+          $scope.openEditorWithEntity(entity);
+        } else {
+          $scope.entityNotFound = true;
+        }
+        $scope.loadingData = false;
+        $scope.rawInputText = '';
+      });
   };
 }
 
@@ -1529,6 +1579,7 @@ window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
     .controller('ClipperRootCtrl', ['$scope', '$timeout', '$entitySaver',
       '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
+    .controller('ClipperOmniboxCtrl', ['$scope', '$http', ClipperOmniboxCtrl])
     .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl]);
 

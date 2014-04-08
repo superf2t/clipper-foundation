@@ -51,6 +51,28 @@
     </div>
   </div>
 
+  <div ng-if="clipperState.noAutoPlaceFound()" ng-controller="ClipperOmniboxCtrl">
+    No place could be automatically associated with this page.
+    Enter a place name or address to add one manually.
+    <div ng-show="!loadingData && !entityNotFound">
+      <input type="text" class="form-control" placeholder="Search for a place name or address"
+      tc-google-place-autocomplete
+      id="clipper-omnibox"
+      ng-model="rawInputText"
+      on-place-change="placeChanged($newPlace)"/>
+      <div class="clipper-add-place-manually-link">
+        <a ng-click="openEditManually()" href="javascript:void(0)">Or enter fields manually</a>
+      </div>
+    </div>
+    <div ng-show="loadingData">
+      <img src="/static/img/spinner.gif"/>      
+    </div>
+    <div ng-show="entityNotFound">
+      No results found.
+      <a ng-click="openEditManually()" href="javascript:void(0)">Enter fields manually</a>
+    </div>
+  </div>
+
   <div ng-if="clipperState.inEdit()" ng-controller="ClipperEditorCtrl">
     <div class="clipper-editor-place-name">
       <input type="text" ng-model="ed['name']" class="form-control"/>
@@ -139,7 +161,7 @@
 
   <script>
     initClipper(
-      {{entity.to_json_str()|safe}},
+      {{entity.to_json_str() if entity else 'null'|safe}},
       {{all_trip_plans_settings_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>
