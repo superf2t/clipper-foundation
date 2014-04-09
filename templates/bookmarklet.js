@@ -35,18 +35,19 @@
     var wrapper = window['__tcOverlay'] = $('<div>').css({
       width: 300,
       height: 600,
-      zIndex: 10000,
-      backgroundColor: '#000',
+      zIndex: 2147483647,
+      backgroundColor: 'rgba(240, 240, 255, 1.0)',
       position: 'fixed',
-      top: 20,
-      right: 20,
+      top: 10,
+      right: 10,
       padding: 0,
       margin: 0,
-      opacity: 0.9,
-      borderRadius: 4
+      opacity: 1.0,
+      border: '1px solid #bbbbbb',
+      boxShadow: '0px 1px 2px #aaaaaa'
     }).append($('<div>').css({
       width: '100%',
-      height: 25,
+      height: 30,
       margin: 0,
       padding: 0
     }));

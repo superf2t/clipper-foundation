@@ -15,22 +15,23 @@
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body" ondragenter="console.log('dragentering')">
-  <div  ng-if="clipperState.showControls()">
+  <div ng-if="clipperState.showControls()" class="clipper-controls-section">
+    <nav class="navbar navbar-default" id="clipper-navbar">
+      <div class="navbar-brand" id="logo" href="#">TravelClip</div>
+    </nav>
     <div class="clipper-trip-plan-selector">
-      Clip items to
+      Clip to
       <select class="form-control" ng-model="selectedTripPlanState.tripPlan"
         ng-options="tp['name'] for tp in allTripPlansSettings">
       </select>
     </div>
     <div class="clipper-save-controls">
-      <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+      <button class="btn btn-primary" ng-click="saveEntity()">Save</button>
       <button class="btn" ng-click="dismissClipper()">Cancel</button>
     </div>
   </div>
-  <div ng-if="clipperState.newEntitySummary()">
-    <div>
-      The following place is associated with this page:
-    </div>
+
+  <div ng-if="clipperState.newEntitySummary()" class="clipper-details-section">
     <div>
       <div class="clipper-entity-name">
         [[ed['name'] ]]
@@ -51,21 +52,20 @@
     </div>
   </div>
 
-  <div ng-if="clipperState.noAutoPlaceFound()" ng-controller="ClipperOmniboxCtrl">
-    No place could be automatically associated with this page.
-    Enter a place name or address to add one manually.
+  <div ng-if="clipperState.noAutoPlaceFound()" ng-controller="ClipperOmniboxCtrl" class="clipper-details-section">
+    We didn't automatically detect the place you are trying to clip.
     <div ng-show="!loadingData && !entityNotFound">
-      <input type="text" class="form-control" placeholder="Search for a place name or address"
+      <input type="text" class="form-control" placeholder="Search for a place or address to add"
       tc-google-place-autocomplete
       id="clipper-omnibox"
       ng-model="rawInputText"
       on-place-change="placeChanged($newPlace)"/>
       <div class="clipper-add-place-manually-link">
-        <a ng-click="openEditManually()" href="javascript:void(0)">Or enter fields manually</a>
+        <a ng-click="openEditManually()" href="javascript:void(0)">Or enter place manually</a>
       </div>
     </div>
-    <div ng-show="loadingData">
-      <img src="/static/img/spinner.gif"/>      
+    <div ng-show="loadingData" id="clipper-omnibox-loading">
+      <img id="clipper-omnibox-spinner" src="/static/img/spinner.gif"/>      
     </div>
     <div ng-show="entityNotFound">
       No results found.
@@ -73,12 +73,42 @@
     </div>
   </div>
 
-  <div ng-if="clipperState.inEdit()" ng-controller="ClipperEditorCtrl">
+  <div ng-if="clipperState.inEdit()" ng-controller="ClipperEditorCtrl" class="clipper-details-section">
     <div class="clipper-editor-place-name">
       <input type="text" ng-model="ed['name']" class="form-control"/>
     </div>
     <div class="clipper-editor-address">
       <input type="text" ng-model="ed['address']" class="form-control"/>
+    </div>
+    <div class="clipper-editor-photo-container" ng-controller="EditImagesCtrl">
+      <div class="carousel">
+        <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+          <span class="icon-prev"></span>
+        </a>
+        <a class="clipper-editor-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
+          Delete Image<span class="glyphicon glyphicon-trash"></span>        </a>
+        <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+        <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+          <span class="icon-next"></span>
+        </a>
+      </div>
+      <div class="clipper-editor-image-edit-container">
+        <textarea type="text" placeholder="Drag images or paste image Urls to add"
+          class="clipper-editor-image-drop-target"
+          ng-class="{'clipper-editor-img-drag-active': imgDragActive}"          
+          ng-model="photoUrlInputText"
+          ng-paste="photoUrlPasted()"
+          ng-change="photoUrlChanged()"
+          tc-drag-enter="photoUrlDragEnter($event)"
+          tc-drop="photoUrlDropped($event)"
+          />
+        </textarea>
+      </div>                
+    </div>  
+    <div class="clipper-editor-description">
+      Description
+      <textarea class="form-control" ng-model="ed['description']">
+      </textarea>
     </div>
     <div class="clipper-editor-category">
       <form class="form-inline" role="form">
@@ -101,40 +131,9 @@
     <div id="clipper-editor-map-container">
       <div id="clipper-editor-map"></div>
     </div>
-    <div class="clipper-editor-photo-container" ng-controller="EditImagesCtrl">
-      <div class="carousel">
-        <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
-          <span class="icon-prev"></span>
-        </a>
-        <a class="clipper-editor-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-trash"></span>
-        </a>
-        <img ng-src="[[currentImgUrl]]" class="entity-img"/>
-        <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
-          <span class="icon-next"></span>
-        </a>
-      </div>
-      <div class="clipper-editor-image-edit-container">
-        <textarea type="text" placeholder="Drag images here or paste image urls"
-          class="clipper-editor-image-drop-target"
-          ng-class="{'clipper-editor-img-drag-active': imgDragActive}"          
-          ng-model="photoUrlInputText"
-          ng-paste="photoUrlPasted()"
-          ng-change="photoUrlChanged()"
-          tc-drag-enter="photoUrlDragEnter($event)"
-          tc-drop="photoUrlDropped($event)"
-          />
-        </textarea>
-      </div>                
-    </div>  
-    <div class="clipper-editor-description">
-      Description
-      <textarea class="form-control" ng-model="ed['description']">
-      </textarea>
-    </div>
   </div>
 
-  <div ng-if="clipperState.successConfirmation()">
+  <div ng-if="clipperState.successConfirmation()" class="clipper-confirmation-section">
     <div class="clip-success-checkmark">
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
       <g>

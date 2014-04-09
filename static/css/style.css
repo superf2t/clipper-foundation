@@ -22,7 +22,7 @@ a:hover {
   font-size: 1.6em;
 }
 
-#travel-clipper-navbar {
+#travel-clip-navbar {
   background-color: rgba(255, 255, 255, 0.8);
 }
 
@@ -357,6 +357,13 @@ a:hover {
   max-height: 600px;
 }
 
+
+/* Temporary hack to increase Bootstrap carousel icons */
+.icon-next, .icon-prev {
+  font-size: 40px !important;
+  top: calc(50% - 18px) !important;
+}
+
 .guideview-entity-info {
   font-size: 12pt;
   margin: 20px auto 0 auto;
@@ -600,7 +607,21 @@ a:hover {
 /* Clipper */
 
 .clipper-body {
+  background-color: #FFFFFF;
+}
+
+.clipper-controls-section, .clipper-confirmation-section {
   padding: 10px;
+}
+
+.clipper-details-section {
+  padding: 10px;
+  background-color: #FFFFFF;
+  border-top: 1px solid #dddddd;
+}
+
+#clipper-navbar {
+  margin: 0px;
 }
 
 .clipper-trip-plan-selector {
@@ -613,13 +634,31 @@ a:hover {
 
 .clipper-summary-icon {
   position: relative;
-  top: -20px;
-  left: 88%;
+  float: right;
+  top: -30px;
+  width: 40px;
+  height: 40px;
 }
 
 .clipper-entity-name {
   font-weight: bold;
   font-size: 14pt;
+}
+
+#clipper-omnibox {
+  margin-top: 10px
+}
+
+#clipper-omnibox-spinner {
+  margin: 10px auto;
+  width: 43px;
+  display: block;
+}
+
+.clipper-add-place-manually-link {
+  position: relative;
+  text-align: center;
+  top: 240px;
 }
 
 .clip-confirmation-entity-name {
@@ -651,10 +690,13 @@ a:hover {
 
 .clipper-editor-img-trash-control {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  top: 10px;
+  /* Temporary CSS hack */
+  left: calc(50% - 50px);
+  padding: 2px;
   text-align: center;
   color: #fff;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .clipper-editor-image-edit-container {
@@ -668,8 +710,8 @@ a:hover {
   resize: none;
   padding: 20px 10px;
   font-size: 14px;
-  color: #555;
-  background-color: #fff;
+  background-color: #eeeeee;
+  color: #000000;
   background-image: none;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -677,10 +719,15 @@ a:hover {
   box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
   -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
   transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  margin-bottom: 5px;
 }
 
 .clipper-editor-img-drag-active {
   border-color: red;
+}
+
+.clipper-editor-description, .clipper-editor-category, .clipper-editor-sub-category {
+  margin: 10px 0px;
 }
 
 #clipper-editor-map-container {
