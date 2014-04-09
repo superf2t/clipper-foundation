@@ -1,5 +1,7 @@
+import decimal
 import json
 import re
+import string
 import urllib2
 import urlparse
 
@@ -51,6 +53,7 @@ class ScrapedPage(object):
         self.url = url
         self.tree = tree
         self.root = tree.getroot()
+        self._location = None
 
     @fail_returns_none
     def get_page_title(self):
@@ -89,8 +92,26 @@ class ScrapedPage(object):
     def get_site_specific_entity_id(self):
         return None
 
+    def get_latlng(self):
+        parsed_latlng = self.parse_latlng()
+        if parsed_latlng:
+            return parsed_latlng
+        location = self.lookup_location()
+        if location:
+            return location.latlng_json()
+        return None
+
+    def parse_latlng(self):
+        return None
+
     def lookup_location(self):
-        return lookup_location(self)
+        if not self._location:
+            self._location = lookup_location(self)
+        return self._location
+
+    def get_location_precision(self):
+        location = self.lookup_location()
+        return 'Precise' if location and location.is_precise() else 'Imprecise'
 
     def is_base_scraper(self):
         return type(self) == ScrapedPage
@@ -301,13 +322,57 @@ class AirbnbScraper(ScrapedPage):
         return [thumb.get('href') for thumb in thumbs]
 
 
-class HomeawayScraper(ScrapedPage):
-    NAME_XPATH = 'body//h1'
+class BookingDotComScraper(ScrapedPage):
+    NAME_XPATH = 'body//h1//span[@id="hp_hotel_name"]'
+    ADDRESS_XPATH = 'body//p[@class="address"]/span'
+    PRIMARY_PHOTO_XPATH = 'body//div[@class="photo_contrain"]//img[@id="photo_container"]'
+
+    def parse_latlng(self):
+        coords_span = self.root.find('body//p[@class="address"]/span[@data-coords]')
+        if coords_span is None:
+            return None
+        coords = coords_span.attrib['data-coords']
+        lng, lat = coords.split(',')
+        lat = float('%.6f' % decimal.Decimal(lat))
+        lng = float('%.6f' % decimal.Decimal(lng))
+        return {'lat': lat, 'lng': lng}
+
+    def get_location_precision(self):
+        if self.parse_latlng():
+            return 'Precise'
+        return super(BookingDotComScraper, self).get_location_precision()
+
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        summary_info = self.root.find('body//div[@id="hotel_main_content"]//p[@class="summary  "]')
+        if summary_info is not None:
+            summary_text = summary_info.text.strip().lower()
+            if 'bed and breakfast' in summary_text:
+                return values.SubCategory.BED_AND_BREAKFAST
+            elif 'hostel' in summary_text:
+                return values.SubCategory.HOSTEL
+            elif 'hotel' in summary_text:
+                return values.SubCategory.HOTEL
+        return values.SubCategory.HOTEL
+
+    def get_rating(self):
+        numerator = float(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="rating"]//span[@class="average"]').text)
+        denominator = int(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="rating"]//span[@class="best"]').text)
+        return numerator / denominator * 5
+
+    def get_photos(self):
+        thumbs = self.root.findall('body//div[@id="photos_distinct"]//a[@data-resized]')
+        return [thumb.attrib['data-resized'] for thumb in thumbs]
 
 def tostring_with_breaks(element):
-    modified_html = etree.tostring(element).replace('<br/>', '<br/> ').replace('<br>', '<br> ')
-    new_element = etree.fromstring(modified_html)
-    return etree.tostring(new_element, encoding='unicode', method='text')
+    raw_html = etree.tostring(element)
+    elem = element
+    if '<br/>' in raw_html or '<br>' in raw_html:
+        modified_html = raw_html.replace('<br/>', '<br/> ').replace('<br>', '<br> ')
+        elem = etree.fromstring(modified_html)
+    return etree.tostring(elem, encoding='unicode', method='text').strip(string.punctuation).strip()
 
 def parse_tree(url):
     html = urllib2.urlopen(url)
@@ -327,8 +392,8 @@ def build_scraper(url):
         scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
         scraper_class = AirbnbScraper
-    elif 'homeaway.com' in host:
-        scraper_class = HomeawayScraper
+    elif 'booking.com' in host:
+        scraper_class = BookingDotComScraper
     return scraper_class(url, tree)
 
 def lookup_location(scr):
@@ -374,14 +439,12 @@ if __name__ == '__main__':
         'https://www.airbnb.com/rooms/2407670',
         'https://www.airbnb.com/rooms/2576604',
         'https://www.airbnb.com/rooms/1581737',
-        'http://www.homeaway.com/vacation-rental/p8647vb',
+        'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
+        'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
+        'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
         ):
         scraper = build_scraper(url)
         print scraper.debug_string()
-        location = scraper.lookup_location()
-        if location:
-            print location.get_name()
-            print location.latlng_json()
-        else:
-            print '(no location)'
+        print scraper.get_latlng()
+        print scraper.get_location_precision()
         print '-----'

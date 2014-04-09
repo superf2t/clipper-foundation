@@ -30,6 +30,8 @@ SubCategory.HOTEL = SubCategory(1, 'hotel', 'Hotel')
 SubCategory.PRIVATE_RENTAL = SubCategory(2, 'private_rental', 'Private rental')
 SubCategory.RESTAURANT = SubCategory(3, 'restaurant', 'Restaurant')
 SubCategory.BAR = SubCategory(4, 'bar', 'Bar')
+SubCategory.BED_AND_BREAKFAST = SubCategory(5, 'bed_and_breakfast', 'Bed & Breakfast')
+SubCategory.HOSTEL = SubCategory(6, 'hostel', 'Hostel')
 
 class ValueCollection(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields(
@@ -42,4 +44,4 @@ class ValueCollection(serializable.Serializable):
 
 ALL_VALUES = ValueCollection(
     (Category.LODGING, Category.FOOD_AND_DRINK, Category.ATTRACTIONS),
-    (SubCategory.HOTEL, SubCategory.PRIVATE_RENTAL, SubCategory.RESTAURANT, SubCategory.BAR))
+    (SubCategory.HOTEL, SubCategory.PRIVATE_RENTAL, SubCategory.HOSTEL, SubCategory.BED_AND_BREAKFAST, SubCategory.RESTAURANT, SubCategory.BAR))

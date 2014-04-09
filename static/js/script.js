@@ -644,6 +644,8 @@ function GuideViewCarouselCtrl($scope, $timeout) {
 var SUB_CATEGORY_NAME_TO_ICON_URL = {
     'hotel': 'lodging_0star.png',
     'private_rental': 'lodging_0star.png',
+    'bed_and_breakfast': 'lodging_0star.png',
+    'hostel': 'lodging_0star.png',    
     'restaurant': 'restaurant.png',
     'bar': 'bar_coktail.png'
 };

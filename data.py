@@ -29,6 +29,8 @@ ENTITY_TYPE_TO_ICON_URL = {
 SUB_CATEGORY_NAME_TO_ICON_URL = {
     values.SubCategory.HOTEL.name: 'lodging_0star.png',
     values.SubCategory.PRIVATE_RENTAL.name: 'lodging_0star.png',
+    values.SubCategory.BED_AND_BREAKFAST.name: 'lodging_0star.png',
+    values.SubCategory.HOSTEL.name: 'lodging_0star.png',
     values.SubCategory.RESTAURANT.name: 'restaurant.png',
     values.SubCategory.BAR.name: 'bar_coktail.png',
 }
