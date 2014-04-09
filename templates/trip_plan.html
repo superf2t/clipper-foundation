@@ -149,11 +149,6 @@
                     {% if allow_editing %}
                       <div class="entity-edit-controls">
                         <a href="javascript:void(0)"
-                          ng-click="deleteEntity()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-trash"></span>
-                        </a>
-                        <a href="javascript:void(0)"
                           ng-click="openEditEntity()"
                           ng-show="!editing">
                           <span class="glyphicon glyphicon-pencil"></span>
@@ -162,6 +157,11 @@
                           ng-click="openEditPlaceModal()"
                           ng-show="!editing">
                           <span class="glyphicon glyphicon-cog"></span>
+                        </a>
+                        <a href="javascript:void(0)"
+                          ng-click="deleteEntity()"
+                          ng-show="!editing">
+                          <span class="glyphicon glyphicon-trash"></span>
                         </a>
                         <button class="btn btn-default btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
                         <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
