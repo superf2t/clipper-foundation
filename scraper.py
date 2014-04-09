@@ -117,6 +117,9 @@ class ScrapedPage(object):
     def is_base_scraper(self):
         return type(self) == ScrapedPage
 
+    def absolute_url(self, relative_url):
+        return urlparse.urljoin(self.url, relative_url)
+
     def debug_string(self):
         return '''
 Entity name: %s
@@ -332,7 +335,7 @@ class BookingDotComScraper(ScrapedPage):
         coords_span = self.root.find('body//p[@class="address"]/span[@data-coords]')
         if coords_span is None:
             return None
-        coords = coords_span.attrib['data-coords']
+        coords = coords_span.get('data-coords')
         lng, lat = coords.split(',')
         lat = float('%.6f' % decimal.Decimal(lat))
         lng = float('%.6f' % decimal.Decimal(lng))
@@ -365,13 +368,51 @@ class BookingDotComScraper(ScrapedPage):
 
     def get_photos(self):
         thumbs = self.root.findall('body//div[@id="photos_distinct"]//a[@data-resized]')
-        return [thumb.attrib['data-resized'] for thumb in thumbs]
+        return [thumb.get('data-resized') for thumb in thumbs]
 
 class HyattInfoPageScraper(ScrapedPage):
-    pass
+    NAME_XPATH = 'body//h1[@class="homePropertyName"]'
+
+    def get_address(self):
+        elems = self.root.findall('body//div[@class="addresspanel"]//p[@class="address"]')
+        return '%s %s' % (tostring(elems[0], True), tostring(elems[1], True)) 
+
+    def get_primary_photo(self):
+        return self.absolute_url(self.root.find('body//div[@id="mastHeadCarousel"]//li//img').get('data-original'))
+
+    def get_photos(self):
+        return [self.absolute_url(e.get('data-original')) for e in self.root.findall('body//div[@id="mastHeadCarousel"]//li//img')]
+
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        return values.SubCategory.HOTEL
 
 class HyattRatesPageScraper(ScrapedPage):
-    NAME_XPATH = 'body//li[@class="img_info"]//p[@class="bw"]'
+    NAME_XPATH = 'body//div[@id="logoCarouselAlter"]//a'
+    PRIMARY_PHOTO_XPATH = 'body//li[@class="img_holder"]//img'
+
+    def get_address(self):
+        elems = self.root.findall('body//li[@class="img_info"]//p[@class="dim"]')
+        return '%s %s' % (tostring(elems[0], True), tostring(elems[1], True))
+
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        return values.SubCategory.HOTEL
+
+    def get_photos(self):
+        return self.get_info_page().get_photos()
+
+    def get_info_page(self):
+        if hasattr(self, '_info_page'):
+            return self.info_page
+        info_page_url = self.root.find('body//li[@class="img_info"]//p[@class="bw"]//a').get('href')
+        self._info_page = build_scraper(info_page_url)
+        return self._info_page
+
 
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
@@ -380,6 +421,12 @@ def tostring_with_breaks(element):
         modified_html = raw_html.replace('<br/>', '<br/> ').replace('<br>', '<br> ')
         elem = etree.fromstring(modified_html)
     return etree.tostring(elem, encoding='unicode', method='text').strip(string.punctuation).strip()
+
+def tostring(element, normalize_whitespace=False):
+    s = etree.tostring(element, encoding='unicode', method='text').strip()
+    if normalize_whitespace:
+        return re.sub('\s+', ' ', s)
+    return s
 
 def parse_tree(url, page_source=None):
     if page_source:
@@ -445,6 +492,7 @@ def pick_best_location(locations, entity_name):
     return locations[0]
 
 if __name__ == '__main__':
+    from tests.testdata import scraper_page_source
     for url in (
         'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
         'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
@@ -459,10 +507,10 @@ if __name__ == '__main__':
         'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
         'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
         'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
-        'http://regencyboston.hyatt.com/hyatt/reservations/roomsAndRates.jsp?language=en&xactionid=14547c8a915&isFromHICBookingValidator=HIC&_requestid=955704',
+        'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
         'http://regencyboston.hyatt.com/en/hotel/home.html',
         ):
-        scraper = build_scraper(url)
+        scraper = build_scraper(url, scraper_page_source.get_page_source(url))
         print scraper.debug_string()
         print scraper.get_latlng()
         print scraper.get_location_precision()
