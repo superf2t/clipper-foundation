@@ -248,6 +248,7 @@ class SessionInfo(object):
         self.sessionid = sessionid
         self.set_on_response = set_on_response
         self.clear_active_trip_plan_id = False
+        self.logged_in = False
 
     @property
     def user_identifier(self):

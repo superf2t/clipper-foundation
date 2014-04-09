@@ -61,9 +61,15 @@ def clip():
 @app.route('/clipper_iframe')
 def clipper_iframe():
     session_info = decode_session(request.cookies)
+    if not session_info.logged_in:
+        return render_template('clipper_iframe_not_logged_in.html')
     url = request.values['url']
     entity = clip_logic.scrape_entity_from_url(url)    
     all_trip_plans = data.load_all_trip_plans(session_info)
+    if not all_trip_plans:
+        # User is so new she doesn't even have an empty trip plan
+        create_and_save_default_trip_plan(session_info)
+        all_trip_plans = data.load_all_trip_plans(session_info)
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     all_trip_plans_settings = [tp.as_settings() for tp in sorted_trip_plans]
     return render_template('clipper_iframe.html',
@@ -312,6 +318,7 @@ def decode_session(cookies):
     except:
         sessionid = None
     session_info = data.SessionInfo(email, active_trip_plan_id, sessionid)
+    session_info.logged_in = sessionid or email
     if not session_info.sessionid:
         session_info.sessionid = generate_sessionid()
         session_info.set_on_response = True
