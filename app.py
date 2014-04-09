@@ -180,6 +180,20 @@ def new_trip_plan_ajax():
     response = json.jsonify(new_trip_plan_id_str=str(session_info.active_trip_plan_id))
     return process_response(response, request, session_info)
 
+@app.route('/createtripplan', methods=['POST'])
+def createtripplan():
+    session_info = decode_session(request.cookies)
+    if not session_info.user_identifier:
+        raise Exception('No sessionid found')
+    try:
+        create_request = data.CreateTripPlanRequest.from_json_obj(request.json)
+    except:
+        raise Exception('Could not parse a CreateTripPlanRequest from the input')  
+    trip_plan_id = data.generate_trip_plan_id()
+    trip_plan = data.TripPlan(trip_plan_id, create_request.name, creator=session_info.user_identifier)
+    data.save_trip_plan(trip_plan)
+    return json.jsonify(status='Success', trip_plan=trip_plan.as_settings().to_json_obj())
+
 @app.route('/editentity', methods=['POST'])
 def editentity():
     session_info = decode_session(request.cookies)

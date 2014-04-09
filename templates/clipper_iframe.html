@@ -19,11 +19,21 @@
     <div class="clipper-trip-plan-selector">
       Clip items to
       <select class="form-control" ng-model="selectedTripPlanState.tripPlan"
-        ng-options="tp['name'] for tp in allTripPlansSettings">
+        ng-options="tp['name'] for tp in tripPlanSelectOptions">
       </select>
     </div>
-    <div class="clipper-save-controls">
-      <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+    <div ng-show="showCreateTripPlanForm">
+      <form ng-submit="saveNewTripPlan()">
+        <input type="text" class="form-control"
+          ng-model="selectedTripPlanState.newTripPlanName"
+          placeholder="Enter a trip plan name" id="trip-plan-name-input"/>
+        <button class="btn btn-info" ng-disabled="!selectedTripPlanState.newTripPlanName">
+          Create new trip plan
+        </button>
+      </form>
+    </div>
+    <div class="clipper-save-controls" ng-show="!showCreateTripPlanForm">
+      <button class="btn btn-info" ng-disabled="!saveable()" ng-click="saveEntity()">Save</button>
       <button class="btn" ng-click="dismissClipper()">Cancel</button>
     </div>
   </div>
