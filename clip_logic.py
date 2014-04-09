@@ -51,8 +51,11 @@ def entity_from_scraper(scr, url):
         primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
         source_url=url)
 
-def scrape_entity_from_url(url):
-    scr = scraper.build_scraper(url)
+def scrape_entity_from_url(url, page_source=None):
+    scr = scraper.build_scraper(url, page_source)
     if scr.is_base_scraper():
         return None
     return entity_from_scraper(scr, url)
+
+def needs_page_source_to_scrape(url):
+    return 'hyatt.com' in url.lower()

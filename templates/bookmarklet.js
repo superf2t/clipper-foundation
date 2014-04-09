@@ -86,6 +86,8 @@
           wrapper.remove();
           wrapper = null;
         }
+      } else if (event.originalEvent.data == 'tc-needs-page-source') {
+        iframe[0].contentWindow.postMessage($('html')[0].innerHTML, 'https://' + HOST);
       }
     });
   }

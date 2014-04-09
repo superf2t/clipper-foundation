@@ -1426,6 +1426,10 @@ function ClipperStateModel(initialStatus) {
     return this.status == ClipperStateModel.CLIP_ERROR;
   };
 
+  this.waitingForScrapeFromPageSource = function() {
+    return this.status == ClipperStateModel.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE;
+  };
+
   this.showControls = function() {
     return this.status == ClipperStateModel.SUMMARY
       || this.status == ClipperStateModel.EDIT
@@ -1438,17 +1442,42 @@ ClipperStateModel.EDIT = 2;
 ClipperStateModel.SUCCESS_CONFIRMATION = 3;
 ClipperStateModel.NO_AUTO_PLACE_FOUND = 4;
 ClipperStateModel.CLIP_ERROR = 5;
+ClipperStateModel.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE = 6;
 
 function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
-    $entity, $allTripPlansSettings, $datatypeValues) {
-  var foundEntity = false;
-  if ($.isEmptyObject($entity)) {
-    $scope.entityModel = new EntityModel({});
+    $needsPageSource, $entity, $allTripPlansSettings, $datatypeValues) {
+  var me = this;
+
+  this.prepareEntityState = function(entityData) {
+    var foundEntity = false;
+    if ($.isEmptyObject(entityData)) {
+      $scope.entityModel = new EntityModel({});
+    } else {
+      $scope.entityModel = new EntityModel(entityData);
+      foundEntity = true;
+    }
+    $scope.ed = $scope.entityModel.data;
+    $scope.clipperState = new ClipperStateModel(
+      foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.NO_AUTO_PLACE_FOUND);
+  };
+
+  if ($needsPageSource) {
+    $(window).on('message', function(event) {
+      var pageSource = event.originalEvent.data;
+      var request = {
+        'url': getParameterByName('url'),
+        'page_source': pageSource
+      };
+      $http.post('/entityfromsource', request)
+        .success(function(response) {
+          me.prepareEntityState(response['entity']);
+        });
+    });
+    window.parent.postMessage('tc-needs-page-source', '*'); 
+    $scope.clipperState = new ClipperStateModel(ClipperStateModel.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE);
   } else {
-    $scope.entityModel = new EntityModel($entity);
-    foundEntity = true;
+    this.prepareEntityState($entity); 
   }
-  $scope.ed = $scope.entityModel.data;
 
   $scope.showCreateTripPlanForm = false;
   $scope.tripPlanSelectOptions = angular.copy($allTripPlansSettings);
@@ -1472,8 +1501,6 @@ function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
     }
   });
 
-  $scope.clipperState = new ClipperStateModel(
-    foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.NO_AUTO_PLACE_FOUND);
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
 
@@ -1620,9 +1647,11 @@ function ClipperEditorCtrl($scope, $timeout) {
   };
 }
 
-window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
+window['initClipper'] = function(entity, needsPageSource,
+    allTripPlansSettings, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$entity', entity)
+    .value('$needsPageSource', needsPageSource)
     .value('$allTripPlansSettings', allTripPlansSettings)
     .value('$datatypeValues', datatypeValues);
 
@@ -1630,7 +1659,7 @@ window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
       interpolator)
     .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entitySaver',
-      '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
+      '$needsPageSource', '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$http', ClipperOmniboxCtrl])
     .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])

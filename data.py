@@ -248,6 +248,13 @@ class DeleteEntityRequest(serializable.Serializable):
     def trip_plan_id(self):
         return int(self.trip_plan_id_str)
 
+class EntityFromPageSourceRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('url', 'page_source')
+
+    def __init__(self, url=None, page_source=None):
+        self.url = url
+        self.page_source = page_source
+
 
 class SessionInfo(object):
     def __init__(self, email=None, active_trip_plan_id=None, sessionid=None, set_on_response=False):

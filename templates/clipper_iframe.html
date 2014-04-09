@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="ClipperRootCtrl" class="clipper-body" ondragenter="console.log('dragentering')">
+<body ng-controller="ClipperRootCtrl" class="clipper-body">
   <div  ng-if="clipperState.showControls()">
     <div class="clipper-trip-plan-selector">
       Clip items to
@@ -75,7 +75,7 @@
       </div>
     </div>
     <div ng-show="loadingData">
-      <img src="/static/img/spinner.gif"/>      
+      <img src="/static/img/spinner.gif"/>
     </div>
     <div ng-show="entityNotFound">
       No results found.
@@ -144,6 +144,10 @@
     </div>
   </div>
 
+  <div ng-if="clipperState.waitingForScrapeFromPageSource()">
+    <img src="/static/img/spinner.gif"/>
+  </div>
+
   <div ng-if="clipperState.successConfirmation()">
     <div class="clip-success-checkmark">
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
@@ -172,6 +176,7 @@
   <script>
     initClipper(
       {{entity.to_json_str()|safe if entity else 'null'}},
+      {{needs_page_source|jsbool}},
       {{all_trip_plans_settings_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>

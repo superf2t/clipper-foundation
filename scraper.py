@@ -1,3 +1,4 @@
+import cStringIO
 import decimal
 import json
 import re
@@ -366,6 +367,12 @@ class BookingDotComScraper(ScrapedPage):
         thumbs = self.root.findall('body//div[@id="photos_distinct"]//a[@data-resized]')
         return [thumb.attrib['data-resized'] for thumb in thumbs]
 
+class HyattInfoPageScraper(ScrapedPage):
+    pass
+
+class HyattRatesPageScraper(ScrapedPage):
+    NAME_XPATH = 'body//li[@class="img_info"]//p[@class="bw"]'
+
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
     elem = element
@@ -374,15 +381,20 @@ def tostring_with_breaks(element):
         elem = etree.fromstring(modified_html)
     return etree.tostring(elem, encoding='unicode', method='text').strip(string.punctuation).strip()
 
-def parse_tree(url):
-    html = urllib2.urlopen(url)
+def parse_tree(url, page_source=None):
+    if page_source:
+        html = cStringIO.StringIO(page_source)
+    else:
+        html = urllib2.urlopen(url)
     parser = etree.HTMLParser()
     tree = etree.parse(html, parser)
     return tree
 
-def build_scraper(url):
-    tree = parse_tree(url)
-    host = urlparse.urlparse(url).netloc.lower()
+def build_scraper(url, page_source=None):
+    tree = parse_tree(url, page_source)
+    parsed = urlparse.urlparse(url)
+    host = parsed.netloc.lower()
+    path = parsed.path.lower()
     scraper_class = ScrapedPage
     if 'tripadvisor.com' in host:
         scraper_class = TripAdvisorScraper
@@ -394,6 +406,11 @@ def build_scraper(url):
         scraper_class = AirbnbScraper
     elif 'booking.com' in host:
         scraper_class = BookingDotComScraper
+    elif 'hyatt.com' in host:
+        if '/hyatt/reservations' in path:
+            scraper_class = HyattRatesPageScraper
+        else:
+            scraper_class = HyattInfoPageScraper
     return scraper_class(url, tree)
 
 def lookup_location(scr):
@@ -442,6 +459,8 @@ if __name__ == '__main__':
         'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
         'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
         'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
+        'http://regencyboston.hyatt.com/hyatt/reservations/roomsAndRates.jsp?language=en&xactionid=14547c8a915&isFromHICBookingValidator=HIC&_requestid=955704',
+        'http://regencyboston.hyatt.com/en/hotel/home.html',
         ):
         scraper = build_scraper(url)
         print scraper.debug_string()
