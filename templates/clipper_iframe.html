@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="ClipperRootCtrl" class="clipper-body" ondragenter="console.log('dragentering')">
+<body ng-controller="ClipperRootCtrl" class="clipper-body">
   <div ng-if="clipperState.showControls()" class="clipper-controls-section">
     <nav class="navbar navbar-default" id="clipper-navbar">
       <div class="navbar-brand" id="logo" href="#">TravelClip</div>
@@ -22,11 +22,21 @@
     <div class="clipper-trip-plan-selector">
       Clip to
       <select class="form-control" ng-model="selectedTripPlanState.tripPlan"
-        ng-options="tp['name'] for tp in allTripPlansSettings">
+        ng-options="tp['name'] for tp in tripPlanSelectOptions">
       </select>
     </div>
-    <div class="clipper-save-controls">
-      <button class="btn btn-primary" ng-click="saveEntity()">Save</button>
+    <div ng-show="showCreateTripPlanForm">
+      <form ng-submit="saveNewTripPlan()">
+        <input type="text" class="form-control"
+          ng-model="selectedTripPlanState.newTripPlanName"
+          placeholder="Enter a trip plan name" id="trip-plan-name-input"/>
+        <button class="btn btn-info" ng-disabled="!selectedTripPlanState.newTripPlanName">
+          Create new trip plan
+        </button>
+      </form>
+    </div>
+    <div class="clipper-save-controls" ng-show="!showCreateTripPlanForm">
+      <button class="btn btn-primary" ng-disabled="!saveable()" ng-click="saveEntity()">Save</button>
       <button class="btn" ng-click="dismissClipper()">Cancel</button>
     </div>
   </div>
@@ -133,6 +143,10 @@
     </div>
   </div>
 
+  <div ng-if="clipperState.waitingForScrapeFromPageSource()">
+    <img src="/static/img/spinner.gif"/>
+  </div>
+
   <div ng-if="clipperState.successConfirmation()" class="clipper-confirmation-section">
     <div class="clip-success-checkmark">
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
@@ -161,6 +175,7 @@
   <script>
     initClipper(
       {{entity.to_json_str()|safe if entity else 'null'}},
+      {{needs_page_source|jsbool}},
       {{all_trip_plans_settings_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>

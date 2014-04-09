@@ -64,7 +64,10 @@ def clipper_iframe():
     if not session_info.logged_in:
         return render_template('clipper_iframe_not_logged_in.html')
     url = request.values['url']
-    entity = clip_logic.scrape_entity_from_url(url)    
+    needs_page_source = clip_logic.needs_page_source_to_scrape(url)
+    entity = None
+    if not needs_page_source:
+        entity = clip_logic.scrape_entity_from_url(url)
     all_trip_plans = data.load_all_trip_plans(session_info)
     if not all_trip_plans:
         # User is so new she doesn't even have an empty trip plan
@@ -74,6 +77,7 @@ def clipper_iframe():
     all_trip_plans_settings = [tp.as_settings() for tp in sorted_trip_plans]
     return render_template('clipper_iframe.html',
         entity=entity,
+        needs_page_source=needs_page_source,
         all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
         all_datatype_values=values.ALL_VALUES)
 
@@ -180,6 +184,20 @@ def new_trip_plan_ajax():
     response = json.jsonify(new_trip_plan_id_str=str(session_info.active_trip_plan_id))
     return process_response(response, request, session_info)
 
+@app.route('/createtripplan', methods=['POST'])
+def createtripplan():
+    session_info = decode_session(request.cookies)
+    if not session_info.user_identifier:
+        raise Exception('No sessionid found')
+    try:
+        create_request = data.CreateTripPlanRequest.from_json_obj(request.json)
+    except:
+        raise Exception('Could not parse a CreateTripPlanRequest from the input')  
+    trip_plan_id = data.generate_trip_plan_id()
+    trip_plan = data.TripPlan(trip_plan_id, create_request.name, creator=session_info.user_identifier)
+    data.save_trip_plan(trip_plan)
+    return json.jsonify(status='Success', trip_plan=trip_plan.as_settings().to_json_obj())
+
 @app.route('/editentity', methods=['POST'])
 def editentity():
     session_info = decode_session(request.cookies)
@@ -209,7 +227,9 @@ def createentity():
     try:
         create_request = data.CreateEntityRequest.from_json_obj(request.json)
     except:
-        raise Exception('Could not parse a CreateEntityEntity from the input')
+        raise Exception('Could not parse a CreateEntityRequest from the input')
+    if not create_request.entity:
+        raise Exception('No entity was populated in the CreateEntityRequest')
     trip_plan = data.load_trip_plan_by_id(create_request.trip_plan_id)
     if not trip_plan:
         raise Exception('No trip plan found for the given id')
@@ -296,6 +316,14 @@ def google_place_to_entity():
 def url_to_entity():
     url = request.values['url']
     entity = clip_logic.scrape_entity_from_url(url)
+    return json.jsonify(entity=entity.to_json_obj() if entity else None)
+
+@app.route('/entityfromsource', methods=['POST'])
+def entityfromsource():
+    req = data.EntityFromPageSourceRequest.from_json_obj(request.json)
+    # TODO: Move unicode encoding into the json deserializer
+    req.page_source = req.page_source.encode('utf-8')
+    entity = clip_logic.scrape_entity_from_url(req.url, req.page_source)
     return json.jsonify(entity=entity.to_json_obj() if entity else None)
 
 def create_and_save_default_trip_plan(session_info):

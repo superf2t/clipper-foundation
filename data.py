@@ -29,6 +29,8 @@ ENTITY_TYPE_TO_ICON_URL = {
 SUB_CATEGORY_NAME_TO_ICON_URL = {
     values.SubCategory.HOTEL.name: 'lodging_0star.png',
     values.SubCategory.PRIVATE_RENTAL.name: 'lodging_0star.png',
+    values.SubCategory.BED_AND_BREAKFAST.name: 'lodging_0star.png',
+    values.SubCategory.HOSTEL.name: 'lodging_0star.png',
     values.SubCategory.RESTAURANT.name: 'restaurant.png',
     values.SubCategory.BAR.name: 'bar_coktail.png',
 }
@@ -218,6 +220,12 @@ class CreateEntityRequest(serializable.Serializable):
     def trip_plan_id(self):
         return int(self.trip_plan_id_str)
 
+class CreateTripPlanRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('name')
+
+    def __init__(self, name=None):
+        self.name = name
+
 class EditTripPlanRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
 
@@ -239,6 +247,13 @@ class DeleteEntityRequest(serializable.Serializable):
     @property
     def trip_plan_id(self):
         return int(self.trip_plan_id_str)
+
+class EntityFromPageSourceRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('url', 'page_source')
+
+    def __init__(self, url=None, page_source=None):
+        self.url = url
+        self.page_source = page_source
 
 
 class SessionInfo(object):
@@ -309,9 +324,11 @@ def load_all_trip_plans(session_info):
 
 def save_trip_plan(trip_plan):
     trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
-    trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
     json_obj = trip_plan.to_json_obj()
-    json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))
+    json_str = json.dumps(json_obj, sort_keys=True, indent=4, separators=(',', ': '))
+    trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
+    trip_plan_file.write(json_str)
+    trip_plan_file.close()
 
 def change_creator(trip_plan, new_creator):
     old_fname = trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id)
