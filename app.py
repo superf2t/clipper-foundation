@@ -227,7 +227,9 @@ def createentity():
     try:
         create_request = data.CreateEntityRequest.from_json_obj(request.json)
     except:
-        raise Exception('Could not parse a CreateEntityEntity from the input')
+        raise Exception('Could not parse a CreateEntityRequest from the input')
+    if not create_request.entity:
+        raise Exception('No entity was populated in the CreateEntityRequest')
     trip_plan = data.load_trip_plan_by_id(create_request.trip_plan_id)
     if not trip_plan:
         raise Exception('No trip plan found for the given id')

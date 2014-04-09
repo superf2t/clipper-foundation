@@ -324,9 +324,11 @@ def load_all_trip_plans(session_info):
 
 def save_trip_plan(trip_plan):
     trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
-    trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
     json_obj = trip_plan.to_json_obj()
-    json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))
+    json_str = json.dumps(json_obj, sort_keys=True, indent=4, separators=(',', ': '))
+    trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
+    trip_plan_file.write(json_str)
+    trip_plan_file.close()
 
 def change_creator(trip_plan, new_creator):
     old_fname = trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id)
