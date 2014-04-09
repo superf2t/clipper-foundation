@@ -6,6 +6,13 @@ function hostnameFromUrl(url) {
   return fullHost;
 }
 
+function getParameterByName(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+      results = regex.exec(location.search);
+  return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
 function looksLikeUrl(text) {
   if (!text) {
     return false;
@@ -1504,6 +1511,8 @@ function ClipperOmniboxCtrl($scope, $http) {
       .success(function(response) {
         var entity = response['entity'];
         if (entity) {
+          var sourceUrl = getParameterByName('url');
+          entity['source_url'] = sourceUrl;
           // This is a method defined on the parent scope, not ideal.
           $scope.openEditorWithEntity(entity);
         } else {
