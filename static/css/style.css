@@ -519,15 +519,7 @@ a:hover {
   padding-top: 10px;
 }
 
-.apc-edit-mode .apc-rating {
-  padding-top: 10px;
-}
-
-.apc-edit-mode .apc-category {
-  padding-top: 10px;
-}
-
-.apc-edit-mode .apc-sub-category {
+.apc-rating-edit, .apc-category-edit, .apc-sub-category-edit {
   padding-top: 10px;
 }
 
@@ -541,15 +533,23 @@ a:hover {
   padding-top: 18px;
 }
 
+.apc-edit-input {
+  margin-bottom: 10px;
+}
+
+#apc-edit-name-input, #apc-edit-address-input {
+  width: 360px;
+}
+
 .apc-image-drop-target {
   display: block;
-  width: 150px;
+  width: 360px;
   height: 100px;
   resize: none;
   padding: 20px 10px;
   font-size: 14px;
-  color: #555;
-  background-color: #fff;
+  background-color: #eeeeee;
+  color: #000000;
   background-image: none;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -563,12 +563,12 @@ a:hover {
   padding-top: 20px;
 }
 
-.apc-static-map-header, .apc-editable-map-header {
+.apc-static-map-header {
   margin-top: 10px;
 }
 
 #apc-static-map-container, #apc-editable-map-container {
-  margin: 0 auto 0 auto;
+  margin: 0px auto 0px auto;
   width: 360px;
   height: 270px;
 }
@@ -578,16 +578,23 @@ a:hover {
   height: 100%;
 }
 
+.apc-map-precision-edit {
+  margin-top: 10px;
+}
+
 .apc-img-drag-active {
   border-color: red;
 }
 
 .apc-img-trash-control {
   position: absolute;
-  left: 50%;
-  top: 50%;
+  top: 10px;
+  /* Temporary CSS hack */
+  left: calc(50% - 50px);
+  padding: 2px;
   text-align: center;
   color: #fff;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .pac-container {

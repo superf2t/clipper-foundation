@@ -461,23 +461,25 @@
       </div>
 
       <div ng-show="editingFields" class="apc-edit-mode">
-        <div class="apc-place-name">
-          <input type="text" ng-model="ed['name']" class="form-control"/>
+        <div class="apc-place-name-edit">
+          <label>Name</label>
+          <input id="apc-edit-name-input" type="text" ng-model="ed['name']" class="form-control apc-edit-input"/>
         </div>
-        <div class="apc-address">
-          <input type="text" ng-model="ed['address']" class="form-control"/>
+        <div class="apc-address-edit">
+          <label>Address</label>
+          <input id="apc-edit-address-input" type="text" ng-model="ed['address']" class="form-control apc-edit-input"/>
         </div>
-
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-6 flush-left">
-              <div class="apc-photo-container" ng-controller="EditImagesCtrl">
+              <div class="apc-photo-container-edit" ng-controller="EditImagesCtrl">
+                <label>Images</label>
                 <div class="carousel">
                   <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
                     <span class="icon-prev"></span>
                   </a>
                   <a class="apc-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-trash"></span>
+                    Delete Image<span class="glyphicon glyphicon-trash"></span>
                   </a>
                   <img ng-src="[[currentImgUrl]]" class="entity-img"/>
                   <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
@@ -485,8 +487,8 @@
                   </a>
                 </div>
                 <div class="apc-image-edit-container">
-                  <textarea type="text" placeholder="Drag images here or paste image urls"
-                    class="apc-image-drop-target"
+                  <textarea type="text" placeholder="Drag images or paste image Urls to add"
+                    class="apc-image-drop-target apc-edit-input"
                     ng-model="photoUrlInputText"
                     ng-paste="photoUrlPasted()"
                     ng-change="photoUrlChanged()"
@@ -497,29 +499,30 @@
                   </textarea>
                 </div>                
               </div>
-              <div class="apc-place-details">
-                <div class="apc-description">
-                  Description
-                  <textarea class="form-control" ng-model="ed['description']">
+              <div class="apc-place-details-edit">
+                <div class="apc-description-edit">
+                  <label>Description</label>
+                  <textarea class="form-control apc-edit-input" ng-model="ed['description']">
                   </textarea>
                 </div>
-                <div class="apc-rating">
+                <div class="apc-rating-edit">
                   <form class="form-inline" role="form">
-                    Rating <input type="number" ng-model="ed['rating']" class="form-control"/>
+                    <label>Rating</label>
+                    <input type="number" ng-model="ed['rating']" class="form-control apc-edit-input"/>
                   </form>
                 </div>
-                <div class="apc-category">
+                <div class="apc-category-edit">
                   <form class="form-inline" role="form">
-                    Category
+                    <label>Category</label>
                     <select class="form-control" ng-model="ed['category']"
                       ng-options="c['display_name'] for c in categories track by c['category_id']"
                       ng-change="categoryChanged()">
                     </select>
                   </form>
                 </div>
-                <div class="apc-sub-category">
+                <div class="apc-sub-category-edit">
                   <form class="form-inline" role="form">
-                    SubCategory
+                    <label>SubCategory</label>
                     <select class="form-control" ng-model="entityModel.data['sub_category']"
                       ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
                       ng-change="updateMarkerIcon()">
@@ -530,25 +533,26 @@
             </div>
             <div class="col-md-6 flush-right">
               <div class="apc-editable-map">
-                <div class="apc-editable-map-header" ng-show="entityModel.hasLocation()">
-                  Drag the marker to change the location
-                </div>
+                <label>Map</label>
                 <div id="apc-editable-map-container">
                   <div id="apc-editable-map"></div>
+                </div>
+                <div class="apc-editable-map-header" ng-show="entityModel.hasLocation()">
+                  Drag the marker to change the location
                 </div>
                 <div ng-if="!entityModel.hasLocation()">
                   <button class="btn btn-info">Add a marker to the map</button>
                 </div>
-                <div>
-                  Location precision
-                </div>
+              </div>
+              <div class="apc-map-precision-edit">
+                <label>Location precision</label>
                 <form class="form-inline" role="form">
                   <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
-                  Precise
+                  Exact location
                   <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
-                  Imprecise
-                </form>                
-              </div>
+                  Approximate location
+                </form>
+              </div>                
             </div>
           </div>
         </div>
