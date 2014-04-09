@@ -180,11 +180,11 @@ class TripPlan(serializable.Serializable):
 
     def compare(self, other):
         if self.last_modified and other.last_modified:
-            return cmp(self.last_modified_datetime(), other.last_modified_datetime())
+            return cmp(other.last_modified_datetime(), self.last_modified_datetime())
         elif self.last_modified:
-            return -1
-        elif other.last_modified:
             return 1
+        elif other.last_modified:
+            return -1
         else:
             return cmp(other.name, self.name)
 

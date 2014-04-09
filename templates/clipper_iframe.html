@@ -161,7 +161,7 @@
 
   <script>
     initClipper(
-      {{entity.to_json_str() if entity else 'null'|safe}},
+      {{entity.to_json_str()|safe if entity else 'null'}},
       {{all_trip_plans_settings_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>
