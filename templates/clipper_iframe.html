@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+  <title>Travel Clipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="/static/js/imagesloaded.pkgd.min.js"></script>
+  <script src="/static/js/masonry.pkgd.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
+  <script src="/static/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+</head>
+<body ng-controller="ClipperRootCtrl" class="clipper-body" ondragenter="console.log('dragentering')">
+  <div  ng-if="clipperState.showControls()">
+    <div class="clipper-trip-plan-selector">
+      Clip items to
+      <select class="form-control" ng-model="selectedTripPlanState.tripPlan"
+        ng-options="tp['name'] for tp in allTripPlansSettings">
+      </select>
+    </div>
+    <div class="clipper-save-controls">
+      <button class="btn btn-info" ng-click="saveEntity()">Save</button>
+      <button class="btn" ng-click="dismissClipper()">Cancel</button>
+    </div>
+  </div>
+  <div ng-if="clipperState.newEntitySummary()">
+    <div>
+      The following place is associated with this page:
+    </div>
+    <div>
+      <div class="clipper-entity-name">
+        [[ed['name'] ]]
+      </div>
+      <div class="clipper-summary-icon">
+        <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
+      </div>
+    </div>
+    <div class="clipper-entity-address">
+      [[ed['address'] ]]
+    </div>
+    <div class="clipper-summary-photo">
+      <div ng-include="'carousel-template'">
+      </div>
+    </div>
+    <div>
+      <a ng-click="openEditor()" href="javascript:void(0)">Edit</a>
+    </div>
+  </div>
+
+  <div ng-if="clipperState.noAutoPlaceFound()" ng-controller="ClipperOmniboxCtrl">
+    No place could be automatically associated with this page.
+    Enter a place name or address to add one manually.
+    <div ng-show="!loadingData && !entityNotFound">
+      <input type="text" class="form-control" placeholder="Search for a place name or address"
+      tc-google-place-autocomplete
+      id="clipper-omnibox"
+      ng-model="rawInputText"
+      on-place-change="placeChanged($newPlace)"/>
+      <div class="clipper-add-place-manually-link">
+        <a ng-click="openEditManually()" href="javascript:void(0)">Or enter fields manually</a>
+      </div>
+    </div>
+    <div ng-show="loadingData">
+      <img src="/static/img/spinner.gif"/>      
+    </div>
+    <div ng-show="entityNotFound">
+      No results found.
+      <a ng-click="openEditManually()" href="javascript:void(0)">Enter fields manually</a>
+    </div>
+  </div>
+
+  <div ng-if="clipperState.inEdit()" ng-controller="ClipperEditorCtrl">
+    <div class="clipper-editor-place-name">
+      <input type="text" ng-model="ed['name']" class="form-control"/>
+    </div>
+    <div class="clipper-editor-address">
+      <input type="text" ng-model="ed['address']" class="form-control"/>
+    </div>
+    <div class="clipper-editor-category">
+      <form class="form-inline" role="form">
+        Category
+        <select class="form-control" ng-model="ed['category']"
+          ng-options="c['display_name'] for c in categories track by c['category_id']"
+          ng-change="categoryChanged()">
+        </select>
+      </form>
+    </div>
+    <div class="clipper-editor-sub-category">
+      <form class="form-inline" role="form">
+        SubCategory
+        <select class="form-control" ng-model="ed['sub_category']"
+          ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+          ng-change="updateMarkerIcon()">
+        </select>
+      </form>
+    </div>
+    <div id="clipper-editor-map-container">
+      <div id="clipper-editor-map"></div>
+    </div>
+    <div class="clipper-editor-photo-container" ng-controller="EditImagesCtrl">
+      <div class="carousel">
+        <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+          <span class="icon-prev"></span>
+        </a>
+        <a class="clipper-editor-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-trash"></span>
+        </a>
+        <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+        <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+          <span class="icon-next"></span>
+        </a>
+      </div>
+      <div class="clipper-editor-image-edit-container">
+        <textarea type="text" placeholder="Drag images here or paste image urls"
+          class="clipper-editor-image-drop-target"
+          ng-class="{'clipper-editor-img-drag-active': imgDragActive}"          
+          ng-model="photoUrlInputText"
+          ng-paste="photoUrlPasted()"
+          ng-change="photoUrlChanged()"
+          tc-drag-enter="photoUrlDragEnter($event)"
+          tc-drop="photoUrlDropped($event)"
+          />
+        </textarea>
+      </div>                
+    </div>  
+    <div class="clipper-editor-description">
+      Description
+      <textarea class="form-control" ng-model="ed['description']">
+      </textarea>
+    </div>
+  </div>
+
+  <div ng-if="clipperState.successConfirmation()">
+    <div class="clip-success-checkmark">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
+      <g>
+        <g>
+          <polygon points="94.587,27.48 31.657,86.15 31.217,85.68 18.847,72.41 0.566,52.81 14.106,40.19 32.387,59.79 81.776,13.74"/>
+        </g>
+      </g>
+      </svg>
+    </div>
+    <div class="clip-confirmation-entity-name">
+      [[ed['name'] ]]
+    </div>
+    <div>
+      was successfully clipped to
+    </div>
+    <div class="clip-confirmation-trip-plan-name">
+      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id_str'] ]]" target="_blank">
+        [[selectedTripPlanState.tripPlan['name'] ]]
+      </a>
+    </div>
+  </div>
+
+  {% include 'widgets.html' %}
+
+  <script>
+    initClipper(
+      {{entity.to_json_str()|safe if entity else 'null'}},
+      {{all_trip_plans_settings_json|safe}},
+      {{all_datatype_values.to_json_str()|safe}});
+  </script>
+</body>
+</html>

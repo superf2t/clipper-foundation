@@ -1,5 +1,9 @@
+import datetime
 import json
 import os
+
+from dateutil import parser as date_parser
+from dateutil import tz
 
 import constants
 import serializable
@@ -107,15 +111,18 @@ class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
         serializable.objlistf('entities', Entity),
         serializable.objlistf('clipped_pages', ClippedPage),
-        'creator', serializable.listf('editors'))
+        'creator', serializable.listf('editors'),
+        'last_modified')
 
     TYPES_IN_ORDER = ('Hotel', 'Restaurant', 'Attraction')
 
-    def __init__(self, trip_plan_id=None, name=None, entities=(), clipped_pages=(), creator=None, editors=()):
+    def __init__(self, trip_plan_id=None, name=None, entities=(),
+            clipped_pages=(), creator=None, editors=(), last_modified=None):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.entities = entities or []
         self.clipped_pages = clipped_pages or []
+        self.last_modified = last_modified
 
         # TODO: Make these private fields
         self.creator = creator
@@ -162,6 +169,24 @@ class TripPlan(serializable.Serializable):
 
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
+
+    def last_modified_datetime(self):
+        if not self.last_modified:
+            return None
+        return date_parser.parse(self.last_modified)
+
+    def set_last_modified_datetime(self, d):
+        self.last_modified = d.isoformat()
+
+    def compare(self, other):
+        if self.last_modified and other.last_modified:
+            return cmp(other.last_modified_datetime(), self.last_modified_datetime())
+        elif self.last_modified:
+            return 1
+        elif other.last_modified:
+            return -1
+        else:
+            return cmp(other.name, self.name)
 
 class TripPlanSettings(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
@@ -223,6 +248,7 @@ class SessionInfo(object):
         self.sessionid = sessionid
         self.set_on_response = set_on_response
         self.clear_active_trip_plan_id = False
+        self.logged_in = False
 
     @property
     def user_identifier(self):
@@ -282,6 +308,7 @@ def load_all_trip_plans(session_info):
     return trip_plans
 
 def save_trip_plan(trip_plan):
+    trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
     trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
     json_obj = trip_plan.to_json_obj()
     json.dump(json_obj, trip_plan_file, sort_keys=True, indent=4, separators=(',', ': '))

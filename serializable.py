@@ -50,6 +50,8 @@ class Serializable(object):
 
     @classmethod
     def from_json_obj(cls, obj):
+        if not obj:
+            return None
         instance = cls()
         for name, value in obj.iteritems():
             field = cls.PUBLIC_FIELDS.get(name)

@@ -710,7 +710,7 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
           me.openAddPlaceConfirmation(entity);
         }
         $scope.loadingData = false;
-      });    
+      });
   };
 
   this.openAddPlaceConfirmation = function(entityData) {
@@ -811,7 +811,7 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
     var request = {
       'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
       'entity': $scope.entityModel.data
-    }
+    };
     me.postChanges(request, '/editentity');    
   };
 
@@ -835,8 +835,11 @@ function EditImagesCtrl($scope, $timeout) {
   var pasteActive = false;
   $scope.photoUrlInputText = ''
   var urls = $scope.entityModel.data['photo_urls'];
+  if (!urls) {
+    urls = $scope.entityModel.data['photo_urls'] = [];
+  }
   var currentIndex = 0;
-  $scope.currentImgUrl = urls[currentIndex];
+  $scope.currentImgUrl = urls.length ? urls[currentIndex] : '';
 
   $scope.photoUrlDragEnter = function($event) {
     $scope.imgDragActive = true;
@@ -897,6 +900,30 @@ function EditImagesCtrl($scope, $timeout) {
   $scope.prevImg = function() {
     currentIndex -= 1;
     $scope.currentImgUrl = urls[currentIndex];
+  };
+}
+
+// Services
+
+function EntitySaver($http) {
+  this.saveNew = function(tripPlanIdStr, entityData, opt_success, opt_error) {
+    var request = {
+      'trip_plan_id_str': tripPlanIdStr,
+      'entity': entityData
+    };
+    this.post('/createentity', request, opt_success, opt_error);
+  };
+
+  this.saveExisting = function(tripPlanIdStr, entityData, opt_success, opt_error) {
+    var request = {
+      'trip_plan_id_str': tripPlanIdStr,
+      'entity': entityData
+    };
+    this.post('/editentity', request, opt_success, opt_error);
+  };
+
+  this.post = function(url, request, opt_success, opt_error) {
+    $http.post(url, request).success(opt_success).error(opt_error);
   };
 }
 
@@ -1278,7 +1305,9 @@ function tcDrop($parse) {
     link: function(scope, elem, attrs) {
       var onDropFn = $parse(attrs.tcDrop);
       elem.on('drop', function(event) {
-        onDropFn(scope, {$event: event});
+        scope.$apply(function(){
+          onDropFn(scope, {$event: event});
+        });
       });
     }
   };
@@ -1290,12 +1319,36 @@ function tcDragEnter($parse) {
     link: function(scope, elem, attrs) {
       var onDragEnterFn = $parse(attrs.tcDragEnter);
       elem.on('dragenter', function(event) {
-        onDragEnterFn(scope, {$event: event});
+        scope.$apply(function() {
+          onDragEnterFn(scope, {$event: event});
+        });
       });
     }
   };
 }
 
+function interpolator($interpolateProvider) {
+  $interpolateProvider.startSymbol('[[');
+  $interpolateProvider.endSymbol(']]');
+}
+
+angular.module('dataSaveModule', [])
+  .service('$entitySaver', ['$http', EntitySaver]);
+
+angular.module('directivesModule', [])
+  .directive('tcScrollToOnClick', tcScrollToOnClick)
+  .directive('tcStarRating', tcStarRating)
+  .directive('bnLazySrc', bnLazySrc)
+  .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
+  .directive('tcDrop', tcDrop)
+  .directive('tcDragEnter', tcDragEnter);
+
+angular.module('filtersModule', [])
+  .filter('hostname', function() {
+    return function(input) {
+      return hostnameFromUrl(input);
+    }
+  });
 
 window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     accountInfo, datatypeValues, allowEditing) {
@@ -1311,20 +1364,9 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
 
-  angular.module('directivesModule', [])
-    .directive('tcScrollToOnClick', tcScrollToOnClick)
-    .directive('tcStarRating', tcStarRating)
-    .directive('bnLazySrc', bnLazySrc)
-    .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
-    .directive('tcDrop', tcDrop)
-    .directive('tcDragEnter', tcDragEnter);
-
   angular.module('appModule', ['mapModule', 'initialDataModule',
-      'directivesModule', 'ui.bootstrap', 'wu.masonry'],
-      function($interpolateProvider) {
-        $interpolateProvider.startSymbol('[[');
-        $interpolateProvider.endSymbol(']]');
-      })
+      'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
+      interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlan', '$tripPlanSettings', 
       '$datatypeValues', '$allowEditing', RootCtrl])
@@ -1345,13 +1387,204 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
-    .service('$dataRefreshManager', DataRefreshManager)
-    .filter('hostname', function() {
-      return function(input) {
-        return hostnameFromUrl(input);
-      }
-    });
+    .service('$dataRefreshManager', DataRefreshManager);
+
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);
+  });
+};
+
+function ClipperStateModel(initialStatus) {
+  this.status = initialStatus;
+
+  this.newEntitySummary = function() {
+    return this.status == ClipperStateModel.SUMMARY;
+  };
+
+  this.inEdit = function() {
+    return this.status == ClipperStateModel.EDIT;
+  };
+
+  this.successConfirmation = function() {
+    return this.status == ClipperStateModel.SUCCESS_CONFIRMATION;
+  };
+
+  this.noAutoPlaceFound = function() {
+    return this.status == ClipperStateModel.NO_AUTO_PLACE_FOUND;
+  };
+
+  this.clipError = function() {
+    return this.status == ClipperStateModel.CLIP_ERROR;
+  };
+
+  this.showControls = function() {
+    return this.status == ClipperStateModel.SUMMARY
+      || this.status == ClipperStateModel.EDIT
+      || this.status == ClipperStateModel.NO_AUTO_PLACE_FOUND;
+  };
+}
+
+ClipperStateModel.SUMMARY = 1;
+ClipperStateModel.EDIT = 2;
+ClipperStateModel.SUCCESS_CONFIRMATION = 3;
+ClipperStateModel.NO_AUTO_PLACE_FOUND = 4;
+ClipperStateModel.CLIP_ERROR = 5;
+
+function ClipperRootCtrl($scope, $timeout, $entitySaver,
+    $entity, $allTripPlansSettings, $datatypeValues) {
+  var foundEntity = false;
+  if ($.isEmptyObject($entity)) {
+    $scope.entityModel = new EntityModel({});
+  } else {
+    $scope.entityModel = new EntityModel($entity);
+    foundEntity = true;
+  }
+  $scope.ed = $scope.entityModel.data;
+  $scope.allTripPlansSettings = $allTripPlansSettings;
+  $scope.selectedTripPlanState = {
+    tripPlan: $allTripPlansSettings[0]
+  };
+  $scope.clipperState = new ClipperStateModel(
+    foundEntity ? ClipperStateModel.SUMMARY : ClipperStateModel.NO_AUTO_PLACE_FOUND);
+  $scope.categories = $datatypeValues['categories'];
+  $scope.subCategories = $datatypeValues['sub_categories'];
+
+  $scope.saveEntity = function() {
+    var success = function(response) {
+      if (response['status'] == 'Success') {
+        $scope.clipperState.status = ClipperStateModel.SUCCESS_CONFIRMATION;
+        $timeout($scope.dismissClipper, 3000);
+      } else {
+        $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
+      }
+    };
+    var error = function(response) {
+      $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
+    };
+    $entitySaver.saveNew($scope.selectedTripPlanState.tripPlan['trip_plan_id_str'],
+      $scope.ed, success, error);
+  };
+
+  $scope.openEditor = function() {
+    $scope.clipperState.status = ClipperStateModel.EDIT;
+  };
+
+  $scope.openEditorWithEntity = function(entityData) {
+    $scope.entityModel = new EntityModel(entityData);
+    $scope.ed = entityData;
+    $scope.openEditor();
+  };
+
+  $scope.dismissClipper = function() {
+    window.parent.postMessage('tc-close-clipper', '*');
+  };
+}
+
+function ClipperOmniboxCtrl($scope, $http) {
+  var me = this;
+  $scope.loadingData = false;
+  $scope.entityNotFound = false;
+  $scope.rawInputText = '';
+
+  $scope.placeChanged = function(newPlace) {
+    if (!newPlace || !newPlace['reference']) {
+      return;
+    }
+    me.loadEntityByGooglePlaceReference(newPlace['reference']);
+  };
+
+  $scope.openEditManually = function() {
+    // This is a method defined on the parent scope, not ideal.    
+    $scope.openEditor();
+  };
+
+  this.loadEntityByGooglePlaceReference = function(reference) {
+    $scope.loadingData = true;
+    $http.get('/google_place_to_entity?reference=' + reference)
+      .success(function(response) {
+        var entity = response['entity'];
+        if (entity) {
+          // This is a method defined on the parent scope, not ideal.
+          $scope.openEditorWithEntity(entity);
+        } else {
+          $scope.entityNotFound = true;
+        }
+        $scope.loadingData = false;
+        $scope.rawInputText = '';
+      });
+  };
+}
+
+function ClipperEditorCtrl($scope, $timeout) {
+
+  this.makeMarker = function(entityData, map) {
+    var latlngJson = entityData['latlng'] || {};
+    var latlng = new google.maps.LatLng(
+      latlngJson['lat'] || 0.0, latlngJson['lng'] || 0.0);
+    return new google.maps.Marker({
+      draggable: true,
+      position: latlng,
+      icon: '/static/img/' + entityData['icon_url'],
+      map: map
+    });
+  };
+
+  var mapOptions = {
+    center: new google.maps.LatLng(0, 0),
+    zoom: 15,
+    panControl: false,
+    scaleControl: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+  var editableMap = new google.maps.Map($('#clipper-editor-map')[0], mapOptions);
+  var editableMarker = this.makeMarker($scope.entityModel.data, editableMap);
+  google.maps.event.addListener(editableMarker, 'dragend', function() {
+    var entityData = $scope.entityModel.data;
+    if (!entityData['latlng']) {
+      entityData['latlng'] = {};
+    }
+    entityData['latlng']['lat'] = editableMarker.getPosition().lat();
+    entityData['latlng']['lng'] = editableMarker.getPosition().lng();
+  });
+  $timeout(function() {
+    google.maps.event.trigger(editableMap, 'resize');
+    editableMap.setCenter(editableMarker.getPosition());    
+  });
+
+  $scope.categoryChanged = function() {
+    $scope.ed['sub_category'] = null;
+    $scope.updateMarkerIcon();
+  };
+
+  $scope.updateMarkerIcon = function() {
+    var data =  $scope.entityModel.data;
+    var iconUrl = categoryToIconUrl(
+      data['category'] && data['category']['name'],
+      data['sub_category'] && data['sub_category']['name'],
+      data['address_precision']);
+    $scope.entityModel.data['icon_url'] = iconUrl;
+    editableMarker.setIcon('/static/img/' + iconUrl)
+  };
+}
+
+window['initClipper'] = function(entity, allTripPlansSettings, datatypeValues) {
+  angular.module('clipperInitialDataModule', [])
+    .value('$entity', entity)
+    .value('$allTripPlansSettings', allTripPlansSettings)
+    .value('$datatypeValues', datatypeValues);
+
+  angular.module('clipperModule',
+      ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
+      interpolator)
+    .controller('ClipperRootCtrl', ['$scope', '$timeout', '$entitySaver',
+      '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
+    .controller('CarouselCtrl', ['$scope', CarouselCtrl])
+    .controller('ClipperOmniboxCtrl', ['$scope', '$http', ClipperOmniboxCtrl])
+    .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])
+    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl]);
+
+  angular.element(document).ready(function() {
+    angular.bootstrap(document, ['clipperModule']);
   });
 };

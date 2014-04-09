@@ -382,26 +382,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="carousel-template">
-    <div ng-controller="CarouselCtrl" class="carousel">
-      <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
-        <span class="icon-prev"></span>
-      </a>
-      <img bn-lazy-src="[[currentImgUrl]]" class="entity-img"/>
-      <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
-        <span class="icon-next"></span>
-      </a>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="star-rating-template">
-    <div>
-      <span ng-repeat="star in [1, 2, 3, 4, 5]">
-        <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
-      </span>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="infowindow-template">
     <div>
       <div>
@@ -552,7 +532,7 @@
                   <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
                   Approximate location
                 </form>
-              </div>                
+              </div>
             </div>
           </div>
         </div>
@@ -577,6 +557,8 @@
 
     </div>
   </script>
+
+  {% include 'widgets.html' %}
 
   <script>
     initApp({{plan.to_json_str()|safe}},
