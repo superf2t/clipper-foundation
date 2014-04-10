@@ -42,22 +42,6 @@ def index():
     response = render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
     return process_response(response, request, session_info)
 
-@app.route('/clip')
-def clip():
-    session_info = decode_session(request.cookies)
-    url = request.values['url']
-    if not data.load_trip_plan_by_id(session_info.active_trip_plan_id):
-        create_and_save_default_trip_plan(session_info)
-    clip_result = clip_logic.handle_clipping(url, session_info.active_trip_plan_id, session_info)
-    all_trip_plans = data.load_all_trip_plans(session_info)
-    will_undo_if_user_changes_trip_plan = clip_result.status == clip_logic.ClipResult.STATUS_SUCCESS_KNOWN_SOURCE
-    modal_html = render_template('clipper_results_modal.html',
-        clip_result=clip_result, all_trip_plans=all_trip_plans,
-        will_undo_if_user_changes_trip_plan=will_undo_if_user_changes_trip_plan,
-        base_url=constants.BASE_URL)
-    response = make_jsonp_response(request, {'html': modal_html})
-    return process_response(response, request, session_info)
-
 @app.route('/clipper_iframe')
 def clipper_iframe():
     session_info = decode_session(request.cookies)
@@ -80,51 +64,6 @@ def clipper_iframe():
         needs_page_source=needs_page_source,
         all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
         all_datatype_values=values.ALL_VALUES)
-
-@app.route('/clip_ajax/<int:trip_plan_id>', methods=['POST'])
-def clip_ajax(trip_plan_id):
-    session_info = decode_session(request.cookies)
-    url = request.json['url']
-    clip_result = clip_logic.handle_clipping(url, trip_plan_id, session_info)
-    response = json.jsonify(clip_status=clip_result.status,
-        entity=clip_result.entity.to_json_obj() if clip_result.entity else None)
-    return process_response(response, request, session_info)
-
-@app.route('/make_active_and_reclip/<int:trip_plan_id>')
-def make_active_and_reclip(trip_plan_id):
-    session_info = decode_session(request.cookies)
-    original_trip_plan_id = session_info.active_trip_plan_id
-    url = request.values.get('url')
-    if trip_plan_id == 0:
-        new_trip_plan_id = data.generate_trip_plan_id()
-        session_info.active_trip_plan_id = new_trip_plan_id
-        session_info.set_on_response = True
-        trip_plan = create_and_save_default_trip_plan(session_info)
-    else:
-        trip_plan = data.load_trip_plan_by_id(trip_plan_id)
-        if trip_plan and trip_plan.editable_by(session_info) and trip_plan_id != session_info.active_trip_plan_id:
-            session_info.active_trip_plan_id = trip_plan_id
-            session_info.set_on_response = True
-    if url:
-        if request.values.get('undo'):
-            remove_entity_by_url(original_trip_plan_id, url, session_info)
-        clip_logic.handle_clipping(url, trip_plan.trip_plan_id, session_info)
-    response = render_template('make_active_response.html')
-    return process_response(response, request, session_info)
-
-def remove_entity_by_url(trip_plan_id, url, session_info):
-    clip_status = clip_logic.ClipResult.STATUS_ERROR
-    trip_plan = data.load_trip_plan_by_id(trip_plan_id)
-    if not trip_plan:
-        clip_status = clip_logic.ClipResult.STATUS_NO_TRIP_PLAN_FOUND
-        entity = None
-    else:
-        if not trip_plan.editable_by(session_info):
-            raise Exception('User does not have permission to remove from this trip plan')
-        entity = trip_plan.remove_entity_by_source_url(url)
-        data.save_trip_plan(trip_plan)
-        clip_status = clip_logic.ClipResult.STATUS_UNDO_SUCCESS
-    return clip_logic.ClipResult(clip_status, entity=entity, trip_plan=trip_plan)
 
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
@@ -172,6 +111,7 @@ def trip_plan_ajax(trip_plan_id):
     trip_plan = data.load_trip_plan_by_id(trip_plan_id)
     return json.jsonify(trip_plan=trip_plan and trip_plan.to_json_obj())
 
+# TODO: Remove this in favor of /createtripplan
 @app.route('/new_trip_plan_ajax', methods=['POST'])
 def new_trip_plan_ajax():
     session_info = decode_session(request.cookies)
@@ -280,25 +220,6 @@ def edittripplan():
     trip_plan.name = edit_request.name
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
-
-@app.route('/login_and_migrate_ajax', methods=['POST'])
-def login_and_migrate_ajax():
-    session_info = decode_session(request.cookies)
-    email = request.json['email']
-    if not email or not EMAIL_RE.match(email):
-        return json.jsonify(status='Invalid email')
-    email = email.lower()
-    if session_info.email:
-        session_info.active_trip_plan_id = None
-        session_info.clear_active_trip_plan_id = True
-    else:
-        all_trip_plans = data.load_all_trip_plans(session_info) or []
-        for trip_plan in all_trip_plans:
-            data.change_creator(trip_plan, email)
-    session_info.email = email
-    session_info.set_on_response = True
-    response = json.jsonify(status='Success')
-    return process_response(response, request, session_info)
 
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
