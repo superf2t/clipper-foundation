@@ -49,7 +49,7 @@ def entity_from_scraper(scr, url):
         address=scr.get_address(), latlng=latlng, 
         address_precision=scr.get_location_precision(), rating=scr.get_rating(),
         primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
-        source_url=url)
+        source_url=scr.get_url())
 
 def scrape_entity_from_url(url, page_source=None):
     scr = scraper.build_scraper(url, page_source)

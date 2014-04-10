@@ -116,6 +116,9 @@ class ScrapedPage(object):
         location = self.lookup_location()
         return 'Precise' if location and location.is_precise() else 'Imprecise'
 
+    def get_url(self):
+        return self.url
+
     def is_base_scraper(self):
         return type(self) == ScrapedPage
 
