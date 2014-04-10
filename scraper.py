@@ -30,16 +30,21 @@ def fail_returns_empty(fn):
             return ()
     return wrapped
 
+# Convenience constant for making url declarations more readable.
+REQUIRES_PAGE_SOURCE = True
+
 def urlpatterns(*patterns):
     # Each element is either a single string value that should become a regex,
     # or a pair of regex-str and an expander function.
     output = []
     for pattern in patterns:
         if isinstance(pattern, basestring):
-            output.append((re.compile(pattern), None))
+            output.append((re.compile(pattern), None, False))
         else:
             expander_fn = pattern[1]
-            output.append((re.compile(pattern[0]), expander_fn))
+            requires_page_source = pattern[2] if len(pattern) >= 3 else False
+
+            output.append((re.compile(pattern[0]), expander_fn, requires_page_source))
     return tuple(output)
 
 class LocationResolutionStrategy(object):
@@ -68,13 +73,20 @@ class ScrapedPage(object):
 
     @classmethod
     def handleable_urls(cls, incoming_url, page_source_tree):
-        for regex, expander_fn in cls.HANDLEABLE_URL_PATTERNS:
+        for regex, expander_fn, ignored in cls.HANDLEABLE_URL_PATTERNS:
             if regex.match(incoming_url):
                 if expander_fn:
                     return expander_fn(incoming_url, page_source_tree)
                 else:
                     return (incoming_url,)
         return ()
+
+    @classmethod
+    def url_requires_page_source(cls, url):
+        for regex, ignored, requires_page_source in cls.HANDLEABLE_URL_PATTERNS:
+            if requires_page_source and regex.match(url):
+                return True
+        return False
 
     def __init__(self, url, tree):
         self.url = url
@@ -166,20 +178,6 @@ Photo urls: %s''' % (
     self.get_primary_photo(),
     self.get_photos())
 
-class DelegatingScraper(ScrapedPage):
-
-    def __init__(self, url, tree):
-        self.delegate = build_scraper(self.get_delegate_url(url, tree))
-        if isinstance(self.delegate, DelegatingScraper):
-            raise Exception('Delegate scraper cannot itself be a delegate')
-
-    def get_delegate_url(self, url, tree):
-        raise NotImplementedError()
-
-    def __getattribute__(self, name):
-        if name not in ('__init__', '__getattribute__', 'get_delegate_url', 'delegate'):
-            return self.delegate.__getattribute__(name)
-        return super(DelegatingScraper, self).__getattribute__(name)
 
 class TripAdvisorScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://(www)\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$')
@@ -457,7 +455,7 @@ class HyattScraper(ScrapedPage):
 
 HyattScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/home.html.*$',
-    ('^http(s)?://[^/]+\.hyatt.com/hyatt/reservations.*$', HyattScraper.expand_reservation_page),
+    ('^http(s)?://[^/]+\.hyatt.com/hyatt/reservations.*$', HyattScraper.expand_reservation_page, REQUIRES_PAGE_SOURCE),
     ('^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/(?!home).*$', HyattScraper.expand_deep_info_page))
 
 
@@ -568,7 +566,7 @@ class HiltonScraper(ScrapedPage):
 HiltonScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/index\.html.*$',
     ('^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/[\w-]+/[\w-]+\.html.*$', HiltonScraper.expand_info_page_url),
-    ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page))
+    ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page, REQUIRES_PAGE_SOURCE))
 
 
 def tostring_with_breaks(element):
@@ -654,6 +652,13 @@ def build_scraper(url, page_source=None):
     scrapers = build_scrapers(url, page_source)
     return scrapers[0] if scrapers else None
 
+def url_requires_page_source(url):
+    for scraper_class in ALL_SCRAPERS:
+        if scraper_class.url_requires_page_source(url):
+            return True
+    return False
+
+
 if __name__ == '__main__':
     from tests.testdata import scraper_page_source
     for url in (
@@ -682,7 +687,7 @@ if __name__ == '__main__':
         'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
         'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
         ):
-        scrapers = expand_and_scrape(url, scraper_page_source.get_page_source(url))
+        scrapers = build_scrapers(url, scraper_page_source.get_page_source(url))
         for scraper in scrapers:
             print scraper.debug_string()
             print scraper.get_latlng()
