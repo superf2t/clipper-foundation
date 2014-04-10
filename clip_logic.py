@@ -31,7 +31,7 @@ def handle_clipping(url, trip_plan_id, session_info, offline=False):
 def scrape_and_build_entity(url, trip_plan):
     result = None
     scr = scraper.build_scraper(url)
-    if scr.is_base_scraper():
+    if not src or scr.is_base_scraper():
         clipped_page = data.ClippedPage(source_url=url, title=scr.get_page_title())
         trip_plan.clipped_pages.append(clipped_page)
         result = ClipResult(ClipResult.STATUS_SAVED_FOR_LATER, trip_plan=trip_plan)
@@ -53,7 +53,7 @@ def entity_from_scraper(scr, url):
 
 def scrape_entity_from_url(url, page_source=None):
     scr = scraper.build_scraper(url, page_source)
-    if scr.is_base_scraper():
+    if not scr or scr.is_base_scraper():
         return None
     return entity_from_scraper(scr, url)
 

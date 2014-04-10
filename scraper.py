@@ -30,6 +30,18 @@ def fail_returns_empty(fn):
             return ()
     return wrapped
 
+def urlpatterns(*patterns):
+    # Each element is either a single string value that should become a regex,
+    # or a pair of regex-str and an expander function.
+    output = []
+    for pattern in patterns:
+        if isinstance(pattern, basestring):
+            output.append((re.compile(pattern), None))
+        else:
+            expander_fn = pattern[1]
+            output.append((re.compile(pattern[0]), expander_fn))
+    return tuple(output)
+
 class LocationResolutionStrategy(object):
     ADDRESS = 1
     ENTITY_NAME_WITH_GEOCODER = 2
@@ -51,6 +63,18 @@ class ScrapedPage(object):
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
         LocationResolutionStrategy.ADDRESS)
+
+    HANDLEABLE_URL_PATTERNS = ()
+
+    @classmethod
+    def handleable_urls(cls, incoming_url, page_source_tree):
+        for regex, expander_fn in cls.HANDLEABLE_URL_PATTERNS:
+            if regex.match(incoming_url):
+                if expander_fn:
+                    return expander_fn(incoming_url, page_source_tree)
+                else:
+                    return (incoming_url,)
+        return ()
 
     def __init__(self, url, tree):
         self.url = url
@@ -142,7 +166,24 @@ Photo urls: %s''' % (
     self.get_primary_photo(),
     self.get_photos())
 
+class DelegatingScraper(ScrapedPage):
+
+    def __init__(self, url, tree):
+        self.delegate = build_scraper(self.get_delegate_url(url, tree))
+        if isinstance(self.delegate, DelegatingScraper):
+            raise Exception('Delegate scraper cannot itself be a delegate')
+
+    def get_delegate_url(self, url, tree):
+        raise NotImplementedError()
+
+    def __getattribute__(self, name):
+        if name not in ('__init__', '__getattribute__', 'get_delegate_url', 'delegate'):
+            return self.delegate.__getattribute__(name)
+        return super(DelegatingScraper, self).__getattribute__(name)
+
 class TripAdvisorScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://(www)\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$')
+
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
 
@@ -220,6 +261,8 @@ class TripAdvisorScraper(ScrapedPage):
 
 
 class YelpScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/biz/.*$')
+
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address[@itemprop="address"]'
     PRIMARY_PHOTO_XPATH = 'body//div[@class="showcase-photos"]//div[@class="showcase-photo-box"]//img'
@@ -273,6 +316,8 @@ class YelpScraper(ScrapedPage):
 
 
 class HotelsDotComScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$')
+
     NAME_XPATH = 'body//h1'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
 
@@ -307,6 +352,8 @@ class HotelsDotComScraper(ScrapedPage):
         return [thumb.get('href') for thumb in carousel_thumbnails]
 
 class AirbnbScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$')
+
     NAME_XPATH = 'body//div[@id="listing_name"]'
     ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="photos"]//ul[@class="slideshow-images"]//li[@class="active"]//img'
@@ -332,6 +379,8 @@ class AirbnbScraper(ScrapedPage):
 
 
 class BookingDotComScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.booking\.com/hotel/.*$')
+
     NAME_XPATH = 'body//h1//span[@id="hp_hotel_name"]'
     ADDRESS_XPATH = 'body//p[@class="address"]/span'
     PRIMARY_PHOTO_XPATH = 'body//div[@class="photo_contrain"]//img[@id="photo_container"]'
@@ -366,16 +415,17 @@ class BookingDotComScraper(ScrapedPage):
                 return values.SubCategory.HOTEL
         return values.SubCategory.HOTEL
 
+    @fail_returns_none
     def get_rating(self):
-        numerator = float(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="rating"]//span[@class="average"]').text)
-        denominator = int(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="rating"]//span[@class="best"]').text)
+        numerator = float(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="average"]').text)
+        denominator = int(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="best"]').text)
         return numerator / denominator * 5
 
     def get_photos(self):
         thumbs = self.root.findall('body//div[@id="photos_distinct"]//a[@data-resized]')
         return [thumb.get('data-resized') for thumb in thumbs]
 
-class HyattInfoPageScraper(ScrapedPage):
+class HyattScraper(ScrapedPage):
     NAME_XPATH = 'body//h1[@class="homePropertyName"]'
 
     def get_address(self):
@@ -394,43 +444,25 @@ class HyattInfoPageScraper(ScrapedPage):
     def get_sub_category(self):
         return values.SubCategory.HOTEL
 
-class HyattRatesPageScraper(ScrapedPage):
-    NAME_XPATH = 'body//div[@id="logoCarouselAlter"]//a'
-    PRIMARY_PHOTO_XPATH = 'body//li[@class="img_holder"]//img'
+    @staticmethod
+    def expand_reservation_page(url, page_source_tree):
+        new_url = page_source_tree.getroot().find('body//li[@class="img_info"]//p[@class="bw"]//a').get('href')
+        return (new_url,)
 
-    def get_address(self):
-        elems = self.root.findall('body//li[@class="img_info"]//p[@class="dim"]')
-        return '%s %s' % (tostring(elems[0], True), tostring(elems[1], True))
+    @staticmethod
+    def expand_deep_info_page(url, ignored):
+        host = urlparse.urlparse(url).netloc.lower()
+        new_url = 'http://%s/en/hotel/home.html' % host
+        return (new_url,)
 
-    def get_category(self):
-        return values.Category.LODGING
+HyattScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+    '^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/home.html.*$',
+    ('^http(s)?://[^/]+\.hyatt.com/hyatt/reservations.*$', HyattScraper.expand_reservation_page),
+    ('^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/(?!home).*$', HyattScraper.expand_deep_info_page))
 
-    def get_sub_category(self):
-        return values.SubCategory.HOTEL
-
-    def get_photos(self):
-        return self.get_info_page().get_photos()
-
-    def get_info_page(self):
-        if hasattr(self, '_info_page'):
-            return self.info_page
-        info_page_url = self.root.find('body//li[@class="img_info"]//p[@class="bw"]//a').get('href')
-        self._info_page = build_scraper(info_page_url)
-        return self._info_page
 
 class StarwoodScraper(ScrapedPage):
     NAME_XPATH = 'body//div[@id="propertyInformation"]//h1'
-
-    @staticmethod
-    def canonical_url(url):
-        property_id = urlparse.parse_qs(urlparse.urlparse(url.lower()).query)['propertyid'][0]
-        return 'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=%s' % property_id
-
-    def __init__(self, url, tree):
-        super(StarwoodScraper, self).__init__(url, tree)
-        if 'starwoodhotels.com/preferredguest/property/overview/index.html' not in url.lower():
-            self.tree = parse_tree(StarwoodScraper.canonical_url(url))
-            self.root = self.tree.getroot()
 
     def get_address(self):
         addr_root = self.root.find('body//ul[@id="propertyAddress"]')
@@ -475,6 +507,17 @@ class StarwoodScraper(ScrapedPage):
     def get_site_specific_entity_id(self):
         return urlparse.parse_qs(urlparse.urlparse(self.url.lower()).query)['propertyid'][0]
 
+    @staticmethod
+    def expand_using_property_id(url, ignored):
+        property_id = urlparse.parse_qs(urlparse.urlparse(url.lower()).query)['propertyid'][0]
+        new_url = 'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=%s' % property_id
+        return (new_url,)
+
+StarwoodScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+    '^http(s)?://www\.starwoodhotels\.com/preferredguest/property/overview/index\.html\?propertyID=\d+.*$',
+    ('(?i)^http(s)?://www\.starwoodhotels\.com/.*propertyid=\d+.*$', StarwoodScraper.expand_using_property_id))
+
+
 class HiltonScraper(ScrapedPage):
     NAME_XPATH = 'body//h1'
 
@@ -503,14 +546,30 @@ class HiltonScraper(ScrapedPage):
             url = url.replace('.jpg', '_675x359_FitToBoxSmallDimension_Center.jpg')
         return url
 
-class HiltonReservationScraper(HiltonScraper):
-    def __init__(self, url, tree):
-        details_popup = tree.getroot().find('body//div[@class="resHeaderHotelInfo"]//span[@class="links"]//a[@class="popup"]')
+
+    INFO_PAGE_RE = re.compile('^http(?:s)?://www(?:\d)?\.hilton\.com/([a-z]+)/hotels/([\w-]+)/([\w-]+)/[\w-]+/[\w-]+\.html.*$')
+
+    @staticmethod
+    def expand_info_page_url(url, ignored):
+        match = HiltonScraper.INFO_PAGE_RE.match(url)
+        language, region, property_name = match.group(1), match.group(2), match.group(3)
+        new_url = 'http://www3.hilton.com/%s/hotels/%s/%s/index.html' % (language, region, property_name)
+        return (new_url,)
+
+    @staticmethod
+    def expand_reservation_page(url, page_source_tree):
+        details_popup = page_source_tree.getroot().find('body//div[@class="resHeaderHotelInfo"]//span[@class="links"]//a[@class="popup"]')
         if details_popup is not None:
             details_url = details_popup.get('href')
-            url = details_url.replace('/popup/hotelDetails.html', '/index.html')
-            tree = parse_tree(url)
-        super(HiltonReservationScraper, self).__init__(url, tree)
+            new_url = details_url.replace('/popup/hotelDetails.html', '/index.html')
+            return (new_url,)
+        return ()
+
+HiltonScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+    '^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/index\.html.*$',
+    ('^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/[\w-]+/[\w-]+\.html.*$', HiltonScraper.expand_info_page_url),
+    ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page))
+
 
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
@@ -531,48 +590,6 @@ def join_element_text_using_xpaths(root, xpaths, separator=' '):
     elems = texts = [root.find(xpath) for xpath in xpaths]
     texts = [tostring(elem) for elem in elems if elem is not None]
     return separator.join(texts)
-
-def parse_tree(url, page_source=None):
-    if page_source:
-        html = cStringIO.StringIO(page_source)
-    else:
-        req = urllib2.Request(url, headers={'User-Agent': USER_AGENT})
-        html = urllib2.urlopen(req)
-    parser = etree.HTMLParser()
-    tree = etree.parse(html, parser)
-    return tree
-
-def build_scraper(url, page_source=None):
-    tree = parse_tree(url, page_source)
-    parsed = urlparse.urlparse(url)
-    host = parsed.netloc.lower()
-    path = parsed.path.lower()
-    scraper_class = ScrapedPage
-    if 'tripadvisor.com' in host:
-        scraper_class = TripAdvisorScraper
-    elif 'yelp.com' in host:
-        scraper_class = YelpScraper
-    elif 'starwoodhotels.com' in host:
-        scraper_class = StarwoodScraper
-    # TODO: This catches *hotels.com which is wrong and dangerous.
-    # Switch to a regex-based matcher.
-    elif 'hotels.com' in host:
-        scraper_class = HotelsDotComScraper
-    elif 'airbnb.com' in host:
-        scraper_class = AirbnbScraper
-    elif 'booking.com' in host and 'secure' not in host:
-        scraper_class = BookingDotComScraper
-    elif 'hyatt.com' in host:
-        if '/hyatt/reservations' in path:
-            scraper_class = HyattRatesPageScraper
-        else:
-            scraper_class = HyattInfoPageScraper
-    elif 'hilton.com' in host:
-        if 'secure' in host:
-            scraper_class = HiltonReservationScraper
-        else:
-            scraper_class = HiltonScraper
-    return scraper_class(url, tree)
 
 def lookup_location(scr):
     locations = []
@@ -605,6 +622,38 @@ def pick_best_location(locations, entity_name):
             return location
     return locations[0]
 
+def parse_tree(url):
+    req = urllib2.Request(url, headers={'User-Agent': USER_AGENT})
+    html = urllib2.urlopen(req)
+    parser = etree.HTMLParser()
+    tree = etree.parse(html, parser)
+    return tree
+
+ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, ScrapedPage))
+
+def build_scrapers(url, page_source=None):
+    if page_source:
+        html = cStringIO.StringIO(page_source)
+        parser = etree.HTMLParser()
+        page_source_tree = etree.parse(html, parser)
+    else:
+        page_source_tree = None
+
+    scraped_pages = []
+    for scraper_class in ALL_SCRAPERS:
+        handleable_urls = scraper_class.handleable_urls(url, page_source_tree)
+        if handleable_urls:
+            for handleable_url in handleable_urls:
+                tree = parse_tree(handleable_url)
+                scraper = scraper_class(handleable_url, tree)
+                scraped_pages.append(scraper)
+            break
+    return scraped_pages
+
+def build_scraper(url, page_source=None):
+    scrapers = build_scrapers(url, page_source)
+    return scrapers[0] if scrapers else None
+
 if __name__ == '__main__':
     from tests.testdata import scraper_page_source
     for url in (
@@ -623,16 +672,19 @@ if __name__ == '__main__':
         'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
         'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
         'http://regencyboston.hyatt.com/en/hotel/home.html',
+        'http://bangalore.hyatthotels.hyatt.com/en/hotel/dining.html',
         'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
         'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
         'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
         'http://www3.hilton.com/en/hotels/illinois/hilton-chicago-CHICHHH/index.html',
         'http://www3.hilton.com/en/hotels/france/concorde-opra-paris-PAROPHI/index.html',
+        'http://www3.hilton.com/en/hotels/united-kingdom/the-trafalgar-london-LONTSHI/accommodations/index.html',
         'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
         'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
         ):
-        scraper = build_scraper(url, scraper_page_source.get_page_source(url))
-        print scraper.debug_string()
-        print scraper.get_latlng()
-        print scraper.get_location_precision()
+        scrapers = expand_and_scrape(url, scraper_page_source.get_page_source(url))
+        for scraper in scrapers:
+            print scraper.debug_string()
+            print scraper.get_latlng()
+            print scraper.get_location_precision()
         print '-----'
