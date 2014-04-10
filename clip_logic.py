@@ -58,4 +58,6 @@ def scrape_entity_from_url(url, page_source=None):
     return entity_from_scraper(scr, url)
 
 def needs_page_source_to_scrape(url):
-    return '/hyatt/reservations' in url.lower()
+    url = url.lower()
+    return ('/hyatt/reservations' in url or
+        'secure3.hilton.com' in url)

@@ -472,6 +472,43 @@ class StarwoodScraper(ScrapedPage):
     def get_site_specific_entity_id(self):
         return urlparse.parse_qs(urlparse.urlparse(self.url.lower()).query)['propertyid'][0]
 
+class HiltonScraper(ScrapedPage):
+    NAME_XPATH = 'body//h1'
+
+    def get_address(self):
+        return tostring(self.root.find('body//span[@itemprop="address"]'), True)
+
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        return values.SubCategory.HOTEL
+
+    def get_primary_photo(self):
+        return self.get_photos()[0]
+
+    def get_photos(self):
+        elems = self.root.findall('body//div[@class="galleryCarousel"]//img')
+        urls = [self.absolute_url(elem.get('src')) for elem in elems]
+        return [self.fix_image_url(url) for url in urls]
+
+    def fix_image_url(self, url):
+        url = url.replace('/thumb/', '/main/')
+        if '81x50' in url:
+            url = url.replace('81x50', '675x359')
+        else:
+            url = url.replace('.jpg', '_675x359_FitToBoxSmallDimension_Center.jpg')
+        return url
+
+class HiltonReservationScraper(HiltonScraper):
+    def __init__(self, url, tree):
+        details_popup = tree.getroot().find('body//div[@class="resHeaderHotelInfo"]//span[@class="links"]//a[@class="popup"]')
+        if details_popup is not None:
+            details_url = details_popup.get('href')
+            url = details_url.replace('/popup/hotelDetails.html', '/index.html')
+            tree = parse_tree(url)
+        super(HiltonReservationScraper, self).__init__(url, tree)
+
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
     elem = element
@@ -483,6 +520,7 @@ def tostring_with_breaks(element):
 def tostring(element, normalize_whitespace=False):
     s = etree.tostring(element, encoding='unicode', method='text').strip()
     if normalize_whitespace:
+        s = s.replace(u'\xc2', ' ').replace(u'\xa0', ' ')
         return re.sub('\s+', ' ', s)
     return s
 
@@ -526,6 +564,11 @@ def build_scraper(url, page_source=None):
             scraper_class = HyattRatesPageScraper
         else:
             scraper_class = HyattInfoPageScraper
+    elif 'hilton.com' in host:
+        if 'secure' in host:
+            scraper_class = HiltonReservationScraper
+        else:
+            scraper_class = HiltonScraper
     return scraper_class(url, tree)
 
 def lookup_location(scr):
@@ -580,6 +623,10 @@ if __name__ == '__main__':
         'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
         'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
         'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
+        'http://www3.hilton.com/en/hotels/illinois/hilton-chicago-CHICHHH/index.html',
+        'http://www3.hilton.com/en/hotels/france/concorde-opra-paris-PAROPHI/index.html',
+        'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
+        'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
         ):
         scraper = build_scraper(url, scraper_page_source.get_page_source(url))
         print scraper.debug_string()
