@@ -221,6 +221,25 @@ def edittripplan():
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success')
 
+@app.route('/login_and_migrate_ajax', methods=['POST'])
+def login_and_migrate_ajax():
+    session_info = decode_session(request.cookies)
+    email = request.json['email']
+    if not email or not EMAIL_RE.match(email):
+        return json.jsonify(status='Invalid email')
+    email = email.lower()
+    if session_info.email:
+        session_info.active_trip_plan_id = None
+        session_info.clear_active_trip_plan_id = True
+    else:
+        all_trip_plans = data.load_all_trip_plans(session_info) or []
+        for trip_plan in all_trip_plans:
+            data.change_creator(trip_plan, email)
+    session_info.email = email
+    session_info.set_on_response = True
+    response = json.jsonify(status='Success')
+    return process_response(response, request, session_info)
+
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
