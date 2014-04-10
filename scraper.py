@@ -428,7 +428,7 @@ class StarwoodScraper(ScrapedPage):
 
     def __init__(self, url, tree):
         super(StarwoodScraper, self).__init__(url, tree)
-        if 'starwoodhotels.com/preferredguest' not in url.lower():
+        if 'starwoodhotels.com/preferredguest/property/overview/index.html' not in url.lower():
             self.tree = parse_tree(StarwoodScraper.canonical_url(url))
             self.root = self.tree.getroot()
 
@@ -560,7 +560,7 @@ def build_scraper(url, page_source=None):
         scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
         scraper_class = AirbnbScraper
-    elif 'booking.com' in host:
+    elif 'booking.com' in host and 'secure' not in host:
         scraper_class = BookingDotComScraper
     elif 'hyatt.com' in host:
         if '/hyatt/reservations' in path:
