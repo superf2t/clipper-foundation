@@ -12,6 +12,8 @@ import crossreference
 import geocode
 import values
 
+USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36'
+
 def fail_returns_none(fn):
     def wrapped(self):
         try:
@@ -62,7 +64,7 @@ class ScrapedPage(object):
 
     @fail_returns_none
     def get_entity_name(self):
-        return self.root.find(self.NAME_XPATH).text.strip()
+        return tostring(self.root.find(self.NAME_XPATH))
 
     @fail_returns_none
     def get_address(self):
@@ -413,6 +415,62 @@ class HyattRatesPageScraper(ScrapedPage):
         self._info_page = build_scraper(info_page_url)
         return self._info_page
 
+class StarwoodScraper(ScrapedPage):
+    NAME_XPATH = 'body//div[@id="propertyInformation"]//h1'
+
+    @staticmethod
+    def canonical_url(url):
+        property_id = urlparse.parse_qs(urlparse.urlparse(url.lower()).query)['propertyid'][0]
+        return 'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=%s' % property_id
+
+    def __init__(self, url, tree):
+        super(StarwoodScraper, self).__init__(url, tree)
+        if 'starwoodhotels.com/preferredguest' not in url.lower():
+            self.tree = parse_tree(StarwoodScraper.canonical_url(url))
+            self.root = self.tree.getroot()
+
+    def get_address(self):
+        addr_root = self.root.find('body//ul[@id="propertyAddress"]')
+        return join_element_text_using_xpaths(addr_root, (
+            './/li[@class="street-address"]', './/li[@class="city"]',
+            './/li[@class="region"]', './/li[@class="postal-code"]',
+            './/li[@class="country-name"]'))
+
+    def get_category(self):
+        return values.Category.LODGING
+
+    def get_sub_category(self):
+        return values.SubCategory.HOTEL
+
+    @fail_returns_none
+    def get_rating(self):
+        return float(self.root.find('body//span[@itemprop="aggregateRating"]//span[@itemprop="ratingValue"]').text)
+
+    def get_photos(self):
+        photo_page = self.get_photo_page()
+        thumbs = photo_page.findall('.//div[@class="photoSection"]//div[@class="thumbs"]//img')
+        photo_page_url = self.get_photo_page_url()
+        thumb_srcs = [urlparse.urljoin(photo_page_url, thumb.get('src')) for thumb in thumbs]
+        return [thumb.replace('_tn.jpg', '_lg.jpg') for thumb in thumb_srcs if '_tn.jpg' in thumb]
+
+    def get_photo_page_url(self):
+        return 'http://www.starwoodhotels.com/preferredguest/property/photos/index.html?propertyID=%s' % self.get_site_specific_entity_id()
+
+    def get_photo_page(self):
+        if not hasattr(self, '_photo_page'):
+            self._photo_page = parse_tree(self.get_photo_page_url())
+        return self._photo_page
+
+    def get_primary_photo(self):
+        photo_url_re = re.compile('''entity\.thumbnailUrl=([^'",]+)''')        
+        for script in self.root.findall('body//script'):
+            match = photo_url_re.search(script.text)
+            if match:
+                return self.absolute_url(match.group(1).replace('_tn.jpg', '_lg.jpg'))
+        return None
+
+    def get_site_specific_entity_id(self):
+        return urlparse.parse_qs(urlparse.urlparse(self.url.lower()).query)['propertyid'][0]
 
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
@@ -428,11 +486,17 @@ def tostring(element, normalize_whitespace=False):
         return re.sub('\s+', ' ', s)
     return s
 
+def join_element_text_using_xpaths(root, xpaths, separator=' '):
+    elems = texts = [root.find(xpath) for xpath in xpaths]
+    texts = [tostring(elem) for elem in elems if elem is not None]
+    return separator.join(texts)
+
 def parse_tree(url, page_source=None):
     if page_source:
         html = cStringIO.StringIO(page_source)
     else:
-        html = urllib2.urlopen(url)
+        req = urllib2.Request(url, headers={'User-Agent': USER_AGENT})
+        html = urllib2.urlopen(req)
     parser = etree.HTMLParser()
     tree = etree.parse(html, parser)
     return tree
@@ -447,6 +511,10 @@ def build_scraper(url, page_source=None):
         scraper_class = TripAdvisorScraper
     elif 'yelp.com' in host:
         scraper_class = YelpScraper
+    elif 'starwoodhotels.com' in host:
+        scraper_class = StarwoodScraper
+    # TODO: This catches *hotels.com which is wrong and dangerous.
+    # Switch to a regex-based matcher.
     elif 'hotels.com' in host:
         scraper_class = HotelsDotComScraper
     elif 'airbnb.com' in host:
@@ -509,6 +577,9 @@ if __name__ == '__main__':
         'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
         'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
         'http://regencyboston.hyatt.com/en/hotel/home.html',
+        'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
+        'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
+        'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
         ):
         scraper = build_scraper(url, scraper_page_source.get_page_source(url))
         print scraper.debug_string()
