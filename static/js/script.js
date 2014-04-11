@@ -851,7 +851,7 @@ function EditImagesCtrl($scope, $timeout) {
   $scope.currentImgUrl = urls.length ? urls[currentIndex] : '';
 
   $scope.$on('image-dropped', function(event, data) {
-    var url = data['text/plain'] || data['text/uri-list'];
+    var url = data['tc-drag-image-url'];
     if (url) {
       me.addImgUrl(url);
     }

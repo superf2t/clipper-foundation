@@ -89,6 +89,9 @@
       if (wrapper.has(event.target).length || wrapper[0] == event.target) {
         return;
       }
+      var target = $(event.target);
+      var imgUrl = target.is('img') ? target.attr('src') : target.find('img').attr('src');
+      event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl);
       createDropTarget();
     }).on('dragend', removeDropTarget);
 
@@ -111,6 +114,7 @@
       var data = {
         message: 'tc-image-dropped',
         data: {
+          'tc-drag-image-url': dataTransfer.getData('tc-drag-image-url'),
           'text/plain': dataTransfer.getData('text/plain'),
           'text/uri-list': dataTransfer.getData('text/uri-list'),
           'text/html': dataTransfer.getData('text/html')
