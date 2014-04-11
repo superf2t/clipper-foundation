@@ -87,3 +87,6 @@ class PlaceResult(LocationResult):
 
     def get_name(self):
         return self.raw_result['name']
+
+    def get_reference(self):
+        return self.raw_result['reference']

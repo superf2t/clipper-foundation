@@ -10,6 +10,7 @@ from lxml import etree
 
 import crossreference
 import geocode
+import google_places
 import values
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36'
@@ -180,7 +181,7 @@ Photo urls: %s''' % (
 
 
 class TripAdvisorScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://(www)\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$')
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$')
 
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
@@ -569,6 +570,106 @@ HiltonScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page, REQUIRES_PAGE_SOURCE))
 
 
+class LonelyPlanetScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns(
+        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/hotels/(?!guesthouse|apartments|rated|hostels-and-budget-hotels).*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/shopping/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/entertainment-nightlife/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/sights/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/restaurants/.*$',)
+
+    NAME_XPATH = './/h1'
+
+    def get_address(self):
+        city, country = self.get_city_and_country()
+        if '/hotels/' in self.url:
+            street_and_city_node = self.root.find('.//div[@class="vcard lodging__subtitle"]')
+            street_and_city = tostring(street_and_city_node, True)
+            return '%s %s' % (street_and_city, country)
+        else:
+            street_node = self.root.find('.//dl[@class="info-list"]//dd[@class="copy--meta"]//strong')
+            if street_node is not None:
+                street = tostring(street_node, True)
+                return '%s %s %s' % (street, city, country)
+            else:
+                return self.lookup_google_place().address
+
+    def get_category(self):
+        url = self.url.lower()
+        if '/hotels/' in url:
+            return values.Category.LODGING
+        elif '/restaurants/' in url:
+            return values.Category.FOOD_AND_DRINK
+        elif '/sights/' in url or '/shopping/' in url or '/entertainment-nightlife/' in url:
+            return values.Category.ATTRACTIONS
+        return values.Category.ATTRACTIONS
+
+    def get_sub_category(self):
+        url = self.url.lower()
+        if '/hotels/' in url:
+            hotel_type_node = self.root.find('.//div[@class="lodging__subtitle"]')
+            hotel_type = tostring(hotel_type_node, True)
+            if hotel_type == 'Guesthouse':
+                return values.SubCategory.BED_AND_BREAKFAST
+            elif hotel_type == 'Hostel':
+                return values.SubCategory.HOSTEL
+            else:
+                return values.SubCategory.HOTEL
+        elif '/restaurants/' in url:
+            return values.SubCategory.RESTAURANT
+        return None
+
+    def get_rating(self):
+        return ''
+
+    def get_primary_photo(self):
+        try:
+            return self.root.find('.//img[@class="media-gallery__img"]').get('src')
+        except:
+            photo_urls = self.get_photos()
+            return photo_urls[0] if photo_urls else None
+
+    def get_city_and_country(self):
+        country, city = self.url.split('/')[3:5]
+        return city.capitalize(), country.capitalize()
+
+    def lookup_google_place(self):
+        if not hasattr(self, '_google_place'):
+            city, country = self.get_city_and_country()
+            query = '%s %s %s' % (self.get_entity_name(), city, country)
+            place_result = geocode.lookup_place(query)
+            if place_result:
+                place = google_places.lookup_place_by_reference(place_result.get_reference())
+                self._google_place = place.to_entity() if place else None
+            else:
+                self._google_place = None
+
+        return self._google_place
+
+    def get_photos(self):
+        urls = []
+        try:
+            for img in self.root.findall('.//img[@class="media-gallery__img"]'):
+                urls.append(img.get('src'))
+            for img in self.root.findall('.//img[@data-class="media-gallery__img"]'):
+                urls.append(img.get('data-src'))
+        except:
+            pass
+        if not urls:
+            google_place_entity = self.lookup_google_place()
+            if google_place_entity:
+                urls.extend(google_place_entity.photo_urls)
+        return urls
+
+    def get_latlng(self):
+        google_place_entity = self.lookup_google_place()
+        if google_place_entity:
+            return google_place_entity.latlng.to_json_obj() if google_place_entity.latlng else None
+        return None
+
+    def get_location_precision(self):
+        return 'Precise' if self.get_latlng() else 'Imprecise'
+
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
     elem = element
@@ -662,30 +763,35 @@ def url_requires_page_source(url):
 if __name__ == '__main__':
     from tests.testdata import scraper_page_source
     for url in (
-        'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
-        'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
-        'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
-        'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
-        'http://www.yelp.com/biz/ikes-place-san-francisco',
-        'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
-        'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
-        'https://www.airbnb.com/rooms/2407670',
-        'https://www.airbnb.com/rooms/2576604',
-        'https://www.airbnb.com/rooms/1581737',
-        'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
-        'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
-        'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
-        'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
-        'http://regencyboston.hyatt.com/en/hotel/home.html',
-        'http://bangalore.hyatthotels.hyatt.com/en/hotel/dining.html',
-        'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
-        'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
-        'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
-        'http://www3.hilton.com/en/hotels/illinois/hilton-chicago-CHICHHH/index.html',
-        'http://www3.hilton.com/en/hotels/france/concorde-opra-paris-PAROPHI/index.html',
-        'http://www3.hilton.com/en/hotels/united-kingdom/the-trafalgar-london-LONTSHI/accommodations/index.html',
-        'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
-        'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
+        # 'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
+        # 'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
+        # 'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
+        # 'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
+        # 'http://www.yelp.com/biz/ikes-place-san-francisco',
+        # 'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
+        # 'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
+        # 'https://www.airbnb.com/rooms/2407670',
+        # 'https://www.airbnb.com/rooms/2576604',
+        # 'https://www.airbnb.com/rooms/1581737',
+        # 'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
+        # 'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
+        # 'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
+        # 'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
+        # 'http://regencyboston.hyatt.com/en/hotel/home.html',
+        # 'http://bangalore.hyatthotels.hyatt.com/en/hotel/dining.html',
+        # 'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
+        # 'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
+        # 'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
+        # 'http://www3.hilton.com/en/hotels/illinois/hilton-chicago-CHICHHH/index.html',
+        # 'http://www3.hilton.com/en/hotels/france/concorde-opra-paris-PAROPHI/index.html',
+        # 'http://www3.hilton.com/en/hotels/united-kingdom/the-trafalgar-london-LONTSHI/accommodations/index.html',
+        # 'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
+        # 'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
+        'http://www.lonelyplanet.com/usa/san-francisco/restaurants/american/benu',
+        'http://www.lonelyplanet.com/spain/barcelona/hotels/hostal-abrevadero',
+        'http://www.lonelyplanet.com/kenya/wasini-island/sights/nature-wildlife/kisite-marine-national-park',
+        'http://www.lonelyplanet.com/spain/barcelona/entertainment-nightlife/other/la-caseta-del-migdia',
+        'http://www.lonelyplanet.com/united-arab-emirates/dubai/shopping/markets-streets-arcades/fish-market',
         ):
         scrapers = build_scrapers(url, scraper_page_source.get_page_source(url))
         for scraper in scrapers:

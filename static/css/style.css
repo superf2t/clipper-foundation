@@ -634,8 +634,9 @@ a:hover {
 
 .clipper-summary-icon {
   position: relative;
-  float: right;
+  left: 250px;
   top: -30px;
+  margin-bottom: -30px;
   width: 40px;
   height: 40px;
 }
