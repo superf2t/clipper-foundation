@@ -14,6 +14,7 @@ import constants
 import data
 import google_places
 import serializable
+import serviceimpls
 import values
 
 class MyFlask(Flask):
@@ -265,6 +266,13 @@ def entityfromsource():
     req.page_source = req.page_source.encode('utf-8')
     entity = clip_logic.scrape_entity_from_url(req.url, req.page_source)
     return json.jsonify(entity=entity.to_json_obj() if entity else None)
+
+@app.route('/entityservice/<method_name>', methods=['POST'])
+def entityservice(method_name):
+    # TODO: Get session info
+    service = serviceimpls.EntityService()
+    response = service.invoke_with_json(method_name, request.json)
+    return json.jsonify(response)
 
 def create_and_save_default_trip_plan(session_info):
     trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)

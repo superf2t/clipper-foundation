@@ -84,6 +84,12 @@ def objf(name, cls):
 def objlistf(name, cls):
     return Field(name, cls, is_list=True)
 
+def compositefields(*fields_dicts):
+    items = []
+    for fields_dict in fields_dicts:
+        items.extend(fields_dict.items())
+    return dict(items)
+
 
 class SerializationError(Exception):
     pass

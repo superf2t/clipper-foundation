@@ -4,9 +4,9 @@ class ServiceRequest(object):
     pass
 
 class ServiceResponse(object):
-    def __init__(self):
-        self.response_code = None
-        self.error = None
+    def __init__(self, response_code=None, error=None):
+        self.response_code = response_code
+        self.error = error
 
 class ServiceError(object):
     def __init__(self, error_code, message):
@@ -76,6 +76,9 @@ class JsonServiceRequest(ServiceRequest, serializable.Serializable):
 
 class JsonServiceResponse(ServiceResponse, serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('response_code', serializable.objf('error', JsonServiceError))
+
+    def __init__(self, **kwargs):
+        super(JsonServiceResponse, self).__init__(**kwargs)
 
 class JsonService(Service):
     def invoke_with_json(self, method_name, json_request):
