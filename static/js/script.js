@@ -850,6 +850,13 @@ function EditImagesCtrl($scope, $timeout) {
   var currentIndex = 0;
   $scope.currentImgUrl = urls.length ? urls[currentIndex] : '';
 
+  $scope.$on('image-dropped', function(event, data) {
+    var url = data['text/plain'] || data['text/uri-list'];
+    if (url) {
+      me.addImgUrl(url);
+    }
+  });
+
   $scope.photoUrlDragEnter = function($event) {
     $scope.imgDragActive = true;
   };
@@ -1463,7 +1470,10 @@ function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
 
   if ($needsPageSource) {
     $(window).on('message', function(event) {
-      var pageSource = event.originalEvent.data;
+      if (!event.originalEvent.data['message'] == 'tc-page-source') {
+        return;
+      }
+      var pageSource = event.originalEvent.data['data'];
       var request = {
         'url': getParameterByName('url'),
         'page_source': pageSource
@@ -1503,6 +1513,14 @@ function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
+
+  $(window).on('message', function(event) {
+    $scope.$apply(function(){
+      if (event.originalEvent.data['message'] == 'tc-image-dropped') {
+        $scope.$broadcast('image-dropped', event.originalEvent.data['data']);
+      }
+    });
+  });
 
   $scope.saveNewTripPlan = function() {
     if (!$scope.selectedTripPlanState.newTripPlanName) {

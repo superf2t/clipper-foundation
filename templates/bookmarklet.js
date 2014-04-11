@@ -76,21 +76,88 @@
 
     $(document.body).on('click', function(event) {
       if (wrapper && !wrapper.has(event.target).length) {
-        wrapper.remove();
-        wrapper = null;
+        cleanup();
       }
     });
 
-    $(window).on('message', function(event) {
-      if (event.originalEvent.data == 'tc-close-clipper') {
-        if (wrapper) {
-          wrapper.remove();
-          wrapper = null;
+    var dropTarget = null;
+
+    $(document.body).on('dragstart', function(event) {
+      if (!wrapper || !iframe || dropTarget) {
+        return;
+      }
+      if (wrapper.has(event.target).length || wrapper[0] == event.target) {
+        return;
+      }
+      createDropTarget();
+    }).on('dragend', removeDropTarget);
+
+    wrapper.on('dragenter', function(event) {
+      if (!dropTarget) return;
+      dropTarget.css('backgroundColor', 'red');
+    }).on('dragleave', function(event) {
+      if (!dropTarget) return;
+      dropTarget.css('backgroundColor', 'blue');
+    }).on('dragover', function(event) {
+      event.preventDefault();
+      return false;
+    });
+
+    wrapper.on('drop', function(event) {
+      if (!dropTarget) {
+        return;
+      }
+      var dataTransfer = event.originalEvent.dataTransfer;
+      var data = {
+        message: 'tc-image-dropped',
+        data: {
+          'text/plain': dataTransfer.getData('text/plain'),
+          'text/uri-list': dataTransfer.getData('text/uri-list'),
+          'text/html': dataTransfer.getData('text/html')
         }
-      } else if (event.originalEvent.data == 'tc-needs-page-source') {
-        iframe[0].contentWindow.postMessage($('html')[0].innerHTML, 'https://' + HOST);
+      };
+      iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+    });
+
+    $(window).on('message', function(event) {
+      var data = event.originalEvent.data;
+      if (data == 'tc-close-clipper') {
+        cleanup();
+      } else if (data == 'tc-needs-page-source') {
+        var data = {
+          message: 'tc-page-source',
+          data: $('html')[0].innerHTML
+        }
+        iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
       }
     });
+
+    function createDropTarget() {
+      dropTarget = $('<div>').css({
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        backgroundColor: 'blue',
+        opacity: 0.5
+      });
+      wrapper.append(dropTarget);
+    }
+
+    function removeDropTarget() {
+      if (dropTarget) {
+        dropTarget.remove();
+        dropTarget = null;
+      }
+    }
+
+    function cleanup() {
+      if (wrapper) {
+        wrapper.remove();
+        wrapper = null;
+      }
+    }
   }
 
   createElements();
