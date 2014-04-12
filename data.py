@@ -6,6 +6,7 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 import constants
+import enums
 import serializable
 import struct
 import values
@@ -64,12 +65,15 @@ class Entity(serializable.Serializable):
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
         'source_url', 'icon_url', 'google_reference')
 
-    def __init__(self, name=None, entity_type=None,
+    Status = enums.enum('ACTIVE', 'DELETED')
+
+    def __init__(self, entity_id=None, name=None, entity_type=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
-            google_reference=None):
+            google_reference=None, status=Status.ACTIVE.name):
+        self.entity_id = entity_id
         self.name = name
         self.entity_type = entity_type  # Deprecated
         self.category = category
@@ -83,6 +87,7 @@ class Entity(serializable.Serializable):
         self.photo_urls = photo_urls or []
         self.source_url = source_url
         self.google_reference = google_reference
+        self.status = status
 
         self.initialize()
 
@@ -115,8 +120,6 @@ class TripPlan(serializable.Serializable):
         serializable.objlistf('clipped_pages', ClippedPage),
         'creator', serializable.listf('editors'),
         'last_modified')
-
-    TYPES_IN_ORDER = ('Hotel', 'Restaurant', 'Attraction')
 
     def __init__(self, trip_plan_id=None, name=None, entities=(),
             clipped_pages=(), creator=None, editors=(), last_modified=None):
@@ -279,6 +282,11 @@ class AccountInfo(serializable.Serializable):
         self.active_trip_plan_name = active_trip_plan_name
 
 
+def generate_entity_id():
+    randid = uuid.uuid4().bytes[:8]
+    # Use mod 2**53 so the number can be represented natively in Javascript.
+    return struct.unpack('Q', randid)[0] % 2**53
+
 def generate_trip_plan_id():
     randid = uuid.uuid4().bytes[:8]
     return struct.unpack('Q', randid)[0]
@@ -309,6 +317,9 @@ def load_trip_plan_by_id(trip_plan_id):
             full_fname = os.path.join(constants.PROJECTPATH, 'local_data', fname)
             return load_trip_plan_from_filename(full_fname)
     return None
+
+def load_trip_plans_by_ids(trip_plan_ids):
+    return [load_trip_plan_by_id(id) for id in trip_plan_ids]
 
 def load_all_trip_plans(session_info):
     trip_plans = []    

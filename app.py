@@ -269,8 +269,8 @@ def entityfromsource():
 
 @app.route('/entityservice/<method_name>', methods=['POST'])
 def entityservice(method_name):
-    # TODO: Get session info
-    service = serviceimpls.EntityService()
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.EntityService(session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 

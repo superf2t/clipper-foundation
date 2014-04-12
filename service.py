@@ -1,26 +1,43 @@
+import enums
 import serializable
 
-class ServiceRequest(object):
-    pass
+class ServiceError(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('error_code', 'message', 'field_path')
 
-class ServiceResponse(object):
-    def __init__(self, response_code=None, error=None):
-        self.response_code = response_code
-        self.error = error
-
-class ServiceError(object):
-    def __init__(self, error_code, message):
+    def __init__(self, error_code=None, message=None, field_path=None):
         self.error_code = error_code
         self.message = message
+        self.field_path = field_path
+
+    @classmethod
+    def from_enum(cls, error_enum, field_path=None):
+        return cls(error_enum.name, getattr(error_enum, 'message'), field_path)
 
 class ServiceException(Exception):
-    def __init__(self, response_code, error_code, message):
+    def __init__(self, response_code=None, errors=()):
         self.response_code = response_code
-        self.error_code = error_code
-        self.message = message
+        self.errors = errors
 
-    def error(self):
-        return ServiceError(self.error_code, self.message)
+    @classmethod
+    def server_error(cls, errors=()):
+        return ServiceException(ResponseCode.SERVER_ERROR.name, errors)
+
+    @classmethod
+    def request_error(cls, errors=()):
+        return ServiceException(ResponseCode.REQUEST_ERROR.name, errors)
+
+class ServiceRequest(serializable.Serializable):
+    pass
+
+ResponseCode = enums.enum('SUCCESS', 'SERVER_ERROR', 'REQUEST_ERROR')
+
+class ServiceResponse(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('response_code',
+        serializable.objlistf('errors', ServiceError))
+
+    def __init__(self, response_code=None, errors=()):
+        self.response_code = response_code
+        self.errors = errors
 
 class MethodDescriptor(object):
     def __init__(self, method_name, request_class, response_class):
@@ -47,6 +64,12 @@ class Service(object):
             self.process_exception(e, response)
         return response
 
+    def invoke_with_json(self, method_name, json_request):
+        method_descriptor = self.resolve_method(method_name)
+        request = method_descriptor.request_class.from_json_obj(json_request)
+        response = self.invoke(method_name, request)
+        return response.to_json_obj() if response else None
+
     def resolve_method(self, method_name):
         descriptor = self.METHODS.get(method_name)
         if not descriptor:
@@ -57,42 +80,4 @@ class Service(object):
 
     def process_exception(self, exception, response):
         response.response_code = exception.response_code
-        response.error = exception.error()
-
-
-class JsonServiceError(ServiceError, serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('error_code', 'message')
-
-class JsonServiceException(ServiceException):
-    @classmethod
-    def from_service_exception(e):
-        return JsonServiceException(e.response_code, e.error_code, e.message)
-
-    def error(self):
-        return JsonServiceError(self.error_code, self.message)
-
-class JsonServiceRequest(ServiceRequest, serializable.Serializable):
-    pass
-
-class JsonServiceResponse(ServiceResponse, serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('response_code', serializable.objf('error', JsonServiceError))
-
-    def __init__(self, **kwargs):
-        super(JsonServiceResponse, self).__init__(**kwargs)
-
-class JsonService(Service):
-    def invoke_with_json(self, method_name, json_request):
-        method_descriptor = self.resolve_method(method_name)
-        request = method_descriptor.request_class.from_json_obj(json_request)
-        try:
-            response = self.invoke(method_name, request)
-        except ServiceException as e:
-            response = method_descriptor.response_class()
-
-            response.response_code = e.response_code
-            response.error = e.error
-        return response.to_json_obj() if response else None
-
-    def process_exception(self, exception, response):
-        wrapped_exception = JsonServiceException.from_service_exception(exception)
-        super(JsonService, self).process_exception(wrapped_exception, response)
+        response.errors = exception.errors
