@@ -12,7 +12,6 @@ from flask import request
 import clip_logic
 import constants
 import data
-import google_places
 import serializable
 import serviceimpls
 import values
@@ -190,26 +189,6 @@ def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
     response.headers['Content-Type'] = 'application/javascript'
     return response 
-
-@app.route('/google_place_to_entity')
-def google_place_to_entity():
-    reference = request.values['reference']
-    result = google_places.lookup_place_by_reference(reference)
-    return json.jsonify(entity=result.to_entity().to_json_obj() if result else None)
-
-@app.route('/url_to_entity')
-def url_to_entity():
-    url = request.values['url']
-    entity = clip_logic.scrape_entity_from_url(url)
-    return json.jsonify(entity=entity.to_json_obj() if entity else None)
-
-@app.route('/entityfromsource', methods=['POST'])
-def entityfromsource():
-    req = data.EntityFromPageSourceRequest.from_json_obj(request.json)
-    # TODO: Move unicode encoding into the json deserializer
-    req.page_source = req.page_source.encode('utf-8')
-    entity = clip_logic.scrape_entity_from_url(req.url, req.page_source)
-    return json.jsonify(entity=entity.to_json_obj() if entity else None)
 
 @app.route('/entityservice/<method_name>', methods=['POST'])
 def entityservice(method_name):

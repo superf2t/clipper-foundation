@@ -1,5 +1,7 @@
 import data
 import enums
+import clip_logic
+import google_places
 import serializable
 import service
 import utils
@@ -71,9 +73,40 @@ class EntityServiceMutateResponse(service.ServiceResponse):
         super(EntityServiceMutateResponse, self).__init__(**kwargs)
         self.entities = entities
 
+class GooglePlaceToEntityRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('reference')
+
+    def __init__(self, reference=None):
+        self.reference = reference
+
+class UrlToEntityRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('url')
+
+    def __init__(self, url=None):
+        self.url = url
+
+class PageSourceToEntityRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('url', 'page_source')
+
+    def __init__(self, url=None, page_source=None):
+        self.url = url
+        self.page_source = page_source
+
+class GenericEntityResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objf('entity', data.Entity)))
+
+    def __init__(self, entity=None, **kwargs):
+        super(GenericEntityResponse, self).__init__(**kwargs)
+        self.entity = entity
+
 class EntityService(service.Service):
     METHODS = service.servicemethods(
-        ('mutate', EntityServiceMutateRequest, EntityServiceMutateResponse))
+        ('mutate', EntityServiceMutateRequest, EntityServiceMutateResponse),
+        ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
+        ('urltoentity', UrlToEntityRequest, GenericEntityResponse),
+        ('pagesourcetoentity', PageSourceToEntityRequest, GenericEntityResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -138,3 +171,21 @@ class EntityService(service.Service):
                     op.result = op.trip_plan.entities.pop(i)
                     break
 
+    def googleplacetoentity(self, request):
+        result = google_places.lookup_place_by_reference(request.reference)
+        return GenericEntityResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entity=result.to_entity() if result else None)
+
+    def urltoentity(self, request):
+        entity = clip_logic.scrape_entity_from_url(request.url)
+        return GenericEntityResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entity=entity)
+
+    def pagesourcetoentity(self, request):
+        # TODO: Move unicode encoding into the json deserializer
+        entity = clip_logic.scrape_entity_from_url(request.url, request.page_source.encode('utf-8'))
+        return GenericEntityResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entity=entity)
