@@ -321,11 +321,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan,
 
   $scope.toggleOmnibox = function() {
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
-    if ($scope.omniboxState.visible) {
-      $timeout(function() {
-        $('#add-place-omnibox').focus();
-      });
-    }
   };
 
   $scope.showGuideView = function() {
@@ -357,9 +352,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan,
 
   $scope.editTripPlanSettings = function() {
     $scope.editingTripPlanSettings = true;
-    $timeout(function() {
-      $('#trip-plan-title-input').focus();
-    });
   };
 
   $scope.saveTripPlanSettings = function() {
@@ -932,6 +924,22 @@ function tcStarRating() {
   };
 }
 
+function tcFocusOn() {
+  return {
+    restrict: 'A',
+    scope: {
+      focusValue: '=tcFocusOn'
+    },
+    link: function(scope, element, attrs) {
+      scope.$watch('focusValue', function(currentValue, previousValue) {
+        if (currentValue) {
+          element[0].focus();
+        }
+      });
+    }
+  };
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -1314,7 +1322,8 @@ angular.module('directivesModule', [])
   .directive('bnLazySrc', bnLazySrc)
   .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
   .directive('tcDrop', tcDrop)
-  .directive('tcDragEnter', tcDragEnter);
+  .directive('tcDragEnter', tcDragEnter)
+  .directive('tcFocusOn', tcFocusOn);
 
 angular.module('filtersModule', [])
   .filter('hostname', function() {
@@ -1460,9 +1469,6 @@ function ClipperRootCtrl($scope, $http, $timeout, $entityService,
   $scope.$watch('selectedTripPlanState.tripPlan', function(newValue) {
     if (newValue.createNew) {
       $scope.showCreateTripPlanForm = true;
-      $timeout(function() {
-        $('#trip-plan-name-input').focus();
-      });
     } else {
       $scope.showCreateTripPlanForm = false;
     }

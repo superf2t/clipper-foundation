@@ -38,7 +38,8 @@
               <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
             </a>
             <form class="form-inline" role="form" ng-submit="saveTripPlanSettings()" ng-show="editingTripPlanSettings">
-              <input class="form-control" id="trip-plan-title-input" type="text"
+              <input class="form-control" type="text"
+                tc-focus-on="editingTripPlanSettings"
                 ng-model="editableTripPlanSettings.name"
                 ng-blur="saveTripPlanSettings()"/>
             </form>
@@ -90,7 +91,7 @@
           <div>
             <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
             tc-google-place-autocomplete
-            id="add-place-omnibox"
+            tc-focus-on="omniboxState.visible"
             ng-model="rawInputText"
             on-place-change="placeChanged($newPlace)"
             ng-paste="textPasted()"/>
@@ -142,7 +143,9 @@
                       Location unavailable
                     </div>
                     <div ng-show="editing">
-                      <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
+                      <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"
+                        tc-focus-on="editing">
+                      </textarea>
                     </div>
                     <div class="one-entity-source">
                       From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
