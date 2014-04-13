@@ -57,7 +57,7 @@ ENTITY_TYPE_TO_SUB_CATEGORY = {
 }
 
 class Entity(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 
+    PUBLIC_FIELDS = serializable.fields('entity_id', 'name', 'entity_type',
         serializable.objf('category', values.Category),
         serializable.objf('sub_category', values.SubCategory),
         'address',
@@ -333,8 +333,9 @@ def load_all_trip_plans(session_info):
                 trip_plans.append(trip_plan)
     return trip_plans
 
-def save_trip_plan(trip_plan):
-    trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
+def save_trip_plan(trip_plan, update_timestamp=True):
+    if update_timestamp:
+        trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
     json_obj = trip_plan.to_json_obj()
     json_str = json.dumps(json_obj, sort_keys=True, indent=4, separators=(',', ': '))
     trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
