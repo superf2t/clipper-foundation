@@ -32,6 +32,9 @@ class OperationData(object):
         field_path = self.field_path(field_name) if field_name else None
         return service.ServiceError(error_enum.name, message, field_path)
 
+    def is_add(self):
+        return self.operation.operator == Operator.ADD.name
+
     @classmethod
     def filter_by_operator(cls, op_datas, operator):
         return [op for op in op_datas if op.operation.operator == operator.name]
@@ -161,8 +164,7 @@ class EntityService(service.Service):
             entity = op.operation.entity
             for i, e in enumerate(op.trip_plan.entities):
                 if e.entity_id == entity.entity_id:
-                    op.trip_plan.entities[i] = entity
-                    op.result = op.trip_plan.entities[i]
+                    op.result = op.trip_plan.entities[i].update(entity)
 
     def process_deletes(self, operations):
         for op in operations:
@@ -189,3 +191,107 @@ class EntityService(service.Service):
         return GenericEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entity=entity)
+
+
+TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND')
+
+class TripPlanOperation(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('operator', serializable.objf('trip_plan', data.TripPlan))
+
+    def __init__(self, operator=None, trip_plan=None):
+        self.operator = operator
+        self.trip_plan = trip_plan
+
+class TripPlanMutateRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(serializable.objlistf('operations', TripPlanOperation))
+
+    def __init__(self, operations=()):
+        self.operations = operations
+
+    def trip_plan_ids(self):
+        return [operation.trip_plan.trip_plan_id for operation in self.operations if operation.trip_plan.trip_plan_id]
+
+class TripPlanMutateResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('trip_plans', data.TripPlan)))
+
+    def __init__(self, trip_plans=(), **kwargs):
+        super(TripPlanMutateResponse, self).__init__(**kwargs)
+        self.trip_plans = trip_plans
+
+
+class TripPlanService(service.Service):
+    METHODS = service.servicemethods(
+        ('mutate', TripPlanMutateRequest, TripPlanMutateResponse))
+
+    def __init__(self, session_info=None):
+        self.session_info = session_info
+        self.validation_errors = []
+
+    def raise_if_errors(self):
+        if self.validation_errors:
+            raise service.ServiceException.request_error(self.validation_errors)
+
+    def mutate(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        self.prepare_operations(operations)
+        self.validate_fields(operations)
+        self.validate_editability(operations)
+        self.process_adds(OperationData.filter_by_operator(operations, Operator.ADD))
+        self.process_edits(OperationData.filter_by_operator(operations, Operator.EDIT))
+        self.process_deletes(OperationData.filter_by_operator(operations, Operator.DELETE))
+        for trip_plan in trip_plans + [op.result for op in operations if op.is_add()]:
+            data.save_trip_plan(trip_plan)
+        results = [op.result.copy().strip_child_objects() for op in operations]
+        return TripPlanMutateResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plans=results)
+
+    def prepare_operations(self, operations):
+        for op in operations:
+            op.operation.trip_plan.strip_readonly_fields()
+        trip_plan_ids = request.trip_plan_ids()
+        if trip_plan_ids:
+            trip_plans = data.load_trip_plans_by_ids(trip_plan_ids)
+            trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id')
+        else:
+            trip_plan_ids = {}
+        for op in operations:
+            op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan.trip_plan_id)
+
+    def validate_fields(self, operations):
+        for op in operations:
+            if op.operation.operator != Operator.ADD.name:
+                if not op.operation.trip_plan.trip_plan_id:
+                    self.validation_errors.append(op.missingfield('trip_plan.trip_plan_id'))
+                elif not op.trip_plan:
+                    self.validation_errors.append(op.newerror(
+                        TripPlanServiceError.NO_TRIP_PLAN_FOUND, field_name='trip_plan.trip_plan_id'))
+        self.raise_if_errors()
+
+    def validate_editability(self, operations):
+        for op in operations:
+            if op.operation.operator != Operator.ADD.name:
+                if not op.trip_plan.editable_by(self.session_info):
+                    self.validation_errors.append(op.newerror(CommonError.NOT_AUTHORIZED_FOR_OPERATION,
+                        'The user is not allowed to edit this trip plan.', 'trip_plan.trip_plan_id'))
+        self.raise_if_errors()
+
+    def process_adds(self, operations):
+        for op in operations:
+            trip_plan = op.operation.trip_plan
+            if not trip_plane.name:
+                trip_plan.name = 'My First Trip'
+            trip_plan.trip_plan_id = data.generate_trip_plan_id()
+            trip_plan.creator = self.session_info.user_identifier
+            op.result = trip_plan
+
+    def process_edits(self, operations):
+        for op in operations:
+            op.result = op.trip_plan.update(op.operation.trip_plan)
+
+    def process_deletes(self, operations):
+        for op in operations:
+            op.trip_plan.status = data.TripPlan.Status.DELETED.name
+            op.result = op.trip_plan

@@ -44,6 +44,18 @@ class Serializable(object):
                 obj[name] = field.json_serialize(raw_value)
         return obj
 
+    def copy(self):
+        return type(self).from_json_obj(self.to_json_obj())
+
+    def update(self, other):
+        if type(self) != type(other):
+            raise Exception('Can only update objects of the same class')
+        for attr in vars(self).iterkeys():
+            value = getattr(other, attr)
+            if value:
+                setattr(self, attr, value)
+        return self
+
     @classmethod
     def from_json_str(cls, json_str):
         return cls.from_json_obj(json.loads(json_str))

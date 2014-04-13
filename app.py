@@ -197,6 +197,13 @@ def entityservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
+@app.route('/tripplanservice/<method_name>', methods=['POST'])
+def tripplanservice(method_name):
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.TripPlanService(session_info)
+    response = service.invoke_with_json(method_name, request.json)
+    return json.jsonify(response)
+
 def create_and_save_default_trip_plan(session_info):
     trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
     data.save_trip_plan(trip_plan)
