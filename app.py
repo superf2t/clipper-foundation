@@ -19,7 +19,7 @@ import values
 
 class MyFlask(Flask):
     def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'css/style.css'):
+        if name in ('js/script.js', 'js/services.js', 'css/style.css'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 

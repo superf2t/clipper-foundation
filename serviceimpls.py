@@ -11,19 +11,12 @@ CommonError = enums.enum(
     NOT_AUTHORIZED_FOR_OPERATION=enums.enumdata(message='The user is not authorized to perform this action'),
     MISSING_FIELD=enums.enumdata(message='A required field is missing'))
 
-def merge_results(*result_lists):
-    length = sum(map(len, result_lists))
-    results = [None] * length
-    for result_list in result_lists:
-        for item in result_list:
-            results[item[1]] = item[0]
-    return results
-
 class OperationData(object):
     def __init__(self, operation, field_path_prefix='', index=None):
         self.operation = operation
         self.field_path_prefix = field_path_prefix
         self.index = index
+        self.result = None
 
     def field_path(self, field_name):
         if self.index is not None:
@@ -39,7 +32,7 @@ class OperationData(object):
 
     @classmethod
     def filter_by_operator(cls, op_datas, operator):
-        return [op for op in op_datas if op.operation.operator == operator]
+        return [op for op in op_datas if op.operation.operator == operator.name]
 
     @classmethod
     def from_input(cls, operations, field_path_prefix=''):
@@ -94,18 +87,18 @@ class EntityService(service.Service):
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')
         self.validate_operation_fields(operations)
         trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids())
-        trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id_str')
+        trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id')
         for op in operations:
-            op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan_id_str)
+            op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan_id)
         self.validate_editability(operations)
-        add_results = self.process_adds(OperationData.filter_by_operator(Operator.ADD))
-        edit_results = self.process_edits(OperationData.filter_by_operator(Operator.EDIT))
-        delete_results = self.process_deletes(OperationData.filter_by_operator(Operator.DELETE))
+        self.process_adds(OperationData.filter_by_operator(operations, Operator.ADD))
+        self.process_edits(OperationData.filter_by_operator(operations, Operator.EDIT))
+        self.process_deletes(OperationData.filter_by_operator(operations, Operator.DELETE))
         for trip_plan in trip_plans:
             data.save_trip_plan(trip_plan)
-        entities = merge_results(add_results, edit_results, delete_results)
+        entities = [op.result for op in operations]
         return EntityServiceMutateResponse(
-            response_code=service.ServiceResponse.RESPONSE_CODE_SUCCESS,
+            response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)
 
     def validate_operation_fields(self, operations):
@@ -124,29 +117,23 @@ class EntityService(service.Service):
         self.raise_if_errors()
 
     def process_adds(self, operations):
-        results = []
         for op in operations:
             entity = op.operation.entity
             entity.entity_id = data.generate_entity_id()
             op.trip_plan.entities.append(entity)
-            results.append(entity)
-        return results
+            op.result = entity
 
     def process_edits(self, operations):
-        results = []
         for op in operations:
             entity = op.operation.entity
             for i, e in enumerate(op.trip_plan.entities):
                 if e.entity_id == entity.entity_id:
                     op.trip_plan.entities[i] = entity
-            results.append(op.trip_plan.entities[i])
-        return results
+                    op.result = op.trip_plan.entities[i]
 
     def process_deletes(self, operations):
-        results = []
         for op in operations:
             for entity in op.trip_plan.entities:
                 if entity.entity_id == op.operation.entity.entity_id:
                     entity.status = data.Entity.Status.DELETED.name
-                    results.append(entity)
-        return results
+                    op.result = entity

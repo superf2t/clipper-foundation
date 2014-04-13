@@ -919,30 +919,6 @@ function EditImagesCtrl($scope, $timeout) {
   };
 }
 
-// Services
-
-function EntitySaver($http) {
-  this.saveNew = function(tripPlanIdStr, entityData, opt_success, opt_error) {
-    var request = {
-      'trip_plan_id_str': tripPlanIdStr,
-      'entity': entityData
-    };
-    this.post('/createentity', request, opt_success, opt_error);
-  };
-
-  this.saveExisting = function(tripPlanIdStr, entityData, opt_success, opt_error) {
-    var request = {
-      'trip_plan_id_str': tripPlanIdStr,
-      'entity': entityData
-    };
-    this.post('/editentity', request, opt_success, opt_error);
-  };
-
-  this.post = function(url, request, opt_success, opt_error) {
-    $http.post(url, request).success(opt_success).error(opt_error);
-  };
-}
-
 // Directives
 
 function tcScrollToOnClick($parse) {
@@ -1348,9 +1324,6 @@ function interpolator($interpolateProvider) {
   $interpolateProvider.endSymbol(']]');
 }
 
-angular.module('dataSaveModule', [])
-  .service('$entitySaver', ['$http', EntitySaver]);
-
 angular.module('directivesModule', [])
   .directive('tcScrollToOnClick', tcScrollToOnClick)
   .directive('tcStarRating', tcStarRating)
@@ -1451,7 +1424,7 @@ ClipperStateModel.NO_AUTO_PLACE_FOUND = 4;
 ClipperStateModel.CLIP_ERROR = 5;
 ClipperStateModel.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE = 6;
 
-function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
+function ClipperRootCtrl($scope, $http, $timeout, $entityService,
     $needsPageSource, $entity, $allTripPlansSettings, $datatypeValues) {
   var me = this;
 
@@ -1546,7 +1519,7 @@ function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
 
   $scope.saveEntity = function() {
     var success = function(response) {
-      if (response['status'] == 'Success') {
+      if (response['response_code'] == ResponseCode.SUCCESS) {
         $scope.clipperState.status = ClipperStateModel.SUCCESS_CONFIRMATION;
         $timeout($scope.dismissClipper, 3000);
       } else {
@@ -1556,8 +1529,9 @@ function ClipperRootCtrl($scope, $http, $timeout, $entitySaver,
     var error = function(response) {
       $scope.clipperState.status = ClipperStateModel.CLIP_ERROR;
     };
-    $entitySaver.saveNew($scope.selectedTripPlanState.tripPlan['trip_plan_id_str'],
-      $scope.ed, success, error);
+    $entityService.saveNewEntity($scope.ed,
+      $scope.selectedTripPlanState.tripPlan['trip_plan_id_str'],
+      success, error);
   };
 
   $scope.openEditor = function() {
@@ -1674,9 +1648,9 @@ window['initClipper'] = function(entity, needsPageSource,
     .value('$datatypeValues', datatypeValues);
 
   angular.module('clipperModule',
-      ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'dataSaveModule'],
+      ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entitySaver',
+    .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entityService',
       '$needsPageSource', '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$http', ClipperOmniboxCtrl])
