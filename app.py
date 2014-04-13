@@ -74,10 +74,12 @@ def trip_plan_by_id(trip_plan_id):
 @app.route('/trip_plan')
 def trip_plan():
     session_info = decode_session(request.cookies)
-    trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
-    if not trip_plan:
+    all_trip_plans = data.load_all_trip_plans(session_info)
+    if all_trip_plans:
+        trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
+    else:
         trip_plan = create_and_save_default_trip_plan(session_info)
-    response = redirect('/trip_plan/%s' % session_info.active_trip_plan_id)
+    response = redirect('/trip_plan/%s' % trip_plan.trip_plan_id)
     return process_response(response, request, session_info)
 
 def trip_plan_with_session_info(session_info, trip_plan_id=None):

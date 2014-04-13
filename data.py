@@ -178,9 +178,9 @@ class TripPlan(serializable.Serializable):
         if self.last_modified and other.last_modified:
             return cmp(other.last_modified_datetime(), self.last_modified_datetime())
         elif self.last_modified:
-            return 1
-        elif other.last_modified:
             return -1
+        elif other.last_modified:
+            return 1
         else:
             return cmp(other.name, self.name)
 
