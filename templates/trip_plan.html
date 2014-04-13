@@ -528,10 +528,10 @@
               <div class="apc-map-precision-edit">
                 <label>Location precision</label>
                 <form class="form-inline" role="form">
-                  <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
-                  Exact location
-                  <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
-                  Approximate location
+                  <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="precise-radio"/>
+                  <label for="precise-radio" class="light-label">Exact location</label>
+                  <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="imprecise-radio"/>
+                  <label for="imprecise-radio" class="light-label">Approximate location</label>
                 </form>
               </div>
             </div>

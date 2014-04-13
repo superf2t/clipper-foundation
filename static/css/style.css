@@ -15,6 +15,10 @@ a:hover {
   color: #2D73A0;
 }
 
+.light-label {
+  font-weight: 400;
+}
+
 /* Navigation */
 
 #logo {
