@@ -65,14 +65,12 @@ class Entity(serializable.Serializable):
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
         'source_url', 'icon_url', 'google_reference')
 
-    Status = enums.enum('ACTIVE', 'DELETED')
-
     def __init__(self, entity_id=None, name=None, entity_type=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
-            google_reference=None, status=Status.ACTIVE.name):
+            google_reference=None):
         self.entity_id = entity_id
         self.name = name
         self.entity_type = entity_type  # Deprecated
@@ -87,7 +85,6 @@ class Entity(serializable.Serializable):
         self.photo_urls = photo_urls or []
         self.source_url = source_url
         self.google_reference = google_reference
-        self.status = status
 
         self.initialize()
 
@@ -146,12 +143,6 @@ class TripPlan(serializable.Serializable):
         for entity in self.entities:
             if entity.source_url == source_url:
                 return entity
-        return None
-
-    def remove_entity_by_source_url(self, source_url):
-        for i in range(len(self.entities)):
-            if self.entities[i].source_url == source_url:
-                return self.entities.pop(i)
         return None
 
     def as_settings(self):

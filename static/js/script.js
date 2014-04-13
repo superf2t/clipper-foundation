@@ -116,7 +116,7 @@ function TripPlanModel(tripPlanData) {
   };
 }
 
-function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer, $tripPlanSettings, $allowEditing) {
+function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlanSettings, $allowEditing) {
   var me = this;
   $scope.entityModels = [];
   $scope.show = true;
@@ -160,11 +160,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer
   }
 
   this.saveEntity = function(entityData) {
-    var editRequest = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
-      'entity': entityData
-    }
-    $http.post('/editentity', editRequest).error(function() {
+    $entityService.editEntity(entityData, $tripPlanSettings['trip_plan_id_str'], null, function() {
       alert('Failed to save new marker location');
     });
   };
@@ -199,7 +195,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $http, $templateToStringRenderer
   };
 }
 
-function EntityCtrl($scope, $http, $modal, $dataRefreshManager, $tripPlanSettings) {
+function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlanSettings) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -223,36 +219,32 @@ function EntityCtrl($scope, $http, $modal, $dataRefreshManager, $tripPlanSetting
   };
 
   $scope.saveEntityEdit = function() {
-    var editRequest = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
-      'entity': $scope.entityModel.data
-    }
-    $http.post('/editentity', editRequest).success(function(response) {
-      if (response['status'] != 'Success') {
+    var success = function(response) {
+      if (response['response_code'] != ResponseCode.SUCCESS) {
         alert('Failed to save edits');
       }
-    }).error(function() {
+    };
+    var error = function() {
       alert('Failed to save edits');
-    });
+    };
+    $entityService.editEntity($scope.entityModel.data,
+      $tripPlanSettings['trip_plan_id_str'], success, error);
     $scope.editing = false;
   };
 
   $scope.deleteEntity = function() {
-    var deleteRequest = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
-      'source_url': $scope.entityModel.data['source_url']
+    var success = function(response) {
+      if (response['response_code'] == ResponseCode.SUCCESS) {
+        $dataRefreshManager.askToRefresh();
+      } else {
+        alert('Failed to delete entity');
+      }
     };
-    $http.post('/deleteentity', deleteRequest)
-      .success(function(response) {
-        if (response['status'] == 'Success') {
-          $dataRefreshManager.askToRefresh();
-        } else {
-          alert('Failed to delete entity');
-        }
-      })
-      .error(function() {
-        alert('Failed to delete entity')
-      });
+    var error = function() {
+      alert('Failed to delete entity')
+    };
+    $entityService.deleteEntity($scope.entityModel.data,
+      $tripPlanSettings['trip_plan_id_str'], success, error);
   };
 }
 
@@ -735,7 +727,7 @@ function AddPlaceCtrl($scope, $http, $timeout, $modal) {
   };
 }
 
-function AddPlaceConfirmationCtrl($scope, $http, $timeout,
+function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
     $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
   var me = this;
   $scope.categories = $datatypeValues['categories'];
@@ -809,32 +801,24 @@ function AddPlaceConfirmationCtrl($scope, $http, $timeout,
   };
 
   $scope.saveNewEntity = function() {
-    var request = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
-      'entity': $scope.entityModel.data
-    }
-    me.postChanges(request, '/createentity');    
+    var error = function() { alert('Failed to save entity'); }
+    $entityService.saveNewEntity($scope.entityModel.data,
+      $tripPlanSettings['trip_plan_id_str'], me.handleSaveResponse, error);
   };
 
   $scope.saveChangesToExistingEntity = function() {
-    var request = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
-      'entity': $scope.entityModel.data
-    };
-    me.postChanges(request, '/editentity');    
+    var error = function() { alert('Failed to save entity'); }
+    $entityService.editEntity($scope.entityModel.data,
+      $tripPlanSettings['trip_plan_id_str'], me.handleSaveResponse, error);
   };
 
-  this.postChanges = function(request, url) {
-    $http.post(url, request).success(function(response) {
-      if (response['status'] != 'Success') {
-        alert('Failed to save entity');
-      } else {
-        $scope.$close();
-        $dataRefreshManager.askToRefresh(true);
-      }
-    }).error(function() {
+  this.handleSaveResponse = function(response) {
+    if (response['response_code'] != ResponseCode.SUCCESS) {
       alert('Failed to save entity');
-    });
+    } else {
+      $scope.$close();
+      $dataRefreshManager.askToRefresh(true);
+    }   
   };
 }
 
@@ -1353,7 +1337,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .value('$map', createMap())
     .value('$mapBounds', new google.maps.LatLngBounds());
 
-  angular.module('appModule', ['mapModule', 'initialDataModule',
+  angular.module('appModule', ['mapModule', 'initialDataModule', 'servicesModule',
       'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
@@ -1361,9 +1345,9 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
       '$datatypeValues', '$allowEditing', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo',
       '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
-    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$http',
+    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
       '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
-    .controller('EntityCtrl', ['$scope', '$http', '$modal',
+    .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$tripPlanSettings', EntityCtrl])
     .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
@@ -1372,7 +1356,7 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
     .controller('AddPlaceCtrl', ['$scope', '$http', '$timeout', '$modal', AddPlaceCtrl])
-    .controller('AddPlaceConfirmationCtrl', ['$scope', '$http', '$timeout',
+    .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
       '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)

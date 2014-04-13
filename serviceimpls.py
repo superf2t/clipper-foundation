@@ -133,7 +133,8 @@ class EntityService(service.Service):
 
     def process_deletes(self, operations):
         for op in operations:
-            for entity in op.trip_plan.entities:
+            for i, entity in enumerate(op.trip_plan.entities):
                 if entity.entity_id == op.operation.entity.entity_id:
-                    entity.status = data.Entity.Status.DELETED.name
-                    op.result = entity
+                    op.result = op.trip_plan.entities.pop(i)
+                    break
+

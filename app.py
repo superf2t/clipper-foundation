@@ -139,64 +139,6 @@ def createtripplan():
     data.save_trip_plan(trip_plan)
     return json.jsonify(status='Success', trip_plan=trip_plan.as_settings().to_json_obj())
 
-@app.route('/editentity', methods=['POST'])
-def editentity():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    try:
-        edit_request = data.EditEntityRequest.from_json_obj(request.json)
-    except:
-        raise Exception('Could not parse an EditEntityEntity from the input')
-    trip_plan = data.load_trip_plan_by_id(edit_request.trip_plan_id)
-    if not trip_plan:
-        raise Exception('No trip plan found for the given id')
-    if not trip_plan.editable_by(session_info):
-        raise Exception('Trip plan not editable by current user')
-    for i, entity in enumerate(trip_plan.entities):
-        if entity.source_url == edit_request.entity.source_url:
-            trip_plan.entities[i] = edit_request.entity
-            break
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
-
-@app.route('/createentity', methods=['POST'])
-def createentity():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    try:
-        create_request = data.CreateEntityRequest.from_json_obj(request.json)
-    except:
-        raise Exception('Could not parse a CreateEntityRequest from the input')
-    if not create_request.entity:
-        raise Exception('No entity was populated in the CreateEntityRequest')
-    trip_plan = data.load_trip_plan_by_id(create_request.trip_plan_id)
-    if not trip_plan:
-        raise Exception('No trip plan found for the given id')
-    if not trip_plan.editable_by(session_info):
-        raise Exception('Trip plan not editable by current user')
-    trip_plan.entities.append(create_request.entity)
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
-
-@app.route('/deleteentity', methods=['POST'])
-def deleteentity():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    delete_request = data.DeleteEntityRequest.from_json_obj(request.json)
-    if not delete_request:
-        raise Exception('Could not parse a delete request from the input')
-    trip_plan = data.load_trip_plan_by_id(delete_request.trip_plan_id)
-    if not trip_plan:
-        raise Exception('No trip plan found')
-    if not trip_plan.editable_by(session_info):
-        raise Exception('Trip plan not editable by current user')
-    trip_plan.remove_entity_by_source_url(delete_request.source_url)
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
-
 @app.route('/edittripplan', methods=['POST'])
 def edittripplan():
     session_info = decode_session(request.cookies)
