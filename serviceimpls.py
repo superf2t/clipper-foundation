@@ -1,3 +1,5 @@
+from dateutil import parser as date_parser
+
 import data
 import enums
 import clip_logic
@@ -45,19 +47,27 @@ class OperationData(object):
 EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND')
 
 class EntityGetRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id')
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
 
-    def __init__(self, trip_plan_id=None):
+    def __init__(self, trip_plan_id=None, if_modified_after=None):
         self.trip_plan_id = trip_plan_id
+        self.if_modified_after = if_modified_after
+
+    def if_modified_after_as_datetime(self):
+        if not self.if_modified_after:
+            return None
+        return date_parser.parse(self.if_modified_after)
 
 class EntityGetResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
         service.ServiceResponse.PUBLIC_FIELDS,
-        serializable.fields(serializable.objlistf('entities', data.Entity)))
+        serializable.fields(serializable.objlistf('entities', data.Entity),
+        'last_modified'))
 
-    def __init__(self, entities=(), **kwargs):
+    def __init__(self, entities=(), last_modified=None, **kwargs):
         super(EntityGetResponse, self).__init__(**kwargs)
         self.entities = entities
+        self.last_modified = last_modified
 
 class EntityOperation(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id', serializable.objf('entity', data.Entity))
@@ -135,9 +145,13 @@ class EntityService(service.Service):
                 CommonError.MISSING_FIELD, 'trip_plan_id'))
         self.raise_if_errors()
         trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
-        entities = trip_plan.entities if trip_plan else ()
+        if (request.if_modified_after and trip_plan.last_modified
+            and trip_plan.last_modified_datetime() <= request.if_modified_after_as_datetime()):
+            entities = []
+        else:
+            entities = trip_plan.entities if trip_plan else ()
         return EntityGetResponse(response_code=service.ResponseCode.SUCCESS.name,
-            entities=entities)
+            entities=entities, last_modified=trip_plan.last_modified if trip_plan else None)
 
     def mutate(self, request):
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')

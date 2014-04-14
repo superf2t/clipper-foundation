@@ -12,8 +12,11 @@ var Operator = {
 
 
 function EntityService($http) {
-  this.getByTripPlanId = function(tripPlanId) {
-    var request = {'trip_plan_id': tripPlanId};
+  this.getByTripPlanId = function(tripPlanId, opt_lastModifiedTime) {
+    var request = {
+      'trip_plan_id': tripPlanId,
+      'if_modified_after': opt_lastModifiedTime
+    };
     return $http.post('/entityservice/get', request);
   };
 

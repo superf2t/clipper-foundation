@@ -89,22 +89,6 @@ function TripPlanModel(tripPlanData, entityDatas) {
     return entities;
   };
 
-  // An approximate check of equality that only checks certain fields.
-  this.fastCompareEntities = function(otherEntities) {
-    var currentSourceUrls = $.map(this.entityDatas, function(entity) {
-      return entity['source_url'];
-    });
-    var newSourceUrls = $.map(otherEntities, function(entity) {
-      return entity['source_url'];
-    });
-    if (currentSourceUrls.length != newSourceUrls.length) {
-      return false;
-    }
-    currentSourceUrls.sort();
-    newSourceUrls.sort();
-    return angular.equals(currentSourceUrls, newSourceUrls);
-  };
-
   this.isEmpty = function() {
     return this.entityDatas.length == 0;
   };
@@ -372,19 +356,19 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlan,
     $scope.$broadcast('closeallinfowindows');
   });
 
-  this.refresh = function(opt_force) {
+  this.refresh = function() {
     if ($scope.refreshState.paused || !$allowEditing) {
       return;
     }
-    $entityService.getByTripPlanId($tripPlan['trip_plan_id'])
+    $entityService.getByTripPlanId($tripPlan['trip_plan_id'], $tripPlan['last_modified'])
       .success(function(response) {
         if ($scope.refreshState.paused) {
           return;
         }
-        // TODO: Make this just request new entities since the last_modified timestamp.
         var planModel = $scope.planModel;
         var newEntities = response['entities'];
-        if (opt_force || !$scope.planModel || !$scope.planModel.fastCompareEntities(newEntities)) {
+        $tripPlan['last_modified'] = response['last_modified'];
+        if (newEntities && newEntities.length) {
           $scope.$broadcast('clearallmarkers');
           // Angular's dirty-checking does not seem to pick up that the
           // model has changed if we just assign to the new model...
@@ -582,8 +566,8 @@ function categoryToIconUrl(categoryName, subCategoryName, precision) {
 }
 
 function DataRefreshManager($rootScope) {
-  this.askToRefresh = function(opt_force) {
-    $rootScope.$broadcast('refreshdata', opt_force);
+  this.askToRefresh = function() {
+    $rootScope.$broadcast('refreshdata');
   };
 }
 
@@ -741,7 +725,7 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
       alert('Failed to save entity');
     } else {
       $scope.$close();
-      $dataRefreshManager.askToRefresh(true);
+      $dataRefreshManager.askToRefresh();
     }   
   };
 }
