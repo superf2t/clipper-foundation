@@ -62,17 +62,24 @@ a:hover {
   margin-left: 5px;
 }
 
-#header-globe, #header-picture, #header-user {
+#header-globe, #header-picture, #header-user, #header-globe {
   font-size: 1.2em;
   color: #000000;
 }
 
-#header-globe:hover, #header-picture:hover, #header-user:hover, #add-place-to-trip-btn:hover {
+#header-globe:hover, #header-picture:hover,
+#header-user:hover, #header-gear:hover,
+#add-place-to-trip-btn:hover {
   color: #428bca;
 }
 
 #header-globe {
   padding-top: 1px;
+}
+
+.active-view-mode #header-globe,
+.active-view-mode #header-picture {
+  color: #428bca;
 }
 
 /* Map View */

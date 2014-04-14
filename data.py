@@ -109,7 +109,7 @@ class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
         serializable.objlistf('entities', Entity),
         'creator', serializable.listf('editors'),
-        'last_modified')
+        'last_modified', 'status')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 

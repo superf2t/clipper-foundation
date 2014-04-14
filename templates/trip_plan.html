@@ -59,6 +59,26 @@
                   <span class="glyphicon glyphicon-picture" id="header-picture"></span>
                 </a>
               </li>
+              <li class="view-mode-pill" tooltip="Settings" tooltip-placement="bottom">
+                <a href="javascript:void(0)" XXng-click="showTripPlanSettingsDropdown()"
+                  class="dropdown-toggle">
+                  <span class="glyphicon glyphicon-cog" id="header-gear"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-plus"></span> Clone trip plan
+                    </a>
+                  </li>
+                  {% if allow_editing %}
+                  <li>
+                    <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-trash"></span> Delete trip plan
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
+              </li>
             </ul>
           </li>
           {% if allow_editing %}

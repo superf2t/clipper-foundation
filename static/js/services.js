@@ -93,7 +93,8 @@ function TripPlanService($http) {
     return this.mutate(request);
   };
 
-  this.deleteTripPlan = function(tripPlan) {
+  this.deleteTripPlanById = function(tripPlanId) {
+    var tripPlan = {'trip_plan_id': tripPlanId};
     var request = {
       'operations': [this.operationFromTripPlan(tripPlan, Operator.DELETE)]
     };
@@ -109,6 +110,11 @@ function TripPlanService($http) {
       'operator': operator,
       'trip_plan': tripPlan
     };
+  };
+
+  this.cloneTripPlan = function(tripPlanId) {
+    var request = {'trip_plan_id': tripPlanId};
+    return $http.post('/tripplanservice/clone', request);
   };
 }
 

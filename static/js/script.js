@@ -352,6 +352,25 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlan,
     $scope.editingTripPlanSettings = false;
   };
 
+  $scope.cloneCurrentTripPlan = function() {
+    $tripPlanService.cloneTripPlan($tripPlan['trip_plan_id'])
+      .success(function(response) {
+        var newTripPlanId = response['trip_plan']['trip_plan_id'];
+        location.href = '/trip_plan/' + newTripPlanId;
+      });
+  };
+
+  $scope.deleteCurrentTripPlan = function() {
+    var ok = confirm('Are you sure you want to delete this trip plan?');
+    if (!ok) {
+      return;
+    }
+    $tripPlanService.deleteTripPlanById($tripPlan['trip_plan_id'])
+      .success(function(response) {
+        location.href = '/trip_plan';
+      });
+  };
+
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
   });

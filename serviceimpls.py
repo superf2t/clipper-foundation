@@ -270,10 +270,26 @@ class TripPlanMutateResponse(service.ServiceResponse):
         super(TripPlanMutateResponse, self).__init__(**kwargs)
         self.trip_plans = trip_plans
 
+class TripPlanCloneRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id')
+
+    def __init__(self, trip_plan_id=None):
+        self.trip_plan_id = trip_plan_id
+
+class TripPlanCloneResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objf('trip_plan', data.TripPlan)))
+
+    def __init__(self, trip_plan=None, **kwargs):
+        super(TripPlanCloneResponse, self).__init__(**kwargs)
+        self.trip_plan = trip_plan
+
 class TripPlanService(service.Service):
     METHODS = service.servicemethods(
         ('get', TripPlanGetRequest, TripPlanGetResponse),
-        ('mutate', TripPlanMutateRequest, TripPlanMutateResponse))
+        ('mutate', TripPlanMutateRequest, TripPlanMutateResponse),
+        ('clone', TripPlanCloneRequest, TripPlanCloneResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -364,3 +380,26 @@ class TripPlanService(service.Service):
         for op in operations:
             op.trip_plan.status = data.TripPlan.Status.DELETED.name
             op.result = op.trip_plan
+
+    def clone(self, request):
+        trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
+        if not trip_plan:
+            self.validation_errors.append(service.ServiceError(
+                TripPlanServiceError.NO_TRIP_PLAN_FOUND, 'No active trip plan was found with this id.', 'trip_plan_id'))
+        self.raise_if_errors()
+        new_trip_plan = data.TripPlan(trip_plan_id=data.generate_trip_plan_id(),
+            name=trip_plan.name, creator=self.session_info.user_identifier)
+        new_trip_plan.entities = self.clone_entities(trip_plan.entities)
+        data.save_trip_plan(new_trip_plan)
+        return TripPlanCloneResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plan=new_trip_plan)
+
+    def clone_entities(self, entities):
+        if not entities:
+            return []
+        new_entities = [entity.copy() for entity in entities]
+        for entity in new_entities:
+            entity.entity_id = data.generate_entity_id()
+        return new_entities
+
