@@ -383,31 +383,6 @@
     </li>
   </ul>
 
-  <script type="text/ng-template" id="clipping-modal-template">
-    <div class="clipping-status-modal">
-      <div ng-show="clipState.clipping">
-        Clipping to your trip plan...
-        <div>
-          <img src="/static/img/spinner.gif"/>
-        </div>
-      </div>
-      <div ng-show="!clipState.clipping">
-        <div ng-if="clipState.statusCode == 0">
-          An error occurred during clipping.  Please try again.
-        </div>
-        <div ng-if="clipState.statusCode == 1">
-          Successfully clipped "[[clipState.entity['name'] ]]""
-        </div>
-        <div ng-if="clipState.statusCode == 2">
-          We don't recognize this website so we've saved this URL for you to clip manually.
-        </div>
-        <div ng-if="clipState.statusCode == 3">
-          You've already clipped this page to your trip plan.
-        </div>
-      </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="infowindow-template">
     <div>
       <div>
