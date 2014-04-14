@@ -171,29 +171,46 @@
                     <div class="one-entity-source">
                       From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
                     </div>
-                    {% if allow_editing %}
-                      <div class="entity-edit-controls">
-                        <a href="javascript:void(0)"
-                          ng-click="openEditEntity()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-pencil"></span>
-                        </a>
-                        <a href="javascript:void(0)"
-                          ng-click="openEditPlaceModal()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-cog"></span>
-                        </a>
-                        <a href="javascript:void(0)"
-                          ng-click="deleteEntity()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-trash"></span>
-                        </a>
-                        <button class="btn btn-default btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                    <div class="entity-edit-controls">
+                      <a href="javascript:void(0)" class="dropdown-toggle" ng-show="!editing">
+                        <span class="glyphicon glyphicon-cog"></span>
+                      </a>
+                      <ul class="dropdown-menu right-bottom-dropdown-menu">
+                        {% if allow_editing %}
+                        <li>
+                          <a ng-click="openEditEntity()" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-pencil"></span> Add a comment
+                          </a>
+                        </li>
+                        <li>
+                          <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-edit"></span> Edit this place
+                          </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                          <a ng-click="todo" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-paperclip"></span> Clip this place
+                          </a>
+                        </li>
+                        {% if allow_editing %}
+                        <li>
+                          <a ng-click="deleteEntity()" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-trash"></span> Delete this place
+                          </a>
+                        </li>
+                        {% endif %}
+                      </ul>
+                      {% if allow_editing %}
+                        <button class="btn btn-default btn-save-changes"
+                          ng-click="saveEntityEdit()" ng-show="editing">
+                          Save
+                        </button>
                         <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
                           Cancel
                         </a>
-                      </div>
-                    {% endif %}
+                      {% endif %}
+                    </div>
                   </div>
                 </div>
               </div>

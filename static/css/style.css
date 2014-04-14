@@ -211,6 +211,14 @@ a:hover {
   top: -30px;
 }
 
+.dropdown-menu.right-bottom-dropdown-menu {
+  left: auto;
+  right: 0px;
+  top: auto;
+  bottom: 100%;
+  text-align: left;
+}
+
 .entity-info-text {
   margin: 5px;
 }
