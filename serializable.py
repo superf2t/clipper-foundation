@@ -112,7 +112,7 @@ def to_json_obj(obj):
         return obj
     elif isinstance(obj, Serializable):
         return obj.to_json_obj()
-    elif isinstance(obj, list):
+    elif isinstance(obj, list) or isinstance(obj, tuple):
         return [to_json_obj(o) for o in obj]
     elif isinstance(obj, dict):
         return dict((to_json_obj(key), to_json_obj(val)) for key, val in obj.iteritems())

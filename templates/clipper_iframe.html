@@ -166,7 +166,7 @@
       was successfully clipped to
     </div>
     <div class="clip-confirmation-trip-plan-name">
-      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id_str'] ]]" target="_blank">
+      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
         [[selectedTripPlanState.tripPlan['name'] ]]
       </a>
     </div>
@@ -178,7 +178,7 @@
     initClipper(
       {{entity.to_json_str()|safe if entity else 'null'}},
       {{needs_page_source|jsbool}},
-      {{all_trip_plans_settings_json|safe}},
+      {{all_trip_plans_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>
 </body>

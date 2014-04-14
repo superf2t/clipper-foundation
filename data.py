@@ -140,12 +140,6 @@ class TripPlan(serializable.Serializable):
                 return entity
         return None
 
-    def as_settings(self):
-        return TripPlanSettings(str(self.trip_plan_id), name=self.name)        
-
-    def settings_json(self):
-        return self.as_settings().to_json_str()
-
     def contains_url(self, url):
         for entity in self.entities:
             if entity.source_url == url:
@@ -187,31 +181,6 @@ class TripPlan(serializable.Serializable):
         else:
             return cmp(other.name, self.name)
 
-class TripPlanSettings(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
-
-    def __init__(self, trip_plan_id_str=None, name=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.name = name
-
-
-class CreateTripPlanRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name')
-
-    def __init__(self, name=None):
-        self.name = name
-
-class EditTripPlanRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
-
-    def __init__(self, trip_plan_id=None, trip_plan_id_str=None, name=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.name = name
-
-    @property
-    def trip_plan_id(self):
-        return int(self.trip_plan_id_str)
-
 
 class SessionInfo(object):
     def __init__(self, email=None, active_trip_plan_id=None, sessionid=None, set_on_response=False):
@@ -228,12 +197,10 @@ class SessionInfo(object):
 
 
 class AccountInfo(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('email', 'active_trip_plan_id', 'active_trip_plan_name')
+    PUBLIC_FIELDS = serializable.fields('email')
 
-    def __init__(self, email=None, active_trip_plan_id=None, active_trip_plan_name=None):
+    def __init__(self, email=None):
         self.email = email
-        self.active_trip_plan_id = active_trip_plan_id
-        self.active_trip_plan_name = active_trip_plan_name
 
 
 def generate_entity_id():
@@ -243,7 +210,8 @@ def generate_entity_id():
 
 def generate_trip_plan_id():
     randid = uuid.uuid4().bytes[:8]
-    return struct.unpack('Q', randid)[0]
+    # Use mod 2**53 so the number can be represented natively in Javascript.
+    return struct.unpack('Q', randid)[0] % 2**53
 
 def trip_plan_filename_from_session_info(session_info):
     return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)

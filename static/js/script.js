@@ -75,16 +75,13 @@ function EntityModel(entityData, editable) {
   this.infowindow = null;
 }
 
-function TripPlanModel(tripPlanData) {
-  this.data = tripPlanData;
-
-  this.hasClippedPages = function() {
-    return this.data['clipped_pages'] && this.data['clipped_pages'].length;
-  };
+function TripPlanModel(tripPlanData, entityDatas) {
+  this.tripPlanData = tripPlanData;
+  this.entityDatas = entityDatas;
 
   this.entitiesForCategory = function(category) {
     var entities = [];
-    $.each(this.data['entities'], function(i, entity) {
+    $.each(this.entityDatas, function(i, entity) {
       if (entity['category'] && entity['category']['category_id'] == category['category_id']) {
         entities.push(entity);
       }
@@ -93,14 +90,11 @@ function TripPlanModel(tripPlanData) {
   };
 
   // An approximate check of equality that only checks certain fields.
-  this.fastEquals = function(otherModel) {
-    if (this.data['name'] != otherModel.data['name']) {
-      return false;
-    }
-    var currentSourceUrls = $.map(this.data['entities'], function(entity) {
+  this.fastCompareEntities = function(otherEntities) {
+    var currentSourceUrls = $.map(this.entityDatas, function(entity) {
       return entity['source_url'];
     });
-    var newSourceUrls = $.map(otherModel.data['entities'], function(entity) {
+    var newSourceUrls = $.map(otherEntities, function(entity) {
       return entity['source_url'];
     });
     if (currentSourceUrls.length != newSourceUrls.length) {
@@ -112,11 +106,11 @@ function TripPlanModel(tripPlanData) {
   };
 
   this.isEmpty = function() {
-    return this.data['entities'].length == 0;
+    return this.entityDatas.length == 0;
   };
 }
 
-function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlanSettings, $allowEditing) {
+function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlan, $allowEditing) {
   var me = this;
   $scope.entityModels = [];
   $scope.show = true;
@@ -160,7 +154,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStrin
   }
 
   this.saveEntity = function(entityData) {
-    $entityService.editEntity(entityData, $tripPlanSettings['trip_plan_id_str'])
+    $entityService.editEntity(entityData, $tripPlan['trip_plan_id'])
       .error(function() {
         alert('Failed to save new marker location');
       });
@@ -196,7 +190,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStrin
   };
 }
 
-function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlanSettings) {
+function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlan) {
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -220,7 +214,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   };
 
   $scope.saveEntityEdit = function() {
-    $entityService.editEntity($scope.entityModel.data, $tripPlanSettings['trip_plan_id_str'])
+    $entityService.editEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] != ResponseCode.SUCCESS) {
           alert('Failed to save edits');
@@ -232,7 +226,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   };
 
   $scope.deleteEntity = function() {
-    $entityService.deleteEntity($scope.entityModel.data, $tripPlanSettings['trip_plan_id_str'])
+    $entityService.deleteEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $dataRefreshManager.askToRefresh();
@@ -294,18 +288,18 @@ function PageStateModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $tripPlan, 
-  $tripPlanSettings, $datatypeValues, $allowEditing) {
+function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlan, 
+    $entityService, $entities, $datatypeValues, $allowEditing) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
-  $scope.planModel = new TripPlanModel($tripPlan);
+  $scope.planModel = new TripPlanModel($tripPlan, $entities);
   $scope.orderedCategories = $datatypeValues['categories'];
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
   $scope.omniboxState = {visible: false};
   $scope.editingTripPlanSettings = false;
   $scope.editableTripPlanSettings = {
-    name: $tripPlanSettings['name']
+    name: $tripPlan['name']
   };
   $scope.refreshState = {
     paused: false
@@ -352,24 +346,21 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan,
   };
 
   $scope.saveTripPlanSettings = function() {
-    if ($scope.editableTripPlanSettings.name == $tripPlanSettings['name']) {
+    if ($scope.editableTripPlanSettings.name == $tripPlan['name']) {
       $scope.editingTripPlanSettings = false;
       return;
     }
-    var editRequest = {
-      'trip_plan_id_str': $tripPlanSettings['trip_plan_id_str'],
+    var editedTripPlan = {
+      'trip_plan_id': $tripPlan['trip_plan_id'],
       'name': $scope.editableTripPlanSettings.name
     };
-    $http.post('/edittripplan', editRequest)
+    $tripPlanService.editTripPlan(editedTripPlan)
       .success(function(response) {
-        if (response['status'] != 'Success') {
-          alert(response['status']);
-        } else {
-          var newName = $scope.editableTripPlanSettings.name;
-          document.title = newName;
-          $scope.planModel.data['name'] = newName;
-          $tripPlanSettings['name'] = newName;
-        }
+        var newName = $scope.editableTripPlanSettings.name;
+        document.title = newName;
+        $scope.planModel.tripPlanData['name'] = newName;
+        // TODO: This might be redundant now.
+        $tripPlan['name'] = newName;
       })
       .error(function() {
         alert('Failed to save edits');
@@ -381,65 +372,19 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan,
     $scope.$broadcast('closeallinfowindows');
   });
 
-  $scope.clipUrlChanged = function() {
-    // Ugly hack to wrap this in a timeout; without it, the paste
-    // event fires before the input has been populated with the pasted
-    // data, so both [text input].val() and $scope.clipState.url
-    // are empty.
-    $timeout(function() {
-      if (!$scope.clipState.url) {
-        return;
-      }
-      $scope.clipState.clipping = true;
-      var modal = $modal.open({
-        templateUrl: 'clipping-modal-template',
-        scope: $scope
-      });
-      me.clip($scope.clipState.url, function(response) {
-        $scope.clipState.url = '';
-        $scope.clipState.clipping = false;
-        $scope.clipState.statusCode = response['clip_status'];
-        $scope.clipState.entity = response['entity'];
-        $timeout(function() {
-          modal.close();
-        }, 3000);
-      }, function() {
-        $scope.clipState.url = '';
-        $scope.clipState.clipping = false;
-        $scope.clipState.statusCode = 0; // Error code
-        $timeout(function() {
-          modal.close();
-        }, 3000);
-      });
-    });
-  };
-
-  this.clip = function(url, opt_successCallback, opt_errorCallback) {
-    $scope.refreshState.paused = true;
-    var postUrl = '/clip_ajax/' + $tripPlanSettings['trip_plan_id_str'];
-    $http.post(postUrl, {url: url})
-      .success(function(response) {
-        $scope.refreshState.paused = false;
-        me.refresh()
-        if (opt_successCallback) {
-          opt_successCallback(response);
-        }
-      })
-      .error(opt_errorCallback);
-  };
-
   this.refresh = function(opt_force) {
-    if ($scope.refreshState.paused) {
+    if ($scope.refreshState.paused || !$allowEditing) {
       return;
     }
-    // TODO: Don't refresh if the user is currently editing.
-    $http.get('/trip_plan_ajax/' + $tripPlanSettings['trip_plan_id_str'])
+    $entityService.getByTripPlanId($tripPlan['trip_plan_id'])
       .success(function(response) {
         if ($scope.refreshState.paused) {
           return;
         }
-        var newModel = new TripPlanModel(response['trip_plan']);
-        if (opt_force || !$scope.planModel || !$scope.planModel.fastEquals(newModel)) {
+        // TODO: Make this just request new entities since the last_modified timestamp.
+        var planModel = $scope.planModel;
+        var newEntities = response['entities'];
+        if (opt_force || !$scope.planModel || !$scope.planModel.fastCompareEntities(newEntities)) {
           $scope.$broadcast('clearallmarkers');
           // Angular's dirty-checking does not seem to pick up that the
           // model has changed if we just assign to the new model...
@@ -450,7 +395,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan,
           $scope.planModel = null;
           $scope.orderedCategories = null;
           $timeout(function() {
-            $scope.planModel = newModel;
+            planModel.entityDatas = newEntities;
+            $scope.planModel = planModel;
             $scope.orderedCategories = $datatypeValues['categories'];
           });
         }
@@ -466,17 +412,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlan,
   }
   $timeout(refreshPoll, refreshInterval);
 }
-
-
-function ClippedPagesCtrl($scope) {
-  $scope.clippingActive = false;
-
-  $scope.openPageForClipping = function(url) {
-    $scope.clippingPageUrl = url;
-    $scope.clippingActive = true;
-  };
-}
-
 
 function NavigationCtrl($scope, $location, $anchorScroll) {
   $scope.navigate = function(categoryName) {
@@ -500,12 +435,12 @@ function createMap() {
   return new google.maps.Map($('#map')[0], mapOptions);
 }
 
-function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettings, $allTripPlansSettings) {
+function AccountDropdownCtrl($scope, $http, $tripPlanService, $accountInfo, $tripPlan, $allTripPlans) {
   $scope.accountInfo = $accountInfo;
   $scope.accountInfo.loggedIn = !!$accountInfo['email'];
   $scope.showLoginForm = !$scope.accountInfo.loggedIn;
-  $scope.currentTripPlanSettings = $currentTripPlanSettings;
-  $scope.allTripPlansSettings = $allTripPlansSettings;
+  $scope.currentTripPlan = $tripPlan;
+  $scope.allTripPlans = $allTripPlans;
 
   $scope.doLogin = function() {
     if ($scope.accountInfo['email']) {
@@ -526,8 +461,8 @@ function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettin
     }
   };
 
-  $scope.loadTripPlan = function(tripPlanIdStr) {
-    location.href = '/trip_plan/' + tripPlanIdStr;
+  $scope.loadTripPlan = function(tripPlanId) {
+    location.href = '/trip_plan/' + tripPlanId;
   };
 
   $scope.createNewTripPlan = function() {
@@ -535,10 +470,10 @@ function AccountDropdownCtrl($scope, $http, $accountInfo, $currentTripPlanSettin
       alert('Please log in before creating additional trip plans');
       return;
     }
-    $http.post('/new_trip_plan_ajax', {})
+    $tripPlanService.saveNewTripPlan({'name': 'My Next Trip'})
       .success(function(response) {
-        var newTripPlanIdStr = response['new_trip_plan_id_str'];
-        $scope.loadTripPlan(newTripPlanIdStr)
+        var newTripPlanId = response['trip_plans'][0]['trip_plan_id'];
+        $scope.loadTripPlan(newTripPlanId)
       });
   };
 }
@@ -565,10 +500,6 @@ function CarouselCtrl($scope) {
     currentIndex -= 1;
     $scope.currentImgUrl = urls[currentIndex];
   };
-}
-
-function GuideViewCtrl($scope) {
-
 }
 
 function GuideViewCategoryCtrl($scope) {
@@ -717,7 +648,7 @@ function AddPlaceCtrl($scope, $entityService, $timeout, $modal) {
 }
 
 function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
-    $dataRefreshManager, $tripPlanSettings, $datatypeValues) {
+    $dataRefreshManager, $tripPlan, $datatypeValues) {
   var me = this;
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
@@ -790,7 +721,7 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
   };
 
   $scope.saveNewEntity = function() {
-    $entityService.saveNewEntity($scope.entityModel.data, $tripPlanSettings['trip_plan_id_str'])
+    $entityService.saveNewEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
       .success(me.handleSaveResponse)
       .error(function() {
         alert('Failed to save entity'); 
@@ -798,7 +729,7 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
   };
 
   $scope.saveChangesToExistingEntity = function() {
-    $entityService.editEntity($scope.entityModel.data, $tripPlanSettings['trip_plan_id_str'])
+    $entityService.editEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
       .success(me.handleSaveResponse)
       .error(function() {
         alert('Failed to save entity');
@@ -1333,12 +1264,12 @@ angular.module('filtersModule', [])
     }
   });
 
-window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
+window['initApp'] = function(tripPlan, entities, allTripPlans,
     accountInfo, datatypeValues, allowEditing) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanSettings', tripPlanSettings)
-    .value('$allTripPlansSettings', allTripPlansSettings)
+    .value('$entities', entities)
+    .value('$allTripPlans', allTripPlans)
     .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing);
@@ -1351,23 +1282,21 @@ window['initApp'] = function(tripPlan, tripPlanSettings, allTripPlansSettings,
       'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlan', '$tripPlanSettings', 
+      '$tripPlanService', '$tripPlan', '$entityService', '$entities',
       '$datatypeValues', '$allowEditing', RootCtrl])
-    .controller('AccountDropdownCtrl', ['$scope', '$http', '$accountInfo',
-      '$tripPlanSettings', '$allTripPlansSettings', AccountDropdownCtrl])
+    .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
+      '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
-      '$templateToStringRenderer', '$tripPlanSettings', '$allowEditing', CategoryCtrl])
+      '$templateToStringRenderer', '$tripPlan', '$allowEditing', CategoryCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$tripPlanSettings', EntityCtrl])
-    .controller('ClippedPagesCtrl', ['$scope', ClippedPagesCtrl])
+      '$dataRefreshManager', '$tripPlan', EntityCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
-    .controller('GuideViewCtrl', ['$scope', GuideViewCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
     .controller('AddPlaceCtrl', ['$scope', '$entityService', '$timeout', '$modal', AddPlaceCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
-      '$dataRefreshManager', '$tripPlanSettings', '$datatypeValues', AddPlaceConfirmationCtrl])
+      '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager);
@@ -1418,8 +1347,8 @@ ClipperStateModel.NO_AUTO_PLACE_FOUND = 4;
 ClipperStateModel.CLIP_ERROR = 5;
 ClipperStateModel.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE = 6;
 
-function ClipperRootCtrl($scope, $http, $timeout, $entityService,
-    $needsPageSource, $entity, $allTripPlansSettings, $datatypeValues) {
+function ClipperRootCtrl($scope, $http, $timeout, $entityService, $tripPlanService,
+    $needsPageSource, $entity, $allTripPlans, $datatypeValues) {
   var me = this;
 
   this.prepareEntityState = function(entityData) {
@@ -1453,10 +1382,10 @@ function ClipperRootCtrl($scope, $http, $timeout, $entityService,
   }
 
   $scope.showCreateTripPlanForm = false;
-  $scope.tripPlanSelectOptions = angular.copy($allTripPlansSettings);
+  $scope.tripPlanSelectOptions = angular.copy($allTripPlans);
   $scope.tripPlanSelectOptions.push({
     'name': 'Create a new trip',
-    'trip_plan_id_str': '0',
+    'trip_plan_id': 0,
     createNew: true
   });
   $scope.selectedTripPlanState = {
@@ -1486,26 +1415,26 @@ function ClipperRootCtrl($scope, $http, $timeout, $entityService,
     if (!$scope.selectedTripPlanState.newTripPlanName) {
       return;
     }
-    var request = {'name': $scope.selectedTripPlanState.newTripPlanName};
-    $http.post('/createtripplan', request)
+    var newTripPlan = {'name': $scope.selectedTripPlanState.newTripPlanName};
+    $tripPlanService.saveNewTripPlan(newTripPlan)
       .success(function(response) {
-        if (response['status'] == 'Success') {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.showCreateTripPlanForm = false;
           $scope.selectedTripPlanState.newTripPlanName = '';
-          var newTripPlanSettings = response['trip_plan']
-          $scope.tripPlanSelectOptions.splice(0, 0, newTripPlanSettings);
-          $scope.selectedTripPlanState.tripPlan = newTripPlanSettings;
+          var newTripPlan = response['trip_plans'][0];
+          $scope.tripPlanSelectOptions.splice(0, 0, newTripPlan);
+          $scope.selectedTripPlanState.tripPlan = newTripPlan;
         }
       });
   };
 
   $scope.saveable = function() {
-    var tripPlanId = $scope.selectedTripPlanState.tripPlan['trip_plan_id_str'];
-    return tripPlanId && tripPlanId != '0' && $scope.ed['name'];
+    var tripPlanId = $scope.selectedTripPlanState.tripPlan['trip_plan_id'];
+    return tripPlanId && tripPlanId != 0 && $scope.ed['name'];
   };
 
   $scope.saveEntity = function() {
-    $entityService.saveNewEntity($scope.ed, $scope.selectedTripPlanState.tripPlan['trip_plan_id_str'])
+    $entityService.saveNewEntity($scope.ed, $scope.selectedTripPlanState.tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.clipperState.status = ClipperStateModel.SUCCESS_CONFIRMATION;
@@ -1624,18 +1553,18 @@ function ClipperEditorCtrl($scope, $timeout) {
 }
 
 window['initClipper'] = function(entity, needsPageSource,
-    allTripPlansSettings, datatypeValues) {
+    allTripPlans, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$entity', entity)
     .value('$needsPageSource', needsPageSource)
-    .value('$allTripPlansSettings', allTripPlansSettings)
+    .value('$allTripPlans', allTripPlans)
     .value('$datatypeValues', datatypeValues);
 
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entityService',
-      '$needsPageSource', '$entity', '$allTripPlansSettings', '$datatypeValues', ClipperRootCtrl])
+    .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entityService', '$tripPlanService',
+      '$needsPageSource', '$entity', '$allTripPlans', '$datatypeValues', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
     .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])

@@ -10,24 +10,30 @@ var Operator = {
   DELETE: 'DELETE'
 };
 
+
 function EntityService($http) {
-  this.saveNewEntity = function(entity, tripPlanIdStr) {
+  this.getByTripPlanId = function(tripPlanId) {
+    var request = {'trip_plan_id': tripPlanId};
+    return $http.post('/entityservice/get', request);
+  };
+
+  this.saveNewEntity = function(entity, tripPlanId) {
     var request = {
-      'operations': [this.operationFromEntity(entity, tripPlanIdStr, Operator.ADD)]
+      'operations': [this.operationFromEntity(entity, tripPlanId, Operator.ADD)]
     };
     return this.mutate(request);
   };
 
-  this.editEntity = function(entity, tripPlanIdStr) {
+  this.editEntity = function(entity, tripPlanId) {
     var request = {
-      'operations': [this.operationFromEntity(entity, tripPlanIdStr, Operator.EDIT)]
+      'operations': [this.operationFromEntity(entity, tripPlanId, Operator.EDIT)]
     };
     return this.mutate(request);
   };
 
-  this.deleteEntity = function(entity, tripPlanIdStr) {
+  this.deleteEntity = function(entity, tripPlanId) {
     var request = {
-      'operations': [this.operationFromEntity(entity, tripPlanIdStr, Operator.DELETE)]
+      'operations': [this.operationFromEntity(entity, tripPlanId, Operator.DELETE)]
     };
     return this.mutate(request);
   };
@@ -36,10 +42,10 @@ function EntityService($http) {
     return $http.post('/entityservice/mutate', request);
   };
 
-  this.operationFromEntity = function(entity, tripPlanIdStr, operator) {
+  this.operationFromEntity = function(entity, tripPlanId, operator) {
     return {
       'operator': operator,
-      'trip_plan_id_str': tripPlanIdStr,
+      'trip_plan_id': tripPlanId,
       'entity': entity
     };
   }
@@ -63,5 +69,47 @@ function EntityService($http) {
   };
 }
 
+
+function TripPlanService($http) {
+  this.getById = function(tripPlanId) {
+    var request = {'trip_plan_ids': [tripPlanId]};
+    return $http.post('/tripplanservice/get', request);
+  };
+
+  this.saveNewTripPlan = function(tripPlan) {
+    var request = {
+      'operations': [this.operationFromTripPlan(tripPlan, Operator.ADD)]
+    };
+    return this.mutate(request);
+  };
+
+  this.editTripPlan = function(tripPlan) {
+    var request = {
+      'operations': [this.operationFromTripPlan(tripPlan, Operator.EDIT)]
+    };
+    return this.mutate(request);
+  };
+
+  this.deleteTripPlan = function(tripPlan) {
+    var request = {
+      'operations': [this.operationFromTripPlan(tripPlan, Operator.DELETE)]
+    };
+    return this.mutate(request);
+  };
+
+  this.mutate = function(request) {
+    return $http.post('/tripplanservice/mutate', request);
+  };
+
+  this.operationFromTripPlan = function(tripPlan, operator) {
+    return {
+      'operator': operator,
+      'trip_plan': tripPlan
+    };
+  };
+}
+
+
 angular.module('servicesModule', [])
-  .service('$entityService', ['$http', EntityService]);
+  .service('$entityService', ['$http', EntityService])
+  .service('$tripPlanService', ['$http', TripPlanService]);

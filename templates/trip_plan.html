@@ -33,9 +33,10 @@
           <li id="trip-plan-title">
             <a href="javascript:void(0)" id="edit-title-link" ng-click="allowEditing && editTripPlanSettings()" ng-show="!editingTripPlanSettings" 
             {% if allow_editing %}
-              tooltip="Edit Trip Title" tooltip-placement="bottom">
+              tooltip="Edit Trip Title" tooltip-placement="bottom"
             {% endif %}
-              <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
+            >
+              <span ng-show="!editingTripPlanSettings">[[planModel.tripPlanData['name'] ]]</span>
             </a>
             <form class="form-inline" role="form" ng-submit="saveTripPlanSettings()" ng-show="editingTripPlanSettings">
               <input class="form-control" type="text"
@@ -180,22 +181,6 @@
           </div>
         </div>
       </div>
-      <div ng-if="planModel.hasClippedPages()" ng-controller="ClippedPagesCtrl" class="clipped-pages-section">
-        <h3 class="clipped-pages-header">Clipped Pages</h3>
-        <div class="clipped-pages">
-          <div>
-            We didn't recognize these clips. We're adding support to these pages soon.
-          </div>
-          <div ng-repeat="clippedPage in planModel.data['clipped_pages']">
-            <a href="javascript:void(0)"
-              ng-click="openPageForClipping(clippedPage['source_url'])">
-              [[clippedPage['title'] ]]
-            </a>
-          </div>
-          <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
-          </iframe>
-        </div>
-      </div>
       <div ng-if="planModel.isEmpty()">
         <div class="getting-started-directions">
           <div class="welcome">
@@ -247,7 +232,7 @@
 
   </div>  {# end map view #}
 
-  <div ng-if="pageStateModel.inGuideView()" ng-controller="GuideViewCtrl">
+  <div ng-if="pageStateModel.inGuideView()">
 
     <div class="guideview-container">
       <div ng-repeat="category in orderedCategories">
@@ -339,20 +324,20 @@
         </form>
       </div>
     </li>
-    <li ng-show="allTripPlansSettings">
+    <li ng-show="allTripPlans">
       <div class="my-trip-plans-heading">
         My Trip Plans
       </div>
     </li>
-    <li ng-repeat="tripPlanSettings in allTripPlansSettings">
-      <span ng-if="tripPlanSettings['trip_plan_id_str'] == currentTripPlanSettings['trip_plan_id_str']">
-        {# Use the name from the shared settings container so it will auto update 
+    <li ng-repeat="tripPlan in allTripPlans">
+      <span ng-if="tripPlan['trip_plan_id'] == currentTripPlan['trip_plan_id']">
+        {# Use the name from the shared info container so it will auto update 
            if the user edits it inline. #}
-        [[currentTripPlanSettings['name'] ]]
+        [[currentTripPlan['name'] ]]
       </span>
-      <span ng-if="tripPlanSettings['trip_plan_id_str'] != currentTripPlanSettings['trip_plan_id_str']">
-          <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlanSettings['trip_plan_id_str'])">
-            [[tripPlanSettings['name'] ]]
+      <span ng-if="tripPlan['trip_plan_id'] != currentTripPlan['trip_plan_id']">
+          <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlan['trip_plan_id'])">
+            [[tripPlan['name'] ]]
           </a>
         </span>
     </li>
@@ -565,9 +550,10 @@
   {% include 'widgets.html' %}
 
   <script>
-    initApp({{plan.to_json_str()|safe}},
-      {{plan.settings_json()|safe}},
-      {{all_trip_plans_settings_json|safe}},
+    initApp(
+      {{plan.to_json_str()|safe}},
+      {{entities_json|safe}},
+      {{all_trip_plans_json|safe}},
       {{account_info.to_json_str()|safe}},
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}});
