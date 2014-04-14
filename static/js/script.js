@@ -200,7 +200,9 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   $scope.saveEntityEdit = function() {
     $entityService.editEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
       .success(function(response) {
-        if (response['response_code'] != ResponseCode.SUCCESS) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlan['last_modified'] = response['last_modified'];
+        } else {
           alert('Failed to save edits');
         }
       }).error(function() {

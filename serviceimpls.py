@@ -89,11 +89,12 @@ class EntityMutateRequest(service.ServiceRequest):
 class EntityMutateResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
         service.ServiceResponse.PUBLIC_FIELDS,
-        serializable.fields(serializable.objlistf('entities', data.Entity)))
+        serializable.fields(serializable.objlistf('entities', data.Entity), 'last_modified'))
 
-    def __init__(self, entities=(), **kwargs):
+    def __init__(self, entities=(), last_modified=None, **kwargs):
         super(EntityMutateResponse, self).__init__(**kwargs)
         self.entities = entities
+        self.last_modified = last_modified
 
 class GooglePlaceToEntityRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('reference')
@@ -169,7 +170,7 @@ class EntityService(service.Service):
         entities = [op.result for op in operations]
         return EntityMutateResponse(
             response_code=service.ResponseCode.SUCCESS.name,
-            entities=entities)
+            entities=entities, last_modified=trip_plans[0].last_modified)
 
     def validate_operation_fields(self, operations):
         for op in operations:
