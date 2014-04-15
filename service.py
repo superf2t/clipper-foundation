@@ -9,6 +9,10 @@ class ServiceError(serializable.Serializable):
         self.message = message
         self.field_path = field_path
 
+    def __str__(self):
+        return '%s: error_code: %s, message: %s, field_path: %s' % (
+            type(self).__name__, self.error_code, self.message, self.field_path)
+
     @classmethod
     def from_enum(cls, error_enum, field_path=None):
         return cls(error_enum.name, getattr(error_enum, 'message'), field_path)
@@ -17,6 +21,10 @@ class ServiceException(Exception):
     def __init__(self, response_code=None, errors=()):
         self.response_code = response_code
         self.errors = errors
+
+    def __str__(self):
+        return '%s, errors: %s' % (self.response_code,
+            ', '.join(str(e) for e in self.errors))
 
     @classmethod
     def server_error(cls, errors=()):

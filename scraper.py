@@ -765,8 +765,8 @@ def tostring_with_breaks(element):
         elem = etree.fromstring(modified_html)
     return etree.tostring(elem, encoding='unicode', method='text').strip(string.punctuation).strip()
 
-def tostring(element, normalize_whitespace=False):
-    s = etree.tostring(element, encoding='unicode', method='text').strip()
+def tostring(element, normalize_whitespace=False, with_tail=True):
+    s = etree.tostring(element, encoding='unicode', method='text', with_tail=with_tail).strip()
     if normalize_whitespace:
         s = s.replace(u'\xc2', ' ').replace(u'\xa0', ' ')
         return re.sub('\s+', ' ', s)
