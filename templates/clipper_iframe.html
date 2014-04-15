@@ -22,22 +22,11 @@
     </nav>
     <div class="clipper-trip-plan-selector">
       Clip to
-      <select class="form-control" ng-model="selectedTripPlanState.tripPlan"
-        ng-options="tp['name'] for tp in tripPlanSelectOptions">
-      </select>
+      <div tc-trip-plan-select-dropdown
+        select-trip-plan-to="selectedTripPlanState.tripPlan">
+      </div> 
     </div>
-    <div ng-show="showCreateTripPlanForm">
-      <form ng-submit="saveNewTripPlan()">
-        <input type="text" class="form-control"
-          ng-model="selectedTripPlanState.newTripPlanName"
-          placeholder="Enter a trip plan name"
-          tc-focus-on="showCreateTripPlanForm"/>
-        <button class="btn btn-info" ng-disabled="!selectedTripPlanState.newTripPlanName">
-          Create new trip plan
-        </button>
-      </form>
-    </div>
-    <div class="clipper-save-controls" ng-show="!showCreateTripPlanForm">
+    <div class="clipper-save-controls" ng-show="showSaveControls()">
       <button class="btn btn-primary" ng-disabled="!saveable()" ng-click="saveEntity()">Save</button>
       <button class="btn" ng-click="dismissClipper()">Cancel</button>
     </div>

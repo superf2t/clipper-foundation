@@ -1438,9 +1438,13 @@ ClipperStateModel.NO_AUTO_PLACE_FOUND = 4;
 ClipperStateModel.CLIP_ERROR = 5;
 ClipperStateModel.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE = 6;
 
-function ClipperRootCtrl($scope, $http, $timeout, $entityService, $tripPlanService,
+function ClipperRootCtrl($scope, $http, $timeout, $entityService,
     $needsPageSource, $entity, $allTripPlans, $datatypeValues) {
   var me = this;
+
+  $scope.selectedTripPlanState = {
+    tripPlan: null
+  };
 
   this.prepareEntityState = function(entityData) {
     var foundEntity = false;
@@ -1472,25 +1476,6 @@ function ClipperRootCtrl($scope, $http, $timeout, $entityService, $tripPlanServi
     this.prepareEntityState($entity); 
   }
 
-  $scope.showCreateTripPlanForm = false;
-  $scope.tripPlanSelectOptions = angular.copy($allTripPlans);
-  $scope.tripPlanSelectOptions.push({
-    'name': 'Create a new trip',
-    'trip_plan_id': 0,
-    createNew: true
-  });
-  $scope.selectedTripPlanState = {
-    tripPlan: $scope.tripPlanSelectOptions[0],
-    newTripPlanName: ''
-  };
-  $scope.$watch('selectedTripPlanState.tripPlan', function(newValue) {
-    if (newValue.createNew) {
-      $scope.showCreateTripPlanForm = true;
-    } else {
-      $scope.showCreateTripPlanForm = false;
-    }
-  });
-
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
 
@@ -1502,25 +1487,14 @@ function ClipperRootCtrl($scope, $http, $timeout, $entityService, $tripPlanServi
     });
   });
 
-  $scope.saveNewTripPlan = function() {
-    if (!$scope.selectedTripPlanState.newTripPlanName) {
-      return;
-    }
-    var newTripPlan = {'name': $scope.selectedTripPlanState.newTripPlanName};
-    $tripPlanService.saveNewTripPlan(newTripPlan)
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.showCreateTripPlanForm = false;
-          $scope.selectedTripPlanState.newTripPlanName = '';
-          var newTripPlan = response['trip_plans'][0];
-          $scope.tripPlanSelectOptions.splice(0, 0, newTripPlan);
-          $scope.selectedTripPlanState.tripPlan = newTripPlan;
-        }
-      });
+  $scope.showSaveControls = function() {
+    return !$scope.selectedTripPlanState.tripPlan
+      || $scope.selectedTripPlanState.tripPlan['trip_plan_id'] > 0;
   };
 
   $scope.saveable = function() {
-    var tripPlanId = $scope.selectedTripPlanState.tripPlan['trip_plan_id'];
+    var tripPlanId = $scope.selectedTripPlanState.tripPlan
+      && $scope.selectedTripPlanState.tripPlan['trip_plan_id'];
     return tripPlanId && tripPlanId != 0 && $scope.ed['name'];
   };
 
@@ -1654,7 +1628,7 @@ window['initClipper'] = function(entity, needsPageSource,
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entityService', '$tripPlanService',
+    .controller('ClipperRootCtrl', ['$scope', '$http', '$timeout', '$entityService',
       '$needsPageSource', '$entity', '$allTripPlans', '$datatypeValues', ClipperRootCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
