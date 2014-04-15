@@ -25,11 +25,14 @@ class EntityData(object):
         self.website = website
 
 class AutoTripPlanCreator(object):
-    def __init__(self, url, creator=None, trip_plan_name=None):
+    def __init__(self, url, creator=None, trip_plan_name=None, address_context=None,
+            use_address=False):
         self.url = url
         self.root = None
         self.creator = creator
         self.trip_plan_name = trip_plan_name
+        self.address_context = address_context
+        self.use_address = use_address
 
     def getroot(self):
         if self.root is None:
@@ -49,7 +52,10 @@ class AutoTripPlanCreator(object):
         entities = []
         address_context = self.get_address_context()
         for entity_data in entity_datas:
-            query = '%s, %s' % (entity_data.name, address_context)
+            if entity_data.address and self.use_address:
+                query = '%s, %s, %s' % (entity_data.name, entity_data.address, address_context)
+            else:
+                query = '%s, %s' % (entity_data.name, address_context)
             place_result = geocode.lookup_place(query)
             if not place_result or not place_result.get_reference():
                 print 'Could not find a place for entity data: %s' % entity_data.__dict__
@@ -76,7 +82,7 @@ class AutoTripPlanCreator(object):
         print 'Created trip plan %d with %d entities' % (trip_plan.trip_plan_id, len(entities))
 
     def get_address_context(self):
-        raise NotImplementedError()
+        return self.address_context
 
     def run():
         raise NotImplementedError()
@@ -141,5 +147,9 @@ def add_entities_to_trip_plan(trip_plan_id, creator, entities):
     return response.entities
 
 if __name__ == '__main__':
-    s = Nytimes36hours('http://www.nytimes.com/2014/04/13/travel/36-hours-in-seville-spain.html')
+    #s = Nytimes36hours('http://www.nytimes.com/2014/04/13/travel/36-hours-in-seville-spain.html')
+    #s = Nytimes36hours('http://www.nytimes.com/2014/03/23/travel/36-hours-in-mexico-city.html')
+    #s = Nytimes36hours('http://www.nytimes.com/2014/01/19/travel/36-hours-in-sydney.html')
+    s = Nytimes36hours('http://www.nytimes.com/2014/02/23/travel/36-hours-in-upper-manhattan.html',
+            address_context='New York, NY')
     s.run()
