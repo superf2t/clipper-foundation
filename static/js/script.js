@@ -211,6 +211,17 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
     $scope.editing = false;
   };
 
+  $scope.reclipEntity = function() {
+    var scope = $scope.$new(true);
+    scope.entityModel = new EntityModel(angular.copy($scope.entityModel.data));
+    scope.ed = scope.entityModel.data;
+    scope.ed['entity_id'] = null;
+    $modal.open({
+      templateUrl: 'reclip-confirmation-template',
+      scope: scope
+    });
+  };
+
   $scope.deleteEntity = function() {
     $entityService.deleteEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
       .success(function(response) {
@@ -222,6 +233,68 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
       }).error(function() {
         alert('Failed to delete entity')
       });
+  };
+}
+
+function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
+  $scope.tripPlanSelectOptions = $allTripPlans.slice(0);
+  $scope.tripPlanSelectOptions.push({
+    'name': 'Create a new trip',
+    'trip_plan_id': 0,
+    createNew: true
+  });
+  if (!$scope.selectedTripPlan) {
+    $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
+  }
+  $scope.newTripPlanName = ''
+  $scope.showCreateTripPlanForm = false;
+  $scope.$watch('selectedTripPlan', function(newValue) {
+    if (newValue.createNew) {
+      $scope.showCreateTripPlanForm = true;
+    } else {
+      $scope.showCreateTripPlanForm = false;
+    }
+  });
+
+  $scope.saveNewTripPlan = function() {
+    if (!$scope.newTripPlanName) {
+      return;
+    }
+    var newTripPlan = {'name': $scope.newTripPlanName};
+    $tripPlanService.saveNewTripPlan(newTripPlan)
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $scope.showCreateTripPlanForm = false;
+          $scope.newTripPlanName = '';
+          var newTripPlan = response['trip_plans'][0];
+          $scope.tripPlanSelectOptions.splice(0, 0, newTripPlan);
+          $scope.selectedTripPlan = newTripPlan;
+        }
+      });
+  };
+}
+
+function ReclipConfirmationCtrl($scope, $timeout, $entityService) {
+  $scope.selectionState = {
+    selectedTripPlan: null
+  };
+
+  $scope.reclipEntity = function() {
+    var tripPlanId = $scope.selectionState.selectedTripPlan['trip_plan_id'];
+    $entityService.saveNewEntity($scope.entityModel.data, tripPlanId)
+      .success(function(response) {
+        $scope.reclipSucceeded = true;
+        $timeout($scope.$close, 3000);
+      });
+  };
+
+  $scope.dismissReclipConfirmation = function() {
+    $scope.$close();
+  };
+
+  $scope.showSaveButtons = function() {
+    return !$scope.selectionState.selectedTripPlan
+      || $scope.selectionState.selectedTripPlan['trip_plan_id'] > 0;
   };
 }
 
@@ -877,6 +950,17 @@ function tcFocusOn() {
   };
 }
 
+function tcTripPlanSelectDropdown() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'trip-plan-select-dropdown-template',
+    controller: TripPlanSelectDropdownCtrl,
+    scope: {
+      selectedTripPlan: '=selectTripPlanTo'
+    }
+  };
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -1260,7 +1344,8 @@ angular.module('directivesModule', [])
   .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
   .directive('tcDrop', tcDrop)
   .directive('tcDragEnter', tcDragEnter)
-  .directive('tcFocusOn', tcFocusOn);
+  .directive('tcFocusOn', tcFocusOn)
+  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])
   .filter('hostname', function() {
@@ -1295,6 +1380,7 @@ window['initApp'] = function(tripPlan, entities, allTripPlans,
       '$templateToStringRenderer', '$tripPlan', '$allowEditing', CategoryCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$tripPlan', EntityCtrl])
+    .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])

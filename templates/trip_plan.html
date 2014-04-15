@@ -189,7 +189,7 @@
                         </li>
                         {% endif %}
                         <li>
-                          <a ng-click="todo" href="javascript:void(0)">
+                          <a ng-click="reclipEntity()" href="javascript:void(0)">
                             <span class="glyphicon glyphicon-paperclip"></span> Clip this place
                           </a>
                         </li>
@@ -390,6 +390,39 @@
       </div>
       <div ng-if="!entity.isPreciseLocation()" class="text-warning infowindow-warning-text">
         Location approximate
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="reclip-confirmation-template">
+    <div ng-controller="ReclipConfirmationCtrl" class="reclip-confirmation-modal">
+      <div ng-show="!reclipSucceeded">
+        <div>Reclip <b>[[ed['name'] ]]</b> to:</div>
+        <div tc-trip-plan-select-dropdown select-trip-plan-to="selectionState.selectedTripPlan" class="reclip-confirmation-trip-plan-dropdown"></div>
+        <div ng-show="showSaveButtons()">
+          <button class="btn btn-primary" ng-click="reclipEntity()">
+            Save
+          </button>
+          <button class="btn" ng-click="dismissReclipConfirmation()">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <div ng-show="reclipSucceeded">
+        <div class="clip-success-checkmark">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
+          <g>
+            <g>
+              <polygon points="94.587,27.48 31.657,86.15 31.217,85.68 18.847,72.41 0.566,52.81 14.106,40.19 32.387,59.79 81.776,13.74"/>
+            </g>
+          </g>
+          </svg>
+        </div>
+        Successfully clipped <b>[[ed['name'] ]]</b> to
+        <a href="/trip_plan/[[selectionState.selectedTripPlan['trip_plan_id'] ]]" target="_blank">
+          [[selectionState.selectedTripPlan['name'] ]]
+        </a>
       </div>
     </div>
   </script>

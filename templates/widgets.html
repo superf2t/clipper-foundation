@@ -17,3 +17,25 @@
     </span>
   </div>
 </script>
+
+<script type="text/ng-template" id="trip-plan-select-dropdown-template">
+  <div>
+    <select class="form-control" ng-model="selectedTripPlan"
+      ng-options="tp['name'] for tp in tripPlanSelectOptions">
+    </select>
+    <div ng-show="showCreateTripPlanForm"
+      class="trip-plan-select-dropdown-new-trip-plan-form">
+      <form ng-submit="saveNewTripPlan()">
+        <input type="text" class="form-control"
+          ng-model="newTripPlanName"
+          placeholder="Enter a trip plan name"
+          tc-focus-on="showCreateTripPlanForm"/>
+        <div class="trip-plan-select-dropdown-controls">
+          <button class="btn btn-info" ng-disabled="!newTripPlanName">
+            Create new trip plan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</script>

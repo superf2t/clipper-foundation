@@ -623,6 +623,23 @@ a:hover {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.reclip-confirmation-modal {
+  height: 150px; 
+  margin: 20px;
+}
+
+.reclip-confirmation-trip-plan-dropdown {
+  margin: 20px 0;
+}
+
+.trip-plan-select-dropdown-new-trip-plan-form {
+  margin-top: 10px;
+}
+
+.trip-plan-select-dropdown-controls {
+  margin-top: 10px;
+}
+
 /* Clipper */
 
 .clipper-body {
