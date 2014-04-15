@@ -12,13 +12,13 @@ from flask import request
 import clip_logic
 import constants
 import data
-import google_places
 import serializable
+import serviceimpls
 import values
 
 class MyFlask(Flask):
     def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'css/style.css'):
+        if name in ('js/script.js', 'js/services.js', 'css/style.css'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 
@@ -52,174 +52,54 @@ def clipper_iframe():
     entity = None
     if not needs_page_source:
         entity = clip_logic.scrape_entity_from_url(url)
-    all_trip_plans = data.load_all_trip_plans(session_info)
+    trip_plan_service = serviceimpls.TripPlanService(session_info)
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     if not all_trip_plans:
         # User is so new she doesn't even have an empty trip plan
-        create_and_save_default_trip_plan(session_info)
-        all_trip_plans = data.load_all_trip_plans(session_info)
+        trip_plan = create_and_save_default_trip_plan(session_info)
+        all_trip_plans = [trip_plan]
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
-    all_trip_plans_settings = [tp.as_settings() for tp in sorted_trip_plans]
     return render_template('clipper_iframe.html',
         entity=entity,
         needs_page_source=needs_page_source,
-        all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
+        all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)
-
-@app.route('/trip_plan/<int:trip_plan_id>')
-def trip_plan_by_id(trip_plan_id):
-    session_info = decode_session(request.cookies)
-    return trip_plan_with_session_info(session_info, trip_plan_id)
 
 @app.route('/trip_plan')
 def trip_plan():
     session_info = decode_session(request.cookies)
-    trip_plan = data.load_trip_plan_by_id(session_info.active_trip_plan_id)
-    if not trip_plan:
+    all_trip_plans = data.load_all_trip_plans(session_info)
+    if all_trip_plans:
+        trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
+    else:
         trip_plan = create_and_save_default_trip_plan(session_info)
-    response = redirect('/trip_plan/%s' % session_info.active_trip_plan_id)
+    response = redirect('/trip_plan/%s' % trip_plan.trip_plan_id)
     return process_response(response, request, session_info)
 
-def trip_plan_with_session_info(session_info, trip_plan_id=None):
-    if trip_plan_id:
-        trip_plan = data.load_trip_plan_by_id(trip_plan_id)
-    else:
-        trip_plan = data.load_trip_plan(session_info)
-    trip_plan_json = json.dumps(trip_plan.to_json_obj()) if trip_plan else None
-    all_trip_plans = data.load_all_trip_plans(session_info)
-    active_trip_plan = None
-    for plan in all_trip_plans:
-        if plan.trip_plan_id == session_info.active_trip_plan_id:
-            active_trip_plan = plan
-            break
-    all_trip_plans_settings = [tp.as_settings() for tp in all_trip_plans]
-    account_info = data.AccountInfo(session_info.email,
-        active_trip_plan_id=active_trip_plan.trip_plan_id if active_trip_plan else None,
-        active_trip_plan_name=active_trip_plan.name if active_trip_plan else None)
-    response = render_template('trip_plan.html', plan=trip_plan, plan_json=trip_plan_json,
-        all_trip_plans_settings_json=serializable.to_json_str(all_trip_plans_settings),
-        session_info=session_info,
-        allow_editing=trip_plan and trip_plan.editable_by(session_info),
+@app.route('/trip_plan/<int:trip_plan_id>')
+def trip_plan_by_id(trip_plan_id):
+    # Temporary hack to allow old trip plan ids to redirect to new ones.
+    if trip_plan_id > 2**53:
+        return redirect('/trip_plan/%s' % str(trip_plan_id)[:15])
+
+    session_info = decode_session(request.cookies)
+    trip_plan_service = serviceimpls.TripPlanService(session_info)
+    entity_service = serviceimpls.EntityService(session_info)
+    account_info = data.AccountInfo(session_info.email)
+
+    current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+    entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
+    sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    response = render_template('trip_plan.html',
+        plan=current_trip_plan,
+        entities_json=serializable.to_json_str(entities),
+        all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
+        allow_editing=current_trip_plan and current_trip_plan.editable_by(session_info),
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
-        all_datatype_values=values.ALL_VALUES,
-        admin_mode=request.values.get('admin'))
+        all_datatype_values=values.ALL_VALUES)
     return process_response(response, request, session_info)
-
-@app.route('/trip_plan_ajax/<int:trip_plan_id>')
-def trip_plan_ajax(trip_plan_id):
-    session_info = decode_session(request.cookies)
-    trip_plan = data.load_trip_plan_by_id(trip_plan_id)
-    return json.jsonify(trip_plan=trip_plan and trip_plan.to_json_obj())
-
-# TODO: Remove this in favor of /createtripplan
-@app.route('/new_trip_plan_ajax', methods=['POST'])
-def new_trip_plan_ajax():
-    session_info = decode_session(request.cookies)
-    if not session_info.email:
-        raise Exception('User is not logged in')
-    new_trip_plan_id = data.generate_trip_plan_id()
-    session_info.active_trip_plan_id = new_trip_plan_id
-    session_info.set_on_response = True
-    trip_plan = create_and_save_default_trip_plan(session_info)
-    response = json.jsonify(new_trip_plan_id_str=str(session_info.active_trip_plan_id))
-    return process_response(response, request, session_info)
-
-@app.route('/createtripplan', methods=['POST'])
-def createtripplan():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    try:
-        create_request = data.CreateTripPlanRequest.from_json_obj(request.json)
-    except:
-        raise Exception('Could not parse a CreateTripPlanRequest from the input')  
-    trip_plan_id = data.generate_trip_plan_id()
-    trip_plan = data.TripPlan(trip_plan_id, create_request.name, creator=session_info.user_identifier)
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success', trip_plan=trip_plan.as_settings().to_json_obj())
-
-@app.route('/editentity', methods=['POST'])
-def editentity():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    try:
-        edit_request = data.EditEntityRequest.from_json_obj(request.json)
-    except:
-        raise Exception('Could not parse an EditEntityEntity from the input')
-    trip_plan = data.load_trip_plan_by_id(edit_request.trip_plan_id)
-    if not trip_plan:
-        raise Exception('No trip plan found for the given id')
-    if not trip_plan.editable_by(session_info):
-        raise Exception('Trip plan not editable by current user')
-    for i, entity in enumerate(trip_plan.entities):
-        if entity.source_url == edit_request.entity.source_url:
-            trip_plan.entities[i] = edit_request.entity
-            break
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
-
-@app.route('/createentity', methods=['POST'])
-def createentity():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    try:
-        create_request = data.CreateEntityRequest.from_json_obj(request.json)
-    except:
-        raise Exception('Could not parse a CreateEntityRequest from the input')
-    if not create_request.entity:
-        raise Exception('No entity was populated in the CreateEntityRequest')
-    trip_plan = data.load_trip_plan_by_id(create_request.trip_plan_id)
-    if not trip_plan:
-        raise Exception('No trip plan found for the given id')
-    if not trip_plan.editable_by(session_info):
-        raise Exception('Trip plan not editable by current user')
-    trip_plan.entities.append(create_request.entity)
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
-
-@app.route('/deleteentity', methods=['POST'])
-def deleteentity():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    delete_request = data.DeleteEntityRequest.from_json_obj(request.json)
-    if not delete_request:
-        raise Exception('Could not parse a delete request from the input')
-    trip_plan = data.load_trip_plan_by_id(delete_request.trip_plan_id)
-    if not trip_plan:
-        raise Exception('No trip plan found')
-    if not trip_plan.editable_by(session_info):
-        raise Exception('Trip plan not editable by current user')
-    trip_plan.remove_entity_by_source_url(delete_request.source_url)
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
-
-@app.route('/edittripplan', methods=['POST'])
-def edittripplan():
-    session_info = decode_session(request.cookies)
-    if not session_info.user_identifier:
-        raise Exception('No sessionid found')
-    status = None
-    print request.json
-    try:
-        edit_request = data.EditTripPlanRequest.from_json_obj(request.json)
-    except Exception as e:
-        print e
-        return json.jsonify(status='Could not parse an EditTripPlanRequest from the input')
-    if not edit_request.trip_plan_id:
-        return json.jsonify(status='No valid id in the EditTripPlanRequest')
-    trip_plan = data.load_trip_plan_by_id(edit_request.trip_plan_id)
-    if not trip_plan:
-        return json.jsonify(status='No trip plan found with id %s' % edit_request.trip_plan_id)
-    if not trip_plan.editable_by(session_info):
-        return json.jsonify(status='User is not allowed to edit this trip plan')
-    if not edit_request.name:
-        return json.jsonify(status='Cannot save a trip plan without a name')
-    trip_plan.name = edit_request.name
-    data.save_trip_plan(trip_plan)
-    return json.jsonify(status='Success')
 
 @app.route('/login_and_migrate_ajax', methods=['POST'])
 def login_and_migrate_ajax():
@@ -246,30 +126,25 @@ def bookmarklet_js():
     response.headers['Content-Type'] = 'application/javascript'
     return response 
 
-@app.route('/google_place_to_entity')
-def google_place_to_entity():
-    reference = request.values['reference']
-    result = google_places.lookup_place_by_reference(reference)
-    return json.jsonify(entity=result.to_entity().to_json_obj() if result else None)
+@app.route('/entityservice/<method_name>', methods=['POST'])
+def entityservice(method_name):
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.EntityService(session_info)
+    response = service.invoke_with_json(method_name, request.json)
+    return json.jsonify(response)
 
-@app.route('/url_to_entity')
-def url_to_entity():
-    url = request.values['url']
-    entity = clip_logic.scrape_entity_from_url(url)
-    return json.jsonify(entity=entity.to_json_obj() if entity else None)
-
-@app.route('/entityfromsource', methods=['POST'])
-def entityfromsource():
-    req = data.EntityFromPageSourceRequest.from_json_obj(request.json)
-    # TODO: Move unicode encoding into the json deserializer
-    req.page_source = req.page_source.encode('utf-8')
-    entity = clip_logic.scrape_entity_from_url(req.url, req.page_source)
-    return json.jsonify(entity=entity.to_json_obj() if entity else None)
+@app.route('/tripplanservice/<method_name>', methods=['POST'])
+def tripplanservice(method_name):
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.TripPlanService(session_info)
+    response = service.invoke_with_json(method_name, request.json)
+    return json.jsonify(response)
 
 def create_and_save_default_trip_plan(session_info):
-    trip_plan = data.TripPlan(session_info.active_trip_plan_id, 'My First Trip', creator=session_info.user_identifier)
-    data.save_trip_plan(trip_plan)
-    return trip_plan
+    operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))
+    mutate_request = serviceimpls.TripPlanMutateRequest(operations=[operation])
+    response = serviceimpls.TripPlanService(session_info).mutate(mutate_request)
+    return response.trip_plans[0]
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]

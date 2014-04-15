@@ -9,6 +9,7 @@
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
   <script src="/static/js/angular-masonry.min.js"></script>
+  <script src="/static/js/services.js"></script>  
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
@@ -32,12 +33,14 @@
           <li id="trip-plan-title">
             <a href="javascript:void(0)" id="edit-title-link" ng-click="allowEditing && editTripPlanSettings()" ng-show="!editingTripPlanSettings" 
             {% if allow_editing %}
-              tooltip="Edit Trip Title" tooltip-placement="bottom">
+              tooltip="Edit Trip Title" tooltip-placement="bottom"
             {% endif %}
-              <span ng-show="!editingTripPlanSettings">[[editableTripPlanSettings['name'] ]]</span>
+            >
+              <span ng-show="!editingTripPlanSettings">[[planModel.tripPlanData['name'] ]]</span>
             </a>
             <form class="form-inline" role="form" ng-submit="saveTripPlanSettings()" ng-show="editingTripPlanSettings">
-              <input class="form-control" id="trip-plan-title-input" type="text"
+              <input class="form-control" type="text"
+                tc-focus-on="editingTripPlanSettings"
                 ng-model="editableTripPlanSettings.name"
                 ng-blur="saveTripPlanSettings()"/>
             </form>
@@ -55,6 +58,26 @@
                 ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
                   <span class="glyphicon glyphicon-picture" id="header-picture"></span>
                 </a>
+              </li>
+              <li class="view-mode-pill" tooltip="Settings" tooltip-placement="bottom">
+                <a href="javascript:void(0)" XXng-click="showTripPlanSettingsDropdown()"
+                  class="dropdown-toggle">
+                  <span class="glyphicon glyphicon-cog" id="header-gear"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-plus"></span> Clone trip plan
+                    </a>
+                  </li>
+                  {% if allow_editing %}
+                  <li>
+                    <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-trash"></span> Delete trip plan
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
               </li>
             </ul>
           </li>
@@ -89,7 +112,7 @@
           <div>
             <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
             tc-google-place-autocomplete
-            id="add-place-omnibox"
+            tc-focus-on="omniboxState.visible"
             ng-model="rawInputText"
             on-place-change="placeChanged($newPlace)"
             ng-paste="textPasted()"/>
@@ -141,55 +164,58 @@
                       Location unavailable
                     </div>
                     <div ng-show="editing">
-                      <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"></textarea>
+                      <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"
+                        tc-focus-on="editing">
+                      </textarea>
                     </div>
                     <div class="one-entity-source">
                       From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
                     </div>
-                    {% if allow_editing %}
-                      <div class="entity-edit-controls">
-                        <a href="javascript:void(0)"
-                          ng-click="openEditEntity()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-pencil"></span>
-                        </a>
-                        <a href="javascript:void(0)"
-                          ng-click="openEditPlaceModal()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-cog"></span>
-                        </a>
-                        <a href="javascript:void(0)"
-                          ng-click="deleteEntity()"
-                          ng-show="!editing">
-                          <span class="glyphicon glyphicon-trash"></span>
-                        </a>
-                        <button class="btn btn-default btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+                    <div class="entity-edit-controls">
+                      <a href="javascript:void(0)" class="dropdown-toggle" ng-show="!editing">
+                        <span class="glyphicon glyphicon-cog"></span>
+                      </a>
+                      <ul class="dropdown-menu right-bottom-dropdown-menu">
+                        {% if allow_editing %}
+                        <li>
+                          <a ng-click="openEditEntity()" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-pencil"></span> Add a comment
+                          </a>
+                        </li>
+                        <li>
+                          <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-edit"></span> Edit this place
+                          </a>
+                        </li>
+                        {% endif %}
+                        <li>
+                          <a ng-click="todo" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-paperclip"></span> Clip this place
+                          </a>
+                        </li>
+                        {% if allow_editing %}
+                        <li>
+                          <a ng-click="deleteEntity()" href="javascript:void(0)">
+                            <span class="glyphicon glyphicon-trash"></span> Delete this place
+                          </a>
+                        </li>
+                        {% endif %}
+                      </ul>
+                      {% if allow_editing %}
+                        <button class="btn btn-default btn-save-changes"
+                          ng-click="saveEntityEdit()" ng-show="editing">
+                          Save
+                        </button>
                         <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
                           Cancel
                         </a>
-                      </div>
-                    {% endif %}
+                      {% endif %}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      <div ng-if="planModel.hasClippedPages()" ng-controller="ClippedPagesCtrl" class="clipped-pages-section">
-        <h3 class="clipped-pages-header">Clipped Pages</h3>
-        <div class="clipped-pages">
-          <div>
-            We didn't recognize these clips. We're adding support to these pages soon.
-          </div>
-          <div ng-repeat="clippedPage in planModel.data['clipped_pages']">
-            <a href="javascript:void(0)"
-              ng-click="openPageForClipping(clippedPage['source_url'])">
-              [[clippedPage['title'] ]]
-            </a>
-          </div>
-          <iframe ng-src="[[clippingPageUrl]]" ng-show="clippingActive" class="clipping-iframe">
-          </iframe>
         </div>
       </div>
       <div ng-if="planModel.isEmpty()">
@@ -243,7 +269,7 @@
 
   </div>  {# end map view #}
 
-  <div ng-if="pageStateModel.inGuideView()" ng-controller="GuideViewCtrl">
+  <div ng-if="pageStateModel.inGuideView()">
 
     <div class="guideview-container">
       <div ng-repeat="category in orderedCategories">
@@ -335,20 +361,20 @@
         </form>
       </div>
     </li>
-    <li ng-show="allTripPlansSettings">
+    <li ng-show="allTripPlans">
       <div class="my-trip-plans-heading">
         My Trip Plans
       </div>
     </li>
-    <li ng-repeat="tripPlanSettings in allTripPlansSettings">
-      <span ng-if="tripPlanSettings['trip_plan_id_str'] == currentTripPlanSettings['trip_plan_id_str']">
-        {# Use the name from the shared settings container so it will auto update 
+    <li ng-repeat="tripPlan in allTripPlans">
+      <span ng-if="tripPlan['trip_plan_id'] == currentTripPlan['trip_plan_id']">
+        {# Use the name from the shared info container so it will auto update 
            if the user edits it inline. #}
-        [[currentTripPlanSettings['name'] ]]
+        [[currentTripPlan['name'] ]]
       </span>
-      <span ng-if="tripPlanSettings['trip_plan_id_str'] != currentTripPlanSettings['trip_plan_id_str']">
-          <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlanSettings['trip_plan_id_str'])">
-            [[tripPlanSettings['name'] ]]
+      <span ng-if="tripPlan['trip_plan_id'] != currentTripPlan['trip_plan_id']">
+          <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlan['trip_plan_id'])">
+            [[tripPlan['name'] ]]
           </a>
         </span>
     </li>
@@ -356,31 +382,6 @@
       <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create New Trip Plan</a>
     </li>
   </ul>
-
-  <script type="text/ng-template" id="clipping-modal-template">
-    <div class="clipping-status-modal">
-      <div ng-show="clipState.clipping">
-        Clipping to your trip plan...
-        <div>
-          <img src="/static/img/spinner.gif"/>
-        </div>
-      </div>
-      <div ng-show="!clipState.clipping">
-        <div ng-if="clipState.statusCode == 0">
-          An error occurred during clipping.  Please try again.
-        </div>
-        <div ng-if="clipState.statusCode == 1">
-          Successfully clipped "[[clipState.entity['name'] ]]""
-        </div>
-        <div ng-if="clipState.statusCode == 2">
-          We don't recognize this website so we've saved this URL for you to clip manually.
-        </div>
-        <div ng-if="clipState.statusCode == 3">
-          You've already clipped this page to your trip plan.
-        </div>
-      </div>
-    </div>
-  </script>
 
   <script type="text/ng-template" id="infowindow-template">
     <div>
@@ -527,10 +528,10 @@
               <div class="apc-map-precision-edit">
                 <label>Location precision</label>
                 <form class="form-inline" role="form">
-                  <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
-                  Exact location
-                  <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()"/>
-                  Approximate location
+                  <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="precise-radio"/>
+                  <label for="precise-radio" class="light-label">Exact location</label>
+                  <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="imprecise-radio"/>
+                  <label for="imprecise-radio" class="light-label">Approximate location</label>
                 </form>
               </div>
             </div>
@@ -561,9 +562,10 @@
   {% include 'widgets.html' %}
 
   <script>
-    initApp({{plan.to_json_str()|safe}},
-      {{plan.settings_json()|safe}},
-      {{all_trip_plans_settings_json|safe}},
+    initApp(
+      {{plan.to_json_str()|safe}},
+      {{entities_json|safe}},
+      {{all_trip_plans_json|safe}},
       {{account_info.to_json_str()|safe}},
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}});

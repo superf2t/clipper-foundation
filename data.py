@@ -6,6 +6,7 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 import constants
+import enums
 import serializable
 import struct
 import values
@@ -56,7 +57,7 @@ ENTITY_TYPE_TO_SUB_CATEGORY = {
 }
 
 class Entity(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name', 'entity_type', 
+    PUBLIC_FIELDS = serializable.fields('entity_id', 'name', 'entity_type',
         serializable.objf('category', values.Category),
         serializable.objf('sub_category', values.SubCategory),
         'address',
@@ -64,12 +65,13 @@ class Entity(serializable.Serializable):
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
         'source_url', 'icon_url', 'google_reference')
 
-    def __init__(self, name=None, entity_type=None,
+    def __init__(self, entity_id=None, name=None, entity_type=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
             google_reference=None):
+        self.entity_id = entity_id
         self.name = name
         self.entity_type = entity_type  # Deprecated
         self.category = category
@@ -102,29 +104,22 @@ class Entity(serializable.Serializable):
             icon_url = icon_url.replace('.', '_imprecise.')
         self.icon_url = icon_url
 
-class ClippedPage(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('source_url', 'title')
-
-    def __init__(self, source_url=None, title=None):
-        self.source_url = source_url
-        self.title = title
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
         serializable.objlistf('entities', Entity),
-        serializable.objlistf('clipped_pages', ClippedPage),
         'creator', serializable.listf('editors'),
-        'last_modified')
+        'last_modified', 'status')
 
-    TYPES_IN_ORDER = ('Hotel', 'Restaurant', 'Attraction')
+    Status = enums.enum('ACTIVE', 'DELETED')
 
     def __init__(self, trip_plan_id=None, name=None, entities=(),
-            clipped_pages=(), creator=None, editors=(), last_modified=None):
+            creator=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.entities = entities or []
-        self.clipped_pages = clipped_pages or []
         self.last_modified = last_modified
+        self.status = status
 
         # TODO: Make these private fields
         self.creator = creator
@@ -145,24 +140,9 @@ class TripPlan(serializable.Serializable):
                 return entity
         return None
 
-    def remove_entity_by_source_url(self, source_url):
-        for i in range(len(self.entities)):
-            if self.entities[i].source_url == source_url:
-                return self.entities.pop(i)
-        return None
-
-    def as_settings(self):
-        return TripPlanSettings(str(self.trip_plan_id), name=self.name)        
-
-    def settings_json(self):
-        return self.as_settings().to_json_str()
-
     def contains_url(self, url):
         for entity in self.entities:
             if entity.source_url == url:
-                return True
-        for clipped_page in self.clipped_pages:
-            if clipped_page.source_url == url:
                 return True
         return False
 
@@ -180,80 +160,26 @@ class TripPlan(serializable.Serializable):
     def set_last_modified_datetime(self, d):
         self.last_modified = d.isoformat()
 
+    def strip_readonly_fields(self):
+        self.entities = ()
+        self.creator = None
+        self.editors = ()
+        self.last_modified = None
+        return self
+
+    def strip_child_objects(self):
+        self.entities = ()
+        return self
+
     def compare(self, other):
         if self.last_modified and other.last_modified:
             return cmp(other.last_modified_datetime(), self.last_modified_datetime())
         elif self.last_modified:
-            return 1
-        elif other.last_modified:
             return -1
+        elif other.last_modified:
+            return 1
         else:
             return cmp(other.name, self.name)
-
-class TripPlanSettings(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
-
-    def __init__(self, trip_plan_id_str=None, name=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.name = name
-
-
-class EditEntityRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', serializable.objf('entity', Entity))
-
-    def __init__(self, trip_plan_id_str=None, entity=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.entity = entity
-
-    @property
-    def trip_plan_id(self):
-        return int(self.trip_plan_id_str)
-
-class CreateEntityRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', serializable.objf('entity', Entity))
-
-    def __init__(self, trip_plan_id_str=None, entity=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.entity = entity
-
-    @property
-    def trip_plan_id(self):
-        return int(self.trip_plan_id_str)
-
-class CreateTripPlanRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('name')
-
-    def __init__(self, name=None):
-        self.name = name
-
-class EditTripPlanRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'name')
-
-    def __init__(self, trip_plan_id=None, trip_plan_id_str=None, name=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.name = name
-
-    @property
-    def trip_plan_id(self):
-        return int(self.trip_plan_id_str)
-
-class DeleteEntityRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id_str', 'source_url')
-
-    def __init__(self, trip_plan_id_str=None, source_url=None):
-        self.trip_plan_id_str = trip_plan_id_str
-        self.source_url = source_url
-
-    @property
-    def trip_plan_id(self):
-        return int(self.trip_plan_id_str)
-
-class EntityFromPageSourceRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('url', 'page_source')
-
-    def __init__(self, url=None, page_source=None):
-        self.url = url
-        self.page_source = page_source
 
 
 class SessionInfo(object):
@@ -271,17 +197,21 @@ class SessionInfo(object):
 
 
 class AccountInfo(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('email', 'active_trip_plan_id', 'active_trip_plan_name')
+    PUBLIC_FIELDS = serializable.fields('email')
 
-    def __init__(self, email=None, active_trip_plan_id=None, active_trip_plan_name=None):
+    def __init__(self, email=None):
         self.email = email
-        self.active_trip_plan_id = active_trip_plan_id
-        self.active_trip_plan_name = active_trip_plan_name
 
+
+def generate_entity_id():
+    randid = uuid.uuid4().bytes[:8]
+    # Use mod 2**53 so the number can be represented natively in Javascript.
+    return struct.unpack('Q', randid)[0] % 2**53
 
 def generate_trip_plan_id():
     randid = uuid.uuid4().bytes[:8]
-    return struct.unpack('Q', randid)[0]
+    # Use mod 2**53 so the number can be represented natively in Javascript.
+    return struct.unpack('Q', randid)[0] % 2**53
 
 def trip_plan_filename_from_session_info(session_info):
     return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)
@@ -299,7 +229,10 @@ def load_trip_plan_from_filename(fname):
         return None
     json_data = json.load(trip_plan_file)
     trip_plan_file.close()
-    return TripPlan.from_json_obj(json_data)
+    trip_plan = TripPlan.from_json_obj(json_data)
+    if trip_plan.status == TripPlan.Status.DELETED.name:
+        return None
+    return trip_plan
 
 def load_trip_plan_by_id(trip_plan_id):
     data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
@@ -309,6 +242,9 @@ def load_trip_plan_by_id(trip_plan_id):
             full_fname = os.path.join(constants.PROJECTPATH, 'local_data', fname)
             return load_trip_plan_from_filename(full_fname)
     return None
+
+def load_trip_plans_by_ids(trip_plan_ids):
+    return [load_trip_plan_by_id(id) for id in trip_plan_ids]
 
 def load_all_trip_plans(session_info):
     trip_plans = []    
@@ -322,8 +258,9 @@ def load_all_trip_plans(session_info):
                 trip_plans.append(trip_plan)
     return trip_plans
 
-def save_trip_plan(trip_plan):
-    trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
+def save_trip_plan(trip_plan, update_timestamp=True):
+    if update_timestamp:
+        trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
     json_obj = trip_plan.to_json_obj()
     json_str = json.dumps(json_obj, sort_keys=True, indent=4, separators=(',', ': '))
     trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')

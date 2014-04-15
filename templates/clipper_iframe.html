@@ -8,6 +8,7 @@
   <script src="/static/js/masonry.pkgd.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
+  <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
@@ -29,7 +30,8 @@
       <form ng-submit="saveNewTripPlan()">
         <input type="text" class="form-control"
           ng-model="selectedTripPlanState.newTripPlanName"
-          placeholder="Enter a trip plan name" id="trip-plan-name-input"/>
+          placeholder="Enter a trip plan name"
+          tc-focus-on="showCreateTripPlanForm"/>
         <button class="btn btn-info" ng-disabled="!selectedTripPlanState.newTripPlanName">
           Create new trip plan
         </button>
@@ -164,7 +166,7 @@
       was successfully clipped to
     </div>
     <div class="clip-confirmation-trip-plan-name">
-      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id_str'] ]]" target="_blank">
+      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
         [[selectedTripPlanState.tripPlan['name'] ]]
       </a>
     </div>
@@ -176,7 +178,7 @@
     initClipper(
       {{entity.to_json_str()|safe if entity else 'null'}},
       {{needs_page_source|jsbool}},
-      {{all_trip_plans_settings_json|safe}},
+      {{all_trip_plans_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>
 </body>

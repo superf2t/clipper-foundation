@@ -15,6 +15,10 @@ a:hover {
   color: #2D73A0;
 }
 
+.light-label {
+  font-weight: 400;
+}
+
 /* Navigation */
 
 #logo {
@@ -58,17 +62,24 @@ a:hover {
   margin-left: 5px;
 }
 
-#header-globe, #header-picture, #header-user {
+#header-globe, #header-picture, #header-user, #header-globe {
   font-size: 1.2em;
   color: #000000;
 }
 
-#header-globe:hover, #header-picture:hover, #header-user:hover, #add-place-to-trip-btn:hover {
+#header-globe:hover, #header-picture:hover,
+#header-user:hover, #header-gear:hover,
+#add-place-to-trip-btn:hover {
   color: #428bca;
 }
 
 #header-globe {
   padding-top: 1px;
+}
+
+.active-view-mode #header-globe,
+.active-view-mode #header-picture {
+  color: #428bca;
 }
 
 /* Map View */
@@ -198,6 +209,14 @@ a:hover {
   text-align: right;
   margin: 5px 5px;
   top: -30px;
+}
+
+.dropdown-menu.right-bottom-dropdown-menu {
+  left: auto;
+  right: 0px;
+  top: auto;
+  bottom: 100%;
+  text-align: left;
 }
 
 .entity-info-text {

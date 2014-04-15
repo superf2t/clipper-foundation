@@ -44,6 +44,18 @@ class Serializable(object):
                 obj[name] = field.json_serialize(raw_value)
         return obj
 
+    def copy(self):
+        return type(self).from_json_obj(self.to_json_obj())
+
+    def update(self, other):
+        if type(self) != type(other):
+            raise Exception('Can only update objects of the same class')
+        for attr in vars(self).iterkeys():
+            value = getattr(other, attr)
+            if value:
+                setattr(self, attr, value)
+        return self
+
     @classmethod
     def from_json_str(cls, json_str):
         return cls.from_json_obj(json.loads(json_str))
@@ -84,6 +96,12 @@ def objf(name, cls):
 def objlistf(name, cls):
     return Field(name, cls, is_list=True)
 
+def compositefields(*fields_dicts):
+    items = []
+    for fields_dict in fields_dicts:
+        items.extend(fields_dict.items())
+    return dict(items)
+
 
 class SerializationError(Exception):
     pass
@@ -94,7 +112,7 @@ def to_json_obj(obj):
         return obj
     elif isinstance(obj, Serializable):
         return obj.to_json_obj()
-    elif isinstance(obj, list):
+    elif isinstance(obj, list) or isinstance(obj, tuple):
         return [to_json_obj(o) for o in obj]
     elif isinstance(obj, dict):
         return dict((to_json_obj(key), to_json_obj(val)) for key, val in obj.iteritems())
