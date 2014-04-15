@@ -24,11 +24,7 @@ class EntityData(object):
         self.phone = phone
         self.website = website
 
-# Parsing 2014-style articles like 
-# http://www.nytimes.com/2014/04/13/travel/36-hours-in-seville-spain.html
-class Nytimes36hours(object):
-    NUMBERED_LINE_RE = re.compile('^\d+\..*')
-
+class AutoTripPlanCreator(object):
     def __init__(self, url, creator=None, trip_plan_name=None):
         self.url = url
         self.root = None
@@ -40,47 +36,14 @@ class Nytimes36hours(object):
             self.root = parse_tree(self.url).getroot()
         return self.root
 
-    def run(self):
-        entity_datas = []
-        for p in self.getroot().findall('.//footer//div[@class="story-info"]//p'):
-            line_text = scraper.tostring(p, with_tail=False)
-            if self.NUMBERED_LINE_RE.match(line_text):
-                for child in p.iterchildren():
-                    tag = child.tag.lower()
-                    text = scraper.tostring(child, with_tail=False)
-                    if tag == 'strong':
-                        if self.NUMBERED_LINE_RE.match(text):
-                            name = text.split('.')[1]
-                        else:
-                            name = text
-                        current_entity = EntityData(name=name.strip().strip(string.punctuation))
-                        entity_datas.append(current_entity)
-                    elif tag == 'a':
-                        current_entity.website = child.get('href')
-                    tail = child.tail.strip().strip(string.punctuation) if child.tail else ''
-                    if tail:
-                        parts = tail.split(';')
-                        current_entity.address = parts[0].strip()
-                        if len(parts) >= 2:
-                            current_entity.phone = parts[1].strip()
-        entities = self.lookup_entities(entity_datas)
-        trip_plan = create_trip_plan(self.get_trip_plan_name(), self.get_creator())
-        add_entities_to_trip_plan(trip_plan.trip_plan_id, self.get_creator(), entities)
-        print 'Created trip plan %d with %d entities' % (trip_plan.trip_plan_id, len(entities))
-
     def get_trip_plan_name(self):
-        if self.trip_plan_name:
-            return self.trip_plan_name
-        return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]'))
+        return self.trip_plan_name
 
     def get_creator(self):
         if self.creator:
             return self.creator
         host = urlparse.urlparse(self.url).netloc.lower().lstrip('www.')
         return 'admin@%s' % host
-
-    def get_address_context(self):
-        return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]')).split(' in ')[1].strip()
 
     def lookup_entities(self, entity_datas):
         entities = []
@@ -105,6 +68,58 @@ class Nytimes36hours(object):
             entity.source_url = self.url
             output_entities.append(entity)
         return output_entities
+
+    def build_from_entity_data(self, entity_datas):
+        entities = self.lookup_entities(entity_datas)
+        trip_plan = create_trip_plan(self.get_trip_plan_name(), self.get_creator())
+        add_entities_to_trip_plan(trip_plan.trip_plan_id, self.get_creator(), entities)
+        print 'Created trip plan %d with %d entities' % (trip_plan.trip_plan_id, len(entities))
+
+    def get_address_context(self):
+        raise NotImplementedError()
+
+    def run():
+        raise NotImplementedError()
+
+# Parsing 2014-style articles like 
+# http://www.nytimes.com/2014/04/13/travel/36-hours-in-seville-spain.html
+class Nytimes36hours(AutoTripPlanCreator):
+    NUMBERED_LINE_RE = re.compile('^\d+\..*')
+
+    def run(self):
+        entity_datas = []
+        for p in self.getroot().findall('.//footer//div[@class="story-info"]//p'):
+            line_text = scraper.tostring(p, with_tail=False)
+            if self.NUMBERED_LINE_RE.match(line_text):
+                for child in p.iterchildren():
+                    tag = child.tag.lower()
+                    text = scraper.tostring(child, with_tail=False)
+                    if tag == 'strong':
+                        if self.NUMBERED_LINE_RE.match(text):
+                            name = text.split('.')[1]
+                        else:
+                            name = text
+                        current_entity = EntityData(name=name.strip().strip(string.punctuation))
+                        entity_datas.append(current_entity)
+                    elif tag == 'a':
+                        current_entity.website = child.get('href')
+                    tail = child.tail.strip().strip(string.punctuation) if child.tail else ''
+                    if tail:
+                        parts = tail.split(';')
+                        current_entity.address = parts[0].strip()
+                        if len(parts) >= 2:
+                            current_entity.phone = parts[1].strip()
+        self.build_from_entity_data(entity_datas)
+
+    def get_address_context(self):
+        return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]')).split(' in ')[1].strip()
+
+    def get_trip_plan_name(self):
+        base_name = super(Nytimes36hours, self).get_trip_plan_name()
+        if base_name:
+            return base_name
+        return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]'))
+
 
 def create_trip_plan(name, creator):
     session_info = data.SessionInfo(email=creator)
