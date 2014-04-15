@@ -631,7 +631,7 @@ class LonelyPlanetScraper(ScrapedPage):
 
     def get_city_and_country(self):
         country, city = self.url.split('/')[3:5]
-        return city.capitalize(), country.capitalize()
+        return city.title(), country.title()
 
     def lookup_google_place(self):
         if not hasattr(self, '_google_place'):
@@ -669,6 +669,93 @@ class LonelyPlanetScraper(ScrapedPage):
 
     def get_location_precision(self):
         return 'Precise' if self.get_latlng() else 'Imprecise'
+
+# Only supports review pages
+class FodorsScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns(
+        '^http(s)?://www\.fodors\.com/.*/review-\d+\.html.*$',)
+
+    NAME_XPATH = './/h1'
+
+    LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
+        LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
+        LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH,
+        LocationResolutionStrategy.ADDRESS)
+
+    # TODO: Generalize fallbacks so that if an address comes from Google, 
+    # all location properties also come from Google
+    @fail_returns_empty
+    def get_address(self):
+        street_node = self.root.find('.//li[@class="address"]//span[@itemprop="streetAddress"]')
+        locality_node = self.root.find('.//li[@class="address"]//span[@itemprop="addressLocality"]')
+        postal_node = self.root.find('.//li[@class="address"]//span[@itemprop="postalCode"]')
+        
+        if street_node is not None and locality_node is not None:
+            street = tostring(street_node, True).replace(',', '')
+            locality = tostring(locality_node, True).replace(',', '')
+            if postal_node is not None:
+                postal_code = tostring(postal_node, True).replace(',', '')
+                return '%s %s %s' % (street, locality, postal_code)
+            else:
+                return '%s %s' % (street, locality)
+        else:
+            return self.lookup_google_place().address
+
+    def get_city(self):
+        city = self.url.split('/')[-2].replace('-', ' ')
+        return city.title()
+
+    def lookup_google_place(self):
+        if not hasattr(self, '_google_place'):
+            city = self.get_city()
+            query = '%s %s' % (self.get_entity_name(), city)
+            place_result = geocode.lookup_place(query)
+            if place_result:
+                place = google_places.lookup_place_by_reference(place_result.get_reference())
+                self._google_place = place.to_entity() if place else None
+            else:
+                self._google_place = None
+        return self._google_place
+
+    @fail_returns_none
+    def get_category(self):
+        breadcrumb_url = self.root.findall('.//ul[@class="breadcrumb"]//li//a')[-1].get('href').lower()
+        if 'hotels' in breadcrumb_url:
+            return values.Category.LODGING
+        elif 'restaurants' in breadcrumb_url:
+            return values.Category.FOOD_AND_DRINK
+        else:
+            return values.Category.ATTRACTIONS
+
+    @fail_returns_none
+    def get_sub_category(self):
+        category = self.get_category();
+        if category == values.Category.LODGING:
+            return values.SubCategory.HOTEL
+        elif category == values.Category.FOOD_AND_DRINK:
+            return values.SubCategory.RESTAURANT
+        else:
+            return None
+
+    # Convert Fodor's star rating (represented as % of 100%) to normalized scale
+    def get_rating(self):
+        rating_value_node = self.root.find('.//span[@class="ratings-value star5"]')
+        if rating_value_node is not None:
+            rating_value_string = rating_value_node.get('style')
+            rating_value = re.sub('[^0-9]', '', rating_value_string)
+            converted_rating_value = float(rating_value) / 100 * 5
+            return converted_rating_value
+        else:
+            return None
+
+    def get_primary_photo(self):
+        photo_urls = self.get_photos()
+        return photo_urls[0] if photo_urls else None
+
+    def get_photos(self):
+        google_place_entity = self.lookup_google_place()
+        return google_place_entity.photo_urls[:] if google_place_entity else []
+
 
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
@@ -763,35 +850,42 @@ def url_requires_page_source(url):
 if __name__ == '__main__':
     from tests.testdata import scraper_page_source
     for url in (
-        # 'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
-        # 'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
-        # 'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
-        # 'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
-        # 'http://www.yelp.com/biz/ikes-place-san-francisco',
-        # 'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
-        # 'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
-        # 'https://www.airbnb.com/rooms/2407670',
-        # 'https://www.airbnb.com/rooms/2576604',
-        # 'https://www.airbnb.com/rooms/1581737',
-        # 'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
-        # 'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
-        # 'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
-        # 'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
-        # 'http://regencyboston.hyatt.com/en/hotel/home.html',
-        # 'http://bangalore.hyatthotels.hyatt.com/en/hotel/dining.html',
-        # 'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
-        # 'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
-        # 'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
-        # 'http://www3.hilton.com/en/hotels/illinois/hilton-chicago-CHICHHH/index.html',
-        # 'http://www3.hilton.com/en/hotels/france/concorde-opra-paris-PAROPHI/index.html',
-        # 'http://www3.hilton.com/en/hotels/united-kingdom/the-trafalgar-london-LONTSHI/accommodations/index.html',
-        # 'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
-        # 'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
+        'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
+        'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
+        'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
+        'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
+        'http://www.yelp.com/biz/ikes-place-san-francisco',
+        'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
+        'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
+        'https://www.airbnb.com/rooms/2407670',
+        'https://www.airbnb.com/rooms/2576604',
+        'https://www.airbnb.com/rooms/1581737',
+        'http://www.booking.com/hotel/my/mandarin-oriental-kuala-lumpur.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1;checkin=2014-05-03;interval=1',
+        'http://www.booking.com/hotel/fr/st-christopher-s-inn-paris-gare-du-nord.en-us.html',
+        'http://www.booking.com/hotel/us/candlelight-inn-bed-and-breakfast.en-us.html?sid=f94501b12f2c6f1d49c1ce791d54a06c;dcid=1',
+        'https://www.hyatt.com/hyatt/reservations/roomsAndRates.jsp?xactionid=145482245a8&_requestid=972056',
+        'http://regencyboston.hyatt.com/en/hotel/home.html',
+        'http://bangalore.hyatthotels.hyatt.com/en/hotel/dining.html',
+        'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=1153',
+        'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=1488',
+        'http://www.starwoodhotels.com/luxury/property/overview/index.html?propertyID=250',
+        'http://www3.hilton.com/en/hotels/illinois/hilton-chicago-CHICHHH/index.html',
+        'http://www3.hilton.com/en/hotels/france/concorde-opra-paris-PAROPHI/index.html',
+        'http://www3.hilton.com/en/hotels/united-kingdom/the-trafalgar-london-LONTSHI/accommodations/index.html',
+        'https://secure3.hilton.com/en_US/hi/reservation/book.htm?execution=e3s1',
+        'http://www3.hilton.com/en/hotels/ohio/hilton-akron-fairlawn-CAKHWHF/index.html',
         'http://www.lonelyplanet.com/usa/san-francisco/restaurants/american/benu',
         'http://www.lonelyplanet.com/spain/barcelona/hotels/hostal-abrevadero',
         'http://www.lonelyplanet.com/kenya/wasini-island/sights/nature-wildlife/kisite-marine-national-park',
         'http://www.lonelyplanet.com/spain/barcelona/entertainment-nightlife/other/la-caseta-del-migdia',
         'http://www.lonelyplanet.com/united-arab-emirates/dubai/shopping/markets-streets-arcades/fish-market',
+        'http://www.fodors.com/world/europe/italy/rome/review-472395.html',
+        'http://www.fodors.com/world/north-america/usa/california/san-francisco/review-577818.html',
+        'http://www.fodors.com/world/caribbean/us-virgin-islands/st-thomas/review-153132.html',
+        'http://www.fodors.com/world/south-america/ecuador/the-galapagos-islands/review-449176.html',
+        'http://www.fodors.com/world/europe/spain/barcelona/review-164246.html',
+        'http://www.fodors.com/world/africa-and-middle-east/kenya/review-586358.html',
+        'http://www.fodors.com/world/europe/italy/rome/review-38440.html',
         ):
         scrapers = build_scrapers(url, scraper_page_source.get_page_source(url))
         for scraper in scrapers:
