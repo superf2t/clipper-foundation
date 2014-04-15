@@ -678,9 +678,9 @@ class FodorsScraper(ScrapedPage):
     NAME_XPATH = './/h1'
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
-    LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
-    LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH,
-    LocationResolutionStrategy.ADDRESS)
+        LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
+        LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH,
+        LocationResolutionStrategy.ADDRESS)
 
     # TODO: Generalize fallbacks so that if an address comes from Google, 
     # all location properties also come from Google
@@ -737,27 +737,24 @@ class FodorsScraper(ScrapedPage):
         else:
             return None
 
+    # Convert Fodor's star rating (represented as % of 100%) to normalized scale
     def get_rating(self):
         rating_value_node = self.root.find('.//span[@class="ratings-value star5"]')
         if rating_value_node is not None:
             rating_value_string = rating_value_node.get('style')
-            rating_value = re.sub("[^0-9]", "", rating_value_string)
-            converted_rating_value = str(float(rating_value) / 100 * 5)
+            rating_value = re.sub('[^0-9]', '', rating_value_string)
+            converted_rating_value = float(rating_value) / 100 * 5
             return converted_rating_value
         else:
-            return ''
+            return None
 
     def get_primary_photo(self):
         photo_urls = self.get_photos()
         return photo_urls[0] if photo_urls else None
 
     def get_photos(self):
-        urls = []
         google_place_entity = self.lookup_google_place()
-
-        if google_place_entity:
-            urls.extend(google_place_entity.photo_urls)
-        return urls
+        return google_place_entity.photo_urls[:] if google_place_entity else []
 
 
 def tostring_with_breaks(element):
