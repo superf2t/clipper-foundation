@@ -222,7 +222,7 @@ def trip_plan_filename(user_identifier, trip_plan_id):
 def load_trip_plan(session_info):
     return load_trip_plan_from_filename(trip_plan_filename_from_session_info(session_info))
 
-def load_trip_plan_from_filename(fname):
+def load_trip_plan_from_filename(fname, include_deleted=False):
     try:
         trip_plan_file = open(fname)
     except IOError:
@@ -230,7 +230,7 @@ def load_trip_plan_from_filename(fname):
     json_data = json.load(trip_plan_file)
     trip_plan_file.close()
     trip_plan = TripPlan.from_json_obj(json_data)
-    if trip_plan.status == TripPlan.Status.DELETED.name:
+    if not include_deleted and trip_plan.status == TripPlan.Status.DELETED.name:
         return None
     return trip_plan
 

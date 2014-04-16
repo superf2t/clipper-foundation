@@ -9,6 +9,7 @@ from flask import redirect
 from flask import render_template
 from flask import request
 
+import admin
 import clip_logic
 import constants
 import data
@@ -139,6 +140,11 @@ def tripplanservice(method_name):
     service = serviceimpls.TripPlanService(session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
+
+@app.route('/admin')
+def adminpage():
+    trip_plans = admin.load_all_trip_plans()
+    return render_template('admin.html', trip_plans=trip_plans)
 
 def create_and_save_default_trip_plan(session_info):
     operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))
