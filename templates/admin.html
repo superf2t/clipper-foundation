@@ -62,7 +62,7 @@
           {{trip_plan.entities|length}} entities
         </div>
         <div class="col-md-2">
-          {{trip_plan.last_modified_datetime().strftime('%d %B %Y')}}
+          {{trip_plan.last_modified and trip_plan.last_modified_datetime().strftime('%d %B %Y')}}
         </div>
         <div class="col-md-2">
           {% if trip_plan.status == 'DELETED' %}
