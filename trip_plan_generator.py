@@ -6,6 +6,7 @@ import urlparse
 from lxml import etree
 import requests
 
+import clip_logic
 import data
 import google_places
 import geocode
@@ -24,7 +25,7 @@ class EntityData(object):
         self.phone = phone
         self.website = website
 
-class AutoTripPlanCreator(object):
+class GoogleBasedAutoTripPlanCreator(object):
     def __init__(self, url, creator=None, trip_plan_name=None, address_context=None,
             use_address=False):
         self.url = url
@@ -89,7 +90,7 @@ class AutoTripPlanCreator(object):
 
 # Parsing 2014-style articles like 
 # http://www.nytimes.com/2014/04/13/travel/36-hours-in-seville-spain.html
-class Nytimes36hours(AutoTripPlanCreator):
+class Nytimes36hours(GoogleBasedAutoTripPlanCreator):
     NUMBERED_LINE_RE = re.compile('^\d+\..*')
 
     def run(self):
@@ -127,6 +128,43 @@ class Nytimes36hours(AutoTripPlanCreator):
         return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]'))
 
 
+class TripAdvisor3Days(object):
+    def __init__(self, url, creator=None, trip_plan_name=None):
+        self.url = url
+        self.root = None
+        self.creator = creator
+        self.trip_plan_name = trip_plan_name
+
+    def getroot(self):
+        if self.root is None:
+            self.root = parse_tree(self.url).getroot()
+        return self.root
+
+    def get_trip_plan_name(self):
+        if self.trip_plan_name:
+            return self.trip_plan_name
+        return scraper.tostring(self.getroot().find('.//h1[@id="HEADING"]'))
+
+    def get_creator(self):
+        if self.creator:
+            return self.creator
+        host = urlparse.urlparse(self.url).netloc.lower().lstrip('www.')
+        return 'admin@%s' % host
+
+    def absolute_url(self, relative_url):
+        return urlparse.urljoin(self.url, relative_url)
+
+    def build_from_entities(self, entities):
+        trip_plan = create_trip_plan(self.get_trip_plan_name(), self.get_creator())
+        add_entities_to_trip_plan(trip_plan.trip_plan_id, self.get_creator(), entities)
+        print 'Created trip plan %d with %d entities' % (trip_plan.trip_plan_id, len(entities))
+
+    def run(self):
+        links = self.getroot().findall('.//div[@class="guideItemInfo"]//a[@class="titleLink"]')
+        urls_to_scrape = [self.absolute_url(link.get('href')) for link in links]
+        entities = [clip_logic.scrape_entity_from_url(url) for url in urls_to_scrape]
+        self.build_from_entities(entities)
+
 def create_trip_plan(name, creator):
     session_info = data.SessionInfo(email=creator)
     trip_plan = data.TripPlan(name=name)
@@ -146,10 +184,25 @@ def add_entities_to_trip_plan(trip_plan_id, creator, entities):
     response = serviceimpls.EntityService(session_info).mutate(add_req)
     return response.entities
 
-if __name__ == '__main__':
-    #s = Nytimes36hours('http://www.nytimes.com/2014/04/13/travel/36-hours-in-seville-spain.html')
-    #s = Nytimes36hours('http://www.nytimes.com/2014/03/23/travel/36-hours-in-mexico-city.html')
-    #s = Nytimes36hours('http://www.nytimes.com/2014/01/19/travel/36-hours-in-sydney.html')
-    s = Nytimes36hours('http://www.nytimes.com/2014/02/23/travel/36-hours-in-upper-manhattan.html',
-            address_context='New York, NY')
+USAGE = '''Usage:
+  python trip_plan_generator.py <url>'''
+
+def main(argv):
+    if len(argv) < 2:
+        print USAGE
+        return
+    url = argv[1]
+    host = urlparse.urlparse(url).netloc.lower()
+    if 'nytimes' in host:
+        s = Nytimes36hours(url)
+    elif 'tripadvisor.com' in host:
+        s = TripAdvisor3Days(url)
+    else:
+        print 'Unrecognized url'
+        print USAGE
+        return
     s.run()
+
+if __name__ == '__main__':
+    import sys
+    main(sys.argv)
