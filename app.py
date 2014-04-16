@@ -143,7 +143,9 @@ def tripplanservice(method_name):
 
 @app.route('/admin')
 def adminpage():
-    trip_plans = admin.load_all_trip_plans()
+    reverse = True if request.values.get('reverse') else False
+    trip_plans = admin.fetch_trip_plans(
+        sorting=request.values.get('sorting'), reverse=reverse)
     return render_template('admin.html', trip_plans=trip_plans)
 
 def create_and_save_default_trip_plan(session_info):

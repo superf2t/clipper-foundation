@@ -26,25 +26,53 @@
       margin: 20px 0px;
     }
   </style>
+  <script>
+    function getParameterByName(name) {
+      var name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+      var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+          results = regex.exec(location.search);
+      return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    }  
+
+    function sort(sorting) {
+      var url = '/admin?sorting=' + sorting;
+      var currentSorting = getParameterByName('sorting');
+      var reverse = getParameterByName('reverse');
+      if (sorting == currentSorting && !reverse) {
+        url += '&reverse=1';
+      }
+      location.href = url;
+    }
+  </script>
 </head>
 <body>
   <h1>All Trip Plans</h1>
   <div class="container">
     <div class="row header-row">
       <div class="col-md-2">
-        Trip Plan Name
+        <a onclick="sort('name')" href="javascript:void(0)">
+          Trip Plan Name
+        </a>
       </div>
       <div class="col-md-2">
-        Creator
+        <a onclick="sort('creator')" href="javascript:void(0)">
+          Creator
+        </a>
       </div>
       <div class="col-md-2">
-        Number of Entities
+        <a onclick="sort('entity_count')" href="javascript:void(0)">
+          Number of Entities
+        </a>
       </div>
       <div class="col-md-2">
-        Last Modified
+        <a onclick="sort('last_modified')" href="javascript:void(0)">
+          Last Modified
+        </a>
       </div>
       <div class="col-md-2">
-        Status
+        <a onclick="sort('status')" href="javascript:void(0)">
+          Status
+        </a>
       </div>
       <div class="col-md-2">
       </div>
