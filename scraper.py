@@ -315,8 +315,6 @@ class YelpScraper(ScrapedPage):
 
 
 class HotelsDotComScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$')
-
     NAME_XPATH = 'body//h1'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
 
@@ -349,6 +347,16 @@ class HotelsDotComScraper(ScrapedPage):
     def get_photos(self):
         carousel_thumbnails = self.root.findall('body//div[@id="hotel-photos"]//ol[@class="thumbnails"]//li//a')
         return [thumb.get('href') for thumb in carousel_thumbnails]
+
+    @staticmethod
+    def expand_using_hotel_id(url, ignored):
+        hotel_id = urlparse.parse_qs(urlparse.urlparse(url.lower()).query)['hotelid'][0]
+        new_url = 'http://www.hotels.com/hotel/details.html?hotelId=%s' % hotel_id
+        return (new_url,)
+
+HotelsDotComScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+    '^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$',
+    ('(?i)^http(s)?://([a-z]{2,3})\.hotels\.com/ho\d+/.*hotelid=\d+.*$', HotelsDotComScraper.expand_using_hotel_id))
 
 class AirbnbScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$')
@@ -857,6 +865,7 @@ if __name__ == '__main__':
         'http://www.yelp.com/biz/ikes-place-san-francisco',
         'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
         'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
+        'http://www.hotels.com/ho276485/hotel-banke-paris-france/?gclid=CIHStK3B470CFc1afgodSjMAVg&hotelid=276485&PSRC=G21&rffrid=sem.hcom.US.google.003.03.02.s.kwrd%3DZzZz.s1lKbc1kl.0.33721657110.10205l017840.d.c',
         'https://www.airbnb.com/rooms/2407670',
         'https://www.airbnb.com/rooms/2576604',
         'https://www.airbnb.com/rooms/1581737',
