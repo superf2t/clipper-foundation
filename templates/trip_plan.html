@@ -603,8 +603,15 @@
 
   <script type="text/ng-template" id="day-planner-template">
     <div ng-controller="DayPlannerCtrl" class="day-planner-modal">
-      <h3 class="day-planner-title">Day Planner</h3>
-      <div class="container-fluid">
+      <div class="day-planner-header">
+        <h3>Day Planner</h3>
+        <div class="day-planner-persistent-controls">
+          <button class="btn btn-save-button" ng-click="saveOrderings()">
+            Save
+          </button>
+        </div>
+      </div>
+      <div class="container-fluid day-planner-body">
         <div class="row-fluid">
           <div class="col-md-4 day-planner-left-panel">
             <div ng-repeat="entity in dpm.unorderedEntities">
@@ -616,7 +623,7 @@
           </div>
           <div class="col-md-8">
             <div ng-repeat="dayModel in dpm.dayModels">
-              <h4>Day [[dayModel.dayNumber]]</h4>
+              <h4 class="day-planner-day-heading">Day [[dayModel.dayNumber]]</h4>
               <div ng-include="'day-planner-drop-target-template'"></div>
               <div ng-repeat="itemModel in dayModel.orderedItems()">
                 <div class="day-planner-draggable-entity">
@@ -627,11 +634,8 @@
             </div>
 
             <div class="day-planner-controls">
-              <button class="btn btn-default" ng-click="addNewDay()">
+              <button class="btn btn-default day-planner-add-day-button" ng-click="addNewDay()">
                 <span class="glyphicon glyphicon-plus"></span> Add a day
-              </button>
-              <button class="btn btn-save-button" ng-click="saveOrderings()">
-                Save
               </button>
             </div>
 

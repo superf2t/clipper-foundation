@@ -794,8 +794,15 @@ hr.dropdown-separator {
   margin: 20px;
 }
 
-.day-planner-title {
-  text-align: center;
+.day-planner-body {
+  height: 500px;
+  overflow: scroll;
+}
+
+.day-planner-persistent-controls {
+  float: right;
+  position: relative;
+  top: -40px;
 }
 
 .day-planner-left-panel {
@@ -828,4 +835,13 @@ hr.dropdown-separator {
 
 .day-planner-controls {
   margin-top: 20px;
+}
+
+.day-planner-add-day-button {
+  display: block;
+  margin: auto;
+}
+
+.day-planner-day-heading {
+  text-align: center;
 }
