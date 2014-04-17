@@ -6,6 +6,7 @@
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <script src="/static/js/imagesloaded.pkgd.min.js"></script>
   <script src="/static/js/masonry.pkgd.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
   <script src="/static/js/angular-masonry.min.js"></script>
@@ -65,6 +66,14 @@
                   <span class="glyphicon glyphicon-cog" id="header-gear"></span>
                 </a>
                 <ul class="dropdown-menu">
+                  {% if allow_editing %}
+                  <li>
+                    <a ng-click="openDayPlanner()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-time"></span> Day planner
+                    </a>
+                  </li>
+                  <hr class="dropdown-separator"/>
+                  {% endif %}
                   <li>
                     <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
                       <span class="glyphicon glyphicon-plus"></span> Clone trip plan
@@ -507,7 +516,7 @@
                     ng-paste="photoUrlPasted()"
                     ng-change="photoUrlChanged()"
                     ng-class="{'apc-img-drag-active': imgDragActive}"
-                    tc-drag-enter="photoUrlDragEnter($event)"
+                    tc-dragenter="photoUrlDragEnter($event)"
                     tc-drop="photoUrlDropped($event)"
                     />
                   </textarea>
@@ -591,6 +600,61 @@
 
     </div>
   </script>
+
+  <script type="text/ng-template" id="day-planner-template">
+    <div ng-controller="DayPlannerCtrl" class="day-planner-modal">
+      <h3 class="day-planner-title">Day Planner</h3>
+      <div class="container-fluid">
+        <div class="row-fluid">
+          <div class="col-md-4 day-planner-left-panel">
+            <div ng-repeat="entity in dpm.unorderedEntities">
+              <div draggable="true" class="day-planner-draggable-entity"
+                tc-dragstart="onDragstart(entity)" tc-dragend="onDragend()">
+                [[entity['name'] ]]
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div ng-repeat="dayModel in dpm.dayModels">
+              <h4>Day [[dayModel.dayNumber]]</h4>
+              <div ng-include="'day-planner-drop-target-template'"></div>
+              <div ng-repeat="itemModel in dayModel.orderedItems()">
+                <div class="day-planner-draggable-entity">
+                  [[itemModel.data['name'] ]]
+                </div>
+                <div ng-include="'day-planner-drop-target-template'"></div>
+              </div>
+            </div>
+
+            <div class="day-planner-controls">
+              <button class="btn btn-default" ng-click="addNewDay()">
+                <span class="glyphicon glyphicon-plus"></span> Add a day
+              </button>
+              <button class="btn btn-save-button" ng-click="saveOrderings()">
+                Save
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="day-planner-drop-target-template">
+    <div class="day-planner-drop-target"
+      ng-class="{'dragactive': dragactive}"
+      ondragenter="$(this).addClass('dragover'); event.preventDefault()"
+      ondragleave="$(this).removeClass('dragover')"
+      ondragover="event.preventDefault()"
+      ondrop="$(this).removeClass('dragover')"
+      {# Note that itemModel will be undefined for the drop target that is
+         rendered outside the item loop, but this is by design.  We reset
+         the position to 0 in that case. #}
+      tc-drop="onDrop($event, dayModel.dayNumber, itemModel.position())"
+    >
+  </div>
+</script>
 
   {% include 'widgets.html' %}
 

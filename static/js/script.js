@@ -76,8 +76,18 @@ function EntityModel(entityData, editable) {
 }
 
 function TripPlanModel(tripPlanData, entityDatas) {
+  var me = this;
+
+  this.resetEntities = function(entities) {
+    this.entitiesById = {};
+    this.entityDatas = entities;
+    $.each(entities, function(i, entityData) {
+      me.entitiesById[entityData['entity_id']] = entityData;
+    });
+  };
+
   this.tripPlanData = tripPlanData;
-  this.entityDatas = entityDatas;
+  this.resetEntities(entityDatas);
 
   this.entitiesForCategory = function(category) {
     var entities = [];
@@ -91,6 +101,20 @@ function TripPlanModel(tripPlanData, entityDatas) {
 
   this.isEmpty = function() {
     return this.entityDatas.length == 0;
+  };
+
+  this.tripPlanId = function() {
+    return this.tripPlanData['trip_plan_id'];
+  };
+
+  this.updateEntity = function(entityData) {
+    $.extend(this.entitiesById[entityData['entity_id']], entityData);
+  };
+
+  this.updateEntities = function(entityDatas) {
+    $.each(entityDatas, function(i, entityData) {
+      me.updateEntity(entityData);
+    });
   };
 }
 
@@ -347,11 +371,11 @@ function PageStateModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlan, 
-    $entityService, $entities, $datatypeValues, $allowEditing) {
+function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
+    $entityService, $datatypeValues, $allowEditing) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
-  $scope.planModel = new TripPlanModel($tripPlan, $entities);
+  $scope.planModel = $tripPlanModel;
   $scope.orderedCategories = $datatypeValues['categories'];
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
@@ -446,6 +470,13 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlan,
       });
   };
 
+  $scope.openDayPlanner = function() {
+    $modal.open({
+      templateUrl: 'day-planner-template',
+      scope: $scope.$new(true)
+    });
+  };
+
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
   });
@@ -473,7 +504,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlan,
           $scope.planModel = null;
           $scope.orderedCategories = null;
           $timeout(function() {
-            planModel.entityDatas = newEntities;
+            planModel.resetEntities(newEntities);
             $scope.planModel = planModel;
             $scope.orderedCategories = $datatypeValues['categories'];
           });
@@ -905,6 +936,176 @@ function EditImagesCtrl($scope, $timeout) {
   };
 }
 
+function SortedListByAttribute(attrNameOrFn, opt_items) {
+  this.attrNameOrFn = attrNameOrFn;
+  this.items = opt_items && opt_items.length ? opt_items.slice(0) : [];
+
+  this.add = function(item) {
+    var index = _.sortedIndex(this.items, item, this.attrNameOrFn);
+    this.items.splice(index, 0, item);
+  };
+}
+
+function removeElemByValue(arr, value) {
+  for (var i = 0, I = arr.length; i < I; i++) {
+    if (arr[i] === value) {
+      arr.splice(i, 1);
+      return i;
+    }
+  }
+  return null;
+}
+
+function DayPlannerItemModel(data) {
+  this.data = data;
+
+  this.day = function() {
+    return data['day'];
+  };
+
+  this.position = function() {
+    return this.data['position'];
+  };
+
+  this.isEntity = function() {
+    return !!this.data['entity_id'];
+  };
+
+  this.isNote = function() {
+    return !!this.data['note_id'];
+  };
+}
+
+function DayPlannerDayModel(dayNumber) {
+  this.dayNumber = dayNumber;
+  this.items = new SortedListByAttribute(function(item) { return item.position(); })
+
+  this.addItem = function(itemData) {
+    this.items.add(new DayPlannerItemModel(itemData));
+  };
+
+  this.orderedItems = function() {
+    return this.items.items;
+  };
+}
+
+function DayPlannerModel(orderedEntities, unorderedEntities) {
+  var me = this;
+  this.dayModels = [];
+  this.orderedEntities = orderedEntities;
+  this.unorderedEntities = unorderedEntities;
+
+  this.dayModelForDay = function(dayNumber /* 1-indexed */) {
+    var dayIndex = dayNumber - 1;
+    if (dayIndex < this.dayModels.length) {
+      return this.dayModels[dayIndex];
+    } else {
+      var dayModel = new DayPlannerDayModel(dayNumber);
+      this.dayModels.push(dayModel);
+      return dayModel;
+    }
+  };
+
+  $.each(orderedEntities, function(i, item) {
+    me.dayModelForDay(item.day).addItem(item);
+  });
+
+  this.addNewDay = function() {
+    return this.dayModelForDay(this.dayModels.length + 1);
+  };
+
+  this.organizeItem = function(item, dayNumber, position) {
+    removeElemByValue(this.unorderedEntities, item);
+    // Note that can result in two items with the same position if the item
+    // is being inserted between two existing items.
+    // We must immediately call recalculatePositions() to reassign a unique
+    // and correct position index to all items.
+    item['position'] = position;
+    item['day'] = dayNumber;
+    this.dayModelForDay(dayNumber).addItem(item);
+    this.recalculatePositions();
+  };
+
+  this.recalculatePositions = function() {
+    var currentPosition = 1;
+    $.each(this.dayModels, function(i, dayModel) {
+      $.each(dayModel.orderedItems(), function(i, itemModel) {
+        itemModel.data['position'] = currentPosition++;
+      });
+    });
+  };
+
+  this.allOrderedItems = function() {
+    return _.flatten(_.map(this.dayModels, function(dayModel) {
+      return dayModel.orderedItems();
+    }));
+  };
+}
+
+function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
+  var unorderedEntities = [];
+  var orderedEntities = [];
+  $.each($tripPlanModel.entityDatas, function(i, entity) {
+    entity = angular.copy(entity);
+    if (entity['day']) {
+      orderedEntities.push(entity);
+    } else {
+      unorderedEntities.push(entity);
+    }
+  });
+
+  $scope.dayPlannerModel = new DayPlannerModel(orderedEntities, unorderedEntities);
+  $scope.dpm = $scope.dayPlannerModel;
+  $scope.unorderedEntities = unorderedEntities;
+  $scope.dragItem = null;
+  $scope.dragactive = false;
+
+  $scope.addNewDay = function() {
+    $scope.dayPlannerModel.addNewDay();
+  };
+
+  $scope.onDragstart = function(entity) {
+    $scope.dragactive = true;
+    $scope.dragItem = entity;
+  };
+
+  $scope.onDragend = function() {
+    $scope.dragactive = false;
+    $scope.dragItem = null;
+  };
+
+  $scope.onDrop = function($event, dayNumber, position) {
+    $event.stopPropagation();
+    $event.preventDefault();
+    var item = $scope.dragItem;
+    $scope.dragactive = false;
+    $scope.dragItem = null;
+    $scope.dayPlannerModel.organizeItem(item, dayNumber, (position || 0) + 1);
+  };
+
+  $scope.saveOrderings = function() {
+    var allItems = $scope.dayPlannerModel.allOrderedItems();
+    var entitiesWithOnlyOrderingChanges = _.map(allItems, function(item) {
+      return {
+        'entity_id': item.data['entity_id'],
+        'day': item.day(),
+        'position': item.position()
+      };
+    });
+    var operations = _.map(entitiesWithOnlyOrderingChanges, function(entity) {
+      return $entityService.operationFromEntity(
+        entity, $tripPlanModel.tripPlanId(), Operator.EDIT);
+    });
+    var request = {'operations': operations};
+    $entityService.mutate(request)
+      .success(function(response) {
+        var modifiedEntities = response['entities'];
+        $tripPlanModel.updateEntities(modifiedEntities);
+        $scope.$close();
+      });
+  };
+}
+
 // Directives
 
 function tcScrollToOnClick($parse) {
@@ -1304,32 +1505,28 @@ function tcGooglePlaceAutocomplete($parse) {
   };
 }
 
-function tcDrop($parse) {
-  return {
-    restrict: 'AEC',
-    link: function(scope, elem, attrs) {
-      var onDropFn = $parse(attrs.tcDrop);
-      elem.on('drop', function(event) {
-        scope.$apply(function(){
-          onDropFn(scope, {$event: event});
-        });
-      });
-    }
-  };
+// Changes an event name like 'dragstart' to 'tcDragstart'
+// Doesn't yet handle dashes and underscores.
+function normalizeEventName(name, opt_prefix) {
+  var prefix = opt_prefix || 'tc';
+  return prefix + name.charAt(0).toUpperCase() + name.slice(1);
 }
 
-function tcDragEnter($parse) {
-  return {
-    restrict: 'AEC',
-    link: function(scope, elem, attrs) {
-      var onDragEnterFn = $parse(attrs.tcDragEnter);
-      elem.on('dragenter', function(event) {
-        scope.$apply(function() {
-          onDragEnterFn(scope, {$event: event});
+function directiveForEvent(eventName) {
+  var normalizedEventName = normalizeEventName(eventName);
+  return function($parse) {
+    return {
+      restrict: 'AEC',
+      link: function(scope, elem, attrs) {
+        var onEventFn = $parse(attrs[normalizedEventName]);
+        elem.on(eventName, function(event) {
+          scope.$apply(function() {
+            onEventFn(scope, {$event: event});
+          });
         });
-      });
-    }
-  };
+      }
+    };
+  }
 }
 
 function interpolator($interpolateProvider) {
@@ -1342,8 +1539,10 @@ angular.module('directivesModule', [])
   .directive('tcStarRating', tcStarRating)
   .directive('bnLazySrc', bnLazySrc)
   .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
-  .directive('tcDrop', tcDrop)
-  .directive('tcDragEnter', tcDragEnter)
+  .directive('tcDrop', directiveForEvent('drop'))
+  .directive('tcDragenter', directiveForEvent('dragenter'))
+  .directive('tcDragstart', directiveForEvent('dragstart'))
+  .directive('tcDragend', directiveForEvent('dragend'))
   .directive('tcFocusOn', tcFocusOn)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
@@ -1358,7 +1557,7 @@ window['initApp'] = function(tripPlan, entities, allTripPlans,
     accountInfo, datatypeValues, allowEditing) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$entities', entities)
+    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities))
     .value('$allTripPlans', allTripPlans)
     .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
@@ -1372,7 +1571,7 @@ window['initApp'] = function(tripPlan, entities, allTripPlans,
       'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlanService', '$tripPlan', '$entityService', '$entities',
+      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$entityService',
       '$datatypeValues', '$allowEditing', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
@@ -1389,6 +1588,7 @@ window['initApp'] = function(tripPlan, entities, allTripPlans,
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
+    .controller('DayPlannerCtrl', ['$scope', '$entityService', '$tripPlanModel', DayPlannerCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager);
 

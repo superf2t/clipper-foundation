@@ -63,14 +63,14 @@ class Entity(serializable.Serializable):
         'address',
         serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
-        'source_url', 'icon_url', 'google_reference')
+        'source_url', 'icon_url', 'google_reference', 'day', 'position')
 
     def __init__(self, entity_id=None, name=None, entity_type=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
-            google_reference=None):
+            google_reference=None, day=None, position=None):
         self.entity_id = entity_id
         self.name = name
         self.entity_type = entity_type  # Deprecated
@@ -85,6 +85,8 @@ class Entity(serializable.Serializable):
         self.photo_urls = photo_urls or []
         self.source_url = source_url
         self.google_reference = google_reference
+        self.day = day
+        self.position = position
 
         self.initialize()
 
@@ -104,6 +106,11 @@ class Entity(serializable.Serializable):
             icon_url = icon_url.replace('.', '_imprecise.')
         self.icon_url = icon_url
 
+    @staticmethod
+    def chronological_cmp(e1, e2):
+        if e1.position and e2.position:
+            return cmp(e1.position, e2.position)
+        return -cmp(e1.position, e2.position)
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
@@ -151,6 +158,9 @@ class TripPlan(serializable.Serializable):
 
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
+
+    def entities_in_chronological_order(self):
+        return sorted(self.entities, cmp=Entity.chronological_cmp)
 
     def last_modified_datetime(self):
         if not self.last_modified:
