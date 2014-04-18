@@ -1128,7 +1128,7 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
     $scope.dayPlannerModel.addNewDay();
   };
 
-  $scope.onDragstart = function(item) {
+  $scope.onDragstart = function($event, item) {
     $scope.dragactive = true;
     $scope.dragItem = item;
   };

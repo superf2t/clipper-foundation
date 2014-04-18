@@ -134,6 +134,13 @@ def entityservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
+@app.route('/noteservice/<method_name>', methods=['POST'])
+def noteservice(method_name):
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.NoteService(session_info)
+    response = service.invoke_with_json(method_name, request.json)
+    return json.jsonify(response)
+
 @app.route('/tripplanservice/<method_name>', methods=['POST'])
 def tripplanservice(method_name):
     session_info = decode_session(request.cookies)

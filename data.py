@@ -114,19 +114,30 @@ class Entity(serializable.Serializable):
             return cmp(e1.day, e2.day)
         return -cmp(e1.day, e2.day)
 
+class Note(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('note_id', 'text', 'day', 'day_position')
+
+    def __init__(self, note_id=None, text=None, day=None, day_position=None):
+        self.note_id = note_id
+        self.text = text
+        self.day = day
+        self.day_position = day_position
+
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
         serializable.objlistf('entities', Entity),
+        serializable.objlistf('notes', Note),
         'creator', serializable.listf('editors'),
         'last_modified', 'status')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
-    def __init__(self, trip_plan_id=None, name=None, entities=(),
+    def __init__(self, trip_plan_id=None, name=None, entities=(), notes=(),
             creator=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.entities = entities or []
+        self.notes = notes or []
         self.last_modified = last_modified
         self.status = status
 
@@ -174,6 +185,7 @@ class TripPlan(serializable.Serializable):
 
     def strip_readonly_fields(self):
         self.entities = ()
+        self.notes = ()
         self.creator = None
         self.editors = ()
         self.last_modified = None
@@ -216,14 +228,18 @@ class AccountInfo(serializable.Serializable):
 
 
 def generate_entity_id():
-    randid = uuid.uuid4().bytes[:8]
-    # Use mod 2**53 so the number can be represented natively in Javascript.
-    return struct.unpack('Q', randid)[0] % 2**53
+    return generate_id()
+
+def generate_note_id():
+    return generate_id()
 
 def generate_trip_plan_id():
+    return generate_id()
+
+def generate_id():
     randid = uuid.uuid4().bytes[:8]
     # Use mod 2**53 so the number can be represented natively in Javascript.
-    return struct.unpack('Q', randid)[0] % 2**53
+    return struct.unpack('Q', randid)[0] % 2**53    
 
 def trip_plan_filename_from_session_info(session_info):
     return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)

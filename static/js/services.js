@@ -51,7 +51,7 @@ function EntityService($http) {
       'trip_plan_id': tripPlanId,
       'entity': entity
     };
-  }
+  };
 
   this.googleplacetoentity = function(reference) {
     var request = {'reference': reference};
@@ -119,6 +119,50 @@ function TripPlanService($http) {
 }
 
 
+function NoteService($http) {
+  this.getByTripPlanId = function(tripPlanId, opt_lastModifiedTime) {
+    var request = {
+      'trip_plan_id': tripPlanId,
+      'if_modified_after': opt_lastModifiedTime
+    };
+    return $http.post('/noteservice/get', request);
+  };
+
+  this.saveNewNote = function(note, tripPlanId) {
+    var request = {
+      'operations': [this.operationFromNote(note, tripPlanId, Operator.ADD)]
+    };
+    return this.mutate(request);
+  };
+
+  this.editNote = function(note, tripPlanId) {
+    var request = {
+      'operations': [this.operationFromNote(note, tripPlanId, Operator.EDIT)]
+    };
+    return this.mutate(request);
+  };
+
+  this.deleteNote = function(note, tripPlanId) {
+    var request = {
+      'operations': [this.operationFromNote(note, tripPlanId, Operator.DELETE)]
+    };
+    return this.mutate(request);
+  };
+
+  this.mutate = function(request) {
+    return $http.post('/noteservice/mutate', request);
+  };
+
+  this.operationFromNote = function(note, tripPlanId, operator) {
+    return {
+      'operator': operator,
+      'trip_plan_id': tripPlanId,
+      'note': note
+    };
+  };
+}
+
 angular.module('servicesModule', [])
   .service('$entityService', ['$http', EntityService])
+  .service('$noteService', ['$http', NoteService])
   .service('$tripPlanService', ['$http', TripPlanService]);

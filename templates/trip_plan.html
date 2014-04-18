@@ -616,7 +616,7 @@
           <div class="col-md-4 day-planner-left-panel">
             <div ng-repeat="item in dpm.unorderedItems">
               <div draggable="true" class="day-planner-draggable-entity"
-                tc-dragstart="onDragstart(item)" tc-dragend="onDragend()">
+                tc-dragstart="onDragstart($event, item)" tc-dragend="onDragend()">
                 [[item.data['name'] ]]
               </div>
             </div>
@@ -628,7 +628,7 @@
               <div ng-repeat="itemModel in dayModel.getItems()">
                 <div class="day-planner-draggable-entity" draggable="true"
                   ng-class="{'existing-item-dragactive': activeItemIsThis(itemModel)}"
-                  tc-dragstart="onDragstart(itemModel)" tc-dragend="onDragend()">
+                  tc-dragstart="onDragstart($event, itemModel)" tc-dragend="onDragend()">
                   [[itemModel.data['name'] ]]
                 </div>
                 <div ng-include="'day-planner-drop-target-template'"></div>

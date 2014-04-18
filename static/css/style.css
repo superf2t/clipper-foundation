@@ -812,7 +812,7 @@ hr.dropdown-separator {
 .day-planner-drop-target {
   width: 75%;
   height: 10px;
-  background-color: #eee;
+  background-color: #fff;
   margin: auto;
   border-radius: 10px;
 }
