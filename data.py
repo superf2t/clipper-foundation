@@ -63,14 +63,14 @@ class Entity(serializable.Serializable):
         'address',
         serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
-        'source_url', 'icon_url', 'google_reference', 'day', 'position')
+        'source_url', 'icon_url', 'google_reference', 'day', 'day_position')
 
     def __init__(self, entity_id=None, name=None, entity_type=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
-            google_reference=None, day=None, position=None):
+            google_reference=None, day=None, day_position=None):
         self.entity_id = entity_id
         self.name = name
         self.entity_type = entity_type  # Deprecated
@@ -86,7 +86,7 @@ class Entity(serializable.Serializable):
         self.source_url = source_url
         self.google_reference = google_reference
         self.day = day
-        self.position = position
+        self.day_position = day_position
 
         self.initialize()
 
@@ -108,9 +108,11 @@ class Entity(serializable.Serializable):
 
     @staticmethod
     def chronological_cmp(e1, e2):
-        if e1.position and e2.position:
-            return cmp(e1.position, e2.position)
-        return -cmp(e1.position, e2.position)
+        if e1.day == e2.day:
+            return cmp(d1.day_position, d2.day_position)
+        elif e1.day and e2.day:
+            return cmp(e1.day, e2.day)
+        return -cmp(e1.day, e2.day)
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',

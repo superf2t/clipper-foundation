@@ -116,6 +116,10 @@ function TripPlanModel(tripPlanData, entityDatas) {
       me.updateEntity(entityData);
     });
   };
+
+  this.updateLastModified = function(lastModified) {
+    this.tripPlanData['last_modified'] = lastModified;
+  };
 }
 
 function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlan, $allowEditing) {
@@ -936,15 +940,6 @@ function EditImagesCtrl($scope, $timeout) {
   };
 }
 
-function SortedListByAttribute(attrNameOrFn, opt_items) {
-  this.attrNameOrFn = attrNameOrFn;
-  this.items = opt_items && opt_items.length ? opt_items.slice(0) : [];
-
-  this.add = function(item) {
-    var index = _.sortedIndex(this.items, item, this.attrNameOrFn);
-    this.items.splice(index, 0, item);
-  };
-}
 
 function removeElemByValue(arr, value) {
   for (var i = 0, I = arr.length; i < I; i++) {
@@ -963,8 +958,16 @@ function DayPlannerItemModel(data) {
     return data['day'];
   };
 
+  this.setDay = function(day) {
+    this.data['day'] = day;
+  };
+
   this.position = function() {
-    return this.data['position'];
+    return this.data['day_position'];
+  };
+
+  this.setPosition = function(dayPosition) {
+    this.data['day_position'] = dayPosition;
   };
 
   this.isEntity = function() {
@@ -978,85 +981,146 @@ function DayPlannerItemModel(data) {
 
 function DayPlannerDayModel(dayNumber) {
   this.dayNumber = dayNumber;
-  this.items = new SortedListByAttribute(function(item) { return item.position(); })
+  this.items = [];
 
-  this.addItem = function(itemData) {
-    this.items.add(new DayPlannerItemModel(itemData));
+  this.addItem = function(item, position) {
+    if (!position && !_.isNumber(position)) {
+      position = this.items.length;
+    }
+    item.setDay(this.dayNumber);
+    this.items.splice(position, 0, item);
+    this.recalculatePositions();
   };
 
-  this.orderedItems = function() {
-    return this.items.items;
+  this.recalculatePositions = function() {
+    $.each(this.items, function(i, item) {
+      item.setPosition(i);
+    });
+  };
+
+  this.removeItem = function(item) {
+    if (item.day() != dayNumber) {
+      throw 'Asked to remove an item from the wrong day.'
+    }
+    this.items.splice(item.position(), 1);
+    this.recalculatePositions();
+  };
+
+  this.reorderItem = function(item, newPosition) {
+    this.items.splice(item.position(), 1);
+    this.addItem(item, newPosition);
+  };
+
+  this.getItems = function() {
+    return this.items;
   };
 }
 
-function DayPlannerModel(orderedEntities, unorderedEntities) {
+function DayPlannerModel(orderedItems, unorderedItems) {
   var me = this;
   this.dayModels = [];
-  this.orderedEntities = orderedEntities;
-  this.unorderedEntities = unorderedEntities;
+  this.unorderedItems = unorderedItems;
 
   this.dayModelForDay = function(dayNumber /* 1-indexed */) {
     var dayIndex = dayNumber - 1;
-    if (dayIndex < this.dayModels.length) {
+    if (dayIndex < this.dayModels.length && this.dayModels[dayIndex]) {
       return this.dayModels[dayIndex];
     } else {
       var dayModel = new DayPlannerDayModel(dayNumber);
-      this.dayModels.push(dayModel);
+      this.dayModels[dayIndex] = dayModel;
       return dayModel;
     }
   };
 
-  $.each(orderedEntities, function(i, item) {
-    me.dayModelForDay(item.day).addItem(item);
+  $.each(orderedItems, function(i, item) {
+    me.dayModelForDay(item.day()).addItem(item);
   });
 
   this.addNewDay = function() {
     return this.dayModelForDay(this.dayModels.length + 1);
   };
+  $.each(this.dayModels, function(i, dayModel) {
+    if (!dayModel) {
+      me.dayModelForDay(i + 1);
+    }
+  });
 
   this.organizeItem = function(item, dayNumber, position) {
-    removeElemByValue(this.unorderedEntities, item);
-    // Note that can result in two items with the same position if the item
-    // is being inserted between two existing items.
-    // We must immediately call recalculatePositions() to reassign a unique
-    // and correct position index to all items.
-    item['position'] = position;
-    item['day'] = dayNumber;
-    this.dayModelForDay(dayNumber).addItem(item);
-    this.recalculatePositions();
-  };
+    if (item.day() == dayNumber && item.position() == position) {
+      return;
+    }
 
-  this.recalculatePositions = function() {
-    var currentPosition = 1;
-    $.each(this.dayModels, function(i, dayModel) {
-      $.each(dayModel.orderedItems(), function(i, itemModel) {
-        itemModel.data['position'] = currentPosition++;
-      });
-    });
+    if (item.day()) {
+      if (item.day() == dayNumber) {
+        this.dayModelForDay(dayNumber).reorderItem(item, position);
+      } else {
+        this.dayModelForDay(item.day()).removeItem(item);
+        this.dayModelForDay(dayNumber).addItem(item, position);
+      }
+    } else {
+      removeElemByValue(this.unorderedItems, item);
+      this.dayModelForDay(dayNumber).addItem(item, position);
+    }
   };
 
   this.allOrderedItems = function() {
     return _.flatten(_.map(this.dayModels, function(dayModel) {
-      return dayModel.orderedItems();
+      return dayModel.getItems();
     }));
   };
 }
 
+function DayPlannerDropTargetCtrl($scope) {
+  var me = this;
+  $scope.dragover = false;
+
+  $scope.isDragActive = function() {
+    return me.isValidDropTarget();
+  };
+
+  $scope.onDragenter = function($event) {
+    if (me.isValidDropTarget()) {
+      $scope.dragover = true;
+      $event.preventDefault();
+    }
+  };
+
+  $scope.onDragleave = function() {
+    $scope.dragover = false;
+  };
+
+  $scope.onDragover = function($event) {
+    if ($scope.isDragActive()) {
+      $event.preventDefault();
+    }
+  };
+
+  $scope.dropDone = function() {
+    $scope.dragover = false;
+  };
+
+  this.isValidDropTarget = function() {
+    var day = $scope.dayModel.dayNumber;
+    var position = $scope.itemModel ? $scope.itemModel.position() : 0;
+    return $scope.showAsDropTarget(day, position);
+  };
+}
+
 function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
-  var unorderedEntities = [];
-  var orderedEntities = [];
+  var unorderedItems = [];
+  var orderedItems = [];
   $.each($tripPlanModel.entityDatas, function(i, entity) {
-    entity = angular.copy(entity);
-    if (entity['day']) {
-      orderedEntities.push(entity);
+    var item = new DayPlannerItemModel(angular.copy(entity));
+    if (item.day()) {
+      orderedItems.push(item);
     } else {
-      unorderedEntities.push(entity);
+      unorderedItems.push(item);
     }
   });
 
-  $scope.dayPlannerModel = new DayPlannerModel(orderedEntities, unorderedEntities);
+  $scope.dayPlannerModel = new DayPlannerModel(orderedItems, unorderedItems);
   $scope.dpm = $scope.dayPlannerModel;
-  $scope.unorderedEntities = unorderedEntities;
+  $scope.unorderedItems = unorderedItems;
   $scope.dragItem = null;
   $scope.dragactive = false;
 
@@ -1064,9 +1128,9 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
     $scope.dayPlannerModel.addNewDay();
   };
 
-  $scope.onDragstart = function(entity) {
+  $scope.onDragstart = function(item) {
     $scope.dragactive = true;
-    $scope.dragItem = entity;
+    $scope.dragItem = item;
   };
 
   $scope.onDragend = function() {
@@ -1080,16 +1144,37 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
     var item = $scope.dragItem;
     $scope.dragactive = false;
     $scope.dragItem = null;
-    $scope.dayPlannerModel.organizeItem(item, dayNumber, (position || 0) + 1);
+    $scope.dayPlannerModel.organizeItem(item, dayNumber, position || 0);
   };
+
+  $scope.activeItemIsThis = function(itemModel) {
+    return $scope.dragItem && $scope.dragItem === itemModel;
+  };
+
+  $scope.showAsDropTarget = function(day, position) {
+    if (!$scope.dragItem) {
+      return false;
+    }
+    if (!_.isNumber($scope.dragItem.position())) {
+      return true;
+    }
+    if ($scope.dragItem.day() != day) {
+      return true;
+    }
+    if ($scope.dragItem.position() == position || ($scope.dragItem.position() == position + 1)) {
+      return false;
+    }
+    return true;
+  }
 
   $scope.saveOrderings = function() {
     var allItems = $scope.dayPlannerModel.allOrderedItems();
-    var entitiesWithOnlyOrderingChanges = _.map(allItems, function(item) {
+    var entityItems = _.filter(allItems, function(item) { return item.isEntity(); });
+    var entitiesWithOnlyOrderingChanges = _.map(entityItems, function(item) {
       return {
         'entity_id': item.data['entity_id'],
         'day': item.day(),
-        'position': item.position()
+        'day_position': item.position()
       };
     });
     var operations = _.map(entitiesWithOnlyOrderingChanges, function(entity) {
@@ -1101,6 +1186,7 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
       .success(function(response) {
         var modifiedEntities = response['entities'];
         $tripPlanModel.updateEntities(modifiedEntities);
+        $tripPlanModel.updateLastModified(response['last_modified']);
         $scope.$close();
       });
   };
@@ -1542,6 +1628,8 @@ angular.module('directivesModule', [])
   .directive('tcDrop', directiveForEvent('drop'))
   .directive('tcDragenter', directiveForEvent('dragenter'))
   .directive('tcDragstart', directiveForEvent('dragstart'))
+  .directive('tcDragleave', directiveForEvent('dragleave'))
+  .directive('tcDragover', directiveForEvent('dragover'))
   .directive('tcDragend', directiveForEvent('dragend'))
   .directive('tcFocusOn', tcFocusOn)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
@@ -1589,6 +1677,7 @@ window['initApp'] = function(tripPlan, entities, allTripPlans,
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$tripPlanModel', DayPlannerCtrl])
+    .controller('DayPlannerDropTargetCtrl', ['$scope', DayPlannerDropTargetCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager);
 

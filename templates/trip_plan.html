@@ -614,10 +614,10 @@
       <div class="container-fluid day-planner-body">
         <div class="row-fluid">
           <div class="col-md-4 day-planner-left-panel">
-            <div ng-repeat="entity in dpm.unorderedEntities">
+            <div ng-repeat="item in dpm.unorderedItems">
               <div draggable="true" class="day-planner-draggable-entity"
-                tc-dragstart="onDragstart(entity)" tc-dragend="onDragend()">
-                [[entity['name'] ]]
+                tc-dragstart="onDragstart(item)" tc-dragend="onDragend()">
+                [[item.data['name'] ]]
               </div>
             </div>
           </div>
@@ -625,8 +625,10 @@
             <div ng-repeat="dayModel in dpm.dayModels">
               <h4 class="day-planner-day-heading">Day [[dayModel.dayNumber]]</h4>
               <div ng-include="'day-planner-drop-target-template'"></div>
-              <div ng-repeat="itemModel in dayModel.orderedItems()">
-                <div class="day-planner-draggable-entity">
+              <div ng-repeat="itemModel in dayModel.getItems()">
+                <div class="day-planner-draggable-entity" draggable="true"
+                  ng-class="{'existing-item-dragactive': activeItemIsThis(itemModel)}"
+                  tc-dragstart="onDragstart(itemModel)" tc-dragend="onDragend()">
                   [[itemModel.data['name'] ]]
                 </div>
                 <div ng-include="'day-planner-drop-target-template'"></div>
@@ -647,15 +649,15 @@
 
   <script type="text/ng-template" id="day-planner-drop-target-template">
     <div class="day-planner-drop-target"
-      ng-class="{'dragactive': dragactive}"
-      ondragenter="$(this).addClass('dragover'); event.preventDefault()"
-      ondragleave="$(this).removeClass('dragover')"
-      ondragover="event.preventDefault()"
-      ondrop="$(this).removeClass('dragover')"
+      ng-controller="DayPlannerDropTargetCtrl"
+      ng-class="{'dragactive': isDragActive(), 'dragover': dragover}"
+      tc-dragenter="onDragenter($event)"
+      tc-dragleave="onDragleave()"
+      tc-dragover="onDragover($event)"
       {# Note that itemModel will be undefined for the drop target that is
          rendered outside the item loop, but this is by design.  We reset
          the position to 0 in that case. #}
-      tc-drop="onDrop($event, dayModel.dayNumber, itemModel.position())"
+      tc-drop="onDrop($event, dayModel.dayNumber, itemModel ? itemModel.position() + 1 : 0); dropDone()"
     >
   </div>
 </script>

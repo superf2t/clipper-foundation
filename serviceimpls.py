@@ -44,7 +44,7 @@ class OperationData(object):
         return [OperationData(op, field_path_prefix=field_path_prefix, index=i) for i, op in enumerate(operations)]
 
 
-EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND')
+EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS')
 
 class EntityGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
@@ -162,6 +162,7 @@ class EntityService(service.Service):
         for op in operations:
             op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan_id)
         self.validate_editability(operations)
+        self.validate_ordering(operations)
         self.process_adds(OperationData.filter_by_operator(operations, Operator.ADD))
         self.process_edits(OperationData.filter_by_operator(operations, Operator.EDIT))
         self.process_deletes(OperationData.filter_by_operator(operations, Operator.DELETE))
@@ -185,6 +186,25 @@ class EntityService(service.Service):
             elif not op.trip_plan.editable_by(self.session_info):
                 self.validation_errors.append(op.newerror(CommonError.NOT_AUTHORIZED_FOR_OPERATION,
                     'The user is not allowed to edit this trip plan.', 'trip_plan_id'))
+        self.raise_if_errors()
+
+    def validate_ordering(self, operations):
+        entities_in_this_req = [op_data.operation.entity.entity_id for op_data in operations]
+        positions = {}
+        for op_data in operations:
+            op = op_data.operation
+            if op.entity.day or op.entity.day_position:
+                for entity in op_data.trip_plan.entities:
+                    if entity.entity_id not in entities_in_this_req:
+                        positions[(op_data.trip_plan.trip_plan_id, entity.day, entity.day_position)] = entity.entity_id
+                new_position_info = (op.trip_plan_id, op.entity.day, op.entity.day_position)
+                existing_entity_id_at_position = positions.get(new_position_info)
+                if existing_entity_id_at_position and existing_entity_id_at_position != op.entity.entity_id:
+                    self.validation_errors.append(op_data.newerror(EntityServiceError.DUPLICATE_POSITIONS,
+                        'The same day_position was referenced in more than one entity in this trip plan',
+                        'entity.day_position'))
+                else:
+                    positions[new_position_info] = op.entity.entity_id
         self.raise_if_errors()
 
     def process_adds(self, operations):
