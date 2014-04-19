@@ -1095,7 +1095,7 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
       return;
     }
 
-    if (item.day()) {
+    if (item.day() && item.day() > 0) {
       if (item.day() == dayNumber) {
         this.dayModelForDay(dayNumber).reorderItem(item, position);
       } else {
@@ -1158,14 +1158,29 @@ function DayPlannerDropTargetCtrl($scope) {
     }
   };
 
-  $scope.dropDone = function() {
+  $scope.dropDone = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
     $scope.dragover = false;
   };
 
   this.isValidDropTarget = function() {
-    var day = $scope.dayModel.dayNumber;
-    var position = $scope.itemModel ? $scope.itemModel.position() : 0;
-    return $scope.showAsDropTarget(day, position);
+    if (!$scope.dragItem) {
+      return false;
+    }
+    if (!_.isNumber($scope.dragItem.position())
+      || !_.isNumber($scope.dragItem.day())
+      || $scope.dragItem.day() < 0
+      || $scope.dragItem.position() < 0) {
+      return true;
+    }
+    if ($scope.dragItem.day() != $scope.day) {
+      return true;
+    }
+    if ($scope.dragItem.position() == $scope.position || ($scope.dragItem.position() + 1 == $scope.position)) {
+      return false;
+    }
+    return true;
   };
 }
 
@@ -1209,9 +1224,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
     $scope.dragItem = null;
   };
 
-  $scope.onDrop = function($event, dayNumber, position) {
-    $event.stopPropagation();
-    $event.preventDefault();
+  $scope.handleDrop = function(dayNumber, position) {
     var item = $scope.dragItem;
     $scope.dragactive = false;
     $scope.dragItem = null;
@@ -1221,22 +1234,6 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
   $scope.activeItemIsThis = function(itemModel) {
     return $scope.dragItem && $scope.dragItem === itemModel;
   };
-
-  $scope.showAsDropTarget = function(day, position) {
-    if (!$scope.dragItem) {
-      return false;
-    }
-    if (!_.isNumber($scope.dragItem.position())) {
-      return true;
-    }
-    if ($scope.dragItem.day() != day) {
-      return true;
-    }
-    if ($scope.dragItem.position() == position || ($scope.dragItem.position() == position + 1)) {
-      return false;
-    }
-    return true;
-  }
 
   $scope.saveOrderings = function() {
     var allItemsToSave = $scope.dayPlannerModel.allOrderedItems()
@@ -1341,6 +1338,20 @@ function tcTripPlanSelectDropdown() {
     controller: TripPlanSelectDropdownCtrl,
     scope: {
       selectedTripPlan: '=selectTripPlanTo'
+    }
+  };
+}
+
+function tcItemDropTarget() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'day-planner-drop-target-template',
+    controller: DayPlannerDropTargetCtrl,
+    scope: {
+      day: '=',
+      position: '=',
+      dragItem: '=',
+      onDrop: '&'
     }
   };
 }
@@ -1774,8 +1785,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService', '$tripPlanModel', DayPlannerCtrl])
-    .controller('DayPlannerDropTargetCtrl', ['$scope', DayPlannerDropTargetCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
+    .directive('tcItemDropTarget', tcItemDropTarget)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager);
 
