@@ -1053,6 +1053,7 @@ function DayPlannerDayModel(dayNumber) {
     });
     var clearedItems = this.items;
     this.items = [];
+    this.noteItem.data['text'] = '';
     return clearedItems;
   };
 }
@@ -1185,7 +1186,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
     }
   });
   var noteItems = $.map($tripPlanModel.notes, function(note) {
-    return new DayPlannerItemModel(note);
+    return new DayPlannerItemModel(angular.copy(note));
   });
 
   $scope.dayPlannerModel = new DayPlannerModel(orderedItems, unorderedItems, noteItems);
