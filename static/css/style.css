@@ -847,6 +847,17 @@ hr.dropdown-separator {
   margin: auto;
 }
 
+.day-planner-one-day {
+  border: 1px solid #eee;
+  margin-bottom: 10px;
+  padding: 0px 10px 10px 10px;
+}
+
 .day-planner-day-heading {
-  text-align: center;
+}
+
+.day-planner-one-day-controls {
+  float: right;
+  position: relative;
+  top: -28px;
 }

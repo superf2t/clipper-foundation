@@ -193,7 +193,7 @@ class EntityService(service.Service):
         positions = {}
         for op_data in operations:
             op = op_data.operation
-            if op.entity.day or op.entity.day_position:
+            if op.entity.day >= 0 or op.entity.day_position >= 0:
                 for entity in op_data.trip_plan.entities:
                     if entity.entity_id not in entities_in_this_req:
                         positions[(op_data.trip_plan.trip_plan_id, entity.day, entity.day_position)] = entity.entity_id
@@ -220,6 +220,13 @@ class EntityService(service.Service):
             for i, e in enumerate(op.trip_plan.entities):
                 if e.entity_id == entity.entity_id:
                     op.result = op.trip_plan.entities[i].update(entity)
+                    # Negative positions are a signal to clear the value.
+                    # You can't send None because that's the same as telling the service
+                    # to ignore the value.
+                    if op.result.day < 0:
+                        op.result.day = None
+                    if op.result.day_position < 0:
+                        op.result.day_position = None
 
     def process_deletes(self, operations):
         for op in operations:

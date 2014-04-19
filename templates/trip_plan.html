@@ -622,8 +622,16 @@
             </div>
           </div>
           <div class="col-md-8">
-            <div ng-repeat="dayModel in dpm.dayModels">
+            <div ng-repeat="dayModel in dpm.dayModels" class="day-planner-one-day">
               <h4 class="day-planner-day-heading">Day [[dayModel.dayNumber]]</h4>
+              <div class="day-planner-one-day-controls">
+                <a href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-pencil"></span>
+                </a>
+                <a ng-click="dpm.clearDay(dayModel)" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-trash"></span>
+                </a>
+              </div>
               <div ng-include="'day-planner-drop-target-template'"></div>
               <div ng-repeat="itemModel in dayModel.getItems()">
                 <div class="day-planner-draggable-entity" draggable="true"

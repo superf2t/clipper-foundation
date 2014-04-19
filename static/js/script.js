@@ -20,6 +20,14 @@ function looksLikeUrl(text) {
   return text.toLowerCase().substring(0, 4) == 'http';
 }
 
+function dictByAttr(objs, attr) {
+  var dict = {};
+  $.each(objs, function(i, obj) {
+    dict[obj[attr]] = obj;
+  });
+  return dict;
+}
+
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
@@ -79,11 +87,8 @@ function TripPlanModel(tripPlanData, entityDatas) {
   var me = this;
 
   this.resetEntities = function(entities) {
-    this.entitiesById = {};
+    this.entitiesById = dictByAttr(entities, 'entity_id');
     this.entityDatas = entities;
-    $.each(entities, function(i, entityData) {
-      me.entitiesById[entityData['entity_id']] = entityData;
-    });
   };
 
   this.tripPlanData = tripPlanData;
@@ -107,13 +112,14 @@ function TripPlanModel(tripPlanData, entityDatas) {
     return this.tripPlanData['trip_plan_id'];
   };
 
-  this.updateEntity = function(entityData) {
-    $.extend(this.entitiesById[entityData['entity_id']], entityData);
-  };
-
   this.updateEntities = function(entityDatas) {
-    $.each(entityDatas, function(i, entityData) {
-      me.updateEntity(entityData);
+    var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
+    $.each(this.entityDatas, function(i, entityData) {
+      var updatedEntity = newEntitiesById[entityData['entity_id']];
+      if (updatedEntity) {
+        me.entityDatas[i] = updatedEntity;
+        me.entitiesById[updatedEntity['entity_id']] = updatedEntity;
+      }
     });
   };
 
@@ -1014,6 +1020,16 @@ function DayPlannerDayModel(dayNumber) {
   this.getItems = function() {
     return this.items;
   };
+
+  this.clear = function() {
+    $.each(this.items, function(i, item) {
+      item.setDay(-1);
+      item.setPosition(-1);
+    });
+    var clearedItems = this.items;
+    this.items = [];
+    return clearedItems;
+  };
 }
 
 function DayPlannerModel(orderedItems, unorderedItems) {
@@ -1063,10 +1079,22 @@ function DayPlannerModel(orderedItems, unorderedItems) {
     }
   };
 
+  this.clearDay = function(dayModel) {
+    var clearedItems = dayModel.clear();
+    this.unorderedItems.push.apply(this.unorderedItems, clearedItems);
+  };
+
   this.allOrderedItems = function() {
     return _.flatten(_.map(this.dayModels, function(dayModel) {
       return dayModel.getItems();
     }));
+  };
+
+  // Items that were previously ordered that the user decided to un-order.
+  this.purposelyUnorderedItems = function() {
+    return _.filter(this.unorderedItems, function(item) {
+      return item.day() < 0 || item.position() < 0;
+    });
   };
 }
 
@@ -1168,8 +1196,9 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
   }
 
   $scope.saveOrderings = function() {
-    var allItems = $scope.dayPlannerModel.allOrderedItems();
-    var entityItems = _.filter(allItems, function(item) { return item.isEntity(); });
+    var allItemsToSave = $scope.dayPlannerModel.allOrderedItems()
+      .concat($scope.dayPlannerModel.purposelyUnorderedItems());
+    var entityItems = _.filter(allItemsToSave, function(item) { return item.isEntity(); });
     var entitiesWithOnlyOrderingChanges = _.map(entityItems, function(item) {
       return {
         'entity_id': item.data['entity_id'],
