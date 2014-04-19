@@ -613,7 +613,14 @@
       </div>
       <div class="container-fluid day-planner-body">
         <div class="row-fluid">
-          <div class="col-md-4 day-planner-left-panel">
+          <div class="col-md-4 day-planner-left-panel"
+            ng-class="{'dragactive': showLeftPanelDragActive(), 'dragover': showLeftPanelDragover()}"
+            tc-dragenter="onLeftPanelDragenter($event)"
+            tc-dragleave="leftPanelDragover = false"
+            tc-dragover="onLeftPanelDragover($event)"
+            tc-dragend="onDragend(); leftPanelDragover = false"
+            tc-drop="handleLeftPanelDrop($event)"
+          >
             <div ng-repeat="item in dpm.unorderedItems">
               <div draggable="true" class="day-planner-draggable-entity"
                 tc-dragstart="onDragstart($event, item)" tc-dragend="onDragend()">

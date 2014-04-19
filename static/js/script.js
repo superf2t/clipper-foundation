@@ -1000,6 +1000,15 @@ function DayPlannerItemModel(data) {
   this.isNote = function() {
     return !!this.data['note_id'];
   };
+
+  this.hasPositionInfo = function() {
+    return this.day() > 0 && this.position() >= 0;
+  };
+
+  this.clearPosition = function() {
+    this.setDay(-1);
+    this.setPosition(-1);
+  };
 }
 
 function DayPlannerDayModel(dayNumber) {
@@ -1048,8 +1057,7 @@ function DayPlannerDayModel(dayNumber) {
 
   this.clear = function() {
     $.each(this.items, function(i, item) {
-      item.setDay(-1);
-      item.setPosition(-1);
+      item.clearPosition();
     });
     var clearedItems = this.items;
     this.items = [];
@@ -1111,6 +1119,12 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
   this.clearDay = function(dayModel) {
     var clearedItems = dayModel.clear();
     this.unorderedItems.push.apply(this.unorderedItems, clearedItems);
+  };
+
+  this.clearItem = function(itemModel) {
+    this.dayModelForDay(itemModel.day()).removeItem(itemModel);
+    itemModel.clearPosition();
+    this.unorderedItems.push(itemModel);
   };
 
   this.allOrderedItems = function() {
@@ -1209,6 +1223,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
   $scope.unorderedItems = unorderedItems;
   $scope.dragItem = null;
   $scope.dragactive = false;
+  $scope.leftPanelDragover = false;
 
   $scope.addNewDay = function() {
     $scope.dayPlannerModel.addNewDay();
@@ -1233,6 +1248,35 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
 
   $scope.activeItemIsThis = function(itemModel) {
     return $scope.dragItem && $scope.dragItem === itemModel;
+  };
+
+  $scope.onLeftPanelDragenter = function($event) {
+    if ($scope.showLeftPanelDragActive()) {
+      $event.preventDefault();
+    }
+  };
+
+  $scope.onLeftPanelDragover = function($event) {
+    $scope.leftPanelDragover = true;
+    if ($scope.showLeftPanelDragover()) {
+      $event.preventDefault();
+    }
+  };
+
+  $scope.showLeftPanelDragActive = function() {
+    return $scope.dragItem && $scope.dragItem.hasPositionInfo();
+  };
+
+  $scope.showLeftPanelDragover = function() {
+    return $scope.leftPanelDragover && $scope.showLeftPanelDragActive();
+  };
+
+  $scope.handleLeftPanelDrop = function($event) {
+    $event.preventDefault();
+    $event.stopPropagation();
+    $scope.dayPlannerModel.clearItem($scope.dragItem);
+    $scope.leftPanelDragover = false;
+    $scope.onDragend();
   };
 
   $scope.saveOrderings = function() {
