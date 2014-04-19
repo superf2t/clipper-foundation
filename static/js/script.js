@@ -20,10 +20,12 @@ function looksLikeUrl(text) {
   return text.toLowerCase().substring(0, 4) == 'http';
 }
 
-function dictByAttr(objs, attr) {
+function dictByAttr(objs, attrNameOrFn) {
   var dict = {};
+  var isFn = _.isFunction(attrNameOrFn);
   $.each(objs, function(i, obj) {
-    dict[obj[attr]] = obj;
+    var attr = isFn ? attrNameOrFn(obj) : obj[attrNameOrFn];
+    dict[attr] = obj;
   });
   return dict;
 }
@@ -83,7 +85,7 @@ function EntityModel(entityData, editable) {
   this.infowindow = null;
 }
 
-function TripPlanModel(tripPlanData, entityDatas) {
+function TripPlanModel(tripPlanData, entityDatas, notes) {
   var me = this;
 
   this.resetEntities = function(entities) {
@@ -93,6 +95,7 @@ function TripPlanModel(tripPlanData, entityDatas) {
 
   this.tripPlanData = tripPlanData;
   this.resetEntities(entityDatas);
+  this.notes = notes;
 
   this.entitiesForCategory = function(category) {
     var entities = [];
@@ -121,6 +124,20 @@ function TripPlanModel(tripPlanData, entityDatas) {
         me.entitiesById[updatedEntity['entity_id']] = updatedEntity;
       }
     });
+  };
+
+  this.updateNotes = function(noteDatas) {
+    var newNotesById = dictByAttr(noteDatas, 'note_id');
+    $.each(this.notes, function(i, note) {
+      var noteId = note['note_id'];
+      var updatedNote = newNotesById[noteId];
+      if (updatedNote) {
+        me.notes[i] = updatedNote;
+        delete newNotesById[noteId];
+      };
+    });
+    // Any leftover values are new notes, so we should append them.
+    this.notes.push.apply(this.notes, _.values(newNotesById));
   };
 
   this.updateLastModified = function(lastModified) {
@@ -988,6 +1005,10 @@ function DayPlannerItemModel(data) {
 function DayPlannerDayModel(dayNumber) {
   this.dayNumber = dayNumber;
   this.items = [];
+  this.noteItem = new DayPlannerItemModel({
+    'day': dayNumber,
+    'text': ''
+  });
 
   this.addItem = function(item, position) {
     if (!position && !_.isNumber(position)) {
@@ -996,6 +1017,10 @@ function DayPlannerDayModel(dayNumber) {
     item.setDay(this.dayNumber);
     this.items.splice(position, 0, item);
     this.recalculatePositions();
+  };
+
+  this.setNote = function(noteItem) {
+    this.noteItem = noteItem;
   };
 
   this.recalculatePositions = function() {
@@ -1032,7 +1057,7 @@ function DayPlannerDayModel(dayNumber) {
   };
 }
 
-function DayPlannerModel(orderedItems, unorderedItems) {
+function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
   var me = this;
   this.dayModels = [];
   this.unorderedItems = unorderedItems;
@@ -1050,6 +1075,9 @@ function DayPlannerModel(orderedItems, unorderedItems) {
 
   $.each(orderedItems, function(i, item) {
     me.dayModelForDay(item.day()).addItem(item);
+  });
+  $.each(noteItems, function(i, noteItem) {
+    me.dayModelForDay(noteItem.day()).setNote(noteItem);
   });
 
   this.addNewDay = function() {
@@ -1096,6 +1124,12 @@ function DayPlannerModel(orderedItems, unorderedItems) {
       return item.day() < 0 || item.position() < 0;
     });
   };
+
+  this.allNoteItems = function() {
+    return _.map(this.dayModels, function(dayModel) {
+      return dayModel.noteItem;
+    });
+  };
 }
 
 function DayPlannerDropTargetCtrl($scope) {
@@ -1134,7 +1168,12 @@ function DayPlannerDropTargetCtrl($scope) {
   };
 }
 
-function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
+function DayPlannerOneDayCtrl($scope) {
+  $scope.editingNote = false;
+}
+
+function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
+  var me = this;
   var unorderedItems = [];
   var orderedItems = [];
   $.each($tripPlanModel.entityDatas, function(i, entity) {
@@ -1145,8 +1184,11 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
       unorderedItems.push(item);
     }
   });
+  var noteItems = $.map($tripPlanModel.notes, function(note) {
+    return new DayPlannerItemModel(note);
+  });
 
-  $scope.dayPlannerModel = new DayPlannerModel(orderedItems, unorderedItems);
+  $scope.dayPlannerModel = new DayPlannerModel(orderedItems, unorderedItems, noteItems);
   $scope.dpm = $scope.dayPlannerModel;
   $scope.unorderedItems = unorderedItems;
   $scope.dragItem = null;
@@ -1216,7 +1258,32 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel) {
         var modifiedEntities = response['entities'];
         $tripPlanModel.updateEntities(modifiedEntities);
         $tripPlanModel.updateLastModified(response['last_modified']);
-        $scope.$close();
+        me.saveNotes($scope.$close);
+      });
+  };
+
+  this.saveNotes = function(opt_callback) {
+    var allNotes = _.map($scope.dayPlannerModel.allNoteItems(), function(item) { return item.data; });
+    var operations = [];
+    var tripPlanId = $tripPlanModel.tripPlanId();
+    $.each(allNotes, function(i, note) {
+      if (note['note_id']) {
+        operations.push($noteService.operationFromNote(note, tripPlanId, Operator.EDIT));
+      } else if (!note['note_id'] && note['text']) {
+        operations.push($noteService.operationFromNote(note, tripPlanId, Operator.ADD));
+      }
+    });
+    if (!operations.length) {
+      opt_callback && opt_callback()
+      return;
+    }
+    var request = {'operations': operations};
+    $noteService.mutate(request)
+      .success(function(response) {
+        var modifiedNotes = response['notes'];
+        $tripPlanModel.updateNotes(modifiedNotes);
+        $tripPlanModel.updateLastModified(response['last_modified']);
+        opt_callback && opt_callback();
       });
   };
 }
@@ -1670,11 +1737,11 @@ angular.module('filtersModule', [])
     }
   });
 
-window['initApp'] = function(tripPlan, entities, allTripPlans,
+window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     accountInfo, datatypeValues, allowEditing) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities))
+    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
     .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
@@ -1705,8 +1772,9 @@ window['initApp'] = function(tripPlan, entities, allTripPlans,
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
-    .controller('DayPlannerCtrl', ['$scope', '$entityService', '$tripPlanModel', DayPlannerCtrl])
+    .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService', '$tripPlanModel', DayPlannerCtrl])
     .controller('DayPlannerDropTargetCtrl', ['$scope', DayPlannerDropTargetCtrl])
+    .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager);
 

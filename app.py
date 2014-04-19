@@ -86,15 +86,18 @@ def trip_plan_by_id(trip_plan_id):
     session_info = decode_session(request.cookies)
     trip_plan_service = serviceimpls.TripPlanService(session_info)
     entity_service = serviceimpls.EntityService(session_info)
+    note_service = serviceimpls.NoteService(session_info)
     account_info = data.AccountInfo(session_info.email)
 
     current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
+    notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
+        notes_json=serializable.to_json_str(notes),
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         allow_editing=current_trip_plan and current_trip_plan.editable_by(session_info),
         account_info=account_info,

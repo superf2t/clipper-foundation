@@ -861,3 +861,7 @@ hr.dropdown-separator {
   position: relative;
   top: -28px;
 }
+
+.day-planner-one-day-note {
+  white-space: pre;
+}
