@@ -837,7 +837,6 @@ hr.dropdown-separator {
 }
 
 .day-planner-left-panel {
-  border-right: 1px solid #ccc;
   height: 100%;
   overflow: scroll;
 }
@@ -848,11 +847,11 @@ hr.dropdown-separator {
 }
 
 .day-planner-left-panel.dragactive {
-  border: 1px solid #ccc;
+  background-color: #f5f5f5;
 }
 
 .day-planner-left-panel.dragover {
-  border: 1px solid blue;
+  background-color: rgb(240, 240, 255);
 }
 
 .day-planner-drop-target {
@@ -864,11 +863,11 @@ hr.dropdown-separator {
 }
 
 .day-planner-drop-target.dragactive {
-  background-color: #ccc;
+  background-color: #f5f5f5;
 }
 
 .day-planner-drop-target.dragover {
-  background-color: blue;
+  background-color: rgb(240, 240, 255);
 }
 
 .day-planner-draggable-entity {
