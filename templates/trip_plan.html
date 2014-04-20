@@ -612,7 +612,7 @@
       </div>
       <div class="container-fluid day-planner-body">
         <div class="row-fluid">
-          <div class="col-md-4 day-planner-left-panel"
+          <div class="col-md-5 day-planner-left-panel"
             ng-class="{'dragactive': showLeftPanelDragActive(), 'dragover': showLeftPanelDragover()}"
             tc-dragenter="onLeftPanelDragenter($event)"
             tc-dragleave="leftPanelDragover = false"
@@ -621,14 +621,12 @@
             tc-drop="handleLeftPanelDrop($event)"
           >
             <div ng-repeat="item in dpm.unorderedItems">
-              <div draggable="true" class="day-planner-draggable-entity"
-                ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
-                tc-dragstart="onDragstart($event, item)" tc-dragend="onDragend()">
-                [[item.data['name'] ]]
-              </div>
+              <tc-draggable-entity item="item" drag-item="dragItem"
+                on-dragstart="onDragstart($event, item)" on-dragend="onDragend()">
+              </tc-draggable-entity>
             </div>
           </div>
-          <div class="col-md-8 day-planner-right-panel">
+          <div class="col-md-7 day-planner-right-panel">
             <div ng-repeat="dayModel in dpm.dayModels">
               <div class="day-planner-one-day" ng-controller="DayPlannerOneDayCtrl">
                 <h4 class="day-planner-day-heading">Day [[dayModel.dayNumber]]</h4>
@@ -651,11 +649,9 @@
                   drag-item="dragItem" on-drop="handleDrop(dayModel.dayNumber, 0)">
                 </div>
                 <div ng-repeat="itemModel in dayModel.getItems()">
-                  <div class="day-planner-draggable-entity" draggable="true"
-                    ng-class="{'existing-item-dragactive': activeItemIsThis(itemModel)}"
-                    tc-dragstart="onDragstart($event, itemModel)" tc-dragend="onDragend()">
-                    [[itemModel.data['name'] ]]
-                  </div>
+                  <tc-draggable-entity item="itemModel" drag-item="dragItem"
+                    on-dragstart="onDragstart($event, itemModel)" on-dragend="onDragend()">
+                  </tc-draggable-entity>
                   <div tc-item-drop-target day="dayModel.dayNumber" position="itemModel.position() + 1"
                     drag-item="dragItem" on-drop="handleDrop(dayModel.dayNumber, itemModel.position() + 1)">
                   </div>
@@ -683,8 +679,16 @@
       tc-dragover="onDragover($event)"
       tc-drop="onDrop(); dropDone($event)"
     >
-  </div>
-</script>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="day-planner-entity-item-template">
+    <div draggable="true" class="day-planner-draggable-entity"
+      ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
+      tc-dragstart="onDragstart()" tc-dragend="onDragend()">
+      [[item.data['name'] ]]
+    </div>
+  </script>
 
   {% include 'widgets.html' %}
 

@@ -1203,6 +1203,12 @@ function DayPlannerOneDayCtrl($scope) {
   $scope.editingNote = false;
 }
 
+function DayPlannerDraggableEntityCtrl($scope) {
+  $scope.activeItemIsThis = function(itemModel) {
+    return $scope.dragItem && $scope.dragItem === itemModel;
+  };
+}
+
 function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
   var me = this;
   var unorderedItems = [];
@@ -1397,6 +1403,20 @@ function tcItemDropTarget() {
       position: '=',
       dragItem: '=',
       onDrop: '&'
+    }
+  };
+}
+
+function tcDraggableEntity() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'day-planner-entity-item-template',
+    controller: DayPlannerDraggableEntityCtrl,
+    scope: {
+      item: '=',
+      dragItem: '=',
+      onDragstart: '&',
+      onDragend: '&'
     }
   };
 }
@@ -1832,6 +1852,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService', '$tripPlanModel', DayPlannerCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
+    .directive('tcDraggableEntity', tcDraggableEntity)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager);
 
