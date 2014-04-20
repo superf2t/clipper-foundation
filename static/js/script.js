@@ -501,6 +501,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $modal.open({
       templateUrl: 'day-planner-template',
       scope: $scope.$new(true),
+      backdrop: 'static',
       windowClass: windowClass
     });
   };
