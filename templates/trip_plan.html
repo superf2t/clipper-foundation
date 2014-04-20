@@ -68,7 +68,7 @@
                 <ul class="dropdown-menu">
                   {% if allow_editing %}
                   <li>
-                    <a ng-click="openDayPlanner()" href="javascript:void(0)">
+                    <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
                       <span class="glyphicon glyphicon-time"></span> Day planner
                     </a>
                   </li>
@@ -604,7 +604,7 @@
   <script type="text/ng-template" id="day-planner-template">
     <div ng-controller="DayPlannerCtrl" class="day-planner-modal">
       <div class="day-planner-header">
-        <h3>Day Planner</h3>
+        <div class="day-planner-header-text">Day Planner</div>
         <div class="day-planner-persistent-controls">
           <button class="btn btn-save-button" ng-click="saveOrderings()">
             Save
@@ -623,12 +623,13 @@
           >
             <div ng-repeat="item in dpm.unorderedItems">
               <div draggable="true" class="day-planner-draggable-entity"
+                ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
                 tc-dragstart="onDragstart($event, item)" tc-dragend="onDragend()">
                 [[item.data['name'] ]]
               </div>
             </div>
           </div>
-          <div class="col-md-8">
+          <div class="col-md-8 day-planner-right-panel">
             <div ng-repeat="dayModel in dpm.dayModels">
               <div class="day-planner-one-day" ng-controller="DayPlannerOneDayCtrl">
                 <h4 class="day-planner-day-heading">Day [[dayModel.dayNumber]]</h4>

@@ -790,23 +790,61 @@ hr.dropdown-separator {
 
 /* Day Planner */
 
+.day-planner-modal-window {
+  height: 80%;
+}
+
+.day-planner-modal-window.modal {
+  top: 10%;
+}
+
+.day-planner-modal-window .modal-dialog {
+  height: 100%;
+  margin: 0 auto;
+}
+
+.day-planner-modal-window .modal-content {
+  height: 100%;
+  overflow: hidden;
+}
+
 .day-planner-modal {
-  margin: 20px;
+  height: 100%;
+  padding: 20px;
 }
 
 .day-planner-body {
-  height: 500px;
-  overflow: scroll;
+  height: calc(100% - 44px);
+  overflow: hidden;
+}
+
+.day-planner-body .row-fluid {
+  height: 100%;
+}
+
+.day-planner-header {
+  margin-bottom: 10px;
+}
+
+.day-planner-header-text {
+  font-size: 24px;
 }
 
 .day-planner-persistent-controls {
   float: right;
   position: relative;
-  top: -40px;
+  top: -34px;
 }
 
 .day-planner-left-panel {
   border-right: 1px solid #ccc;
+  height: 100%;
+  overflow: scroll;
+}
+
+.day-planner-right-panel {
+  height: 100%;
+  overflow: scroll;
 }
 
 .day-planner-left-panel.dragactive {
@@ -859,9 +897,6 @@ hr.dropdown-separator {
   border: 1px solid #eee;
   margin-bottom: 10px;
   padding: 0px 10px 10px 10px;
-}
-
-.day-planner-day-heading {
 }
 
 .day-planner-one-day-controls {
