@@ -875,7 +875,7 @@ hr.dropdown-separator {
   width: 80%;
   height: 50px;
   margin: 5px auto;
-  border: 1px solid #ddd;
+  border: 1px solid #bbb;
   background-color: #eee;
   cursor: move;
 }
@@ -907,4 +907,27 @@ hr.dropdown-separator {
 
 .day-planner-one-day-note {
   white-space: pre;
+}
+
+.day-planner-entity-image-container {
+  display: inline-block;
+  height: 100%;
+  width: 20%;
+  text-align: center;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.day-planner-entity-image-container img {
+  height: 100%;
+  position: relative;
+  left: 100%;
+  margin-left: -200%;
+}
+
+.day-planner-entity-description {
+  display: inline-block;
+  position: relative;
+  top: -18px;
+  margin-left: 5px;
 }
