@@ -427,6 +427,22 @@ function PageStateModel() {
   this.showMapView = function() {
     this.view = View.MAP_VIEW;
   };
+
+  this.isGroupByCategory = function() {
+    return this.grouping == Grouping.CATEGORY;
+  };
+
+  this.isGroupByDay = function() {
+    return this.grouping == Grouping.DAY;
+  };
+
+  this.groupByCategory = function() {
+    this.grouping = Grouping.CATEGORY;
+  };
+
+  this.groupByDay = function() {
+    this.grouping = Grouping.DAY;
+  };
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -553,6 +569,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     statusCode: null
   };
   this.processItemsIntoGroups = function() {
+    $scope.$broadcast('clearallmarkers');
     $scope.itemGroups = processIntoGroups($scope.pageStateModel.grouping, $scope.planModel.allItems());
   };
   this.processItemsIntoGroups();
@@ -571,6 +588,20 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
       $scope.pageStateModel.showMapView();
+    }
+  };
+
+  $scope.groupByCategory = function() {
+    if (!$scope.pageStateModel.isGroupByCategory()) {
+      $scope.pageStateModel.groupByCategory();
+      me.processItemsIntoGroups();
+    }
+  };
+
+  $scope.groupByDay = function() {
+    if (!$scope.pageStateModel.isGroupByDay()) {
+      $scope.pageStateModel.groupByDay();
+      me.processItemsIntoGroups();
     }
   };
 

@@ -86,6 +86,21 @@
                     </a>
                   </li>
                   {% endif %}
+                  <hr class="dropdown-separator"/>
+                  <li>
+                    <a ng-click="groupByCategory()" href="javascript:void(0)">
+                      <span ng-if="!pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-unchecked"></span>
+                      <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-check"></span>
+                      Group by category
+                    </a>
+                  </li>
+                  <li>
+                    <a ng-click="groupByDay()" href="javascript:void(0)">
+                      <span ng-if="!pageStateModel.isGroupByDay()" class="glyphicon glyphicon-unchecked"></span>
+                      <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-check"></span>
+                      Group by day
+                    </a>
+                  </li>
                 </ul>
               </li>
             </ul>
