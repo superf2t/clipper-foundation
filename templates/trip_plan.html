@@ -615,7 +615,7 @@
   </script>
 
   <script type="text/ng-template" id="item-group-template">
-    <div ng-controller="ItemGroupCtrl">
+    <div ng-controller="ItemGroupCtrl" ng-show="itemGroupModel.hasContent()">
       <div ng-include="'item-group-header-template'">
       </div>
       <div ng-show="show">
@@ -633,7 +633,12 @@
     {# TODO: Rename this class #}
     <h4 class="item-group-header" ng-click="toggleSection()">
       <span ng-if="itemGroupModel.isDayGrouping()">
-        Day [[itemGroupModel.groupKey]]
+        <span ng-if="itemGroupModel.groupKey > 0">
+          Day [[itemGroupModel.groupKey]]
+        </span>
+        <span ng-if="!itemGroupModel.groupKey">
+          Unordered
+        </span>
       </span>
       <span ng-if="itemGroupModel.isCategoryGrouping()">
         <span ng-if="itemGroupModel.groupKey == 'lodging'">

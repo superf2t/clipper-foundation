@@ -444,9 +444,26 @@ function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
     return this.sortedItems;
   };
 
+  this.hasContent = function() {
+    return this.sortedItems && this.sortedItems.length
+      && (this.getEntityItems().length || this.getNonemptyNoteItems().length);
+  };
+
   this.getEntityItems = function() {
     return _.filter(this.sortedItems, function(item) {
       return item.isEntity();
+    });
+  };
+
+  this.getNoteItems = function() {
+    return _.filter(this.sortedItems, function(item) {
+      return item.isNote();
+    });
+  };
+
+  this.getNonemptyNoteItems = function() {
+    return _.filter(this.getNoteItems(), function(noteItem) {
+      return !!noteItem.data['text'];
     });
   };
 
@@ -461,7 +478,7 @@ function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
 
 function createDayItemGroupModel(dayNumber) {
   return new ItemGroupModel(Grouping.DAY, dayNumber, dayNumber, function(item) {
-    return item.data['day_position'];
+    return item.position();
   });
 }
 
@@ -498,7 +515,7 @@ function processIntoGroups(grouping, items) {
     groupCreateFn = createCategoryItemGroupModel;
   } else if (grouping == Grouping.DAY) {
     groupKeyFn = function(item) {
-      return item.position();
+      return item.day();
     };
     groupCreateFn = createDayItemGroupModel;
   }
@@ -646,16 +663,12 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
           $scope.$broadcast('clearallmarkers');
           // Angular's dirty-checking does not seem to pick up that the
           // model has changed if we just assign to the new model...
-          // Similarly, since the main iteration in the template is done
-          // over 'orderedCategories', we must reset that variable
-          // after a refresh for Angular to detect that it should re-iterate
-          // over that part of the DOM.
           $scope.planModel = null;
           $scope.orderedCategories = null;
           $timeout(function() {
             planModel.resetEntities(newEntities);
             $scope.planModel = planModel;
-            $scope.orderedCategories = $datatypeValues['categories'];
+            me.processItemsIntoGroups();
           });
         }
       });
@@ -1328,7 +1341,7 @@ function DayPlannerDraggableEntityCtrl($scope) {
   };
 }
 
-function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
+function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $dataRefreshManager) {
   var me = this;
   var unorderedItems = [];
   var orderedItems = [];
@@ -1426,7 +1439,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
         var modifiedEntities = response['entities'];
         $tripPlanModel.updateEntities(modifiedEntities);
         $tripPlanModel.updateLastModified(response['last_modified']);
-        me.saveNotes($scope.$close);
+        me.saveNotes(me.afterSaving);
       });
   };
 
@@ -1453,6 +1466,11 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
         $tripPlanModel.updateLastModified(response['last_modified']);
         opt_callback && opt_callback();
       });
+  };
+
+  this.afterSaving = function() {
+    $dataRefreshManager.askToRefresh();
+    $scope.$close();
   };
 }
 
@@ -1988,7 +2006,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
-    .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService', '$tripPlanModel', DayPlannerCtrl])
+    .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
+      '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
