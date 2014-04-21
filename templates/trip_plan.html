@@ -634,10 +634,12 @@
       <div ng-include="'item-group-header-template'">
       </div>
       <div ng-show="show">
-        <div ng-repeat="item in itemGroupModel.getItems()">
-          <div ng-if="item.isEntity()">
-            <div ng-include="'mapview-one-entity-template'">
-            </div>
+        <div ng-repeat="item in itemGroupModel.getNonemptyNoteItems()">
+          <div ng-include="'mapview-one-note-template'">
+          </div>
+        </div>
+        <div ng-repeat="item in itemGroupModel.getEntityItems()">
+          <div ng-include="'mapview-one-entity-template'">
           </div>
         </div>
       </div>
@@ -664,6 +666,9 @@
         </span>
         <span ng-if="itemGroupModel.groupKey == 'attractions'">
           Attractions
+        </span>
+        <span ng-if="!itemGroupModel.groupKey">
+          Uncategorized
         </span>
       </span>
       <a href="javascript:void(0)">
@@ -734,6 +739,24 @@
             {% endif %}
           </ul>
         </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="mapview-one-note-template">
+    <div ng-controller="NoteCtrl" class="one-note-mapview">
+      <div ng-show="!editing">
+        [[nd['text'] ]]
+      </div>
+      <div ng-show="editing">
+        <textarea ng-model="nd['text']" tc-focus-on="editing" class="form-control"
+          ng-blur="saveNote()">
+        </textarea>
+      </div>
+      <div class="controls" ng-show="!editing">
+        <a ng-click="openEditNote()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-pencil"></span>
+        </a>
+      </div>
     </div>
   </script>
 

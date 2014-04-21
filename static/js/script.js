@@ -164,7 +164,9 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   };
 
   this.updateLastModified = function(lastModified) {
-    this.tripPlanData['last_modified'] = lastModified;
+    if (lastModified) {
+      this.tripPlanData['last_modified'] = lastModified;
+    }
   };
 }
 
@@ -320,6 +322,23 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
       windowClass: 'modal-carousel',
       scope: scope
     });
+  };
+}
+
+function NoteCtrl($scope, $noteService, $tripPlanModel) {
+  $scope.nd = $scope.item.data;
+  $scope.editing = false;
+
+  $scope.openEditNote = function() {
+    $scope.editing = true;
+  };
+
+  $scope.saveNote = function() {
+    $noteService.editNote($scope.item.data, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        $tripPlanModel.updateLastModified(response['last_modified']);
+      });
+    $scope.editing = false;
   };
 }
 
@@ -2046,6 +2065,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$templateToStringRenderer', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$tripPlan', EntityCtrl])
+    .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])

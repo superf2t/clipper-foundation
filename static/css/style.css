@@ -136,7 +136,7 @@ hr.dropdown-separator {
   width: 30%;
   text-align: center;
   overflow: hidden;
-  border-right: 1px solid #ddd;
+  background-color: #777;
 }
 
 .one-entity-mapview .img-container img {
@@ -144,6 +144,8 @@ hr.dropdown-separator {
   position: relative;
   left: 100%;
   margin-left: -200%;
+  border-left: 1px solid #fff;
+  border-right: 1px solid #fff;
 }
 
 .one-entity-mapview .details {
@@ -205,6 +207,17 @@ hr.dropdown-separator {
 
 .modal-carousel img {
   height: 100%;
+  margin: auto;
+}
+
+.one-note-mapview {
+  margin: 5px 10px;
+}
+
+.one-note-mapview .controls {
+  float: right;
+  position: relative;
+  top: -18px;
 }
 
 .clipped-pages-header {
