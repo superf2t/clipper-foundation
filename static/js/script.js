@@ -30,6 +30,16 @@ function dictByAttr(objs, attrNameOrFn) {
   return dict;
 }
 
+function removeElemByValue(arr, value) {
+  for (var i = 0, I = arr.length; i < I; i++) {
+    if (arr[i] === value) {
+      arr.splice(i, 1);
+      return i;
+    }
+  }
+  return null;
+}
+
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
@@ -90,13 +100,26 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 
   this.resetEntities = function(entities) {
     this.entitiesById = dictByAttr(entities, 'entity_id');
-    this.entityDatas = entities;
+    this.entityDatas = entities || [];
   };
 
   this.tripPlanData = tripPlanData;
   this.resetEntities(entityDatas);
-  this.notes = notes;
+  this.notes = notes || [];
 
+  this.allItems = function() {
+    return _.map(this.entityDatas.concat(this.notes), function(data) {
+      return new ItemModel(data);
+    });
+  };
+
+  this.entityItems = function() {
+    return _.map(this.entityDatas, function(data) {
+      return new ItemModel(data);
+    });
+  };
+
+  // TODO: Remove
   this.entitiesForCategory = function(category) {
     var entities = [];
     $.each(this.entityDatas, function(i, entity) {
@@ -145,13 +168,16 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   };
 }
 
-function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlan, $allowEditing) {
+function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlan, $allowEditing) {
   var me = this;
-  $scope.entityModels = [];
   $scope.show = true;
 
+  var entityModels = _.map($scope.itemGroupModel.getEntityItems(), function(item) {
+    return new EntityModel(item.data, $allowEditing);
+  });
+
   $scope.$on('closeallinfowindows', function() {
-    $.each($scope.entityModels, function(i, entityModel) {
+    $.each(entityModels, function(i, entityModel) {
       if (entityModel.infowindow) {
         entityModel.infowindow.close();
       }
@@ -159,15 +185,12 @@ function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStrin
   });
 
   $scope.$on('clearallmarkers', function() {
-    $.each($scope.entityModels, function(i, entityModel) {
+    $.each(entityModels, function(i, entityModel) {
       entityModel.clearMarker();
     });
   });
 
-  $.each($scope.planModel.entitiesForCategory($scope.category), function(i, entity) {
-    $scope.entityModels.push(new EntityModel(entity, $allowEditing));
-  });
-  $.each($scope.entityModels, function(i, entityModel) {
+  $.each(entityModels, function(i, entityModel) {
     var marker = entityModel.marker;
     if (!marker) {
       return;
@@ -197,21 +220,17 @@ function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStrin
 
   $scope.toggleSection = function() {
     $scope.show = !$scope.show;
-    $.each($scope.entityModels, function(i, entityModel) {
+    $.each(entityModels, function(i, entityModel) {
       if (entityModel.marker) {
         entityModel.marker.setMap($scope.show ? $map : null);
       }
     });
   };
 
-  $scope.hasEntities = function() {
-    return $scope.entityModels && $scope.entityModels.length;
-  };
-
-  $scope.openInfowindow = function(entityName) {
+  $scope.openInfowindow = function(entityId) {
     $scope.$emit('asktocloseallinfowindows');
-    $.each($scope.entityModels, function(i, entityModel) {
-      if (entityModel.data['name'] == entityName && entityModel.hasLocation()) {
+    $.each(entityModels, function(i, entityModel) {
+      if (entityModel.data['entity_id'] == entityId && entityModel.hasLocation()) {
         me.createInfowindow(entityModel, entityModel.marker);
       }
     });
@@ -226,6 +245,7 @@ function CategoryCtrl($scope, $map, $mapBounds, $entityService, $templateToStrin
 }
 
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlan) {
+  $scope.ed = $scope.item.data;
   $scope.editing = false;
 
   $scope.openEditEntity = function() {
@@ -239,7 +259,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   $scope.openEditPlaceModal = function() {
     var scope = $scope.$new(true);
     scope.isEditOfExistingEntity = true;
-    var entityData = angular.copy($scope.entityModel.data);
+    var entityData = angular.copy($scope.item.data);
     scope.entityModel = new EntityModel(entityData);
     scope.ed = scope.entityModel.data;
     $modal.open({
@@ -248,8 +268,11 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
     });    
   };
 
+  // Note that this does not refresh the page state, so is only
+  // appropriate for things like description editing which don't
+  // require further updating.
   $scope.saveEntityEdit = function() {
-    $entityService.editEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
+    $entityService.editEntity($scope.item.data, $tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $tripPlan['last_modified'] = response['last_modified'];
@@ -264,7 +287,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
 
   $scope.reclipEntity = function() {
     var scope = $scope.$new(true);
-    scope.entityModel = new EntityModel(angular.copy($scope.entityModel.data));
+    scope.entityModel = new EntityModel(angular.copy($scope.item.data));
     scope.ed = scope.entityModel.data;
     scope.ed['entity_id'] = null;
     $modal.open({
@@ -274,7 +297,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   };
 
   $scope.deleteEntity = function() {
-    $entityService.deleteEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
+    $entityService.deleteEntity($scope.item.data, $tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $dataRefreshManager.askToRefresh();
@@ -375,27 +398,120 @@ function TemplateToStringRenderer($rootScope, $templateCache, $compile) {
   };
 }
 
-function PageStateModel() {
-  var GUIDE_VIEW = 1;
-  var MAP_VIEW = 2;
+var Grouping = {
+  CATEGORY: 1,
+  DAY: 2
+};
 
-  this.view = MAP_VIEW;
+var View = {
+  GUIDE_VIEW: 1,
+  MAP_VIEW: 2
+};
+
+function PageStateModel() {
+  this.view = View.MAP_VIEW;
+  this.grouping = Grouping.CATEGORY;
 
   this.inGuideView = function() {
-    return this.view == GUIDE_VIEW;
+    return this.view == View.GUIDE_VIEW;
   };
 
   this.inMapView = function() {
-    return this.view == MAP_VIEW;
+    return this.view == View.MAP_VIEW;
   };
 
   this.showGuideView = function() {
-    this.view = GUIDE_VIEW;
+    this.view = View.GUIDE_VIEW;
   };
 
   this.showMapView = function() {
-    this.view = MAP_VIEW;
+    this.view = View.MAP_VIEW;
   };
+}
+
+function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
+  this.grouping = grouping;
+  this.groupKey = groupKey;
+  this.groupRank = groupRank;
+  this.sortedItems = [];
+
+  this.addItem = function(item) {
+    var insertionIndex = _.sortedIndex(this.sortedItems, item, itemRankFn);
+    this.sortedItems.splice(insertionIndex, 0, item);
+  };
+
+  this.getItems = function() {
+    return this.sortedItems;
+  };
+
+  this.getEntityItems = function() {
+    return _.filter(this.sortedItems, function(item) {
+      return item.isEntity();
+    });
+  };
+
+  this.isDayGrouping = function() {
+    return this.grouping == Grouping.DAY;
+  };
+
+  this.isCategoryGrouping = function() {
+    return this.grouping == Grouping.CATEGORY;
+  };
+}
+
+function createDayItemGroupModel(dayNumber) {
+  return new ItemGroupModel(Grouping.DAY, dayNumber, dayNumber, function(item) {
+    return item.data['day_position'];
+  });
+}
+
+var CATEGORY_NAME_TO_SORTING_RANK = {
+  'lodging': 1,
+  'food_and_drink': 2,
+  'attractions': 3
+};
+
+var SUB_CATEGORY_NAME_TO_SORTING_RANK = {
+    'hotel': 1,
+    'private_rental': 2,
+    'bed_and_breakfast': 3,
+    'hostel': 4,    
+    'restaurant': 5,
+    'bar': 6
+};
+
+function createCategoryItemGroupModel(categoryName) {
+  var groupRank = CATEGORY_NAME_TO_SORTING_RANK[categoryName];
+  return new ItemGroupModel(Grouping.CATEGORY, categoryName, groupRank, function(item) {
+    return SUB_CATEGORY_NAME_TO_SORTING_RANK[item.data['sub_category']];
+  });
+}
+
+function processIntoGroups(grouping, items) {
+  var groupsByKey = {};
+  var groupKeyFn = null;
+  var groupCreateFn = null
+  if (grouping == Grouping.CATEGORY) {
+    groupKeyFn = function(item) {
+      return item.data['category'] && item.data['category']['name'];
+    };
+    groupCreateFn = createCategoryItemGroupModel;
+  } else if (grouping == Grouping.DAY) {
+    groupKeyFn = function(item) {
+      return item.position();
+    };
+    groupCreateFn = createDayItemGroupModel;
+  }
+
+  $.each(items, function(i, item) {
+    var groupKey = groupKeyFn(item);
+    var groupModel = groupsByKey[groupKey];
+    if (!groupModel) {
+      groupModel = groupsByKey[groupKey] = groupCreateFn(groupKey);
+    }
+    groupModel.addItem(item);
+  });
+  return _.sortBy(_.values(groupsByKey), 'groupRank');
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
@@ -419,6 +535,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     clipping: false,
     statusCode: null
   };
+  this.processItemsIntoGroups = function() {
+    $scope.itemGroups = processIntoGroups($scope.pageStateModel.grouping, $scope.planModel.allItems());
+  };
+  this.processItemsIntoGroups();
 
   $scope.toggleOmnibox = function() {
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
@@ -966,17 +1086,7 @@ function EditImagesCtrl($scope, $timeout) {
 }
 
 
-function removeElemByValue(arr, value) {
-  for (var i = 0, I = arr.length; i < I; i++) {
-    if (arr[i] === value) {
-      arr.splice(i, 1);
-      return i;
-    }
-  }
-  return null;
-}
-
-function DayPlannerItemModel(data) {
+function ItemModel(data) {
   this.data = data;
 
   this.day = function() {
@@ -1011,12 +1121,20 @@ function DayPlannerItemModel(data) {
     this.setDay(-1);
     this.setPosition(-1);
   };
+
+  this.isPreciseLocation = function() {
+    return this.data['address_precision'] == 'Precise';
+  };
+
+  this.hasLocation = function() {
+    return !!this.data['latlng'];
+  };
 }
 
 function DayPlannerDayModel(dayNumber) {
   this.dayNumber = dayNumber;
   this.items = [];
-  this.noteItem = new DayPlannerItemModel({
+  this.noteItem = new ItemModel({
     'day': dayNumber,
     'text': ''
   });
@@ -1215,7 +1333,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
   var unorderedItems = [];
   var orderedItems = [];
   $.each($tripPlanModel.entityDatas, function(i, entity) {
-    var item = new DayPlannerItemModel(angular.copy(entity));
+    var item = new ItemModel(angular.copy(entity));
     if (item.day()) {
       orderedItems.push(item);
     } else {
@@ -1223,7 +1341,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel) {
     }
   });
   var noteItems = $.map($tripPlanModel.notes, function(note) {
-    return new DayPlannerItemModel(angular.copy(note));
+    return new ItemModel(angular.copy(note));
   });
 
   $scope.dayPlannerModel = new DayPlannerModel(orderedItems, unorderedItems, noteItems);
@@ -1765,6 +1883,25 @@ function tcGooglePlaceAutocomplete($parse) {
   };
 }
 
+function tcEllipsize($timeout) {
+  return {
+    restrict: 'A',
+    scope: {
+      watchValue: '='
+    },
+    link: function(scope, element, attrs) {
+      $timeout(function() {
+        element.dotdotdot({
+          watch: true
+        });
+        scope.$watch('watchValue', function() {
+          element.trigger('update.dot');
+        });
+      });
+    }
+  };
+}
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -1806,7 +1943,8 @@ angular.module('directivesModule', [])
   .directive('tcDragover', directiveForEvent('dragover'))
   .directive('tcDragend', directiveForEvent('dragend'))
   .directive('tcFocusOn', tcFocusOn)
-  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
+  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
+  .directive('tcEllipsize', tcEllipsize);
 
 angular.module('filtersModule', [])
   .filter('hostname', function() {
@@ -1837,8 +1975,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$datatypeValues', '$allowEditing', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
-    .controller('CategoryCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
-      '$templateToStringRenderer', '$tripPlan', '$allowEditing', CategoryCtrl])
+    .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
+      '$templateToStringRenderer', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$tripPlan', EntityCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])

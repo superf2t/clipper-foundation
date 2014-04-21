@@ -6,6 +6,7 @@
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <script src="/static/js/imagesloaded.pkgd.min.js"></script>
   <script src="/static/js/masonry.pkgd.min.js"></script>
+  <script src="/static/js/jquery.dotdotdot.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
@@ -124,9 +125,6 @@
             ng-model="rawInputText"
             on-place-change="placeChanged($newPlace)"
             ng-paste="textPasted()"/>
-<!--             <div class="add-place-manually-link">
-              <a href="javascript:void(0)">Or enter fields manually</a>
-            </div> -->
           </div>
         </div>
         <div ng-show="loadingData" id="search-spinner">
@@ -138,94 +136,12 @@
 
   <div ng-show="pageStateModel.inMapView()">
     <div id="entity-container">
-      <div ng-repeat="category in orderedCategories">
-        <div ng-controller="CategoryCtrl">
-          <div ng-if="hasEntities()">
-            <div class="one-entity-type">
-              <a id="mapview-[[category['name'] ]]" class="offset-anchor"></a>
-              <h4 ng-click="toggleSection()" class="entity-type-header">
-                <a href="javascript:void(0)">[[category['display_name'] ]]
-                  <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
-                  <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
-                </a>
-              </h4>
-              <div class="columns" ng-show="show">
-                <div ng-repeat="entityModel in entityModels">
-                  <div class="one-entity" ng-mouseenter="openInfowindow(entityModel.data['name'])" ng-controller="EntityCtrl">
-                    <div class="one-entity-title">
-                      [[entityModel.data['name'] ]]
-                    </div>
-                    <div ng-include="'carousel-template'">
-                    </div>
-                    <div class="one-entity-rating">
-                      <tc-star-rating value="[[entityModel.data['rating'] ]]">
-                      </tc-star-rating>
-                    </div>
-                    <div class="entity-description"
-                      ng-show="entityModel.hasDescription() && !editing">
-                      <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
-                    </div>
-                    <div ng-if="entityModel.hasLocation() && !entityModel.isPreciseLocation()" class="text-warning entity-info-text">
-                      Location approximate
-                    </div>
-                    <div ng-if="!entityModel.hasLocation()" class="text-warning entity-info-text">
-                      Location unavailable
-                    </div>
-                    <div ng-show="editing">
-                      <textarea ng-model="entityModel.data['description']" class="form-control entity-description-input"
-                        tc-focus-on="editing">
-                      </textarea>
-                    </div>
-                    <div class="one-entity-source">
-                      From <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['source_url'] | hostname ]]</a>
-                    </div>
-                    <div class="entity-edit-controls">
-                      <a href="javascript:void(0)" class="dropdown-toggle" ng-show="!editing">
-                        <span class="glyphicon glyphicon-cog"></span>
-                      </a>
-                      <ul class="dropdown-menu right-bottom-dropdown-menu">
-                        {% if allow_editing %}
-                        <li>
-                          <a ng-click="openEditEntity()" href="javascript:void(0)">
-                            <span class="glyphicon glyphicon-pencil"></span> Add a comment
-                          </a>
-                        </li>
-                        <li>
-                          <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
-                            <span class="glyphicon glyphicon-edit"></span> Edit this place
-                          </a>
-                        </li>
-                        {% endif %}
-                        <li>
-                          <a ng-click="reclipEntity()" href="javascript:void(0)">
-                            <span class="glyphicon glyphicon-paperclip"></span> Clip this place
-                          </a>
-                        </li>
-                        {% if allow_editing %}
-                        <li>
-                          <a ng-click="deleteEntity()" href="javascript:void(0)">
-                            <span class="glyphicon glyphicon-trash"></span> Delete this place
-                          </a>
-                        </li>
-                        {% endif %}
-                      </ul>
-                      {% if allow_editing %}
-                        <button class="btn btn-default btn-save-changes"
-                          ng-click="saveEntityEdit()" ng-show="editing">
-                          Save
-                        </button>
-                        <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
-                          Cancel
-                        </a>
-                      {% endif %}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
+      <div ng-repeat="itemGroupModel in itemGroups">
+        <div ng-include="'item-group-template'">
         </div>
       </div>
+
       <div ng-if="planModel.isEmpty()">
         <div class="getting-started-directions">
           <div class="welcome">
@@ -695,6 +611,106 @@
       <div class="day-planner-entity-description">
         [[item.data['name'] ]]
       </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="item-group-template">
+    <div ng-controller="ItemGroupCtrl">
+      <div ng-include="'item-group-header-template'">
+      </div>
+      <div ng-show="show">
+        <div ng-repeat="item in itemGroupModel.getItems()">
+          <div ng-if="item.isEntity()">
+            <div ng-include="'mapview-one-entity-template'">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="item-group-header-template">
+    {# TODO: Rename this class #}
+    <h4 class="item-group-header" ng-click="toggleSection()">
+      <span ng-if="itemGroupModel.isDayGrouping()">
+        Day [[itemGroupModel.groupKey]]
+      </span>
+      <span ng-if="itemGroupModel.isCategoryGrouping()">
+        <span ng-if="itemGroupModel.groupKey == 'lodging'">
+          Lodging
+        </span>
+        <span ng-if="itemGroupModel.groupKey == 'food_and_drink'">
+          Food &amp; Drink
+        </span>
+        <span ng-if="itemGroupModel.groupKey == 'attractions'">
+          Attractions
+        </span>
+      </span>
+      <a href="javascript:void(0)">
+        <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
+        <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
+      </a>
+    </h4>
+  </script>
+
+  <script type="text/ng-template" id="mapview-one-entity-template">
+    <div ng-controller="EntityCtrl" class="one-entity-mapview"
+      ng-mouseenter="openInfowindow(ed['entity_id'])">
+      <div class="img-container">
+        <img ng-src="[[ed['photo_urls'][0] ]]"/>
+      </div>
+      <div class="details">
+        <div class="title">
+          [[ed['name'] ]]
+        </div>
+        <div ng-show="!editing" class="description" tc-ellipsize watch-value="editing">[[ed['description'] ]]</div>
+        <div ng-show="editing">
+          <textarea ng-model="ed['description']" class="form-control description-input"
+            tc-focus-on="editing" ng-blur="saveEntityEdit()">
+          </textarea>
+        </div>
+        <div class="source">
+          From <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_url'] | hostname ]]</a>
+        </div>
+        <div class="controls">
+          <span ng-if="!item.hasLocation()"
+            tooltip="Location unavailable"
+            class="glyphicon glyphicon-exclamation-sign">
+          </span>
+          <span ng-if="item.hasLocation() && !item.isPreciseLocation()"
+            tooltip="Location approximate"
+            class="glyphicon glyphicon-exclamation-sign">
+          </span>
+          <a href="javascript:void(0)" class="dropdown-toggle">
+            <span class="glyphicon glyphicon-cog"></span>
+          </a>
+          <ul class="dropdown-menu right-bottom-dropdown-menu">
+            {% if allow_editing %}
+            <li>
+              <a ng-click="openEditEntity()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-pencil"></span> Add a comment
+              </a>
+            </li>
+            <li>
+              <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-edit"></span> Edit this place
+              </a>
+            </li>
+            {% endif %}
+            <li>
+              <a ng-click="reclipEntity()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-paperclip"></span> Clip this place
+              </a>
+            </li>
+            {% if allow_editing %}
+            <li>
+              <a ng-click="deleteEntity()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-trash"></span> Delete this place
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
     </div>
   </script>
 

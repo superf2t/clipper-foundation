@@ -91,7 +91,7 @@ hr.dropdown-separator {
 
 #entity-container {
   position: fixed;
-  width: 50%;
+  width: 35%;
   height: 100%;
   overflow: scroll;
   padding-top: 51px;
@@ -103,18 +103,15 @@ hr.dropdown-separator {
     display: none; 
 }
 
-.one-entity-type {
-  margin-bottom: 20px;
-}
-
-.entity-type-header {
+.item-group-header {
   cursor: pointer;
   margin: 0px;
   padding: 10px;
   display: inline-block;
+  color: #000;
 }
 
-.entity-type-header a:hover {
+.item-group-header a:hover {
   text-decoration: none;
 }
 
@@ -125,30 +122,68 @@ hr.dropdown-separator {
   bottom: 6px;
 }
 
-.columns {
-  -webkit-column-count: 2;
-  -webkit-column-gap: 10px;
-  -webkit-column-fill: auto;
-  -moz-column-count: 2;
-  -moz-column-gap: 10px;
-  -moz-column-fill: auto;
-  column-count: 2;
-  column-gap: 10px;
-  column-fill: auto;
-  height: 100%;
-  padding: 0 10px;
+.one-entity-mapview {
+  border: 1px solid #ddd;
+  background-color: #fff;
+  height: 100px;
+  margin: 5px 10px;
+  box-shadow: 1px 1px 3px #aaa;
 }
 
-.one-entity {
-  text-shadow: 0 1px 0 #fff;  
-  border: 1px solid #DDDDDD;
-  margin: 0 0px 10px;
-  -webkit-column-break-inside: avoid;
-  -moz-column-break-inside: avoid;
-  column-break-inside: avoid;
-  background: -webkit-linear-gradient(45deg, #FFF, #F9F9F9);
-  opacity: 1;
-  padding-bottom: 5px;
+.one-entity-mapview .img-container {
+  display: inline-block;
+  height: 100%;
+  width: 30%;
+  text-align: center;
+  overflow: hidden;
+  border-right: 1px solid #ddd;
+}
+
+.one-entity-mapview .img-container img {
+  height: 100%;
+  position: relative;
+  left: 100%;
+  margin-left: -200%;
+}
+
+.one-entity-mapview .details {
+  display: inline-block;
+  vertical-align: top;
+  padding-left: 10px;
+  height: 100%;
+  width: calc(70% - 3px); /* ??? */
+  position: relative;
+}
+
+.one-entity-mapview .title {
+  font-size: 1.2em;
+  font-family: 'Raleway';
+  color: #000;
+}
+
+.one-entity-mapview .description {
+  white-space: pre;
+  font-size: 10pt;
+  height: 55px;
+}
+
+.one-entity-mapview .description-input {
+  width: calc(100% - 10px);
+  height: 50px;
+  margin-top: 5px;
+}
+
+.one-entity-mapview .source {
+  position: absolute;
+  bottom: 0;
+  font-size: 10pt;
+}
+
+.one-entity-mapview .controls {
+  float: right;
+  position: relative;
+  top: -3px;
+  right: 5px;
 }
 
 .clipped-pages-header {
@@ -174,46 +209,10 @@ hr.dropdown-separator {
   margin-top: 20px;
 }
 
-.one-entity-title {
-  margin: 5px;
-  font-size: 1.2em;
-  text-align: center;
-  font-family: 'Raleway';
-  color: #666666;
-}
-
-.one-entity-type-img {
-  float: right;
-  position: relative;
-  top: -3px;
-}
-
-.one-entity-rating {
-  margin: 5px 5px;
-}
-
-.one-entity-source {
-  margin: 5px 5px;
-}
-
 .entity-img {
   margin: auto;
   width: 100%;
   cursor: pointer;
-}
-
-.entity-description {
-  margin: 5px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-.entity-edit-controls {
-  position: relative;
-  float: right;
-  text-align: right;
-  margin: 5px 5px;
-  top: -30px;
 }
 
 .dropdown-menu.right-bottom-dropdown-menu {
@@ -222,16 +221,6 @@ hr.dropdown-separator {
   top: auto;
   bottom: 100%;
   text-align: left;
-}
-
-.entity-info-text {
-  margin: 5px;
-}
-
-.entity-description-input {
-  width: calc(100% - 10px);
-  margin: 10px 5px;
-  padding: 5px;
 }
 
 .btn-save-changes {
@@ -299,9 +288,9 @@ hr.dropdown-separator {
 
 #map-container {
   position: fixed;
-  width: 50%;
+  width: 65%;
   height: calc(100% - 51px);
-  left: 50%;
+  left: 35%;
   top: 51px;
 }
 
@@ -927,7 +916,7 @@ hr.dropdown-separator {
 
 .day-planner-entity-description {
   display: inline-block;
-  position: relative;
-  top: -18px;
+  vertical-align: top;
+  width: calc(80% - 8px);
   margin-left: 5px;
 }
