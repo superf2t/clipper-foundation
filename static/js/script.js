@@ -198,6 +198,7 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
+      scrollMapviewToId('mapview-entity-' + entityModel.data['entity_id']);
       me.createInfowindow(entityModel, marker, true);
     });
     google.maps.event.addListener(marker, 'dragend', function() {
@@ -1507,6 +1508,13 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
 
 // Directives
 
+function scrollMapviewToId(scrollToId) {
+  $('#entity-container').animate({
+    scrollTop: ($("#" + scrollToId).offset().top - 73)
+  }, 500);
+}
+
+// Should be renamed to indicate that this is specific to mapview.
 function tcScrollToOnClick($parse) {
   return {
       restrict: 'AEC',
@@ -1515,9 +1523,7 @@ function tcScrollToOnClick($parse) {
         if (getScrollToIdFn) {
           elem.on('click', function() {
             var scrollToId = getScrollToIdFn(scope);
-            $('html, body').animate({
-              scrollTop: ($("#" + scrollToId).offset().top - 73)
-            }, 500);
+            scrollMapviewToId(scrollToId);
           });
         }
       }

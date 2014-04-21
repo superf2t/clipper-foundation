@@ -675,6 +675,7 @@
 
   <script type="text/ng-template" id="mapview-one-entity-template">
     <div ng-controller="EntityCtrl" class="one-entity-mapview"
+      id="mapview-entity-[[ed['entity_id'] ]]"  {# For scrolling #}
       ng-mouseenter="openInfowindow(ed['entity_id'])">
       <div class="img-container">
         <img ng-src="[[ed['photo_urls'][0] ]]"/>
