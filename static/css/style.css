@@ -186,6 +186,27 @@ hr.dropdown-separator {
   right: 5px;
 }
 
+.modal-carousel.modal {
+  top: 15%;
+}
+
+.modal-carousel .modal-dialog {
+  max-height: 70%;
+  max-width: 70%;
+}
+
+.modal-carousel .carousel-inner>.item>img {
+  height: 100%;
+}
+
+.modal-carousel div {
+  height: 100%;
+}
+
+.modal-carousel img {
+  height: 100%;
+}
+
 .clipped-pages-header {
   padding: 10px;
 }

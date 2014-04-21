@@ -678,7 +678,9 @@
       id="mapview-entity-[[ed['entity_id'] ]]"  {# For scrolling #}
       ng-mouseenter="openInfowindow(ed['entity_id'])">
       <div class="img-container">
-        <img ng-src="[[ed['photo_urls'][0] ]]"/>
+        <a ng-click="openModalCarousel(ed['photo_urls'])" href="javascript:void(0)">
+          <img ng-src="[[ed['photo_urls'][0] ]]"/>
+        </a>
       </div>
       <div class="details">
         <div class="title">
@@ -733,6 +735,14 @@
           </ul>
         </div>
     </div>
+  </script>
+
+  <script type="text/ng-template" id="modal-carousel-template">
+    <carousel interval="-1">
+      <slide ng-repeat="slide in slides" active="slide.active">
+        <img ng-src="[[slide.imgUrl]]"/>
+      </script>
+    </carousel>
   </script>
 
   {% include 'widgets.html' %}

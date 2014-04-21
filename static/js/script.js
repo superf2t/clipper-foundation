@@ -309,6 +309,18 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
         alert('Failed to delete entity')
       });
   };
+
+  $scope.openModalCarousel = function(imgUrls) {
+    var scope = $scope.$new(true);
+    scope.slides = _.map(imgUrls, function(url) {
+      return {imgUrl: url};
+    });
+    $modal.open({
+      templateUrl: 'modal-carousel-template',
+      windowClass: 'modal-carousel',
+      scope: scope
+    });
+  };
 }
 
 function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
