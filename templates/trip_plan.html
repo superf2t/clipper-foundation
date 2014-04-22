@@ -460,6 +460,7 @@
             tc-dragend="onDragend(); leftPanelDragover = false"
             tc-drop="handleLeftPanelDrop($event)"
           >
+            <h4 class="day-planner-panel-header">Unsorted</h4>
             <div ng-repeat="item in dpm.unorderedItems" class="day-planner-unsorted-item">
               <tc-draggable-entity item="item" drag-item="dragItem"
                 on-dragstart="onDragstart($event, item)" on-dragend="onDragend()">
@@ -484,6 +485,9 @@
                     tc-focus-on="editingNote" ng-blur="editingNote = false"
                     placeholder="Enter a note about this day">
                   </textarea>
+                </div>
+                <div ng-show="!dayModel.hasItems()" class="day-planner-day-cta">
+                  Drag and drop places here to organize them
                 </div>
                 <div tc-item-drop-target day="dayModel.dayNumber" position="0"
                   drag-item="dragItem" on-drop="handleDrop(dayModel.dayNumber, 0)">

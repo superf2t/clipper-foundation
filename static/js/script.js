@@ -1253,6 +1253,10 @@ function DayPlannerDayModel(dayNumber) {
     return this.items;
   };
 
+  this.hasItems = function() {
+    return !_.isEmpty(this.items);
+  };
+
   this.clear = function() {
     $.each(this.items, function(i, item) {
       item.clearPosition();
@@ -1295,6 +1299,9 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
       me.dayModelForDay(i + 1);
     }
   });
+  if (_.isEmpty(this.dayModels)) {
+    this.dayModelForDay(1);
+  }
 
   this.organizeItem = function(item, dayNumber, position) {
     if (item.day() == dayNumber && item.position() == position) {

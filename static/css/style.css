@@ -944,10 +944,20 @@ hr.dropdown-separator {
   margin: auto;
 }
 
+.day-planner-panel-header {
+  text-align: center;
+  margin-top: 0;
+}
+
 .day-planner-one-day {
   border: 1px solid #eee;
   margin-bottom: 10px;
   padding: 0px 10px 10px 10px;
+}
+
+.day-planner-day-cta {
+  text-align: center;
+  font-style: italic;
 }
 
 .day-planner-one-day-controls {
