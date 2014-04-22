@@ -212,7 +212,7 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     });
   });
   // TODO: Move this after all have initialized.
-  if (!$mapBounds.isEmpty()) {
+  if (!$mapBounds.isEmpty() && $scope.pageStateModel.inMapView()) {
     $map.fitBounds($mapBounds);
   }
 

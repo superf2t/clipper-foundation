@@ -152,9 +152,8 @@ hr.dropdown-separator {
   display: inline-block;
   vertical-align: top;
   padding-left: 10px;
-  padding-right: 5px;
   height: 100%;
-  width: calc(70% - 3px); /* ??? */
+  width: calc(70% - 16px); /* ??? */
   position: relative;
 }
 
@@ -186,6 +185,7 @@ hr.dropdown-separator {
   float: right;
   position: relative;
   top: -3px;
+  right: -8px;
 }
 
 .one-entity-highlighted {
@@ -946,7 +946,7 @@ hr.dropdown-separator {
 }
 
 .day-planner-one-day-note {
-  white-space: pre;
+  white-space: pre-wrap;
 }
 
 .day-planner-entity-image-container {
