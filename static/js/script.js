@@ -720,11 +720,12 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('closeallinfowindows');
   });
 
-  this.refresh = function() {
-    if ($scope.refreshState.paused || !$allowEditing) {
+  this.refresh = function(opt_force) {
+    if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
       return;
     }
-    $entityService.getByTripPlanId($tripPlan['trip_plan_id'], $tripPlan['last_modified'])
+    var lastModified = opt_force ? null : $tripPlan['last_modified'];
+    $entityService.getByTripPlanId($tripPlan['trip_plan_id'], lastModified)
       .success(function(response) {
         if ($scope.refreshState.paused) {
           return;
@@ -747,7 +748,9 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       });
   };
 
-  $scope.$on('refreshdata', this.refresh);
+  $scope.$on('refreshdata', function(event, opt_force) {
+    me.refresh(opt_force);
+  });
 
   var refreshInterval = 5000;
   function refreshPoll() {
@@ -928,6 +931,10 @@ function categoryToIconUrl(categoryName, subCategoryName, precision) {
 function DataRefreshManager($rootScope) {
   this.askToRefresh = function() {
     $rootScope.$broadcast('refreshdata');
+  };
+
+  this.forceRefresh = function() {
+    $rootScope.$broadcast('refreshdata', true);
   };
 }
 
@@ -1601,7 +1608,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
   };
 
   this.afterSaving = function() {
-    $dataRefreshManager.askToRefresh();
+    $dataRefreshManager.forceRefresh();
     $scope.$close();
   };
 }
