@@ -460,7 +460,7 @@
             tc-dragend="onDragend(); leftPanelDragover = false"
             tc-drop="handleLeftPanelDrop($event)"
           >
-            <div ng-repeat="item in dpm.unorderedItems">
+            <div ng-repeat="item in dpm.unorderedItems" class="day-planner-unsorted-item">
               <tc-draggable-entity item="item" drag-item="dragItem"
                 on-dragstart="onDragstart($event, item)" on-dragend="onDragend()">
               </tc-draggable-entity>
@@ -515,10 +515,14 @@
     <div class="day-planner-drop-target"
       ng-class="{'dragactive': isDragActive(), 'dragover': dragover}"
       tc-dragenter="onDragenter($event)"
-      tc-dragleave="onDragleave()"
+      tc-dragleave="onDragleave($event)"
       tc-dragover="onDragover($event)"
       tc-drop="onDrop(); dropDone($event)"
     >
+      <div class="day-planner-drop-target-inner"
+        tc-dragenter="onInnerDragenter()"
+        tc-dragleave="onInnerDragleave()">
+      </div>
     </div>
   </script>
 

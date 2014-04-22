@@ -1348,6 +1348,7 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
 function DayPlannerDropTargetCtrl($scope) {
   var me = this;
   $scope.dragover = false;
+  $scope.innerDragover = false
 
   $scope.isDragActive = function() {
     return me.isValidDropTarget();
@@ -1360,8 +1361,18 @@ function DayPlannerDropTargetCtrl($scope) {
     }
   };
 
-  $scope.onDragleave = function() {
-    $scope.dragover = false;
+  $scope.onDragleave = function($event) {
+    if (!$scope.innerDragover) {
+      $scope.dragover = false;
+    }
+  };
+
+  $scope.onInnerDragenter = function() {
+    $scope.innerDragover = true;
+  };
+
+  $scope.onInnerDragleave = function() {
+    $scope.innerDragover = false;
   };
 
   $scope.onDragover = function($event) {
