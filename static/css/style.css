@@ -430,6 +430,19 @@ hr.dropdown-separator {
   margin-top: 5px;
 }
 
+.one-note-guideview {
+  text-align: center;
+  font-size: 14pt;
+  border: 1px solid #fff;
+  width: 50%;
+  margin: auto;
+  padding: 10px;
+}
+
+.note-text {
+  white-space: pre-wrap;
+}
+
 .header-img {
   height: 200px;
   width: 100%;

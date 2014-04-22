@@ -662,7 +662,7 @@
   <script type="text/ng-template" id="mapview-one-note-template">
     <div ng-controller="NoteCtrl" class="one-note-mapview">
       <div ng-show="!editing">
-        [[nd['text'] ]]
+        <div class="note-text">[[nd['text'] ]]</div>
       </div>
       <div ng-show="editing">
         <textarea ng-model="nd['text']" tc-focus-on="editing" class="form-control"
@@ -703,8 +703,8 @@
   </script>
 
   <script type="text/ng-template" id="guideview-one-note-template">
-    <div>
-      Notes go here
+    <div ng-controller="NoteCtrl" class="one-note-guideview">
+      <div class="note-text">[[nd['text'] ]]</div>
     </div>
   </script>
 
