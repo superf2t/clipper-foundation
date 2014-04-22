@@ -1509,6 +1509,9 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
       return $entityService.operationFromEntity(
         entity, $tripPlanModel.tripPlanId(), Operator.EDIT);
     });
+    if (!operations.length) {
+      return me.saveNotes(me.afterSaving);
+    }
     var request = {'operations': operations};
     $entityService.mutate(request)
       .success(function(response) {
@@ -1531,7 +1534,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
       }
     });
     if (!operations.length) {
-      opt_callback && opt_callback()
+      opt_callback && opt_callback();
       return;
     }
     var request = {'operations': operations};
