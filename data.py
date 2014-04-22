@@ -115,13 +115,16 @@ class Entity(serializable.Serializable):
         return -cmp(e1.day, e2.day)
 
 class Note(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('note_id', 'text', 'day', 'day_position')
+    PUBLIC_FIELDS = serializable.fields('note_id', 'text', 'day', 'day_position', 'status')
 
-    def __init__(self, note_id=None, text=None, day=None, day_position=None):
+    Status = enums.enum('ACTIVE', 'DELETED')
+
+    def __init__(self, note_id=None, text=None, day=None, day_position=None, status=None):
         self.note_id = note_id
         self.text = text
         self.day = day
         self.day_position = day_position
+        self.status = status
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',

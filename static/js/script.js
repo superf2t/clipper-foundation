@@ -40,6 +40,10 @@ function removeElemByValue(arr, value) {
   return null;
 }
 
+function isWhitespace(str) {
+  return /^\s+$/.test(str);
+}
+
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
@@ -151,14 +155,18 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 
   this.updateNotes = function(noteDatas) {
     var newNotesById = dictByAttr(noteDatas, 'note_id');
-    $.each(this.notes, function(i, note) {
-      var noteId = note['note_id'];
+    for (var i = this.notes.length - 1; i >= 0; i--) {
+      var noteId = this.notes[i]['note_id'];
       var updatedNote = newNotesById[noteId];
       if (updatedNote) {
-        me.notes[i] = updatedNote;
+        if (updatedNote['status'] == 'DELETED') {
+          this.notes.splice(i, 1);
+        } else {
+          this.notes[i] = updatedNote;
+        }
         delete newNotesById[noteId];
       };
-    });
+    }
     // Any leftover values are new notes, so we should append them.
     this.notes.push.apply(this.notes, _.values(newNotesById));
   };
@@ -1280,6 +1288,7 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
   var me = this;
   this.dayModels = [];
   this.unorderedItems = unorderedItems;
+  this.noteItemsFromDeletedDays = [];
 
   this.dayModelForDay = function(dayNumber /* 1-indexed */) {
     var dayIndex = dayNumber - 1;
@@ -1347,6 +1356,9 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
     $.each(this.dayModels.slice(indexToRemove), function(i, model) {
       model.setDay(model.dayNumber - 1);
     });
+    if (dayModel.noteItem && dayModel.noteItem.data['note_id']) {
+      this.noteItemsFromDeletedDays.push(dayModel.noteItem);
+    }
   };
 
   this.allOrderedItems = function() {
@@ -1363,9 +1375,10 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
   };
 
   this.allNoteItems = function() {
-    return _.map(this.dayModels, function(dayModel) {
+    var noteItems = _.map(this.dayModels, function(dayModel) {
       return dayModel.noteItem;
     });
+    return this.noteItemsFromDeletedDays.concat(noteItems);
   };
 }
 
@@ -1564,8 +1577,12 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
     var tripPlanId = $tripPlanModel.tripPlanId();
     $.each(allNotes, function(i, note) {
       if (note['note_id']) {
-        operations.push($noteService.operationFromNote(note, tripPlanId, Operator.EDIT));
-      } else if (!note['note_id'] && note['text']) {
+        if (!note['text'] || isWhitespace(note['text'])) {
+          operations.push($noteService.operationFromNote(note, tripPlanId, Operator.DELETE));
+        } else {
+          operations.push($noteService.operationFromNote(note, tripPlanId, Operator.EDIT));
+        }
+      } else if (!note['note_id'] && note['text'] && !isWhitespace(note['text'])) {
         operations.push($noteService.operationFromNote(note, tripPlanId, Operator.ADD));
       }
     });

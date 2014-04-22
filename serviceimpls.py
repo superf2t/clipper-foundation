@@ -527,7 +527,7 @@ class NoteService(service.Service):
         self.process_deletes(OperationData.filter_by_operator(operations, Operator.DELETE))
         for trip_plan in trip_plans:
             data.save_trip_plan(trip_plan)
-        notes = [op.result for op in operations]
+        notes = [op.result or {} for op in operations]
         return NoteMutateResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             notes=notes, last_modified=trip_plans[0].last_modified)
@@ -570,4 +570,5 @@ class NoteService(service.Service):
             for i, note in enumerate(op.trip_plan.notes):
                 if note.note_id == op.operation.note.note_id:
                     op.result = op.trip_plan.notes.pop(i)
+                    op.result.status = data.Note.Status.DELETED.name
                     break
