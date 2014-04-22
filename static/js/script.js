@@ -202,6 +202,7 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     google.maps.event.addListener(marker, 'click', function() {
       scrollMapviewToId('mapview-entity-' + entityModel.data['entity_id'],
         'one-entity-highlighted', 2000);
+      $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow(entityModel, marker, true);
     });
     google.maps.event.addListener(marker, 'dragend', function() {
