@@ -470,19 +470,36 @@
           <div class="col-md-7 day-planner-right-panel">
             <div ng-repeat="dayModel in dpm.dayModels">
               <div class="day-planner-one-day" ng-controller="DayPlannerOneDayCtrl">
-                <h4 class="day-planner-day-heading">Day [[dayModel.dayNumber]]</h4>
+                <h4 class="day-planner-day-heading">
+                  Day [[dayModel.dayNumber]]
+                  <span class="day-planner-edit-note-control" ng-show="!editingNote">
+                    <a ng-click="openNoteEditor()" href="javascript:void(0)"
+                      tooltip="Add a note" tooltip-placement="bottom">
+                      <span class="glyphicon glyphicon-pencil"></span>
+                    </a>
+                  </span>
+                </h4>
+
                 <div class="day-planner-one-day-controls">
-                  <a ng-click="editingNote = true" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-pencil"></span>
+                  <a href="javascript:void(0)" class="dropdown-toggle">
+                    <span class="glyphicon glyphicon-cog"></span>
                   </a>
-                  <a ng-click="dpm.clearDay(dayModel)" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-trash"></span>
-                  </a>
+                  <ul class="dropdown-menu right-top-dropdown-menu">
+                    <li>
+                      <a ng-click="dpm.clearDay(dayModel)" href="javascript:void(0)">
+                        <span class="glyphicon glyphicon-remove"></span> Clear day
+                      </a>
+                      <a ng-click="dpm.deleteDay(dayModel)" href="javascript:void(0)">
+                        <span class="glyphicon glyphicon-trash"></span> Remove day from trip
+                      </a>
+                    </li>
+                  </ul>
                 </div>
+
                 <div ng-show="!editingNote" class="day-planner-one-day-note">[[dayModel.noteItem.data['text'] ]]</div>
                 <div ng-show="editingNote">
                   <textarea class="form-control" ng-model="dayModel.noteItem.data['text']"
-                    tc-focus-on="editingNote" ng-blur="editingNote = false"
+                    tc-focus-on="editingNote" ng-blur="closeNoteEditor()"
                     placeholder="Enter a note about this day">
                   </textarea>
                 </div>

@@ -261,6 +261,12 @@ hr.dropdown-separator {
   text-align: left;
 }
 
+.dropdown-menu.right-top-dropdown-menu {
+  left: auto;
+  right: 0px;
+  text-align: left;
+}
+
 .btn-save-changes {
   padding: 2px 3px;
   position: relative;
@@ -856,6 +862,7 @@ hr.dropdown-separator {
 
 .day-planner-body {
   height: calc(100% - 44px);
+  width: 100%;
   overflow: hidden;
 }
 
@@ -999,6 +1006,19 @@ hr.dropdown-separator {
   top: -20px;
   right: 2px;
   display: none;
+}
+
+.day-planner-edit-note-control {
+  padding-left: 15px;
+  font-size: 14px;
+}
+
+.day-planner-edit-note-control a {
+  color: #666;
+}
+
+.day-planner-edit-note-control a:hover {
+  color: #428bca;
 }
 
 .draggable-entity-controls span {

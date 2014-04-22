@@ -1257,6 +1257,14 @@ function DayPlannerDayModel(dayNumber) {
     return !_.isEmpty(this.items);
   };
 
+  this.setDay = function(newDayNumber) {
+    this.dayNumber = newDayNumber;
+    $.each(this.items, function(i, item) {
+      item.setDay(newDayNumber);
+    });
+    this.noteItem.setDay(newDayNumber);
+  };
+
   this.clear = function() {
     $.each(this.items, function(i, item) {
       item.clearPosition();
@@ -1330,6 +1338,15 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
     this.dayModelForDay(itemModel.day()).removeItem(itemModel);
     itemModel.clearPosition();
     this.unorderedItems.push(itemModel);
+  };
+
+  this.deleteDay = function(dayModel) {
+    var indexToRemove = dayModel.dayNumber - 1;
+    this.clearDay(dayModel);
+    this.dayModels.splice(indexToRemove, 1);
+    $.each(this.dayModels.slice(indexToRemove), function(i, model) {
+      model.setDay(model.dayNumber - 1);
+    });
   };
 
   this.allOrderedItems = function() {
@@ -1416,6 +1433,14 @@ function DayPlannerDropTargetCtrl($scope) {
 
 function DayPlannerOneDayCtrl($scope) {
   $scope.editingNote = false;
+
+  $scope.openNoteEditor = function() {
+    $scope.editingNote = true;
+  };
+
+  $scope.closeNoteEditor = function() {
+    $scope.editingNote = false;
+  };
 }
 
 function DayPlannerDraggableEntityCtrl($scope) {
