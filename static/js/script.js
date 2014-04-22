@@ -200,7 +200,8 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
-      scrollMapviewToId('mapview-entity-' + entityModel.data['entity_id']);
+      scrollMapviewToId('mapview-entity-' + entityModel.data['entity_id'],
+        'one-entity-highlighted', 2000);
       me.createInfowindow(entityModel, marker, true);
     });
     google.maps.event.addListener(marker, 'dragend', function() {
@@ -1539,10 +1540,22 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
 
 // Directives
 
-function scrollMapviewToId(scrollToId) {
-  $('#entity-container').animate({
-    scrollTop: ($("#" + scrollToId).offset().top - 73)
-  }, 500);
+function scrollMapviewToId(scrollToId, opt_classToAdd, opt_removeClassAfter) {
+
+  var scrollElem = $("#" + scrollToId);
+  var container = $('#entity-container');
+  var newScrollTop = container.scrollTop() + scrollElem.offset().top - 73;
+  if (newScrollTop != 0) {
+    container.animate({scrollTop: newScrollTop}, 500);
+  }
+  if (opt_classToAdd) {
+    scrollElem.addClass(opt_classToAdd);
+    if (opt_removeClassAfter) {
+      setTimeout(function() {
+        scrollElem.removeClass(opt_classToAdd);
+      }, opt_removeClassAfter);
+    }
+  }
 }
 
 // Should be renamed to indicate that this is specific to mapview.

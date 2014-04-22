@@ -152,6 +152,7 @@ hr.dropdown-separator {
   display: inline-block;
   vertical-align: top;
   padding-left: 10px;
+  padding-right: 5px;
   height: 100%;
   width: calc(70% - 3px); /* ??? */
   position: relative;
@@ -185,7 +186,10 @@ hr.dropdown-separator {
   float: right;
   position: relative;
   top: -3px;
-  right: 5px;
+}
+
+.one-entity-highlighted {
+  box-shadow: 0px 0px 5px 5px rgba(126, 173, 224, 0.8);
 }
 
 .modal-carousel.modal {
