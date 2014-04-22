@@ -158,40 +158,7 @@
       </div>
 
       <div ng-if="planModel.isEmpty()">
-        <div class="getting-started-directions">
-          <div class="welcome">
-            Welcome to your New Trip Plan
-          </div>
-          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
-            <button class="btn btn-info" id="btn-bookmarklet">
-              Travel Clipper
-            </button>
-          </a> <-- If you haven't already, drag me to your Bookmarks Bar
-          <div class="step">
-            Step 1
-          </div>
-          <p>
-            Pick a travel destination then browse popular travel websites for hotel, restaurant, and attraction options
-          </p>
-          <p>
-            Try these supported sites - 
-            <a href="http://www.hotels.com/hotel/details.html?pa=5&pn=1&ps=5&tab=description&destinationId=504261&searchDestination=Paris&hotelId=218097&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first" target="_blank">Hotels.com</a>, 
-            <a href="https://www.airbnb.com/rooms/2095577?s=6yRc" target="_blank">Airbnb</a>, 
-            <a href="http://www.tripadvisor.com/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html" target="_blank">TripAdvisor</a>, 
-            <a href="http://www.yelp.com/biz/la-compagnie-des-vins-surnaturels-paris" target="_blank">Yelp</a>
-          </p>
-          <div class="step">
-            Step 2
-          </div>
-          <p>
-            Clip to this Trip Plan by using the clipper or by pasting the URL of the website you want to save in the URL input above
-          </p>
-          <div class="step">
-            Step 3
-          </div>
-          <p>
-            Come back to this Trip Plan and your bookmarked points of interest will instantly be ready for you to browse and manage
-          </p>
+        <div ng-include="'mapview-getting-started-template'">
         </div>
       </div>
 
@@ -209,70 +176,9 @@
   </div>  {# end map view #}
 
   <div ng-if="pageStateModel.inGuideView()">
-
     <div class="guideview-container">
-      <div ng-repeat="category in orderedCategories">
-        <div ng-controller="GuideViewCategoryCtrl">
-          <div ng-if="hasEntities()">
-            <a id="guideview-[[category['name'] ]]" class="offset-anchor"></a>
-            <div class="header-img" id="[[category['name'] ]]-header-img">
-              <div class="guideview-entity-type-header">[[category['display_name'] ]]</div>
-            </div>
-            <div ng-repeat="entityModel in entityModels">
-              <div class="guideview-one-entity" ng-controller="EntityCtrl"
-                ng-class="{'guideview-entity-even': $even, 'guideview-entity-odd': $odd}">
-                <div class="guideview-one-entity-title">
-                  <a ng-href="[[entityModel.data['source_url'] ]]" target="_blank">[[entityModel.data['name'] ]]</a>
-                </div>
-                <div tc-star-rating value="[[entityModel.data['rating'] ]]" class="guideview-star-rating">
-                </div tc-star-rating>
-                <div ng-controller="GuideViewCarouselCtrl" class="guideview-imgs-showcase">
-                  <div masonry="{ transitionDuration: 0, gutter: 6 }">
-                    <a class="left carousel-control" ng-show="hasPrevImgs()" ng-click="prevImgs()" style="z-index: 1000">
-                      <span class="icon-prev"></span>
-                    </a>
-                    <div class="masonry-brick guideview-img-masonry-brick" ng-repeat="imgUrl in activeImgUrls()">
-                      <img bn-lazy-src="[[imgUrl]]" class="guideview-masonry-img"/>
-                    </div>
-                    <a class="right carousel-control guideview-carousel-control" ng-show="hasNextImgs()" ng-click="nextImgs()">
-                      <span class="icon-next"></span>
-                    </a>
-                  </div>
-                </div>
-
-                <div class="guideview-entity-info">
-                  <div class="guideview-entity-description"
-                    ng-show="entityModel.hasDescription() && !editing">
-                    <div style="white-space:pre-wrap">[[entityModel.data['description'] ]]</div>
-                  </div>
-                  <div ng-show="editing">
-                    <textarea ng-model="entityModel.data['description']"
-                      class="form-control guideview-entity-description-input">
-                    </textarea>
-                  </div>
-                  {% if allow_editing %}
-                    <div class="guideview-entity-edit-controls">
-                      <a href="javascript:void(0)"
-                        ng-click="deleteEntity()"
-                        ng-show="!editing">
-                        <span class="glyphicon glyphicon-trash"></span>
-                      </a>
-                      <a href="javascript:void(0)"
-                        ng-click="openEditEntity()"
-                        ng-show="!editing">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                      </a>
-                      <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
-                      <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
-                        Cancel
-                      </a>
-                    </div>
-                  {% endif %}
-                </div>
-
-              </div>
-            </div>
-          </div>
+      <div ng-repeat="itemGroupModel in itemGroups">
+        <div ng-include="'guideview-item-group-template'">
         </div>
       </div>
       <div class="guideview-footer">
@@ -647,35 +553,46 @@
   </script>
 
   <script type="text/ng-template" id="item-group-header-template">
-    {# TODO: Rename this class #}
     <h4 class="item-group-header" ng-click="toggleSection()">
-      <span ng-if="itemGroupModel.isDayGrouping()">
-        <span ng-if="itemGroupModel.groupKey > 0">
-          Day [[itemGroupModel.groupKey]]
-        </span>
-        <span ng-if="!itemGroupModel.groupKey">
-          Unordered
-        </span>
-      </span>
-      <span ng-if="itemGroupModel.isCategoryGrouping()">
-        <span ng-if="itemGroupModel.groupKey == 'lodging'">
-          Lodging
-        </span>
-        <span ng-if="itemGroupModel.groupKey == 'food_and_drink'">
-          Food &amp; Drink
-        </span>
-        <span ng-if="itemGroupModel.groupKey == 'attractions'">
-          Attractions
-        </span>
-        <span ng-if="!itemGroupModel.groupKey">
-          Uncategorized
-        </span>
-      </span>
+      <span ng-include="'item-group-header-text-template'"></span>
       <a href="javascript:void(0)">
         <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
         <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
       </a>
     </h4>
+  </script>
+
+  <script type="text/ng-template" id="guideview-item-group-header-template">
+    <div class="header-img" id="[[itemGroupModel.groupKey]]-header-img">
+      <div class="guideview-entity-type-header">
+        <span ng-include="'item-group-header-text-template'"></span>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="item-group-header-text-template">
+    <span ng-if="itemGroupModel.isDayGrouping()">
+      <span ng-if="itemGroupModel.groupKey > 0">
+        Day [[itemGroupModel.groupKey]]
+      </span>
+      <span ng-if="!itemGroupModel.groupKey">
+        Unordered
+      </span>
+    </span>
+    <span ng-if="itemGroupModel.isCategoryGrouping()">
+      <span ng-if="itemGroupModel.groupKey == 'lodging'">
+        Lodging
+      </span>
+      <span ng-if="itemGroupModel.groupKey == 'food_and_drink'">
+        Food &amp; Drink
+      </span>
+      <span ng-if="itemGroupModel.groupKey == 'attractions'">
+        Attractions
+      </span>
+      <span ng-if="!itemGroupModel.groupKey">
+        Uncategorized
+      </span>
+    </span>
   </script>
 
   <script type="text/ng-template" id="mapview-one-entity-template">
@@ -760,12 +677,127 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="modal-carousel-template">
+  <script type="text/ng-template" id="modal-carousel-1template">
     <carousel interval="-1">
       <slide ng-repeat="slide in slides" active="slide.active">
         <img ng-src="[[slide.imgUrl]]"/>
       </script>
     </carousel>
+  </script>
+
+  <script type="text/ng-template" id="guideview-item-group-template">
+    <div ng-show="itemGroupModel.hasContent()">
+      <div ng-include="'guideview-item-group-header-template'">
+      </div>
+      <div>
+        <div ng-repeat="item in itemGroupModel.getNonemptyNoteItems()">
+          <div ng-include="'guideview-one-note-template'">
+          </div>
+        </div>
+        <div ng-repeat="item in itemGroupModel.getEntityItems()">
+          <div ng-include="'guideview-one-entity-template'">
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="guideview-one-note-template">
+    <div>
+      Notes go here
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="guideview-one-entity-template">
+    <div class="guideview-one-entity" ng-controller="EntityCtrl"
+      ng-class="{'guideview-entity-even': $even, 'guideview-entity-odd': $odd}">
+      <div class="guideview-one-entity-title">
+        <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['name'] ]]</a>
+      </div>
+      <div tc-star-rating value="[[ed['rating'] ]]" class="guideview-star-rating">
+      </div tc-star-rating>
+      <div ng-controller="GuideViewCarouselCtrl" class="guideview-imgs-showcase">
+        <div masonry="{ transitionDuration: 0, gutter: 6 }">
+          <a class="left carousel-control" ng-show="hasPrevImgs()" ng-click="prevImgs()" style="z-index: 1000">
+            <span class="icon-prev"></span>
+          </a>
+          <div class="masonry-brick guideview-img-masonry-brick" ng-repeat="imgUrl in activeImgUrls()">
+            <img bn-lazy-src="[[imgUrl]]" class="guideview-masonry-img"/>
+          </div>
+          <a class="right carousel-control guideview-carousel-control" ng-show="hasNextImgs()" ng-click="nextImgs()">
+            <span class="icon-next"></span>
+          </a>
+        </div>
+      </div>
+
+      <div class="guideview-entity-info">
+        <div class="guideview-entity-description"
+          ng-show="ed['description'] && !editing">
+          <div style="white-space:pre-wrap">[[ed['description'] ]]</div>
+        </div>
+        <div ng-show="editing">
+          <textarea ng-model="ed['description']"
+            class="form-control guideview-entity-description-input"></textarea>
+        </div>
+        {% if allow_editing %}
+          <div class="guideview-entity-edit-controls">
+            <a href="javascript:void(0)"
+              ng-click="deleteEntity()"
+              ng-show="!editing">
+              <span class="glyphicon glyphicon-trash"></span>
+            </a>
+            <a href="javascript:void(0)"
+              ng-click="openEditEntity()"
+              ng-show="!editing">
+              <span class="glyphicon glyphicon-pencil"></span>
+            </a>
+            <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
+            <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
+              Cancel
+            </a>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </script>
+ 
+  <script type="text/ng-template" id="mapview-getting-started-template">
+    <div class="getting-started-directions">
+      <div class="welcome">
+        Welcome to your New Trip Plan
+      </div>
+      <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
+        <button class="btn btn-info" id="btn-bookmarklet">
+          Travel Clipper
+        </button>
+      </a> <-- If you haven't already, drag me to your Bookmarks Bar
+      <div class="step">
+        Step 1
+      </div>
+      <p>
+        Pick a travel destination then browse popular travel websites for hotel, restaurant, and attraction options
+      </p>
+      <p>
+        Try these supported sites - 
+        <a href="http://www.hotels.com/hotel/details.html?pa=5&pn=1&ps=5&tab=description&destinationId=504261&searchDestination=Paris&hotelId=218097&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first" target="_blank">Hotels.com</a>, 
+        <a href="https://www.airbnb.com/rooms/2095577?s=6yRc" target="_blank">Airbnb</a>, 
+        <a href="http://www.tripadvisor.com/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html" target="_blank">TripAdvisor</a>, 
+        <a href="http://www.yelp.com/biz/la-compagnie-des-vins-surnaturels-paris" target="_blank">Yelp</a>
+      </p>
+      <div class="step">
+        Step 2
+      </div>
+      <p>
+        Clip to this Trip Plan by using the clipper or by pasting the URL of the website you want to save in the URL input above
+      </p>
+      <div class="step">
+        Step 3
+      </div>
+      <p>
+        Come back to this Trip Plan and your bookmarked points of interest will instantly be ready for you to browse and manage
+      </p>
+    </div>
   </script>
 
   {% include 'widgets.html' %}

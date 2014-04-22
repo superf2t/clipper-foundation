@@ -853,7 +853,7 @@ function GuideViewCategoryCtrl($scope) {
 
 function GuideViewCarouselCtrl($scope, $timeout) {
   var me = this;
-  this.imgUrls = $scope.entityModel.data['photo_urls'];
+  this.imgUrls = $scope.ed['photo_urls'];
   this.currentPage = 0;
   this.numImgsPerPage = 4;
 
