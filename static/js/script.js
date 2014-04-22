@@ -1501,6 +1501,10 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
     $scope.onDragend();
   };
 
+  $scope.clearItem = function(item) {
+    $scope.dayPlannerModel.clearItem(item);
+  };
+
   $scope.saveOrderings = function() {
     var allItemsToSave = $scope.dayPlannerModel.allOrderedItems()
       .concat($scope.dayPlannerModel.purposelyUnorderedItems());
@@ -1656,7 +1660,8 @@ function tcDraggableEntity() {
       item: '=',
       dragItem: '=',
       onDragstart: '&',
-      onDragend: '&'
+      onDragend: '&',
+      onClear: '&'
     }
   };
 }

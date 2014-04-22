@@ -986,9 +986,25 @@ hr.dropdown-separator {
   margin-left: -200%;
 }
 
-.day-planner-entity-description {
+.day-planner-entity-info {
   display: inline-block;
   vertical-align: top;
   width: calc(80% - 8px);
   margin-left: 5px;
+}
+
+.draggable-entity-controls {
+  float: right;
+  position: relative;
+  top: -20px;
+  right: 2px;
+  display: none;
+}
+
+.draggable-entity-controls span {
+  opacity: 0.5;
+}
+
+.day-planner-right-panel .day-planner-draggable-entity:hover .draggable-entity-controls {
+  display: block;
 }

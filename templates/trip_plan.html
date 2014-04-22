@@ -494,7 +494,8 @@
                 </div>
                 <div ng-repeat="itemModel in dayModel.getItems()">
                   <tc-draggable-entity item="itemModel" drag-item="dragItem"
-                    on-dragstart="onDragstart($event, itemModel)" on-dragend="onDragend()">
+                    on-dragstart="onDragstart($event, itemModel)" on-dragend="onDragend()"
+                    on-clear="clearItem(itemModel)">
                   </tc-draggable-entity>
                   <div tc-item-drop-target day="dayModel.dayNumber" position="itemModel.position() + 1"
                     drag-item="dragItem" on-drop="handleDrop(dayModel.dayNumber, itemModel.position() + 1)">
@@ -537,8 +538,15 @@
       <div class="day-planner-entity-image-container">
         <img ng-src="[[item.data['photo_urls'][0] ]]"/>
       </div>
-      <div class="day-planner-entity-description">
-        [[item.data['name'] ]]
+      <div class="day-planner-entity-info">
+        <div>
+          [[item.data['name'] ]]
+        </div>
+        <div class="draggable-entity-controls">
+          <a ng-click="onClear()" href="javascript:void(0)" tooltip="Remove from day">
+            <span class="glyphicon glyphicon-remove"></span>
+          </a>
+        </div>
       </div>
     </div>
   </script>
