@@ -260,6 +260,11 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlan) {
   $scope.ed = $scope.item.data;
   $scope.editing = false;
+  $scope.detailsExpanded = false;
+
+  $scope.toggleDetails = function() {
+    $scope.detailsExpanded = !$scope.detailsExpanded;
+  };
 
   $scope.openEditEntity = function() {
     $scope.editing = true;
@@ -267,6 +272,10 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
 
   $scope.cancelEditing = function() {
     $scope.editing = false;
+  };
+
+  $scope.hasDescription = function() {
+    return !$scope.ed['description'] || isWhitespace($scope.ed['description']);
   };
 
   $scope.openEditPlaceModal = function() {
@@ -1221,6 +1230,13 @@ function ItemModel(data) {
 
   this.hasLocation = function() {
     return !!this.data['latlng'];
+  };
+
+  this.categoryDisplayText = function() {
+    if (this.data['sub_category']) {
+      return this.data['sub_category']['display_name'];
+    }
+    return this.data['category']['display_name'];
   };
 }
 

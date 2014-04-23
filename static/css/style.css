@@ -91,7 +91,7 @@ hr.dropdown-separator {
 
 #entity-container {
   position: fixed;
-  width: 35%;
+  width: 40%;
   height: 100%;
   overflow: scroll;
   padding-top: 51px;
@@ -190,6 +190,84 @@ hr.dropdown-separator {
 
 .one-entity-highlighted {
   box-shadow: 0px 0px 5px 5px rgba(126, 173, 224, 0.8);
+}
+
+.one-entity-mapview-new {
+  border: 1px solid #bbb;
+  background-color: #777;
+  margin: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.one-entity-mapview-new.collapsed {
+  height: 215px;
+}
+
+.one-entity-mapview-new.expanded {
+}
+
+.one-entity-mapview-new .img-container {
+  height: 180px;
+  overflow: hidden;
+  text-align: center;
+}
+
+.one-entity-mapview-new .img-container img {
+  height: 100%;
+}
+
+.one-entity-mapview-new .main-details {
+  padding: 5px;
+  background-color: #fff;
+}
+
+.one-entity-mapview-new .title {
+  font-size: 1.2em;
+  font-family: 'Raleway';
+  color: #000;
+}
+
+.one-entity-mapview-new .category-info {
+  position: absolute;
+  right: 3px;
+  top: 3px;
+  color: #fff;
+}
+
+.one-entity-mapview-new .main-controls {
+  float: right;
+  position: relative;
+  top: -17px;
+}
+
+.one-entity-mapview-new .expanded-details {
+  padding: 0 5px 5px 5px;
+  background-color: #fff;
+  font-size: 1.0em;
+  font-family: 'Raleway';
+  color: #000;
+}
+
+.one-entity-mapview-new .description-section {
+  padding: 5px 0 10px 0;
+}
+
+.one-entity-mapview-new .description {
+  white-space: pre-wrap;
+}
+
+.one-entity-mapview-new .description-input {
+  height: 60px;
+  margin: 5px 0;
+}
+
+.one-entity-mapview-new .add-description-link a {
+  color: #666;
+}
+
+.one-entity-mapview-new .address {
+  padding: 5px 0px;
 }
 
 .modal-carousel.modal {
@@ -332,9 +410,9 @@ hr.dropdown-separator {
 
 #map-container {
   position: fixed;
-  width: 65%;
+  width: 60%;
   height: calc(100% - 51px);
-  left: 35%;
+  left: 40%;
   top: 51px;
 }
 

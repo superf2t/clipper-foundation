@@ -578,7 +578,7 @@
           </div>
         </div>
         <div ng-repeat="item in itemGroupModel.getEntityItems()">
-          <div ng-include="'mapview-one-entity-template'">
+          <div ng-include="'mapview-one-entity-template-new'">
           </div>
         </div>
       </div>
@@ -689,6 +689,95 @@
             {% endif %}
           </ul>
         </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="mapview-one-entity-template-new">
+    <div ng-controller="EntityCtrl" class="one-entity-mapview-new"
+      ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded}"
+      id="mapview-entity-[[ed['entity_id'] ]]"  {# For scrolling #}
+      ng-mouseenter="openInfowindow(ed['entity_id'])">
+      <div class="img-container">
+        {# TODO: Some kind of directive here #}
+        <img ng-src="[[ed['photo_urls'][0] ]]"/><img ng-src="[[ed['photo_urls'][1] ]]"/><img ng-src="[[ed['photo_urls'][2] ]]"/>
+      </div>
+      <div class="category-info">
+        [[item.categoryDisplayText()]]
+        <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
+      </div>
+      <div class="main-details">
+        <div class="title">
+          [[ed['name'] ]]
+        </div>
+        <div class="main-controls">
+          <span ng-if="!item.hasLocation()"
+            tooltip="Location unavailable"
+            class="glyphicon glyphicon-exclamation-sign">
+          </span>
+          <span ng-if="item.hasLocation() && !item.isPreciseLocation()"
+            tooltip="Location approximate"
+            class="glyphicon glyphicon-exclamation-sign">
+          </span>
+          <a href="javascript:void(0)" class="dropdown-toggle">
+            <span class="glyphicon glyphicon-cog"></span>
+          </a>
+          <ul class="dropdown-menu right-bottom-dropdown-menu">
+            {% if allow_editing %}
+            <li>
+              <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-edit"></span> Edit this place
+              </a>
+            </li>
+            {% endif %}
+            <li>
+              <a ng-click="reclipEntity()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-paperclip"></span> Clip this place
+              </a>
+            </li>
+            {% if allow_editing %}
+            <li>
+              <a ng-click="deleteEntity()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-trash"></span> Delete this place
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+          <a ng-click="toggleDetails()" href="javascript:void(0)">
+            <span ng-show="!detailsExpanded" class="glyphicon glyphicon-chevron-down"></span>
+            <span ng-show="detailsExpanded" class="glyphicon glyphicon-chevron-up"></span>
+          </a>
+        </div>
+      </div>
+      <div class="expanded-details" ng-show="detailsExpanded">
+        <div tc-star-rating value="[[ed['rating'] ]]">
+        </div tc-star-rating>
+        <div class="address">
+          [[ed['address'] ]]
+        </div>
+        <div class="description-section" >
+          <div ng-show="!editing" class="description">[[ed['description'] ]]</div>
+          {% if allow_editing %}
+          <div class="add-description-link" ng-show="!editing">
+            <a ng-click="openEditEntity()" href="javascrip:void(0)">
+              <span class="glyphicon glyphicon-pencil"></span>
+              <span ng-show="hasDescription()">Add a comment</span>
+              <span ng-show="!hasDescription()">Edit comment</span>
+            </a>
+          </div>
+          {% endif %}
+        </div>
+        {% if allow_editing %}
+        <div ng-show="editing">
+          <textarea ng-model="ed['description']" class="form-control description-input"
+            tc-focus-on="editing">
+          </textarea>
+          <button ng-show="editing" class="btn btn-primary" ng-click="saveEntityEdit()">Save</button>
+        </div>
+        {% endif %}
+        <div class="source">
+          From <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_url'] | hostname ]]</a>
+        </div>
+      </div>
     </div>
   </script>
 
