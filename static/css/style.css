@@ -885,7 +885,7 @@ hr.dropdown-separator {
 }
 
 .day-planner-left-panel {
-  height: 100%;
+  height: calc(100% - 20px);
   overflow: scroll;
 }
 
