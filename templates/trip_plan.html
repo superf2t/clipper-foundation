@@ -50,10 +50,19 @@
           <li>
             <ul class="nav nav-pills">
               <li class="view-mode-pill" tooltip="Map" tooltip-placement="bottom">
-                <a href="javascript:void(0)" ng-click="showMapView()" 
-                ng-class="{'active-view-mode': pageStateModel.inMapView()}">
+                <a href="javascript:void(0)" ng-click="showMapView()"
+                  class="dropdown-toggle"
+                  ng-class="{'active-view-mode': pageStateModel.inMapView()}">
                   <span class="glyphicon glyphicon-globe" id="header-globe"></span>
                 </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a ng-click="showSmallMap()" href="javascript:void(0)">Small map</a>
+                  </li>
+                  <li>
+                    <a ng-click="showLargeMap()" href="javascript:void(0)">Large map</a>
+                  </li>
+                </ul>
               </li>
               <li class="view-mode-pill" tooltip="Guide" tooltip-placement="bottom">
                 <a href="javascript:void(0)" ng-click="showGuideView()" 
@@ -150,7 +159,8 @@
   {% endif %}
 
   <div ng-show="pageStateModel.inMapView()">
-    <div id="entity-container">
+    <div id="entity-container"
+      ng-class="{'large-map': pageStateModel.inLargeMap(), 'small-map': pageStateModel.inSmallMap()}">
 
       <div ng-repeat="itemGroupModel in itemGroups">
         <div ng-include="'item-group-template'">
@@ -168,7 +178,8 @@
 
     </div>
 
-    <div id="map-container">
+    <div id="map-container"
+      ng-class="{'large-map':pageStateModel.inLargeMap(), 'small-map': pageStateModel.inSmallMap()}">
       <div id="map">
       </div>
     </div>

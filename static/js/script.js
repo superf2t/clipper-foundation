@@ -459,9 +459,15 @@ var View = {
   MAP_VIEW: 2
 };
 
+var MapSize = {
+  SMALL: 1,
+  LARGE: 2
+}
+
 function PageStateModel() {
   this.view = View.MAP_VIEW;
   this.grouping = Grouping.CATEGORY;
+  this.mapSize = MapSize.SMALL;
 
   this.inGuideView = function() {
     return this.view == View.GUIDE_VIEW;
@@ -493,6 +499,14 @@ function PageStateModel() {
 
   this.groupByDay = function() {
     this.grouping = Grouping.DAY;
+  };
+
+  this.inLargeMap = function() {
+    return this.mapSize == MapSize.LARGE;
+  };
+
+  this.inSmallMap = function() {
+    return this.mapSize == MapSize.SMALL;
   };
 }
 
@@ -599,7 +613,7 @@ function processIntoGroups(grouping, items) {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $entityService, $datatypeValues, $allowEditing) {
+    $map, $entityService, $datatypeValues, $allowEditing) {
   var me = this;
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = $tripPlanModel;
@@ -653,6 +667,20 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     if (!$scope.pageStateModel.isGroupByDay()) {
       $scope.pageStateModel.groupByDay();
       me.processItemsIntoGroups();
+    }
+  };
+
+  $scope.showSmallMap = function() {
+    if (!$scope.pageStateModel.inSmallMap()) {
+      $scope.pageStateModel.mapSize = MapSize.SMALL;
+      google.maps.event.trigger($map, 'resize');
+    }
+  };
+
+  $scope.showLargeMap = function() {
+    if (!$scope.pageStateModel.inLargeMap()) {
+      $scope.pageStateModel.mapSize = MapSize.LARGE;
+      google.maps.event.trigger($map, 'resize');
     }
   };
 
@@ -2162,7 +2190,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$entityService',
+      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$entityService',
       '$datatypeValues', '$allowEditing', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
