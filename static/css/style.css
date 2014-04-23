@@ -122,39 +122,38 @@ hr.dropdown-separator {
   bottom: 6px;
 }
 
+.one-entity-highlighted {
+  box-shadow: 0px 0px 5px 5px rgba(126, 173, 224, 0.8);
+}
+
 .one-entity-mapview {
-  border: 1px solid #ddd;
-  background-color: #fff;
-  height: 100px;
-  margin: 5px 10px;
-  box-shadow: 1px 1px 3px #aaa;
+  border: 1px solid #bbb;
+  background-color: #777;
+  margin: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.one-entity-mapview.collapsed {
+  height: 215px;
+}
+
+.one-entity-mapview.expanded {
 }
 
 .one-entity-mapview .img-container {
-  display: inline-block;
-  height: 100%;
-  width: 30%;
-  text-align: center;
+  height: 180px;
   overflow: hidden;
-  background-color: #777;
+  text-align: center;
 }
 
 .one-entity-mapview .img-container img {
   height: 100%;
-  position: relative;
-  left: 100%;
-  margin-left: -200%;
-  border-left: 1px solid #fff;
-  border-right: 1px solid #fff;
 }
 
-.one-entity-mapview .details {
-  display: inline-block;
-  vertical-align: top;
-  padding-left: 10px;
-  height: 100%;
-  width: calc(70% - 16px); /* ??? */
-  position: relative;
+.one-entity-mapview .main-details {
+  padding: 5px;
+  background-color: #fff;
 }
 
 .one-entity-mapview .title {
@@ -163,85 +162,20 @@ hr.dropdown-separator {
   color: #000;
 }
 
-.one-entity-mapview .description {
-  white-space: pre;
-  font-size: 10pt;
-  height: 55px;
-}
-
-.one-entity-mapview .description-input {
-  width: calc(100% - 10px);
-  height: 50px;
-  margin-top: 5px;
-}
-
-.one-entity-mapview .source {
-  position: absolute;
-  bottom: 0;
-  font-size: 10pt;
-}
-
-.one-entity-mapview .controls {
-  float: right;
-  position: relative;
-  top: -3px;
-  right: -8px;
-}
-
-.one-entity-highlighted {
-  box-shadow: 0px 0px 5px 5px rgba(126, 173, 224, 0.8);
-}
-
-.one-entity-mapview-new {
-  border: 1px solid #bbb;
-  background-color: #777;
-  margin: 10px;
-  overflow: hidden;
-  position: relative;
-}
-
-.one-entity-mapview-new.collapsed {
-  height: 215px;
-}
-
-.one-entity-mapview-new.expanded {
-}
-
-.one-entity-mapview-new .img-container {
-  height: 180px;
-  overflow: hidden;
-  text-align: center;
-}
-
-.one-entity-mapview-new .img-container img {
-  height: 100%;
-}
-
-.one-entity-mapview-new .main-details {
-  padding: 5px;
-  background-color: #fff;
-}
-
-.one-entity-mapview-new .title {
-  font-size: 1.2em;
-  font-family: 'Raleway';
-  color: #000;
-}
-
-.one-entity-mapview-new .category-info {
+.one-entity-mapview .category-info {
   position: absolute;
   right: 3px;
   top: 3px;
   color: #fff;
 }
 
-.one-entity-mapview-new .main-controls {
+.one-entity-mapview .main-controls {
   float: right;
   position: relative;
   top: -17px;
 }
 
-.one-entity-mapview-new .expanded-details {
+.one-entity-mapview .expanded-details {
   padding: 0 5px 5px 5px;
   background-color: #fff;
   font-size: 1.0em;
@@ -249,24 +183,24 @@ hr.dropdown-separator {
   color: #000;
 }
 
-.one-entity-mapview-new .description-section {
+.one-entity-mapview .description-section {
   padding: 5px 0 10px 0;
 }
 
-.one-entity-mapview-new .description {
+.one-entity-mapview .description {
   white-space: pre-wrap;
 }
 
-.one-entity-mapview-new .description-input {
+.one-entity-mapview .description-input {
   height: 60px;
   margin: 5px 0;
 }
 
-.one-entity-mapview-new .add-description-link a {
+.one-entity-mapview .add-description-link a {
   color: #666;
 }
 
-.one-entity-mapview-new .address {
+.one-entity-mapview .address {
   padding: 5px 0px;
 }
 
