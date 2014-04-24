@@ -631,17 +631,11 @@
       </span>
     </span>
     <span ng-if="itemGroupModel.isCategoryGrouping()">
-      <span ng-if="itemGroupModel.groupKey == 'lodging'">
-        Lodging
-      </span>
-      <span ng-if="itemGroupModel.groupKey == 'food_and_drink'">
-        Food &amp; Drink
-      </span>
-      <span ng-if="itemGroupModel.groupKey == 'attractions'">
-        Attractions
-      </span>
-      <span ng-if="!itemGroupModel.groupKey">
-        Uncategorized
+      <span ng-switch on="itemGroupModel.groupKey">
+        <span ng-switch-when="lodging">Lodging</span>
+        <span ng-switch-when="food_and_drink">Food &amp; Drink</span>
+        <span ng-switch-when="attractions">Attractions</span>
+        <span ng-switch-default>Uncategorized</span>
       </span>
     </span>
   </script>
