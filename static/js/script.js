@@ -784,6 +784,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
 
   $scope.saveTripPlanSettings = function() {
+    // Prevent double-submits
+    if (this.alreadySaving) {
+      return;
+    }
+    this.alreadySaving = true;
     if ($scope.editableTripPlanSettings.name == $tripPlan['name']) {
       $scope.editingTripPlanSettings = false;
       return;
@@ -799,9 +804,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
         $scope.planModel.tripPlanData['name'] = newName;
         // TODO: This might be redundant now.
         $tripPlan['name'] = newName;
+        me.alreadySaving = false;
       })
       .error(function() {
         alert('Failed to save edits');
+        me.alreadySaving = false;
       });
     $scope.editingTripPlanSettings = false;
   };

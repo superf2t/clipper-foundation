@@ -52,7 +52,7 @@ class Serializable(object):
             raise Exception('Can only update objects of the same class')
         for attr in vars(self).iterkeys():
             value = getattr(other, attr)
-            if value not in (None, {}, []):
+            if value not in (None, {}, [], ()):
                 setattr(self, attr, value)
         return self
 
