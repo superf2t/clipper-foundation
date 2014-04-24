@@ -394,6 +394,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
         'day_position': item.position()
       }
     });
+    $dataRefreshManager.freeze();
     $entityService.editEntities(modifiedEntities, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
@@ -408,11 +409,14 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
             });
           }
         }
+        $dataRefreshManager.unfreeze();
         // HACK: Trigger a click here so that the dropdown menu contain
         // the day-select pill will close.  The click event had previously
         // been suppressed to prevent the dropdown from closing when
         // clicking on the pill.
         $(document.body).trigger('click');
+      }).error(function() {
+        $dataRefreshManager.unfreeze();
       });
   };
 }
@@ -835,6 +839,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   });
 
   this.refresh = function(opt_force, opt_callback) {
+    // TODO: Don't even register the refresh loop if editing is not allowed.
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
       return;
     }
@@ -867,6 +872,12 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.$on('refreshdata', function(event, opt_force, opt_callback) {
     me.refresh(opt_force, opt_callback);
+  });
+  $scope.$on('freezerefresh', function() {
+    $scope.refreshState.paused = true;
+  });
+  $scope.$on('unfreezerefresh', function() {
+    $scope.refreshState.paused = false;
   });
 
   var refreshInterval = 5000;
@@ -1056,6 +1067,14 @@ function DataRefreshManager($rootScope) {
 
   this.redrawGroupings = function(opt_callback) {
     $rootScope.$broadcast('redrawgroupings', opt_callback);
+  };
+
+  this.freeze = function() {
+    $rootScope.$broadcast('freezerefresh');
+  };
+
+  this.unfreeze = function() {
+    $rootScope.$broadcast('unfreezerefresh');
   };
 }
 
