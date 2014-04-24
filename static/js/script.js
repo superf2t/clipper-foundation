@@ -1296,8 +1296,9 @@ function DayPlannerDayModel(dayNumber) {
   };
 
   this.removeItem = function(item) {
-    if (item.day() != dayNumber) {
-      throw 'Asked to remove an item from the wrong day.'
+    if (item.day() != this.dayNumber) {
+      throw 'Asked to remove an item tagged as day ' + item.day()
+        + ' from day ' + this.dayNumber;
     }
     this.items.splice(item.position(), 1);
     this.recalculatePositions();
@@ -1497,6 +1498,7 @@ function DayPlannerDropTargetCtrl($scope) {
 
 function DayPlannerOneDayCtrl($scope) {
   $scope.editingNote = false;
+  $scope.dayDragover = false;
 
   $scope.openNoteEditor = function() {
     $scope.editingNote = true;
@@ -1504,6 +1506,21 @@ function DayPlannerOneDayCtrl($scope) {
 
   $scope.closeNoteEditor = function() {
     $scope.editingNote = false;
+  };
+
+  $scope.isValidDayForDrop = function() {
+    return $scope.dragItem && $scope.dragItem.day() != $scope.dayModel.dayNumber;
+  };
+
+  $scope.onDayDragenter = function($event) {
+    $scope.dayDragover = true;
+  };
+
+  $scope.onDayDragover = function($event) {
+    $scope.dayDragover = true;
+    if ($scope.isValidDayForDrop()) {
+      $event.preventDefault();
+    }
   };
 }
 
@@ -1588,6 +1605,12 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
     $scope.dayPlannerModel.clearItem($scope.dragItem);
     $scope.leftPanelDragover = false;
     $scope.onDragend();
+  };
+
+  $scope.handleDayDrop = function($event, dayModel) {
+    $event.preventDefault();
+    $event.stopPropagation();
+    $scope.handleDrop(dayModel.dayNumber, dayModel.items.length);
   };
 
   $scope.clearItem = function(item) {

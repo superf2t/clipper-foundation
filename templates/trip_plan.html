@@ -480,7 +480,14 @@
           </div>
           <div class="col-md-7 day-planner-right-panel">
             <div ng-repeat="dayModel in dpm.dayModels">
-              <div class="day-planner-one-day" ng-controller="DayPlannerOneDayCtrl">
+              <div class="day-planner-one-day" ng-controller="DayPlannerOneDayCtrl"
+                ng-class="{'dragover': dayDragover && isValidDayForDrop()}"
+                tc-dragenter="onDayDragenter($event)"
+                tc-dragleave="dayDragover = false"
+                tc-dragover="onDayDragover($event)"
+                tc-dragend="onDragend(); dayDragover = false"
+                tc-drop="handleDayDrop($event, dayModel); dayDrover = false;"
+              >
                 <h4 class="day-planner-day-heading">
                   Day [[dayModel.dayNumber]]
                   <span class="day-planner-edit-note-control" ng-show="!editingNote">
@@ -494,7 +501,7 @@
                 <div class="day-planner-one-day-controls">
                   <a href="javascript:void(0)" class="dropdown-toggle">
                     <span class="glyphicon glyphicon-cog"></span>
-                  </a>g
+                  </a>
                   <ul class="dropdown-menu right-top-dropdown-menu">
                     <li>
                       <a ng-click="dpm.clearDay(dayModel)" href="javascript:void(0)">

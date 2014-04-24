@@ -956,7 +956,7 @@ hr.dropdown-separator {
 }
 
 .day-planner-drop-target.dragactive .day-planner-drop-target-inner {
-  background-color: #f5f5f5;
+  background-color: #bbb;
 }
 
 .day-planner-drop-target.dragover .day-planner-drop-target-inner {
@@ -998,6 +998,10 @@ hr.dropdown-separator {
   border: 1px solid #eee;
   margin-bottom: 10px;
   padding: 0px 10px 10px 10px;
+}
+
+.day-planner-one-day.dragover {
+  border: 1px solid #3276b1;
 }
 
 .day-planner-day-cta {
