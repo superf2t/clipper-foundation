@@ -400,6 +400,9 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $tripPlanModel.updateLastModified(response['last_modified']);
           $tripPlanModel.updateEntities(response['entities']);
+          // This is kind of hacky.  Need to make it so that updateEntities()
+          // somehow updates the data in this scope.
+          $scope.ed['day'] = dayModel.dayNumber;
           if ($pageStateModel.isGroupByDay()) {
             $dataRefreshManager.redrawGroupings(function() {
               $timeout(function() {

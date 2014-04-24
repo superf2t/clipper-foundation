@@ -655,6 +655,9 @@
         {# TODO: Some kind of directive here #}
         <img ng-src="[[ed['photo_urls'][0] ]]"/><img ng-src="[[ed['photo_urls'][1] ]]"/><img ng-src="[[ed['photo_urls'][2] ]]"/>
       </div>
+      <div class="day-info" ng-show="item.day()">
+        <span class="glyphicon glyphicon-calendar"></span> Day [[item.day()]]
+      </div>
       <div class="category-info">
         [[item.categoryDisplayText()]]
         <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
