@@ -283,7 +283,8 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
   };
 }
 
-function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlanModel) {
+function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
+    $tripPlanModel, $pageStateModel) {
   var me = this;
   $scope.ed = $scope.item.data;
   $scope.editing = false;
@@ -398,6 +399,9 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $tripPlanModel.updateLastModified(response['last_modified']);
           $tripPlanModel.updateEntities(response['entities']);
+          if ($pageStateModel.isGroupByDay()) {
+            $dataRefreshManager.redrawGroupings();
+          }
         }
         // HACK: Trigger a click here so that the dropdown menu contain
         // the day-select pill will close.  The click event had previously
@@ -677,9 +681,9 @@ function processIntoGroups(grouping, items) {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $entityService, $datatypeValues, $allowEditing) {
+    $map, $pageStateModel, $entityService, $datatypeValues, $allowEditing) {
   var me = this;
-  $scope.pageStateModel = new PageStateModel();
+  $scope.pageStateModel = $pageStateModel;
   $scope.planModel = $tripPlanModel;
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
@@ -701,6 +705,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.itemGroups = processIntoGroups($scope.pageStateModel.grouping, $scope.planModel.allItems());
   };
   this.processItemsIntoGroups();
+
+  $scope.$on('redrawgroupings', this.processItemsIntoGroups);
 
   $scope.toggleOmnibox = function() {
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
@@ -1038,6 +1044,10 @@ function DataRefreshManager($rootScope) {
 
   this.forceRefresh = function(opt_callback) {
     $rootScope.$broadcast('refreshdata', true, opt_callback);
+  };
+
+  this.redrawGroupings = function() {
+    $rootScope.$broadcast('redrawgroupings');
   };
 }
 
@@ -2309,6 +2319,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$tripPlan', tripPlan)
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
+    .value('$pageStateModel', new PageStateModel())
     .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing);
@@ -2321,14 +2332,14 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$entityService',
-      '$datatypeValues', '$allowEditing', RootCtrl])
+      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
+      '$entityService', '$datatypeValues', '$allowEditing', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
       '$templateToStringRenderer', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$tripPlanModel', EntityCtrl])
+      '$dataRefreshManager', '$tripPlanModel', '$pageStateModel', EntityCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])

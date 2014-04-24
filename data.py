@@ -97,7 +97,7 @@ class Entity(serializable.Serializable):
         self.set_icon_url()
 
     def set_icon_url(self):
-        icon_url = ''
+        icon_url = None
         if self.sub_category:
             icon_url = SUB_CATEGORY_NAME_TO_ICON_URL.get(self.sub_category.name)
         elif self.category:
