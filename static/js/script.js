@@ -105,11 +105,14 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   this.resetEntities = function(entities) {
     this.entitiesById = dictByAttr(entities, 'entity_id');
     this.entityDatas = entities || [];
+    if (this.dayPlannerModel) {
+      this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
+    }
   };
 
   this.tripPlanData = tripPlanData;
-  this.resetEntities(entityDatas);
   this.notes = notes || [];
+  this.resetEntities(entityDatas);
 
   this.allItems = function() {
     return _.map(this.entityDatas.concat(this.notes), function(data) {
@@ -120,6 +123,24 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   this.entityItems = function() {
     return _.map(this.entityDatas, function(data) {
       return new ItemModel(data);
+    });
+  };
+
+  this.entityItemCopies = function() {
+    return _.map(this.entityDatas, function(data) {
+      return new ItemModel(angular.copy(data));
+    });
+  };
+
+  this.noteItems = function() {
+    return _.map(this.notes, function(note) {
+      return new ItemModel(note);
+    });
+  };
+
+  this.noteItemCopies = function() {
+    return _.map(this.notes, function(note) {
+      return new ItemModel(angular.copy(note));
     });
   };
 
@@ -151,6 +172,7 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
         me.entitiesById[updatedEntity['entity_id']] = updatedEntity;
       }
     });
+    this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
   };
 
   this.updateNotes = function(noteDatas) {
@@ -169,6 +191,8 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     }
     // Any leftover values are new notes, so we should append them.
     this.notes.push.apply(this.notes, _.values(newNotesById));
+
+    this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
   };
 
   this.updateLastModified = function(lastModified) {
@@ -176,6 +200,8 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
       this.tripPlanData['last_modified'] = lastModified;
     }
   };
+
+  this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
 }
 
 function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlan, $allowEditing) {
@@ -257,10 +283,21 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
   };
 }
 
-function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlan) {
+function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPlanModel) {
+  var me = this;
   $scope.ed = $scope.item.data;
   $scope.editing = false;
   $scope.detailsExpanded = false;
+  $scope.selectedDay = null;
+  if ($scope.item.day()) {
+    $scope.selectedDay = $tripPlanModel.dayPlannerModel.dayModelForDay($scope.item.day());
+  }
+
+  $scope.getDaySelectOptions = function() {
+    var daySelectOptions = $tripPlanModel.dayPlannerModel.dayModels.slice(0);
+    daySelectOptions.push({createNew: true});
+    return daySelectOptions;
+  };
 
   $scope.toggleDetails = function() {
     $scope.detailsExpanded = !$scope.detailsExpanded;
@@ -294,10 +331,10 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   // appropriate for things like description editing which don't
   // require further updating.
   $scope.saveEntityEdit = function() {
-    $entityService.editEntity($scope.item.data, $tripPlan['trip_plan_id'])
+    $entityService.editEntity($scope.item.data, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlan['last_modified'] = response['last_modified'];
+          $tripPlanModel.updateLastModified(response['last_modified']);
         } else {
           alert('Failed to save edits');
         }
@@ -319,7 +356,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
   };
 
   $scope.deleteEntity = function() {
-    $entityService.deleteEntity($scope.item.data, $tripPlan['trip_plan_id'])
+    $entityService.deleteEntity($scope.item.data, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $dataRefreshManager.askToRefresh();
@@ -341,6 +378,33 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager, $tripPl
       windowClass: 'modal-carousel',
       scope: scope
     });
+  };
+
+  $scope.organizeIntoDay = function() {
+    var dayPlannerModel = $scope.planModel.dayPlannerModel;
+    var item = dayPlannerModel.findItemByEntityId($scope.ed['entity_id']);
+    var dayModel = $scope.selectedDay = $scope.selectedDay.createNew ? dayPlannerModel.addNewDay() : $scope.selectedDay;
+    var affectedItems = dayPlannerModel.organizeItem(
+      item, dayModel.dayNumber, dayModel.getItems().length);
+    var modifiedEntities = _.map(affectedItems, function(item) {
+      return {
+        'entity_id': item.data['entity_id'],
+        'day': item.day(),
+        'day_position': item.position()
+      }
+    });
+    $entityService.editEntities(modifiedEntities, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.updateEntities(response['entities']);
+        }
+        // HACK: Trigger a click here so that the dropdown menu contain
+        // the day-select pill will close.  The click event had previously
+        // been suppressed to prevent the dropdown from closing when
+        // clicking on the pill.
+        $(document.body).trigger('click');
+      });
   };
 }
 
@@ -617,7 +681,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   var me = this;
   $scope.pageStateModel = new PageStateModel();
   $scope.planModel = $tripPlanModel;
-  $scope.orderedCategories = $datatypeValues['categories'];
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
   $scope.omniboxState = {visible: false};
@@ -757,7 +820,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('closeallinfowindows');
   });
 
-  this.refresh = function(opt_force) {
+  this.refresh = function(opt_force, opt_callback) {
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
       return;
     }
@@ -774,19 +837,22 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
           $scope.$broadcast('clearallmarkers');
           // Angular's dirty-checking does not seem to pick up that the
           // model has changed if we just assign to the new model...
+          // TODO: This is probably a non-issue now.  Dirty-checking should
+          // work if you update a model in-place instead of replacing it.
+          // So the timeout can probably be removed now.
           $scope.planModel = null;
-          $scope.orderedCategories = null;
           $timeout(function() {
             planModel.resetEntities(newEntities);
             $scope.planModel = planModel;
             me.processItemsIntoGroups();
+            opt_callback && opt_callback;
           });
         }
       });
   };
 
-  $scope.$on('refreshdata', function(event, opt_force) {
-    me.refresh(opt_force);
+  $scope.$on('refreshdata', function(event, opt_force, opt_callback) {
+    me.refresh(opt_force, opt_callback);
   });
 
   var refreshInterval = 5000;
@@ -970,8 +1036,8 @@ function DataRefreshManager($rootScope) {
     $rootScope.$broadcast('refreshdata');
   };
 
-  this.forceRefresh = function() {
-    $rootScope.$broadcast('refreshdata', true);
+  this.forceRefresh = function(opt_callback) {
+    $rootScope.$broadcast('refreshdata', true, opt_callback);
   };
 }
 
@@ -1283,6 +1349,7 @@ function DayPlannerDayModel(dayNumber) {
     item.setDay(this.dayNumber);
     this.items.splice(position, 0, item);
     this.recalculatePositions();
+    return this.items.slice(position);
   };
 
   this.setNote = function(noteItem) {
@@ -1300,13 +1367,17 @@ function DayPlannerDayModel(dayNumber) {
       throw 'Asked to remove an item tagged as day ' + item.day()
         + ' from day ' + this.dayNumber;
     }
-    this.items.splice(item.position(), 1);
+    var oldPosition = item.position();
+    this.items.splice(oldPosition, 1);
     this.recalculatePositions();
+    return this.items.slice(oldPosition);
   };
 
   this.reorderItem = function(item, newPosition) {
-    this.items.splice(item.position(), 1);
+    var oldPosition = item.position();
+    this.items.splice(oldPosition, 1);
     this.addItem(item, newPosition);
+    return this.items.slice(Math.min(oldPosition, newPosition));
   };
 
   this.getItems = function() {
@@ -1334,12 +1405,20 @@ function DayPlannerDayModel(dayNumber) {
     this.noteItem.data['text'] = '';
     return clearedItems;
   };
+
+  this.resetEmpty = function() {
+    this.items.length = 0;
+    this.noteItem = new ItemModel({
+      'day': this.dayNumber,
+      'text': ''
+    });
+  };
 }
 
-function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
+function DayPlannerModel(entityItems, noteItems) {
   var me = this;
   this.dayModels = [];
-  this.unorderedItems = unorderedItems;
+  this.unorderedItems = [];
   this.noteItemsFromDeletedDays = [];
 
   this.dayModelForDay = function(dayNumber /* 1-indexed */) {
@@ -1353,41 +1432,63 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
     }
   };
 
-  $.each(orderedItems, function(i, item) {
-    me.dayModelForDay(item.day()).addItem(item);
-  });
-  $.each(noteItems, function(i, noteItem) {
-    me.dayModelForDay(noteItem.day()).setNote(noteItem);
-  });
+  this.reset = function(entityItems, noteItems) {
+    $.each(this.dayModels, function(i, dayModel) {
+      dayModel.resetEmpty();
+    });
+    this.unorderedItems.length = 0;
+    this.noteItemsFromDeletedDays.length = 0;
+    $.each(entityItems, function(i, item) {
+      if (item.day()) {
+        me.dayModelForDay(item.day()).addItem(item, item.position());
+      } else {
+        me.unorderedItems.push(item);
+      }
+    });
+    $.each(noteItems, function(i, noteItem) {
+      me.dayModelForDay(noteItem.day()).setNote(noteItem);
+    });
+    $.each(this.dayModels, function(i, dayModel) {
+      if (!dayModel) {
+        me.dayModelForDay(i + 1);
+      }
+    });
+    if (_.isEmpty(this.dayModels)) {
+      this.dayModelForDay(1);
+    }
+  };
+
+  // Initialization
+  this.reset(entityItems, noteItems);
+
 
   this.addNewDay = function() {
     return this.dayModelForDay(this.dayModels.length + 1);
   };
-  $.each(this.dayModels, function(i, dayModel) {
-    if (!dayModel) {
-      me.dayModelForDay(i + 1);
-    }
-  });
-  if (_.isEmpty(this.dayModels)) {
-    this.dayModelForDay(1);
-  }
 
   this.organizeItem = function(item, dayNumber, position) {
     if (item.day() == dayNumber && item.position() == position) {
       return;
     }
 
+    var affectedItems = [];
+
     if (item.day() && item.day() > 0) {
       if (item.day() == dayNumber) {
-        this.dayModelForDay(dayNumber).reorderItem(item, position);
+        var result = this.dayModelForDay(dayNumber).reorderItem(item, position);
+        affectedItems.push.apply(affectedItems, result);
       } else {
-        this.dayModelForDay(item.day()).removeItem(item);
-        this.dayModelForDay(dayNumber).addItem(item, position);
+        var result1 = this.dayModelForDay(item.day()).removeItem(item);
+        var result2 = this.dayModelForDay(dayNumber).addItem(item, position);
+        affectedItems.push.apply(affectedItems, result1);
+        affectedItems.push.apply(affectedItems, result2);
       }
     } else {
       removeElemByValue(this.unorderedItems, item);
-      this.dayModelForDay(dayNumber).addItem(item, position);
+      var result = this.dayModelForDay(dayNumber).addItem(item, position);
+      affectedItems.push.apply(affectedItems, result);
     }
+    return affectedItems;
   };
 
   this.clearDay = function(dayModel) {
@@ -1431,6 +1532,23 @@ function DayPlannerModel(orderedItems, unorderedItems, noteItems) {
       return dayModel.noteItem;
     });
     return this.noteItemsFromDeletedDays.concat(noteItems);
+  };
+
+  this.findItemByEntityId = function(entityId) {
+    for (var i = 0, I = this.unorderedItems.length; i < I; i++) {
+      if (this.unorderedItems[i].data['entity_id'] == entityId) {
+        return this.unorderedItems[i];
+      }
+    }
+    for (var i = 0, I = this.dayModels.length; i < I; i++ ) {
+      var dayModel = this.dayModels[i];
+      for (var j = 0, J = dayModel.getItems().length; j < J; j++) {
+        if (dayModel.getItems()[j].data['entity_id'] == entityId) {
+          return dayModel.getItems()[j];
+        }
+      }
+    }
+    return null;
   };
 }
 
@@ -1534,19 +1652,9 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
   var me = this;
   var unorderedItems = [];
   var orderedItems = [];
-  $.each($tripPlanModel.entityDatas, function(i, entity) {
-    var item = new ItemModel(angular.copy(entity));
-    if (item.day()) {
-      orderedItems.push(item);
-    } else {
-      unorderedItems.push(item);
-    }
-  });
-  var noteItems = $.map($tripPlanModel.notes, function(note) {
-    return new ItemModel(angular.copy(note));
-  });
 
-  $scope.dayPlannerModel = new DayPlannerModel(orderedItems, unorderedItems, noteItems);
+  // TODO: Use a method on the TripPlanModel itself to get the day planner model.
+  $scope.dayPlannerModel = new DayPlannerModel($tripPlanModel.entityItemCopies(), $tripPlanModel.noteItemCopies());
   $scope.dpm = $scope.dayPlannerModel;
   $scope.unorderedItems = unorderedItems;
   $scope.dragItem = null;
@@ -2220,7 +2328,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
       '$templateToStringRenderer', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$tripPlan', EntityCtrl])
+      '$dataRefreshManager', '$tripPlanModel', EntityCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])

@@ -694,6 +694,22 @@
                 <span class="glyphicon glyphicon-trash"></span> Delete this place
               </a>
             </li>
+            <li>
+              <select class="form-control day-select-pill"
+                ng-options="option.createNew ? 'Add a new day' : 'Day ' + option.dayNumber for option in getDaySelectOptions()"
+                {# HACK: Stupid ng/bootstrap widget closes the dropdown on all clicks,
+                   so as soon as you try to click on the Select elem the whole dropdown
+                   closes.  Here we stop the click event to prevent this.  But then
+                   we need a corresponding hack to trigger a fake click event when
+                   we need the menu to actually close.  It seems a future version
+                   of the dropdown widget will support angular bindings to control
+                   the open/close state. #}
+                ng-click="$event.stopPropagation(); $event.preventDefault()"
+                ng-change="organizeIntoDay()"
+                ng-model="selectedDay">
+                <option value="" ng-if="!item.day()">--Add to day--</option>
+              </select>
+            </li>
             {% endif %}
           </ul>
           <a ng-click="toggleDetails()" href="javascript:void(0)">

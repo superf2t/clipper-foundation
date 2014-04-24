@@ -193,6 +193,12 @@ hr.dropdown-separator {
   top: -17px;
 }
 
+.one-entity-mapview select.day-select-pill {
+  width: calc(100% - 10px);
+  height: 28px;
+  margin: auto;
+}
+
 .one-entity-mapview .expanded-details {
   padding: 0 5px 5px 5px;
   background-color: #fff;

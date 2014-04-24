@@ -34,6 +34,15 @@ function EntityService($http) {
     return this.mutate(request);
   };
 
+  this.editEntities = function(entities, tripPlanId) {
+    var me = this;
+    var operations = _.map(entities, function(entity) {
+      return me.operationFromEntity(entity, tripPlanId, Operator.EDIT);
+    });
+    var request = {'operations': operations};
+    return this.mutate(request);
+  };
+
   this.deleteEntity = function(entity, tripPlanId) {
     var request = {
       'operations': [this.operationFromEntity(entity, tripPlanId, Operator.DELETE)]
