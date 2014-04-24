@@ -118,7 +118,7 @@ class ScrapedPage(object):
 
     @fail_returns_none
     def get_rating(self):
-        return ''
+        return None
 
     @fail_returns_none
     def get_primary_photo(self):
@@ -213,7 +213,7 @@ class TripAdvisorScraper(ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//div[@rel="v:rating"]//img').get('content')
+        return float(self.root.find('body//div[@rel="v:rating"]//img').get('content'))
 
     @fail_returns_none
     def get_primary_photo(self):
@@ -293,7 +293,7 @@ class YelpScraper(ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//meta[@itemprop="ratingValue"]').get('content')
+        return float(self.root.find('body//meta[@itemprop="ratingValue"]').get('content'))
 
     @fail_returns_none
     def get_primary_photo(self):
@@ -341,7 +341,7 @@ class HotelsDotComScraper(ScrapedPage):
     def get_rating(self):
         # Looks like "4.5 / 5"
         rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), encoding='unicode', method='text').strip()
-        return rating_fraction_str.split('/')[0].strip()
+        return float(rating_fraction_str.split('/')[0].strip())
 
     @fail_returns_empty
     def get_photos(self):
@@ -377,7 +377,7 @@ class AirbnbScraper(ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        return self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content')
+        return float(self.root.find('body//div[@id="room"]//meta[@itemprop="ratingValue"]').get('content'))
 
     @fail_returns_empty
     def get_photos(self):
@@ -628,7 +628,7 @@ class LonelyPlanetScraper(ScrapedPage):
         return None
 
     def get_rating(self):
-        return ''
+        return None
 
     def get_primary_photo(self):
         try:
