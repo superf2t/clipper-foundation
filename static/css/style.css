@@ -228,6 +228,11 @@ hr.dropdown-separator {
   padding: 5px 0px;
 }
 
+.one-entity-mapview .source-icon {
+  max-width: 16px;
+  max-height: 16px;
+}
+
 .modal-carousel.modal {
   top: 15%;
 }
