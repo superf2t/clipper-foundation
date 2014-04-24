@@ -284,7 +284,7 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
 }
 
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
-    $tripPlanModel, $pageStateModel) {
+    $tripPlanModel, $pageStateModel, $timeout) {
   var me = this;
   $scope.ed = $scope.item.data;
   $scope.editing = false;
@@ -400,7 +400,12 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
           $tripPlanModel.updateLastModified(response['last_modified']);
           $tripPlanModel.updateEntities(response['entities']);
           if ($pageStateModel.isGroupByDay()) {
-            $dataRefreshManager.redrawGroupings();
+            $dataRefreshManager.redrawGroupings(function() {
+              $timeout(function() {
+                scrollMapviewToId('mapview-entity-' + $scope.ed['entity_id'],
+                  'one-entity-highlighted', 2000);
+              });
+            });
           }
         }
         // HACK: Trigger a click here so that the dropdown menu contain
@@ -706,7 +711,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
   this.processItemsIntoGroups();
 
-  $scope.$on('redrawgroupings', this.processItemsIntoGroups);
+  $scope.$on('redrawgroupings', function($event, opt_callback) {
+    me.processItemsIntoGroups();
+    opt_callback && opt_callback();
+  });
 
   $scope.toggleOmnibox = function() {
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
@@ -1046,8 +1054,8 @@ function DataRefreshManager($rootScope) {
     $rootScope.$broadcast('refreshdata', true, opt_callback);
   };
 
-  this.redrawGroupings = function() {
-    $rootScope.$broadcast('redrawgroupings');
+  this.redrawGroupings = function(opt_callback) {
+    $rootScope.$broadcast('redrawgroupings', opt_callback);
   };
 }
 
@@ -1801,7 +1809,6 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
 // Directives
 
 function scrollMapviewToId(scrollToId, opt_classToAdd, opt_removeClassAfter) {
-
   var scrollElem = $("#" + scrollToId);
   var container = $('#entity-container');
   var newScrollTop = container.scrollTop() + scrollElem.offset().top - 73;
@@ -2339,7 +2346,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
       '$templateToStringRenderer', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$tripPlanModel', '$pageStateModel', EntityCtrl])
+      '$dataRefreshManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
