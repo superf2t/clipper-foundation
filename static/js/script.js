@@ -1715,6 +1715,7 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
   $scope.onDragstart = function($event, item) {
     $scope.dragactive = true;
     $scope.dragItem = item;
+    $event.originalEvent.dataTransfer.setData('blah', 'dummy-data-for-ff');
   };
 
   $scope.onDragend = function() {
