@@ -1059,7 +1059,7 @@ hr.dropdown-separator {
 .day-planner-entity-info {
   display: inline-block;
   vertical-align: top;
-  width: calc(80% - 8px);
+  width: calc(80% - 9px);
   margin-left: 5px;
 }
 
