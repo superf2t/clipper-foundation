@@ -160,6 +160,8 @@
 
   <div ng-show="pageStateModel.inMapView()">
     <div id="entity-container"
+      tc-entity-scroll scroll-state="scrollState"
+      scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000"
       ng-class="{'large-map': pageStateModel.inLargeMap(), 'small-map': pageStateModel.inSmallMap()}">
 
       <div ng-repeat="itemGroupModel in itemGroups">
@@ -643,7 +645,7 @@
   <script type="text/ng-template" id="mapview-one-entity-template">
     <div ng-controller="EntityCtrl" class="one-entity-mapview"
       ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded}"
-      id="mapview-entity-[[ed['entity_id'] ]]"  {# For scrolling #}
+      tc-entity-id="[[ed['entity_id'] ]]"
       ng-mouseenter="openInfowindow(ed['entity_id'])">
       <div class="img-container">
         {# TODO: Some kind of directive here #}

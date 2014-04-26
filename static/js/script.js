@@ -204,7 +204,8 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
 }
 
-function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer, $tripPlan, $allowEditing) {
+function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer,
+    $pagePositionManager, $tripPlan, $allowEditing) {
   var me = this;
   $scope.show = true;
 
@@ -234,8 +235,7 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
-      scrollMapviewToId('mapview-entity-' + entityModel.data['entity_id'],
-        'one-entity-highlighted', 2000);
+      $pagePositionManager.scrollToEntity(entityModel.data['entity_id'], true);
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow(entityModel, marker, true);
     });
@@ -284,7 +284,7 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
 }
 
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
-    $tripPlanModel, $pageStateModel, $timeout) {
+    $pagePositionManager, $tripPlanModel, $pageStateModel, $timeout) {
   var me = this;
   $scope.ed = $scope.item.data;
   $scope.editing = false;
@@ -406,8 +406,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
           if ($pageStateModel.isGroupByDay()) {
             $dataRefreshManager.redrawGroupings(function() {
               $timeout(function() {
-                scrollMapviewToId('mapview-entity-' + $scope.ed['entity_id'],
-                  'one-entity-highlighted', 2000);
+                $pagePositionManager.scrollToEntity($scope.ed['entity_id'], true);
               });
             });
           }
@@ -718,6 +717,16 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
   this.processItemsIntoGroups();
 
+  $scope.scrollState = {
+    entityId: null,
+    highlight: false
+  };
+
+  $scope.$on('scrolltoentity', function($event, entityId, opt_highlight) {
+    $scope.scrollState.highlight = opt_highlight;
+    $scope.scrollState.entityId = entityId;
+  });
+
   $scope.$on('redrawgroupings', function($event, opt_callback) {
     me.processItemsIntoGroups();
     opt_callback && opt_callback();
@@ -896,13 +905,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $timeout(refreshPoll, refreshInterval);
   }
   $timeout(refreshPoll, refreshInterval);
-}
-
-function NavigationCtrl($scope, $location, $anchorScroll) {
-  $scope.navigate = function(categoryName) {
-    $location.hash(categoryName)
-    $anchorScroll();
-  };
 }
 
 function createMap() {
@@ -1085,6 +1087,12 @@ function DataRefreshManager($rootScope) {
 
   this.unfreeze = function() {
     $rootScope.$broadcast('unfreezerefresh');
+  };
+}
+
+function PagePositionManager($rootScope) {
+  this.scrollToEntity = function(entityId, opt_highlight) {
+    $rootScope.$broadcast('scrolltoentity', entityId, opt_highlight);
   };
 }
 
@@ -1838,37 +1846,45 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
 
 // Directives
 
-function scrollMapviewToId(scrollToId, opt_classToAdd, opt_removeClassAfter) {
-  var scrollElem = $("#" + scrollToId);
-  var container = $('#entity-container');
-  var newScrollTop = container.scrollTop() + scrollElem.offset().top - 73;
+function tcEntityScroll() {
+  return {
+    restrict: 'A',
+    scope: {
+      scrollState: '='
+    },
+    link: function(scope, elem, attrs) {
+      var container = $(elem);
+      var highlightClass = attrs.scrollHighlightClass;
+      var highlightDuration = parseInt(attrs.scrollHighlightDuration);
+      scope.$watch('scrollState.entityId', function(newEntityId, oldEntityId) {
+        if (newEntityId) {
+          var entityElem = container.find('[tc-entity-id="' + newEntityId + '"]');
+          if (scope.scrollState.highlight) {
+            scrollMapviewToId(container, entityElem, highlightClass, highlightDuration);
+          } else {
+            scrollMapviewToId(container, entityElem);
+          }
+          scope.scrollState.entityId = null;
+          scope.scrollState.highlight = false;
+        }
+      });
+    }
+  };
+}
+
+function scrollMapviewToId(container, scrollDestElem, opt_classToAdd, opt_removeClassAfter) {
+  var newScrollTop = container.scrollTop() + scrollDestElem.offset().top - 73;
   if (newScrollTop != 0) {
     container.animate({scrollTop: newScrollTop}, 500);
   }
   if (opt_classToAdd) {
-    scrollElem.addClass(opt_classToAdd);
+    scrollDestElem.addClass(opt_classToAdd);
     if (opt_removeClassAfter) {
       setTimeout(function() {
-        scrollElem.removeClass(opt_classToAdd);
+        scrollDestElem.removeClass(opt_classToAdd);
       }, opt_removeClassAfter);
     }
   }
-}
-
-// Should be renamed to indicate that this is specific to mapview.
-function tcScrollToOnClick($parse) {
-  return {
-      restrict: 'AEC',
-      link: function(scope, elem, attrs) {
-        var getScrollToIdFn = $parse(attrs.tcScrollToOnClick);
-        if (getScrollToIdFn) {
-          elem.on('click', function() {
-            var scrollToId = getScrollToIdFn(scope);
-            scrollMapviewToId(scrollToId);
-          });
-        }
-      }
-  };
 }
 
 function tcStarRating() {
@@ -2329,7 +2345,6 @@ function interpolator($interpolateProvider) {
 }
 
 angular.module('directivesModule', [])
-  .directive('tcScrollToOnClick', tcScrollToOnClick)
   .directive('tcStarRating', tcStarRating)
   .directive('bnLazySrc', bnLazySrc)
   .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
@@ -2374,12 +2389,11 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
-      '$templateToStringRenderer', '$tripPlan', '$allowEditing', ItemGroupCtrl])
+      '$templateToStringRenderer', '$pagePositionManager', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
+      '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
-    .controller('NavigationCtrl', ['$scope', '$location', '$anchorScroll', NavigationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
     .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
@@ -2392,8 +2406,10 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
+    .directive('tcEntityScroll', tcEntityScroll)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
-    .service('$dataRefreshManager', DataRefreshManager);
+    .service('$dataRefreshManager', DataRefreshManager)
+    .service('$pagePositionManager', PagePositionManager);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);
