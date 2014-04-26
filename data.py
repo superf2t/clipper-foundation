@@ -210,17 +210,19 @@ class TripPlan(serializable.Serializable):
 
 
 class SessionInfo(object):
-    def __init__(self, email=None, active_trip_plan_id=None, sessionid=None, set_on_response=False):
+    def __init__(self, email=None, sessionid=None, set_on_response=False):
         self.email = email
-        self.active_trip_plan_id = active_trip_plan_id
         self.sessionid = sessionid
         self.set_on_response = set_on_response
-        self.clear_active_trip_plan_id = False
         self.logged_in = False
 
     @property
     def user_identifier(self):
         return self.email or self.sessionid
+
+def generate_sessionid():
+    sessionid = uuid.uuid4().bytes[:8]
+    return struct.unpack('Q', sessionid)[0]
 
 
 class AccountInfo(serializable.Serializable):

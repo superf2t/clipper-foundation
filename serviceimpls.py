@@ -1,3 +1,5 @@
+import re
+
 from dateutil import parser as date_parser
 
 import data
@@ -572,3 +574,51 @@ class NoteService(service.Service):
                     op.result = op.trip_plan.notes.pop(i)
                     op.result.status = data.Note.Status.DELETED.name
                     break
+
+
+AccountServiceError = enums.enum(
+    INVALID_EMAIL=enums.enumdata(message='Invalid email address'))
+
+class LoginRequest(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('email')
+
+    def __init__(self, email=None):
+        self.email = email
+
+class LoginResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS)
+
+    def __init__(self, **kwargs):
+        super(LoginResponse, self).__init__(**kwargs)
+
+class AccountService(service.Service):
+    METHODS = service.servicemethods(
+        ('loginandmigrate', LoginRequest, LoginResponse))
+
+    EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
+
+    def __init__(self, session_info=None):
+        self.session_info = session_info
+        self.validation_errors = []
+
+    def raise_if_errors(self):
+        if self.validation_errors:
+            raise service.ServiceException.request_error(self.validation_errors)
+
+    def loginandmigrate(self, request):
+        self.validate_login(request)
+        email = request.email.lower()
+        if not self.session_info.email:
+            all_trip_plans = data.load_all_trip_plans(self.session_info) or []
+            for trip_plan in all_trip_plans:
+                data.change_creator(trip_plan, email)
+        self.session_info.email = email
+        self.session_info.set_on_response = True
+        return LoginResponse(response_code=service.ResponseCode.SUCCESS.name)
+
+    def validate_login(self, request):
+        if not request.email or not self.EMAIL_RE.match(request.email):
+            self.validation_errors.append(service.ServiceError.from_enum(
+                AccountServiceError.INVALID_EMAIL, 'email'))
+        self.raise_if_errors()

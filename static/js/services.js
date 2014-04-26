@@ -10,6 +10,11 @@ var Operator = {
   DELETE: 'DELETE'
 };
 
+function extractError(response, errorCode) {
+  return _.find(response['errors'], function(error) {
+    return error['error_code'] == errorCode;
+  });
+}
 
 function EntityService($http) {
   this.getByTripPlanId = function(tripPlanId, opt_lastModifiedTime) {
@@ -171,7 +176,21 @@ function NoteService($http) {
   };
 }
 
+function AccountService($http) {
+  this.loginAndMigrate = function(email) {
+    var request = {
+      'email': email
+    };
+    return $http.post('/accountservice/loginandmigrate', request);
+  };
+}
+
+var AccountServiceError = {
+  INVALID_EMAIL: 'INVALID_EMAIL'
+};
+
 angular.module('servicesModule', [])
   .service('$entityService', ['$http', EntityService])
   .service('$noteService', ['$http', NoteService])
-  .service('$tripPlanService', ['$http', TripPlanService]);
+  .service('$tripPlanService', ['$http', TripPlanService])
+  .service('$accountService', ['$http', AccountService]);

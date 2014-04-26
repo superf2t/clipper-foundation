@@ -922,7 +922,7 @@ function createMap() {
   return new google.maps.Map($('#map')[0], mapOptions);
 }
 
-function AccountDropdownCtrl($scope, $http, $tripPlanService, $accountInfo, $tripPlan, $allTripPlans) {
+function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $accountInfo, $tripPlan, $allTripPlans) {
   $scope.accountInfo = $accountInfo;
   $scope.accountInfo.loggedIn = !!$accountInfo['email'];
   $scope.showLoginForm = !$scope.accountInfo.loggedIn;
@@ -930,22 +930,24 @@ function AccountDropdownCtrl($scope, $http, $tripPlanService, $accountInfo, $tri
   $scope.allTripPlans = $allTripPlans;
 
   $scope.doLogin = function() {
-    if ($scope.accountInfo['email']) {
-      var loginRequest = {email: $scope.accountInfo['email']};
-      $http.post('/login_and_migrate_ajax', loginRequest)
-        .success(function(response) {
-          if (response['status'] == 'Success') {
-            location.href = location.href;
-          } else if (response['status'] == 'Invalid email') {
-            alert('Please enter a valid email address');
-          } else {
-            alert('Login failed')
-          }
-        })
-        .error(function() {
-          alert('Login failed');
-        });
+    if (!$scope.accountInfo['email']) {
+      return;
     }
+    $accountService.loginAndMigrate($scope.accountInfo['email'])
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          location.href = location.href;
+        } else {
+          var error = extractError(response, AccountServiceError.INVALID_EMAIL);
+          if (error) {
+            alert(error['message']);
+          } else {
+            alert('Login failed');
+          }
+        }
+      }).error(function() {
+        alert('Login failed');
+      });
   };
 
   $scope.loadTripPlan = function(tripPlanId) {
@@ -2386,7 +2388,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
       '$entityService', '$datatypeValues', '$allowEditing', RootCtrl])
-    .controller('AccountDropdownCtrl', ['$scope', '$http', '$tripPlanService', '$accountInfo',
+    .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
       '$templateToStringRenderer', '$pagePositionManager', '$tripPlan', '$allowEditing', ItemGroupCtrl])

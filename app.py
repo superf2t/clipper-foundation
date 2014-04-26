@@ -1,7 +1,3 @@
-import struct
-import re
-import uuid
-
 from flask import Flask
 from flask import json
 from flask import make_response
@@ -32,8 +28,6 @@ if not constants.DEBUG:
     file_handler = logging.FileHandler(projectpath + '/app.log')
     file_handler.setLevel(logging.WARNING)
     app.logger.addHandler(file_handler)
-
-EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
 
 app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
@@ -105,25 +99,6 @@ def trip_plan_by_id(trip_plan_id):
         all_datatype_values=values.ALL_VALUES)
     return process_response(response, request, session_info)
 
-@app.route('/login_and_migrate_ajax', methods=['POST'])
-def login_and_migrate_ajax():
-    session_info = decode_session(request.cookies)
-    email = request.json['email']
-    if not email or not EMAIL_RE.match(email):
-        return json.jsonify(status='Invalid email')
-    email = email.lower()
-    if session_info.email:
-        session_info.active_trip_plan_id = None
-        session_info.clear_active_trip_plan_id = True
-    else:
-        all_trip_plans = data.load_all_trip_plans(session_info) or []
-        for trip_plan in all_trip_plans:
-            data.change_creator(trip_plan, email)
-    session_info.email = email
-    session_info.set_on_response = True
-    response = json.jsonify(status='Success')
-    return process_response(response, request, session_info)
-
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
@@ -151,6 +126,13 @@ def tripplanservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
+@app.route('/accountservice/<method_name>', methods=['POST'])
+def accountservice(method_name):
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.AccountService(session_info)
+    response = service.invoke_with_json(method_name, request.json)
+    return process_response(json.jsonify(response), request, session_info)
+
 @app.route('/admin')
 def adminpage():
     reverse = True if request.values.get('reverse') else False
@@ -164,27 +146,16 @@ def create_and_save_default_trip_plan(session_info):
     response = serviceimpls.TripPlanService(session_info).mutate(mutate_request)
     return response.trip_plans[0]
 
-def generate_sessionid():
-    sessionid = uuid.uuid4().bytes[:8]
-    return struct.unpack('Q', sessionid)[0]
-
 def decode_session(cookies):
     email = cookies.get('email')
-    try:
-        active_trip_plan_id = int(cookies.get('active_trip_plan_id'))
-    except:
-        active_trip_plan_id = None
     try:
         sessionid = int(cookies.get('sessionid'))
     except:
         sessionid = None
-    session_info = data.SessionInfo(email, active_trip_plan_id, sessionid)
+    session_info = data.SessionInfo(email, sessionid)
     session_info.logged_in = sessionid or email
     if not session_info.sessionid:
-        session_info.sessionid = generate_sessionid()
-        session_info.set_on_response = True
-    if not session_info.active_trip_plan_id:
-        session_info.active_trip_plan_id = data.generate_trip_plan_id()
+        session_info.sessionid = data.generate_sessionid()
         session_info.set_on_response = True
     return session_info
 
@@ -193,10 +164,6 @@ def process_response(response, request=None, session_info=None):
     if session_info and session_info.set_on_response:
         if session_info.email and session_info.email != request.cookies.get('email'):
             set_cookie(response, 'email', session_info.email)
-        if session_info.active_trip_plan_id and session_info.active_trip_plan_id != request.cookies.get('active_trip_plan_id'):
-            set_cookie(response, 'active_trip_plan_id', str(session_info.active_trip_plan_id))
-        elif session_info.clear_active_trip_plan_id:
-            set_cookie(response, 'active_trip_plan_id', '')
         if session_info.sessionid and session_info.sessionid != request.cookies.get('sessionid'):
             set_cookie(response, 'sessionid', str(session_info.sessionid))
     return response
@@ -204,12 +171,6 @@ def process_response(response, request=None, session_info=None):
 def set_cookie(response, key, value):
     response.set_cookie(key, value, expires=constants.COOKIE_EXPIRATION_TIME, domain=constants.HOST)
 
-def make_jsonp_response(request_obj, response_json_obj):
-    callback_name = request_obj.args.get('callback')
-    response_str = '%s(%s)' % (callback_name, json.dumps(response_json_obj))
-    response = make_response(response_str)
-    response.mimetype = 'application/javascript'
-    return response
 
 if __name__ == '__main__':
     app.debug = constants.DEBUG
