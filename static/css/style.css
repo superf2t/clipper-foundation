@@ -130,7 +130,6 @@ hr.dropdown-separator {
   border: 1px solid #bbb;
   background-color: #777;
   margin: 10px;
-  overflow: hidden;
   position: relative;
 }
 
