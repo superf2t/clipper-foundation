@@ -94,14 +94,7 @@ hr.dropdown-separator {
   height: 100%;
   overflow: scroll;
   padding-top: 51px;
-}
-
-#entity-container.small-map {
-  width: 40%;
-}
-
-#entity-container.large-map {
-  width: 30%;
+  width: 25%;
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -141,11 +134,7 @@ hr.dropdown-separator {
   position: relative;
 }
 
-#entity-container.small-map .one-entity-mapview.collapsed {
-  height: 215px;
-}
-
-#entity-container.large-map .one-entity-mapview.collapsed {
+.one-entity-mapview.collapsed {
   height: 150px;
 }
 
@@ -157,11 +146,8 @@ hr.dropdown-separator {
   text-align: center;
 }
 
-#entity-container.small-map .one-entity-mapview .img-container {
-  height: 180px;
-}
 
-#entity-container.large-map .one-entity-mapview .img-container {
+.one-entity-mapview .img-container {
   height: 115px;
 }
 
@@ -385,16 +371,8 @@ hr.dropdown-separator {
   position: fixed;
   height: calc(100% - 51px);
   top: 51px;
-}
-
-#map-container.small-map {
-  width: 60%;
-  left: 40%;
-}
-
-#map-container.large-map {
-  width: 70%;
-  left: 30%;
+  width: 75%;
+  left: 25%;
 }
 
 #map {
