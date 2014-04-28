@@ -367,7 +367,8 @@ hr.dropdown-separator {
   font-weight: bold;
 }
 
-#map-container {
+#right-panel,
+#right-panel.map-view #map-container {
   position: fixed;
   height: calc(100% - 51px);
   top: 51px;
@@ -375,9 +376,57 @@ hr.dropdown-separator {
   left: 25%;
 }
 
-#map {
+#gallery-panel {
+  width: 66%;
+  height: 100%;
+  background-color: #292a2a;
+}
+
+#right-panel.map-view #gallery-panel,
+#right-panel.map-view #entity-info-box {
+  display: none;
+}
+
+#info-panel {
+  width: 34%;
+  height: 100%;
+  left: 66%;
+  top: 0;
+  position: absolute;
+}
+
+#right-panel.gallery-view #map-container {
   width: 100%;
   height: 100%;
+}
+
+#right-panel.gallery-view #map {
+  width: 100%;
+  height: 50%;
+}
+
+#right-panel.map-view #map {
+  width: 100%;
+  height: 100%;
+}
+
+#page-mode-toggle-control {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #fff;
+  opacity: 0.9;
+  padding: 5px;
+  border-radius: 3px;
+}
+
+#entity-info-box {
+  height: 50%;
+  width: 100%;
+  position: absolute;
+  top: 50%;
+  padding: 10px;
+  background-color: #f3f4f4;
 }
 
 .infowindow-warning-text {

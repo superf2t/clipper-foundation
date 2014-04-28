@@ -534,24 +534,24 @@ var Grouping = {
 };
 
 var View = {
-  GUIDE_VIEW: 1,
-  MAP_VIEW: 2
+  MAP_VIEW: 1,
+  GALLERY_VIEW: 2
 };
 
 function PageStateModel() {
   this.view = View.MAP_VIEW;
   this.grouping = Grouping.CATEGORY;
 
-  this.inGuideView = function() {
-    return this.view == View.GUIDE_VIEW;
+  this.inGalleryView = function() {
+    return this.view == View.GALLERY_VIEW;
   };
 
   this.inMapView = function() {
     return this.view == View.MAP_VIEW;
   };
 
-  this.showGuideView = function() {
-    this.view = View.GUIDE_VIEW;
+  this.showGalleryView = function() {
+    this.view = View.GALLERY_VIEW;
   };
 
   this.showMapView = function() {
@@ -725,8 +725,17 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
       $scope.pageStateModel.showMapView();
+      google.maps.event.trigger($map, 'resize');
     }
   };
+
+  $scope.showGalleryView = function() {
+    if (!$scope.pageStateModel.inGalleryView()) {
+      $scope.pageStateModel.showGalleryView();
+      google.maps.event.trigger($map, 'resize');
+    }
+  };
+
 
   $scope.groupByCategory = function() {
     if (!$scope.pageStateModel.isGroupByCategory()) {

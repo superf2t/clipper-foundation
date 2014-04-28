@@ -138,7 +138,7 @@
     </div>
   {% endif %}
 
-  <div ng-show="pageStateModel.inMapView()">
+  <div>
     <div id="entity-container"
       tc-entity-scroll scroll-state="scrollState"
       scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000">
@@ -159,8 +159,28 @@
 
     </div>
 
-    <div id="map-container">
-      <div id="map">
+    <div id="right-panel" ng-class="{'map-view': pageStateModel.inMapView(), 'gallery-view': pageStateModel.inGalleryView()}">
+      <div id="gallery-panel">
+        <img style="padding: 25px" src="http://impressivemagazine.com/wp-content/uploads/2013/06/Louvre-Museum-Paris.jpg"/>
+      </div>
+      <div id="info-panel">
+        <div id="map-container">
+          <div id="map">
+          </div>
+          <div id="page-mode-toggle-control">
+            <a ng-click="showGalleryView()" ng-show="!pageStateModel.inGalleryView()" href="javascript:void(0)">
+              Show Gallery View
+              <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+            <a ng-click="showMapView()" ng-show="!pageStateModel.inMapView()" href="javascript:void(0)">
+              Show Map View
+              <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+          </div>
+        </div>
+        <div id="entity-info-box">
+          Entity info goes here
+        </div>
       </div>
     </div>
 
