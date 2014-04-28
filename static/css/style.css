@@ -460,6 +460,10 @@ hr.dropdown-separator {
   background-color: #f3f4f4;
 }
 
+#entity-info-box .description {
+  white-space: pre-wrap;
+}
+
 .infowindow-warning-text {
   padding-top: 5px;
 }
