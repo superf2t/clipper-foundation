@@ -169,7 +169,8 @@
           <div id="map">
           </div>
           <div id="page-mode-toggle-control">
-            <a ng-click="showGalleryView()" ng-show="!pageStateModel.inGalleryView()" href="javascript:void(0)">
+            <a ng-click="showGalleryView()" ng-show="!pageStateModel.inGalleryView() && pageStateModel.selectedEntity"
+              href="javascript:void(0)">
               Show Gallery View
               <span class="glyphicon glyphicon-chevron-right"></span>
             </a>
@@ -659,6 +660,7 @@
                 class="glyphicon glyphicon-exclamation-sign">
               </span>
               <span ng-if="item.hasLocation() && !item.isPreciseLocation()"
+                ng-click="$event.stopPropagation()"
                 tooltip="Location approximate"
                 class="glyphicon glyphicon-exclamation-sign">
               </span>
@@ -702,7 +704,7 @@
                 </li>
                 {% endif %}
               </ul>
-              <a ng-click="toggleDetails()" href="javascript:void(0)">
+              <a ng-click="toggleDetails($event)" href="javascript:void(0)">
                 <span ng-show="!detailsExpanded" class="glyphicon glyphicon-chevron-down"></span>
                 <span ng-show="detailsExpanded" class="glyphicon glyphicon-chevron-up"></span>
               </a>

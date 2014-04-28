@@ -300,8 +300,10 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     return daySelectOptions;
   };
 
-  $scope.toggleDetails = function() {
+  $scope.toggleDetails = function($event) {
     $scope.detailsExpanded = !$scope.detailsExpanded;
+    $event.stopPropagation();
+    $event.preventDefault();
   };
 
   $scope.openEditEntity = function() {
