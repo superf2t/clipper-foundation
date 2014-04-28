@@ -250,9 +250,13 @@ hr.dropdown-separator {
   padding: 20px;
 }
 
+#gallery-panel .gallery-carousel a {
+  color: #fff;
+}
+
 #gallery-panel .gallery-carousel img {
   padding: 20px;
-  max-height: calc(100% - 40px);
+  max-height: 100%;
   max-width: calc(33% - 40px);
 }
 
@@ -469,97 +473,10 @@ hr.dropdown-separator {
   height: 400px;
 }
 
-/* Guide View */
-
-.guideview-container {
-  width: 100%;
-  margin-top: 51px;
-}
-
-.guideview-entity-type-header {
-  text-align: center;
-  font-weight: bold;
-  font-size: 3.0em;
-  font-family: 'Raleway';
-  color: #FFFFFF;
-  height: 200px;
-  line-height: 200px;
-}
-
-.guideview-one-entity {
-  padding: 1px 0px 60px 0px;
-}
-
-.guideview-one-entity-title {
-  text-align: center;
-  margin: 20px 0 10px 0;
-  font-size: 1.6em;
-  font-family: 'Raleway';
-}
-
-.guideview-star-rating {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.guideview-entity-even {
-  background-color: #eee;
-}
-
-.guideview-entity-odd {
-  background-color: #fff;
-}
-
-.guideview-imgs-showcase {
-  width: 65%;
-  margin: 0 auto;
-  height: 600px;
-  overflow: hidden;
-}
-
-.guideview-img-masonry-brick {
-  width: calc(50% - 3px);
-  margin-bottom: 6px;
-}
-
-.guideview-masonry-img {
-  width: 100%;
-}
-
-.guideview-carousel-control {
-  height: calc(100% - 6px);
-  max-height: 600px;
-}
-
-
 /* Temporary hack to increase Bootstrap carousel icons */
 .icon-next, .icon-prev {
   font-size: 40px !important;
   top: calc(50% - 18px) !important;
-}
-
-.guideview-entity-info {
-  font-size: 12pt;
-  margin: 20px auto 0 auto;
-  max-width: 50%;
-}
-
-.guideview-entity-description {
-  text-align: center;
-}
-
-.guideview-entity-edit-controls {
-  text-align: center;
-  margin-top: 5px;
-}
-
-.one-note-guideview {
-  text-align: center;
-  font-size: 14pt;
-  border: 1px solid #fff;
-  width: 50%;
-  margin: auto;
-  padding: 10px;
 }
 
 .note-text {
@@ -583,40 +500,6 @@ hr.dropdown-separator {
   background-image: url(/static/img/attraction-header-md.jpg);
 }
 
-.guideview-footer {
-  margin-top: 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-
-@media (min-width: 761px) {
-  .guideview-imgs-showcase {
-    height: 400px;
-  }
-  .guideview-carousel-control {
-    max-height: 400px;
-  }
-}
-
-@media (min-width: 971px) {
-  .guideview-imgs-showcase {
-    height: 500px;
-  }
-  .guideview-carousel-control {
-    max-height: 500px;
-  }
-}
-
-@media (min-width: 1201px) {
-  .guideview-imgs-showcase {
-    height: 620px;
-  }
-  .guideview-carousel-control {
-    max-height: 620px;
-  }
-}
-
 @media (min-width: 1441px) {
   #Hotel-header-img {
     background-image: url(/static/img/hotel-header-lg.jpg);
@@ -626,21 +509,6 @@ hr.dropdown-separator {
   }
   #Attraction-header-img {
     background-image: url(/static/img/attraction-header-lg.jpg);
-  }
-  .guideview-imgs-showcase {
-    height: 700px;
-  }
-  .guideview-carousel-control {
-    max-height: 700px;
-  }
-}
-
-@media (min-width: 1601px) {
-  .guideview-imgs-showcase {
-    height: 800px;
-  }
-  .guideview-carousel-control {
-    max-height: 800px;
   }
 }
 

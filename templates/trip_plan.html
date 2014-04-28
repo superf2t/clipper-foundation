@@ -809,11 +809,25 @@
       <div class="hero-container">
         <img ng-src="[[selectedHeroImg()]]"/>
       </div>
-      <div class="gallery-carousel">
-        <img ng-src="[[ed()['photo_urls'][1] ]]"/>
-        <img ng-src="[[ed()['photo_urls'][2] ]]"/>
-        <img ng-src="[[ed()['photo_urls'][3] ]]"/>
+      <div tc-gallery-carousel urls="ed()['photo_urls']" on-select="selectImg($img)"
+        page-size="3"
+        class="gallery-carousel">
       </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="gallery-carousel-template">
+    <div class="full-height">
+      <a ng-show="hasPrevImgs()" ng-click="showPrevPage()" href="javascript:void(0)">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+      <a ng-repeat="img in imgsToShow()" href="javascript:void(0)"
+        ng-click="onSelect({$img: img})">
+        <img ng-src="[[img]]"/>
+      </a>
+      <a ng-show="hasNextImgs()" ng-click="showNextPage()" href="javascript:void(0)">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
     </div>
   </script>
 

@@ -941,12 +941,56 @@ function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $account
 }
 
 function GalleryPanelCtrl($scope) {
+  var selectedImg = null;
+
+  $scope.$watch('pageStateModel.selectedEntity', function() {
+    selectedImg = null;
+  });
+
   $scope.ed = function() {
     return $scope.pageStateModel.selectedEntity;
   };
 
   $scope.selectedHeroImg = function() {
-    return $scope.ed() && $scope.ed()['photo_urls'][0];
+    return selectedImg || ($scope.ed() && $scope.ed()['photo_urls'][0]);
+  };
+
+  $scope.selectImg = function(imgUrl) {
+    selectedImg = imgUrl;
+  };
+}
+
+function GalleryCarouselCtrl($scope) {
+  var pageSize = parseInt($scope.pageSize);
+  var currentPage = 0;
+
+  $scope.$watch('urls', function() {
+    currentPage = 0;
+  });
+
+  var urls = function() {
+    return $scope.urls || [];
+  };
+
+  $scope.imgsToShow = function() {
+    var startIndex = currentPage * pageSize;
+    return urls().slice(startIndex, startIndex + pageSize);
+  };
+
+  $scope.hasNextImgs = function() {
+    return (currentPage + 1) * pageSize < urls().length;
+  };
+
+  $scope.hasPrevImgs = function() {
+    return currentPage > 0 && urls().length > pageSize;
+  };
+
+  $scope.showNextPage = function() {
+    currentPage++;
+  };
+
+  $scope.showPrevPage = function() {
+    currentPage--;
   };
 }
 
@@ -1887,6 +1931,19 @@ function tcDraggableEntity() {
   };
 }
 
+function tcGalleryCarousel() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'gallery-carousel-template',
+    controller: GalleryCarouselCtrl,
+    scope: {
+      urls: '=',
+      pageSize: '=',
+      onSelect: '&'
+    }
+  }
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -2320,6 +2377,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)
+    .directive('tcGalleryCarousel', tcGalleryCarousel)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);
