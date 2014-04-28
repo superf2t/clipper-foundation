@@ -134,59 +134,61 @@ hr.dropdown-separator {
   position: relative;
 }
 
-.one-entity-mapview.collapsed {
-  height: 150px;
+.one-entity-mapview .main-row {
+  height: 100px;
 }
 
 .one-entity-mapview.expanded {
 }
 
 .one-entity-mapview .img-container {
+  height: 100%;
   overflow: hidden;
   text-align: center;
-}
-
-
-.one-entity-mapview .img-container {
-  height: 115px;
+  padding: 0;
+  margin: 0;
 }
 
 .one-entity-mapview .img-container img {
   height: 100%;
 }
 
+.one-entity-mapview .details-container {
+  height: 100%;
+  padding: 0;
+}
+
 .one-entity-mapview .main-details {
-  padding: 5px 5px 8px 5px;
+  height: 100%;
+  padding: 5px;
   background-color: #fff;
 }
 
 .one-entity-mapview .title {
-  font-size: 1.2em;
+  font-size: 1em;
   font-family: 'Raleway';
   color: #000;
 }
 
 .one-entity-mapview .category-info {
   position: absolute;
-  right: 3px;
+  left: 3px;
   top: 3px;
-  color: #fff;
+  opacity: 0.6;
 }
 
 .one-entity-mapview .day-info {
   position: absolute;
   left: 5px;
-  top: 5px;
-  background-color: #fff;
-  padding: 3px;
-  border-radius: 2px;
-  opacity: 0.8;
+  bottom: 5px;
+  font-size: 0.9em;
 }
 
 .one-entity-mapview .main-controls {
-  float: right;
-  position: relative;
-  top: -17px;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  font-size: 0.9em;
 }
 
 .one-entity-mapview select.day-select-pill {
@@ -195,16 +197,13 @@ hr.dropdown-separator {
   margin: auto;
 }
 
-.one-entity-mapview .expanded-details {
-  padding: 0 5px 5px 5px;
-  background-color: #fff;
+.one-entity-mapview .expanded-row {
+  background-color: #f3f4f4;
+  border-top: 1px solid #cdcdcd;
+  padding: 5px;
   font-size: 1.0em;
   font-family: 'Raleway';
   color: #000;
-}
-
-.one-entity-mapview .description-section {
-  padding: 5px 0 10px 0;
 }
 
 .one-entity-mapview .description {
@@ -221,7 +220,7 @@ hr.dropdown-separator {
 }
 
 .one-entity-mapview .address {
-  padding: 5px 0px;
+  padding-bottom: 5px;
 }
 
 .one-entity-mapview .source-icon {
@@ -430,7 +429,11 @@ hr.dropdown-separator {
 }
 
 .infowindow-warning-text {
-  margin-top: 10px;
+  padding-top: 5px;
+}
+
+.infowindow-address {
+  padding-top: 5px;
 }
 
 .clipping-iframe {

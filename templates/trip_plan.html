@@ -231,6 +231,9 @@
       <div>
         <b>[[entity.data['name'] ]]</b>
       </div>
+      <div class="infowindow-address">
+        [[entity.data['address'] ]]
+      </div>
       <div ng-if="!entity.isPreciseLocation()" class="text-warning infowindow-warning-text">
         Location approximate
       </div>
@@ -620,83 +623,92 @@
   </script>
 
   <script type="text/ng-template" id="mapview-one-entity-template">
-    <div ng-controller="EntityCtrl" class="one-entity-mapview"
+    <div ng-controller="EntityCtrl" class="one-entity-mapview container-fluid"
       ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded}"
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-mouseenter="openInfowindow(ed['entity_id'])">
-      <div class="img-container">
-        {# TODO: Some kind of directive here #}
-        <img ng-src="[[ed['photo_urls'][0] ]]"/><img ng-src="[[ed['photo_urls'][1] ]]"/><img ng-src="[[ed['photo_urls'][2] ]]"/>
-      </div>
-      <div class="day-info" ng-show="item.day()">
-        <span class="glyphicon glyphicon-calendar"></span> Day [[item.day()]]
-      </div>
-      <div class="category-info">
-        [[item.categoryDisplayText()]]
-        <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
-      </div>
-      <div class="main-details">
-        <div class="title">
-          [[ed['name'] ]]
+      <div class="row main-row">
+        <div class="col-md-4 img-container">
+          <div class="category-info">
+            <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
+          </div>
+          <img ng-src="[[ed['photo_urls'][0] ]]"/>
         </div>
-        <div class="main-controls">
-          <span ng-if="!item.hasLocation()"
-            tooltip="Location unavailable"
-            class="glyphicon glyphicon-exclamation-sign">
-          </span>
-          <span ng-if="item.hasLocation() && !item.isPreciseLocation()"
-            tooltip="Location approximate"
-            class="glyphicon glyphicon-exclamation-sign">
-          </span>
-          <a href="javascript:void(0)" class="dropdown-toggle">
-            <span class="glyphicon glyphicon-cog"></span>
-          </a>
-          <ul class="dropdown-menu right-bottom-dropdown-menu">
-            {% if allow_editing %}
-            <li>
-              <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-edit"></span> Edit this place
+        <div class="col-md-8 details-container">
+          <div class="main-details">
+            <div class="title">
+              [[ed['name'] ]]
+            </div>
+            <div tc-star-rating value="[[ed['rating'] ]]" ng-if="ed['rating']">
+            </div tc-star-rating>
+            <div class="source">
+              From
+              <a ng-href="[[ed['source_url'] ]]" target="_blank"
+                tooltip="[[ed['source_url'] | hostname ]]" tooltip-placement="right">
+                <img class="source-icon" ng-src="http://[[ed['source_url'] | hostname ]]/favicon.ico"/>
               </a>
-            </li>
-            {% endif %}
-            <li>
-              <a ng-click="reclipEntity()" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-paperclip"></span> Clip this place
+            </div>
+            <div class="day-info" ng-show="item.day()">
+              Day [[item.day()]]
+            </div>
+            <div class="main-controls">
+              <span ng-if="!item.hasLocation()"
+                tooltip="Location unavailable"
+                class="glyphicon glyphicon-exclamation-sign">
+              </span>
+              <span ng-if="item.hasLocation() && !item.isPreciseLocation()"
+                tooltip="Location approximate"
+                class="glyphicon glyphicon-exclamation-sign">
+              </span>
+              <a href="javascript:void(0)" class="dropdown-toggle">
+                <span class="glyphicon glyphicon-cog"></span>
               </a>
-            </li>
-            {% if allow_editing %}
-            <li>
-              <a ng-click="deleteEntity()" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-trash"></span> Delete this place
+              <ul class="dropdown-menu right-bottom-dropdown-menu">
+                {% if allow_editing %}
+                <li>
+                  <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-edit"></span> Edit this place
+                  </a>
+                </li>
+                {% endif %}
+                <li>
+                  <a ng-click="reclipEntity()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-paperclip"></span> Clip this place
+                  </a>
+                </li>
+                {% if allow_editing %}
+                <li>
+                  <a ng-click="deleteEntity()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-trash"></span> Delete this place
+                  </a>
+                </li>
+                <li>
+                  <select class="form-control day-select-pill"
+                    ng-options="option.createNew ? 'Add a new day' : 'Day ' + option.dayNumber for option in getDaySelectOptions()"
+                    {# HACK: Stupid ng/bootstrap widget closes the dropdown on all clicks,
+                       so as soon as you try to click on the Select elem the whole dropdown
+                       closes.  Here we stop the click event to prevent this.  But then
+                       we need a corresponding hack to trigger a fake click event when
+                       we need the menu to actually close.  It seems a future version
+                       of the dropdown widget will support angular bindings to control
+                       the open/close state. #}
+                    ng-click="$event.stopPropagation(); $event.preventDefault()"
+                    ng-change="organizeIntoDay()"
+                    ng-model="selectedDay">
+                    <option value="" ng-if="!item.day()">--Add to day--</option>
+                  </select>
+                </li>
+                {% endif %}
+              </ul>
+              <a ng-click="toggleDetails()" href="javascript:void(0)">
+                <span ng-show="!detailsExpanded" class="glyphicon glyphicon-chevron-down"></span>
+                <span ng-show="detailsExpanded" class="glyphicon glyphicon-chevron-up"></span>
               </a>
-            </li>
-            <li>
-              <select class="form-control day-select-pill"
-                ng-options="option.createNew ? 'Add a new day' : 'Day ' + option.dayNumber for option in getDaySelectOptions()"
-                {# HACK: Stupid ng/bootstrap widget closes the dropdown on all clicks,
-                   so as soon as you try to click on the Select elem the whole dropdown
-                   closes.  Here we stop the click event to prevent this.  But then
-                   we need a corresponding hack to trigger a fake click event when
-                   we need the menu to actually close.  It seems a future version
-                   of the dropdown widget will support angular bindings to control
-                   the open/close state. #}
-                ng-click="$event.stopPropagation(); $event.preventDefault()"
-                ng-change="organizeIntoDay()"
-                ng-model="selectedDay">
-                <option value="" ng-if="!item.day()">--Add to day--</option>
-              </select>
-            </li>
-            {% endif %}
-          </ul>
-          <a ng-click="toggleDetails()" href="javascript:void(0)">
-            <span ng-show="!detailsExpanded" class="glyphicon glyphicon-chevron-down"></span>
-            <span ng-show="detailsExpanded" class="glyphicon glyphicon-chevron-up"></span>
-          </a>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="expanded-details" ng-show="detailsExpanded">
-        <div tc-star-rating value="[[ed['rating'] ]]" ng-if="ed['rating']">
-        </div tc-star-rating>
+      <div class="row expanded-row" ng-show="detailsExpanded">
         <div class="address">
           [[ed['address'] ]]
         </div>
@@ -720,13 +732,6 @@
           <button ng-show="editing" class="btn btn-primary" ng-click="saveEntityEdit()">Save</button>
         </div>
         {% endif %}
-        <div class="source">
-          From
-          <a ng-href="[[ed['source_url'] ]]" target="_blank"
-            tooltip="[[ed['source_url'] | hostname ]]" tooltip-placement="right">
-            <img class="source-icon" ng-src="http://[[ed['source_url'] | hostname ]]/favicon.ico"/>
-          </a>
-        </div>
       </div>
     </div>
   </script>
