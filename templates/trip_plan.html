@@ -628,11 +628,11 @@
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-mouseenter="openInfowindow(ed['entity_id'])">
       <div class="row main-row">
-        <div class="col-md-4 img-container">
+        <div class="col-md-4 img-container"
+          ng-style="{'background-image': 'url(' + ed['photo_urls'][0] +')'}">
           <div class="category-info">
             <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
           </div>
-          <img ng-src="[[ed['photo_urls'][0] ]]"/>
         </div>
         <div class="col-md-8 details-container">
           <div class="main-details">

@@ -142,8 +142,9 @@ hr.dropdown-separator {
 
 .one-entity-mapview .img-container {
   height: 100%;
-  overflow: hidden;
-  text-align: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
   padding: 0;
   margin: 0;
 }
