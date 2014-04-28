@@ -4,13 +4,9 @@
   <title>{{plan.name}}</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
-  <script src="/static/js/imagesloaded.pkgd.min.js"></script>
-  <script src="/static/js/masonry.pkgd.min.js"></script>
-  <script src="/static/js/jquery.dotdotdot.min.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
-  <script src="/static/js/angular-masonry.min.js"></script>
   <script src="/static/js/services.js"></script>  
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
@@ -63,12 +59,6 @@
                     <a ng-click="showLargeMap()" href="javascript:void(0)">Large map</a>
                   </li>
                 </ul>
-              </li>
-              <li class="view-mode-pill" tooltip="Guide" tooltip-placement="bottom">
-                <a href="javascript:void(0)" ng-click="showGuideView()" 
-                ng-class="{'active-view-mode': pageStateModel.inGuideView()}">
-                  <span class="glyphicon glyphicon-picture" id="header-picture"></span>
-                </a>
               </li>
               <li class="view-mode-pill">
                 <a href="javascript:void(0)" class="dropdown-toggle">
@@ -187,19 +177,6 @@
     </div>
 
   </div>  {# end map view #}
-
-  <div ng-if="pageStateModel.inGuideView()">
-    <div class="guideview-container">
-      <div ng-repeat="itemGroupModel in itemGroups">
-        <div ng-include="'guideview-item-group-template'">
-        </div>
-      </div>
-      <div class="guideview-footer">
-        Copyright 2014 Unicycle Labs
-      </div>
-    </div>
-
-  </div> {# end guide view #}
 
   {# This is below the map in the DOM so that it appears visually on top #}
   <ul ng-show="accountDropdownOpen" class="account-dropdown" ng-controller="AccountDropdownCtrl">
@@ -615,14 +592,6 @@
     </h4>
   </script>
 
-  <script type="text/ng-template" id="guideview-item-group-header-template">
-    <div class="header-img" id="[[itemGroupModel.groupKey]]-header-img">
-      <div class="guideview-entity-type-header">
-        <span ng-include="'item-group-header-text-template'"></span>
-      </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="item-group-header-text-template">
     <span ng-if="itemGroupModel.isDayGrouping()">
       <span ng-if="itemGroupModel.groupKey > 0">
@@ -778,83 +747,6 @@
         <img ng-src="[[slide.imgUrl]]"/>
       </script>
     </carousel>
-  </script>
-
-  <script type="text/ng-template" id="guideview-item-group-template">
-    <div ng-show="itemGroupModel.hasContent()">
-      <div ng-include="'guideview-item-group-header-template'">
-      </div>
-      <div>
-        <div ng-repeat="item in itemGroupModel.getNonemptyNoteItems()">
-          <div ng-include="'guideview-one-note-template'">
-          </div>
-        </div>
-        <div ng-repeat="item in itemGroupModel.getEntityItems()">
-          <div ng-include="'guideview-one-entity-template'">
-          </div>
-        </div>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="guideview-one-note-template">
-    <div ng-controller="NoteCtrl" class="one-note-guideview">
-      <div class="note-text">[[nd['text'] ]]</div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="guideview-one-entity-template">
-    <div class="guideview-one-entity" ng-controller="EntityCtrl"
-      ng-class="{'guideview-entity-even': $even, 'guideview-entity-odd': $odd}">
-      <div class="guideview-one-entity-title">
-        <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['name'] ]]</a>
-      </div>
-      <div tc-star-rating value="[[ed['rating'] ]]" class="guideview-star-rating">
-      </div tc-star-rating>
-      <div ng-controller="GuideViewCarouselCtrl" class="guideview-imgs-showcase">
-        <div masonry="{ transitionDuration: 0, gutter: 6 }">
-          <a class="left carousel-control" ng-show="hasPrevImgs()" ng-click="prevImgs()" style="z-index: 1000">
-            <span class="icon-prev"></span>
-          </a>
-          <div class="masonry-brick guideview-img-masonry-brick" ng-repeat="imgUrl in activeImgUrls()">
-            <img bn-lazy-src="[[imgUrl]]" class="guideview-masonry-img"/>
-          </div>
-          <a class="right carousel-control guideview-carousel-control" ng-show="hasNextImgs()" ng-click="nextImgs()">
-            <span class="icon-next"></span>
-          </a>
-        </div>
-      </div>
-
-      <div class="guideview-entity-info">
-        <div class="guideview-entity-description"
-          ng-show="ed['description'] && !editing">
-          <div style="white-space:pre-wrap">[[ed['description'] ]]</div>
-        </div>
-        <div ng-show="editing">
-          <textarea ng-model="ed['description']"
-            class="form-control guideview-entity-description-input"></textarea>
-        </div>
-        {% if allow_editing %}
-          <div class="guideview-entity-edit-controls">
-            <a href="javascript:void(0)"
-              ng-click="deleteEntity()"
-              ng-show="!editing">
-              <span class="glyphicon glyphicon-trash"></span>
-            </a>
-            <a href="javascript:void(0)"
-              ng-click="openEditEntity()"
-              ng-show="!editing">
-              <span class="glyphicon glyphicon-pencil"></span>
-            </a>
-            <button class="btn btn-save-changes" ng-click="saveEntityEdit()" ng-show="editing">Save</button>
-            <a href="javascript:void(0)" ng-click="cancelEditing()" ng-show="editing">
-              Cancel
-            </a>
-          </div>
-        {% endif %}
-      </div>
-
-    </div>
   </script>
  
   <script type="text/ng-template" id="mapview-getting-started-template">

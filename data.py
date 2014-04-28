@@ -102,7 +102,7 @@ class Entity(serializable.Serializable):
             icon_url = SUB_CATEGORY_NAME_TO_ICON_URL.get(self.sub_category.name)
         elif self.category:
             icon_url = CATEGORY_NAME_TO_ICON_URL.get(self.category.name)
-        if self.address_precision == 'Imprecise':
+        if icon_url and self.address_precision == 'Imprecise':
             icon_url = icon_url.replace('.', '_imprecise.')
         self.icon_url = icon_url
 

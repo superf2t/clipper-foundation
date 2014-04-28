@@ -736,13 +736,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
   };
 
-  $scope.showGuideView = function() {
-    if (!$scope.pageStateModel.inGuideView()) {
-      $scope.pageStateModel.showGuideView();
-      $scope.$broadcast('masonry.reload');
-    }
-  };
-
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
       $scope.pageStateModel.showMapView();
@@ -774,16 +767,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     if (!$scope.pageStateModel.inLargeMap()) {
       $scope.pageStateModel.mapSize = MapSize.LARGE;
       google.maps.event.trigger($map, 'resize');
-    }
-  };
-
-  $scope.navAnchor = function(categoryName) {
-    if ($scope.pageStateModel.inMapView()) {
-      return 'mapview-' + categoryName;
-    } else if ($scope.pageStateModel.inGuideView()) {
-      return 'guideview-' + categoryName;
-    } else {
-      return '';
     }
   };
 
@@ -988,57 +971,6 @@ function CarouselCtrl($scope) {
   $scope.prevImg = function() {
     currentIndex -= 1;
     $scope.currentImgUrl = urls[currentIndex];
-  };
-}
-
-function GuideViewCategoryCtrl($scope) {
-  var me = this;
-  $scope.entityModels = [];
-  $scope.show = true;
-
-  $.each($scope.planModel.entitiesForCategory($scope.category), function(i, entity) {
-    $scope.entityModels.push(new EntityModel(entity));
-  });
-
-  $scope.hasEntities = function() {
-    return $scope.entityModels && $scope.entityModels.length;
-  };
-}
-
-function GuideViewCarouselCtrl($scope, $timeout) {
-  var me = this;
-  this.imgUrls = $scope.ed['photo_urls'];
-  this.currentPage = 0;
-  this.numImgsPerPage = 4;
-
-  $scope.activeImgUrls = function() {
-    var startIndex = me.currentPage * me.numImgsPerPage;
-    var endIndex = startIndex + me.numImgsPerPage;
-    return me.imgUrls.slice(startIndex, endIndex);
-  };
-
-  $scope.hasPrevImgs = function() {
-    return me.currentPage > 0;
-  };
-
-  $scope.hasNextImgs = function() {
-    return ((me.currentPage + 1) * me.numImgsPerPage) < me.imgUrls.length;
-  };
-
-  $scope.prevImgs = function() {
-    me.currentPage -= 1;
-    me.refreshMasonry();
-  };
-
-  $scope.nextImgs = function() {
-    me.currentPage += 1;
-    me.refreshMasonry();
-  };
-
-  this.refreshMasonry = function() {
-    $timeout(function() {
-      $scope.$broadcast('masonry.reload');
-    });
   };
 }
 
@@ -2298,25 +2230,6 @@ function tcGooglePlaceAutocomplete($parse) {
   };
 }
 
-function tcEllipsize($timeout) {
-  return {
-    restrict: 'A',
-    scope: {
-      watchValue: '='
-    },
-    link: function(scope, element, attrs) {
-      $timeout(function() {
-        element.dotdotdot({
-          watch: true
-        });
-        scope.$watch('watchValue', function() {
-          element.trigger('update.dot');
-        });
-      });
-    }
-  };
-}
-
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -2357,8 +2270,7 @@ angular.module('directivesModule', [])
   .directive('tcDragover', directiveForEvent('dragover'))
   .directive('tcDragend', directiveForEvent('dragend'))
   .directive('tcFocusOn', tcFocusOn)
-  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
-  .directive('tcEllipsize', tcEllipsize);
+  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])
   .filter('hostname', function() {
@@ -2383,7 +2295,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$mapBounds', new google.maps.LatLngBounds());
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'servicesModule',
-      'directivesModule', 'filtersModule', 'ui.bootstrap', 'wu.masonry'],
+      'directivesModule', 'filtersModule', 'ui.bootstrap'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
@@ -2397,8 +2309,6 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
-    .controller('GuideViewCategoryCtrl', ['$scope', GuideViewCategoryCtrl])
-    .controller('GuideViewCarouselCtrl', ['$scope', '$timeout', GuideViewCarouselCtrl])
     .controller('AddPlaceCtrl', ['$scope', '$entityService', '$timeout', '$modal', AddPlaceCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
