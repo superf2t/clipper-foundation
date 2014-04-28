@@ -161,7 +161,8 @@
 
     <div id="right-panel" ng-class="{'map-view': pageStateModel.inMapView(), 'gallery-view': pageStateModel.inGalleryView()}">
       <div id="gallery-panel">
-        <img style="padding: 25px" src="http://impressivemagazine.com/wp-content/uploads/2013/06/Louvre-Museum-Paris.jpg"/>
+        <div ng-include="'gallery-panel-template'" class="full-height">
+        </div>
       </div>
       <div id="info-panel">
         <div id="map-container">
@@ -626,6 +627,7 @@
     <div ng-controller="EntityCtrl" class="one-entity-mapview container-fluid"
       ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded}"
       tc-entity-id="[[ed['entity_id'] ]]"
+      ng-click="openGalleryView(ed)"
       ng-mouseenter="openInfowindow(ed['entity_id'])">
       <div class="row main-row">
         <div class="col-md-4 img-container"
@@ -797,6 +799,19 @@
       <p>
         Come back to this Trip Plan and your bookmarked points of interest will instantly be ready for you to browse and manage
       </p>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="gallery-panel-template">
+    <div ng-controller="GalleryPanelCtrl" class="full-height">
+      <div class="hero-container">
+        <img ng-src="[[selectedHeroImg()]]"/>
+      </div>
+      <div class="gallery-carousel">
+        <img ng-src="[[ed()['photo_urls'][1] ]]"/>
+        <img ng-src="[[ed()['photo_urls'][2] ]]"/>
+        <img ng-src="[[ed()['photo_urls'][3] ]]"/>
+      </div>
     </div>
   </script>
 

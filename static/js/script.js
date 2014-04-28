@@ -541,6 +541,7 @@ var View = {
 function PageStateModel() {
   this.view = View.MAP_VIEW;
   this.grouping = Grouping.CATEGORY;
+  this.selectedEntity = null;
 
   this.inGalleryView = function() {
     return this.view == View.GALLERY_VIEW;
@@ -725,7 +726,9 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
       $scope.pageStateModel.showMapView();
-      google.maps.event.trigger($map, 'resize');
+      $timeout(function() {
+        google.maps.event.trigger($map, 'resize');
+      });
     }
   };
 
@@ -735,7 +738,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       google.maps.event.trigger($map, 'resize');
     }
   };
-
 
   $scope.groupByCategory = function() {
     if (!$scope.pageStateModel.isGroupByCategory()) {
@@ -749,6 +751,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       $scope.pageStateModel.groupByDay();
       me.processItemsIntoGroups();
     }
+  };
+
+  $scope.openGalleryView = function(entityData) {
+    $scope.pageStateModel.selectedEntity = entityData;
+    $scope.pageStateModel.showGalleryView();
   };
 
   $scope.toggleAccountDropdown = function() {
@@ -928,6 +935,16 @@ function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $account
         var newTripPlanId = response['trip_plans'][0]['trip_plan_id'];
         $scope.loadTripPlan(newTripPlanId)
       });
+  };
+}
+
+function GalleryPanelCtrl($scope) {
+  $scope.ed = function() {
+    return $scope.pageStateModel.selectedEntity;
+  };
+
+  $scope.selectedHeroImg = function() {
+    return $scope.ed() && $scope.ed()['photo_urls'][0];
   };
 }
 
@@ -2287,6 +2304,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$templateToStringRenderer', '$pagePositionManager', '$tripPlan', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
+    .controller('GalleryPanelCtrl', ['$scope', GalleryPanelCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
