@@ -1113,7 +1113,16 @@ function PagePositionManager($rootScope) {
 function AddPlaceCtrl($scope, $entityService, $timeout, $modal) {
   var me = this;
   $scope.loading = false;
-  $scope.rawInputText = '';
+  $scope.inputState = {rawText: ''};
+
+  $scope.onOmniboxKeyup = function($event) {
+    if ($event.which == 27) {
+      $scope.omniboxState.visible = false;
+      // TODO: This is not currently clearing the content of the input
+      // but I have no idea why.
+      $scope.inputState.rawText = '';
+    }
+  };
 
   $scope.placeChanged = function(newPlace) {
     if (!newPlace || !newPlace['reference']) {
@@ -1126,10 +1135,10 @@ function AddPlaceCtrl($scope, $entityService, $timeout, $modal) {
     // Ugly hack to wrap this in a timeout; without it, the paste event
     // fires before the input has been populated with the pasted data.
     $timeout(function() {
-      if (!$scope.rawInputText || !looksLikeUrl($scope.rawInputText)) {
+      if (!$scope.inputState.rawText || !looksLikeUrl($scope.inputState.rawText)) {
         return;
       }
-      me.loadEntityByUrl($scope.rawInputText);
+      me.loadEntityByUrl($scope.inputState.rawText);
     });
   };
 
@@ -1159,7 +1168,7 @@ function AddPlaceCtrl($scope, $entityService, $timeout, $modal) {
 
   this.openAddPlaceConfirmation = function(entityData) {
     $scope.omniboxState.visible = false;
-    $scope.rawInputText = '';
+    $scope.inputState.rawText = '';
     var scope = $scope.$new(true);
     scope.entityModel = new EntityModel(entityData);
     scope.ed = scope.entityModel.data;
