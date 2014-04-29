@@ -1975,12 +1975,37 @@ function tcLockAfterScroll() {
       var elem = $(element);
       var spread = elem.offset().top - scrollParent.offset().top;
       var classWhenFixed = attrs.classWhenFixed;
+      var parentClassWhenFixed = attrs.parentClassWhenFixed;
       scrollParent.on('scroll', function() {
         if (scrollParent.scrollTop() >= spread) {
           elem.addClass(classWhenFixed);
+          if (parentClassWhenFixed) {
+            scrollParent.addClass(parentClassWhenFixed);
+          }
         } else {
           elem.removeClass(classWhenFixed);
+          if (parentClassWhenFixed) {
+            scrollParent.removeClass(parentClassWhenFixed);
+          }
         }
+      });
+    }
+  };
+}
+
+function tcSetScrollTop($timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      var scrollTop = parseInt(attrs.setScrollTop);
+      scope.$watch(attrs.setScrollOnChangesTo, function(newValue, oldValue) {
+        if (newValue === oldValue) {
+          return;
+        }
+        $timeout(function() {
+          elem.scrollTop(scrollTop);
+        });
       });
     }
   };
@@ -2370,6 +2395,7 @@ angular.module('directivesModule', [])
   .directive('tcDragend', directiveForEvent('dragend'))
   .directive('tcFocusOn', tcFocusOn)
   .directive('tcLockAfterScroll', tcLockAfterScroll)
+  .directive('tcSetScrollTop', tcSetScrollTop)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])

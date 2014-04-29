@@ -124,6 +124,16 @@ hr.dropdown-separator {
   width: 25%;
 }
 
+#trip-plan-header .nav-vertical-placeholder {
+  display: none;
+  height: 33px;
+  width: 100%;
+}
+
+#entity-container.nav-fixed .nav-vertical-placeholder {
+  display: block;
+}
+
 #trip-plan-header .control-buttons .button-content {
   width: 100%;
   height: 100%;

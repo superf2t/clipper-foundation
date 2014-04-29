@@ -59,7 +59,8 @@
   <div>
     <div id="entity-container"
       tc-entity-scroll scroll-state="scrollState"
-      scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000">
+      scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000"
+      tc-set-scroll-top set-scroll-on-changes-to="itemGroups" set-scroll-top="34">
 
       <div ng-include="'trip-plan-header-template'">
       </div>
@@ -785,7 +786,8 @@
         </ul>
       </div>
       <div class="control-buttons container-fluid"
-        tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container">
+        tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container"
+        parent-class-when-fixed="nav-fixed">
         <div class="row">
           <div class="col-md-4 sort-button">
             <a ng-click="groupByCategory()" href="javascript:void(0)">
@@ -803,6 +805,8 @@
             </a>
           </div>
         </div>
+      </div>
+      <div class="nav-vertical-placeholder">
       </div>
     </div>
   </script>
