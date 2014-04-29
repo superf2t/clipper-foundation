@@ -18,91 +18,9 @@
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="travel-clip-navbar">
     <div class="container-fluid">
       <div class="navbar-header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="header-navbar-collapse">
-          <span class="sr-only">Toggle navigation</span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
         <a class="navbar-brand" id="logo" href="#">TravelClip</a>
       </div>
       <div class="collapse navbar-collapse" id="header-navbar-collapse">
-        <ul class="nav navbar-nav" id="header-plan-navigation">
-          <li id="trip-plan-title">
-            <a href="javascript:void(0)" id="edit-title-link" ng-click="allowEditing && editTripPlanSettings()" ng-show="!editingTripPlanSettings" 
-            {% if allow_editing %}
-              tooltip="Edit Trip Title" tooltip-placement="bottom"
-            {% endif %}
-            >
-              <span ng-show="!editingTripPlanSettings">[[planModel.tripPlanData['name'] ]]</span>
-            </a>
-            <form class="form-inline" role="form" ng-submit="saveTripPlanSettings()" ng-show="editingTripPlanSettings">
-              <input class="form-control" type="text"
-                tc-focus-on="editingTripPlanSettings"
-                ng-model="editableTripPlanSettings.name"
-                ng-blur="saveTripPlanSettings()"/>
-            </form>
-          </li>
-          <li>
-            <ul class="nav nav-pills">
-              <li class="view-mode-pill" tooltip="Map" tooltip-placement="bottom">
-                <a href="javascript:void(0)" ng-click="showMapView()">
-                  <span class="glyphicon glyphicon-globe" id="header-globe"></span>
-                </a>
-              </li>
-              <li class="view-mode-pill">
-                <a href="javascript:void(0)" class="dropdown-toggle">
-                  <span class="glyphicon glyphicon-cog" id="header-gear"></span>
-                </a>
-                <ul class="dropdown-menu">
-                  {% if allow_editing %}
-                  <li>
-                    <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-time"></span> Day planner
-                    </a>
-                  </li>
-                  <hr class="dropdown-separator"/>
-                  {% endif %}
-                  <li>
-                    <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-plus"></span> Clone trip plan
-                    </a>
-                  </li>
-                  {% if allow_editing %}
-                  <li>
-                    <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-trash"></span> Delete trip plan
-                    </a>
-                  </li>
-                  {% endif %}
-                  <hr class="dropdown-separator"/>
-                  <li>
-                    <a ng-click="groupByCategory()" href="javascript:void(0)">
-                      <span ng-if="!pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-unchecked"></span>
-                      <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-check"></span>
-                      Group by category
-                    </a>
-                  </li>
-                  <li>
-                    <a ng-click="groupByDay()" href="javascript:void(0)">
-                      <span ng-if="!pageStateModel.isGroupByDay()" class="glyphicon glyphicon-unchecked"></span>
-                      <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-check"></span>
-                      Group by day
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          {% if allow_editing %}
-            <li>
-              <button type="button" class="btn btn-default navbar-btn"
-                id="add-place-to-trip-btn" ng-click="toggleOmnibox()">
-                Add Place to Trip
-              </button>
-            </li>
-          {% endif %}
-        </ul>
         <ul class="nav navbar-nav navbar-right" id="header-site">
           <li>
             <ul class="nav nav-pills">
@@ -142,6 +60,9 @@
     <div id="entity-container"
       tc-entity-scroll scroll-state="scrollState"
       scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000">
+
+      <div ng-include="'trip-plan-header-template'">
+      </div>
 
       <div ng-repeat="itemGroupModel in itemGroups">
         <div ng-include="'item-group-template'">
@@ -828,6 +749,60 @@
       <a ng-show="hasNextImgs()" ng-click="showNextPage()" href="javascript:void(0)">
         <span class="glyphicon glyphicon-chevron-right"></span>
       </a>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="trip-plan-header-template">
+    <div id="trip-plan-header">
+      <div class="title">
+        [[planModel.tripPlanName()]]
+      </div>
+      <div class="settings-control">
+        <a class="dropdown-toggle" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-cog"></span>
+        </a>
+        <ul class="dropdown-menu right-top-dropdown-menu">
+          {% if allow_editing %}
+          <li>
+            <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-time"></span> Day planner
+            </a>
+          </li>
+          <hr class="dropdown-separator"/>
+          {% endif %}
+          <li>
+            <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-plus"></span> Clone trip plan
+            </a>
+          </li>
+          {% if allow_editing %}
+          <li>
+            <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-trash"></span> Delete trip plan
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+      <div class="control-buttons container-fluid">
+        <div class="row">
+          <div class="col-md-4 sort-button">
+            <a ng-click="groupByCategory()" href="javascript:void(0)">
+              <div class="button-content">Sort by Type</div>
+            </a>
+          </div>
+          <div class="col-md-4 sort-button">
+            <a ng-click="groupByDay()" href="javascript:void(0)">
+              <div class="button-content">Sort by Day</div>
+            </a>
+          </div>
+          <div class="col-md-4 add-place-button">
+            <a ng-click="toggleOmnibox()" href="javascript:void(0)">
+              <div class="button-content">Add Place to Trip</div>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   </script>
 
