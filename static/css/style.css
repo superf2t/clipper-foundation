@@ -343,12 +343,13 @@ hr.dropdown-separator {
 
 .one-note-mapview {
   margin: 5px 10px;
+  position: relative;
 }
 
 .one-note-mapview .controls {
-  float: right;
-  position: relative;
-  top: -18px;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .clipped-pages-header {
