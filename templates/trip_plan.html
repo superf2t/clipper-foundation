@@ -738,7 +738,7 @@
       <div class="title" ng-show="!editingTripPlanSettings">
         [[planModel.tripPlanName()]]
       </div>
-      <div ng-show="editingTripPlanSettings" class="trip-plan-name-input-container">
+      <div ng-show="editingTripPlanSettings" class="trip-plan-name-input-container ng-hide">
         <form ng-submit="saveTripPlanSettings()">
           <input type="text" class="form-control"
             ng-model="editableTripPlanSettings.name" tc-focus-on="editingTripPlanSettings"
