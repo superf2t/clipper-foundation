@@ -59,7 +59,8 @@
   <div>
     <div id="entity-container"
       tc-entity-scroll scroll-state="scrollState"
-      scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000">
+      scroll-highlight-class="one-entity-highlighted" scroll-highlight-duration="2000"
+      tc-set-scroll-top set-scroll-on-changes-to="itemGroups" set-scroll-top="34">
 
       <div ng-include="'trip-plan-header-template'">
       </div>
@@ -730,7 +731,8 @@
   <script type="text/ng-template" id="gallery-panel-template">
     <div ng-controller="GalleryPanelCtrl" class="full-height">
       <div class="hero-container">
-        <img ng-src="[[selectedHeroImg()]]"/>
+        <span class="img-vertical-align"></span><!--
+        --><img ng-src="[[selectedHeroImg()]]"/>
       </div>
       <div tc-gallery-carousel urls="ed()['photo_urls']" on-select="selectImg($img)"
         page-size="3"
@@ -740,15 +742,16 @@
   </script>
 
   <script type="text/ng-template" id="gallery-carousel-template">
-    <div class="full-height">
-      <a ng-show="hasPrevImgs()" ng-click="showPrevPage()" href="javascript:void(0)">
+    <div class="gallery-carousel-controls">
+      <a ng-show="hasPrevImgs()" ng-click="showPrevPage()" class="show-previous-control" href="javascript:void(0)">
         <span class="glyphicon glyphicon-chevron-left"></span>
       </a>
       <a ng-repeat="img in imgsToShow()" href="javascript:void(0)"
         ng-click="onSelect({$img: img})">
-        <img ng-src="[[img]]"/>
+        <span class="img-vertical-align"></span><!--
+        --><img ng-src="[[img]]"/>
       </a>
-      <a ng-show="hasNextImgs()" ng-click="showNextPage()" href="javascript:void(0)">
+      <a ng-show="hasNextImgs()" ng-click="showNextPage()" class="show-next-control" href="javascript:void(0)">
         <span class="glyphicon glyphicon-chevron-right"></span>
       </a>
     </div>
@@ -786,7 +789,9 @@
           {% endif %}
         </ul>
       </div>
-      <div class="control-buttons container-fluid">
+      <div class="control-buttons container-fluid"
+        tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container"
+        parent-class-when-fixed="nav-fixed">
         <div class="row">
           <div class="col-md-4 sort-button">
             <a ng-click="groupByCategory()" href="javascript:void(0)">
@@ -804,6 +809,8 @@
             </a>
           </div>
         </div>
+      </div>
+      <div class="nav-vertical-placeholder">
       </div>
     </div>
   </script>
