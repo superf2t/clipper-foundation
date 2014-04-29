@@ -796,14 +796,21 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.editableTripPlanSettings.name = $tripPlan['name'];
   };
 
+  $scope.onTripPlanNameKeyup = function($event) {
+    if ($event.which == 27) {
+      $scope.cancelEditTripPlanSettings();
+    }
+  };
+
   $scope.saveTripPlanSettings = function() {
     // Prevent double-submits
-    if (this.alreadySaving) {
+    if (me.alreadySaving) {
       return;
     }
-    this.alreadySaving = true;
+    me.alreadySaving = true;
     if ($scope.editableTripPlanSettings.name == $tripPlan['name']) {
       $scope.editingTripPlanSettings = false;
+      me.alreadySaving = false;
       return;
     }
     var editedTripPlan = {
@@ -814,7 +821,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       .success(function(response) {
         var newName = $scope.editableTripPlanSettings.name;
         document.title = newName;
-        $scope.planModel.tripPlanData['name'] = newName;
+        $tripPlanModel.tripPlanData['name'] = newName;
+        $tripPlanModel.updateLastModified(response['last_modified']);
         // TODO: This might be redundant now.
         $tripPlan['name'] = newName;
         me.alreadySaving = false;

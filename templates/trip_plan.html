@@ -746,7 +746,8 @@
         <form ng-submit="saveTripPlanSettings()">
           <input type="text" class="form-control"
             ng-model="editableTripPlanSettings.name" tc-focus-on="editingTripPlanSettings"
-            ng-blur="saveTripPlanSettings()"/>
+            ng-blur="saveTripPlanSettings()"
+            ng-keyup="onTripPlanNameKeyup($event)"/>
         </form>
       </div>
       <div class="settings-control" ng-show="!editingTripPlanSettings">
