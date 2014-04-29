@@ -104,6 +104,20 @@ hr.dropdown-separator {
   color: #000;
 }
 
+#trip-plan-header .trip-plan-name-input-container {
+  padding: 5px;
+}
+
+#trip-plan-header .trip-plan-name-input-container input {
+  height: 30px;
+}
+
+#trip-plan-header .trip-plan-edit-controls {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+}
+
 #trip-plan-header .settings-control {
   position: absolute;
   right: 5px;

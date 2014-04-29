@@ -791,6 +791,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.editingTripPlanSettings = true;
   };
 
+  $scope.cancelEditTripPlanSettings = function() {
+    $scope.editingTripPlanSettings = false;
+    $scope.editableTripPlanSettings.name = $tripPlan['name'];
+  };
+
   $scope.saveTripPlanSettings = function() {
     // Prevent double-submits
     if (this.alreadySaving) {

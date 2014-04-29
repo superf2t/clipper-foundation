@@ -735,17 +735,24 @@
 
   <script type="text/ng-template" id="trip-plan-header-template">
     <div id="trip-plan-header">
-      <div class="title">
+      <div class="title" ng-show="!editingTripPlanSettings">
         [[planModel.tripPlanName()]]
       </div>
-      <div class="settings-control">
+      <div ng-show="editingTripPlanSettings" class="trip-plan-name-input-container">
+        <form ng-submit="saveTripPlanSettings()">
+          <input type="text" class="form-control"
+            ng-model="editableTripPlanSettings.name" tc-focus-on="editingTripPlanSettings"
+            ng-blur="saveTripPlanSettings()"/>
+        </form>
+      </div>
+      <div class="settings-control" ng-show="!editingTripPlanSettings">
         <a class="dropdown-toggle" href="javascript:void(0)">
           <span class="glyphicon glyphicon-cog"></span>
         </a>
         <ul class="dropdown-menu right-top-dropdown-menu">
           {% if allow_editing %}
           <li>
-            <a href="javascript:void(0)">
+            <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
               <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
             </a>
           </li>
