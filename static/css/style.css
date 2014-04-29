@@ -103,35 +103,62 @@ hr.dropdown-separator {
 }
 
 #trip-plan-header .title {
-  padding: 5px;
+  padding: 10px;
   font-size: 1.2em;
   color: #000;
+}
+
+#trip-plan-header .trip-plan-name-input-container {
+  padding: 5px;
+}
+
+#trip-plan-header .trip-plan-name-input-container input {
+  height: 30px;
+}
+
+#trip-plan-header .trip-plan-edit-controls {
+  position: absolute;
+  right: 10px;
+  top: 10px;
 }
 
 #trip-plan-header .settings-control {
 font-size: 1.1em;
 position: absolute;
-top: 8px;
-right: 8px;
+top: 15px;
+right: 10px;
 }
 
-#trip-plan-header .control-buttons {
+#trip-plan-header .control-panel {
   width: 100%;
   border-top: 1px solid #bbb;
   border-bottom: 1px solid #bbb;
 }
 
-#trip-plan-header .control-buttons.fixed {
+#trip-plan-header .control-panel.fixed {
   position: fixed;
   top: 41px;
   z-index: 2;
   width: 30%;
 }
 
+#trip-plan-header .control-buttons {
+  width: 100%;
+  font-size: 1em;
+}
+
 #trip-plan-header .nav-vertical-placeholder {
   display: none;
   height: 33px;
   width: 100%;
+}
+
+#trip-plan-header .nav-vertical-placeholder.omnibox-open {
+  height: 87px;
+}
+
+#entity-container.nav-fixed .nav-vertical-placeholder.omnibox-open {
+  height: 33px;
 }
 
 #entity-container.nav-fixed .nav-vertical-placeholder {
@@ -153,8 +180,16 @@ right: 8px;
   background-color: #f7f8f8;
 }
 
-#trip-plan-header .sort-button:hover, #trip-plan-header .add-place-button:hover {
-  background-color: #777;
+#trip-plan-header .sort-button:hover,
+#trip-plan-header .day-planner-button:hover,
+#trip-plan-header .add-place-button:hover {
+  background-color: #dddddd;
+}
+
+#trip-plan-header .day-planner-button {
+  text-align: center;
+  background-color: #f7f8f8;
+  color: #000;
 }
 
 #trip-plan-header .add-place-button {
@@ -163,8 +198,25 @@ right: 8px;
   color: #000;
 }
 
-#trip-plan-header .sort-button, #trip-plan-header .add-place-button {
+#trip-plan-header .sort-button,
+#trip-plan-header .day-planner-button,
+#trip-plan-header .add-place-button {
   padding: 8px 0;
+}
+
+#trip-plan-header .sort-button .glyphicon {
+  font-size: 0.7em;
+}
+
+#trip-plan-header .sorting-dropdown {
+  margin: 0;
+  border-radius: 0;
+  background-color: #f7f8f8;
+  text-align: left;
+}
+
+#trip-plan-header .sorting-dropdown a:hover {
+  background-color: #ccc;
 }
 
 /* Map View */
@@ -208,7 +260,6 @@ right: 8px;
 }
 
 .one-entity-mapview {
-
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
@@ -320,6 +371,10 @@ right: 8px;
   max-height: 16px;
 }
 
+.full-width {
+  width: 100%;
+}
+
 .full-height {
   height: 100%;
 }
@@ -330,15 +385,6 @@ right: 8px;
   padding: 20px;
   text-align: center;
 }
-
-
-/*#gallery-panel .hero-container {
-  height: 70%;
-  width: 100%;
-  padding: 20px;
-  display: table-cell;
-  vertical-align: middle;
-}*/
 
 #gallery-panel .hero-container img {
   max-width: 100%;
@@ -645,21 +691,17 @@ right: 8px;
 /* Add Place Overlays */
 
 .omnibox-container {
-  width: 460px;
-  height: 50px;
-  position: fixed;
-  left: 125px;
-  top: 52px;
+  width: 100%;
+  height: 54px;
   z-index: 1031;
   padding: 10px;
-  margin-left: 10px;
-  background-color: rgb(240, 240, 255);
+  background-color: #f7f8f8;
+  border-bottom: 1px solid #bbb;
 }
 
 #search-spinner {
-  position: fixed;
-  left: 560px;
-  top: 67px;
+  text-align: center;
+  margin-top: 6px;
 }
 
 .add-place-manually-link {
