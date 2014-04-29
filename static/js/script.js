@@ -75,7 +75,7 @@ function EntityModel(entityData, editable) {
     if (!entity['latlng']) {
       return null;
     }
-    var latlng = new google.maps.LatLng(entity['latlng']['lat'], entity['latlng']['lng']);
+    var latlng = this.gmapsLatLng();
     var entityName = entity['name'];
     var markerData = {
       position: latlng,
@@ -93,6 +93,10 @@ function EntityModel(entityData, editable) {
 
   this.hasLocation = function() {
     return !!this.data['latlng'];
+  };
+
+  this.gmapsLatLng = function() {
+    return new google.maps.LatLng(this.data['latlng']['lat'], this.data['latlng']['lng']);
   };
 
   this.marker = this.makeMarker();
@@ -267,6 +271,9 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
   };
 
   $scope.openInfowindow = function(entityId) {
+    if (!$scope.pageStateModel.inMapView()) {
+      return;
+    }
     $scope.$emit('asktocloseallinfowindows');
     $.each(entityModels, function(i, entityModel) {
       if (entityModel.data['entity_id'] == entityId && entityModel.hasLocation()) {
@@ -734,10 +741,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     }
   };
 
-  $scope.showGalleryView = function() {
+  $scope.showGalleryView = function(opt_callback) {
     if (!$scope.pageStateModel.inGalleryView()) {
       $scope.pageStateModel.showGalleryView();
-      google.maps.event.trigger($map, 'resize');
+      $timeout(function() {
+        google.maps.event.trigger($map, 'resize');
+        opt_callback && opt_callback();
+      });
+    } else {
+      opt_callback && opt_callback();
     }
   };
 
@@ -756,8 +768,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
 
   $scope.openGalleryView = function(entityData) {
+    $scope.$broadcast('closeallinfowindows');
     $scope.pageStateModel.selectedEntity = entityData;
-    $scope.pageStateModel.showGalleryView();
+    $scope.showGalleryView(function() {
+      var entityModel = new EntityModel(entityData);
+      if (entityModel.hasLocation()) {
+        $map.setCenter(entityModel.gmapsLatLng());
+      }
+    });
+
   };
 
   $scope.toggleAccountDropdown = function() {
