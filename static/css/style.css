@@ -99,7 +99,7 @@ hr.dropdown-separator {
 
 #trip-plan-header {
   position: relative;
-  font-family: 'Raleway';
+  font-family: 'Nunito';
 }
 
 #trip-plan-header .title {
@@ -109,14 +109,14 @@ hr.dropdown-separator {
 }
 
 #trip-plan-header .settings-control {
-  position: absolute;
-  right: 5px;
-  top: 5px;
+font-size: 1.1em;
+position: absolute;
+top: 8px;
+right: 8px;
 }
 
 #trip-plan-header .control-buttons {
   width: 100%;
-  font-size: 0.8em;
   border-top: 1px solid #bbb;
   border-bottom: 1px solid #bbb;
 }
@@ -172,6 +172,7 @@ hr.dropdown-separator {
   padding: 10px;
   display: inline-block;
   color: #000000;
+  font-family: 'Nunito';
 }
 
 .item-group-header a:hover {
@@ -241,7 +242,6 @@ hr.dropdown-separator {
   position: absolute;
   left: 3px;
   top: 3px;
-  opacity: 0.6;
 }
 
 .one-entity-mapview .day-info {
@@ -251,11 +251,19 @@ hr.dropdown-separator {
   font-size: 0.9em;
 }
 
+/* Temporary until we figure out how to style this better */
+.one-entity-mapview .expand-controls {
+  position: absolute;
+  left: calc(50% - 8px);
+  bottom: 4px;
+  font-size: 0.8em;
+}
+
 .one-entity-mapview .main-controls {
   position: absolute;
   bottom: 8px;
   right: 8px;
-  font-size: 0.9em;
+  font-size: 1.1em;
 }
 
 .one-entity-mapview select.day-select-pill {
@@ -470,7 +478,7 @@ hr.dropdown-separator {
 #gallery-panel {
   width: 66%;
   height: 100%;
-  background-color: #292a2a;
+  background-color: #222222;
 }
 
 #right-panel.map-view #gallery-panel,
