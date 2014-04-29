@@ -784,17 +784,22 @@
             <div class="col-md-4 sort-button">
               <a class="dropdown-toggle" href="javascript:void(0)">
                 <div class="button-content">
-                  <span ng-if="pageStateModel.isGroupByCategory()">Sort by Type</span>
-                  <span ng-if="pageStateModel.isGroupByDay()">Sort by Day</span>
-                  <span class="glyphicon glyphicon-chevron-down"></span>
+                  <span>Sort Places</span>
                 </div>
               </a>
               <ul class="dropdown-menu sorting-dropdown">
                 <li>
-                  <a ng-click="groupByCategory()" href="javascript:void(0)">Sort by Type</a>
+                  <a ng-click="groupByCategory()" href="javascript:void(0)">
+                    Sort by Type
+                    <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
+                  </a>
+
                 </li>
                 <li>
-                  <a ng-click="groupByDay()" href="javascript:void(0)">Sort by Day</a>
+                  <a ng-click="groupByDay()" href="javascript:void(0)">
+                    Sort by Day
+                    <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
+                  </a>
                 </li>
               </ul>
             </div>
