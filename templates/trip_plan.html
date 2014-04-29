@@ -36,26 +36,6 @@
     </div>
   </nav>
 
-  {% if allow_editing %}
-    <div ng-show="omniboxState.visible">
-      <div ng-controller="AddPlaceCtrl" class="omnibox-container">
-        <div ng-show="!loadingData">
-          <div>
-            <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
-            tc-google-place-autocomplete
-            tc-focus-on="omniboxState.visible"
-            ng-model="rawInputText"
-            on-place-change="placeChanged($newPlace)"
-            ng-paste="textPasted()"/>
-          </div>
-        </div>
-        <div ng-show="loadingData" id="search-spinner">
-          <img src="/static/img/spinner-small.gif"/>
-        </div>
-      </div>
-    </div>
-  {% endif %}
-
   <div>
     <div id="entity-container"
       tc-entity-scroll scroll-state="scrollState"
@@ -642,7 +622,7 @@
           <div ng-show="!editing" class="description">[[ed['description'] ]]</div>
           {% if allow_editing %}
           <div class="add-description-link" ng-show="!editing">
-            <a ng-click="openEditEntity()" href="javascript:void(0)">
+            <a ng-click="openEditEntity(); $event.stopPropagation()" href="javascript:void(0)">
               <span class="glyphicon glyphicon-pencil"></span>
               <span ng-show="hasDescription()">Add a comment</span>
               <span ng-show="!hasDescription()">Edit comment</span>
@@ -785,31 +765,55 @@
           {% endif %}
         </ul>
       </div>
-      <div class="control-buttons container-fluid"
+      <div class="control-panel"
         tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container"
         parent-class-when-fixed="nav-fixed">
-        <div class="row">
-          <div class="col-md-4 sort-button">
-            <a ng-click="groupByCategory()" href="javascript:void(0)">
-              <div class="button-content">Sort by Type</div>
-            </a>
-          </div>
-          <div class="col-md-4 sort-button">
-            <a ng-click="groupByDay()" href="javascript:void(0)">
-              <div class="button-content">Sort by Day</div>
-            </a>
-          </div>
-          <div class="col-md-4 add-place-button">
-            <a ng-click="toggleOmnibox()" href="javascript:void(0)">
-              <div class="button-content">Add Place to Trip</div>
-            </a>
+        <div class="control-buttons container-fluid">
+          <div class="row">
+            <div class="col-md-4 sort-button">
+              <a ng-click="groupByCategory()" href="javascript:void(0)">
+                <div class="button-content">Sort by Type</div>
+              </a>
+            </div>
+            <div class="col-md-4 sort-button">
+              <a ng-click="groupByDay()" href="javascript:void(0)">
+                <div class="button-content">Sort by Day</div>
+              </a>
+            </div>
+            <div class="col-md-4 add-place-button">
+              <a ng-click="toggleOmnibox()" href="javascript:void(0)">
+                <div class="button-content">Add Place to Trip</div>
+              </a>
+            </div>
           </div>
         </div>
+        <div ng-include="'omnibox-template'" ng-show="omniboxState.visible">
+        </div>
       </div>
-      <div class="nav-vertical-placeholder">
+      <div class="nav-vertical-placeholder" ng-class="{'omnibox-open': omniboxState.visible}">
       </div>
     </div>
   </script>
+
+  {% if allow_editing %}
+  <script type="text/ng-template" id="omnibox-template">
+    <div ng-controller="AddPlaceCtrl" class="omnibox-container">
+      <div ng-show="!loadingData">
+        <div>
+          <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
+          tc-google-place-autocomplete
+          tc-focus-on="omniboxState.visible"
+          ng-model="rawInputText"
+          on-place-change="placeChanged($newPlace)"
+          ng-paste="textPasted()"/>
+        </div>
+      </div>
+      <div ng-show="loadingData" id="search-spinner">
+        <img src="/static/img/spinner-small.gif"/>
+      </div>
+    </div>
+  </script>
+  {% endif %}
 
   {% include 'widgets.html' %}
 
