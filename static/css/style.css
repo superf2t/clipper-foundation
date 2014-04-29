@@ -149,16 +149,8 @@ right: 10px;
 
 #trip-plan-header .nav-vertical-placeholder {
   display: none;
-  height: 33px;
+  height: 36px;
   width: 100%;
-}
-
-#trip-plan-header .nav-vertical-placeholder.omnibox-open {
-  height: 87px;
-}
-
-#entity-container.nav-fixed .nav-vertical-placeholder.omnibox-open {
-  height: 33px;
 }
 
 #entity-container.nav-fixed .nav-vertical-placeholder {
@@ -697,6 +689,7 @@ right: 10px;
   padding: 10px;
   background-color: #f7f8f8;
   border-top: 1px solid #bbb;
+  position: absolute;
 }
 
 #search-spinner {
