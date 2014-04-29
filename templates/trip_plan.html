@@ -745,8 +745,8 @@
         <ul class="dropdown-menu right-top-dropdown-menu">
           {% if allow_editing %}
           <li>
-            <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-time"></span> Day planner
+            <a href="javascript:void(0)">
+              <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
             </a>
           </li>
           <hr class="dropdown-separator"/>
@@ -771,13 +771,25 @@
         <div class="control-buttons container-fluid">
           <div class="row">
             <div class="col-md-4 sort-button">
-              <a ng-click="groupByCategory()" href="javascript:void(0)">
-                <div class="button-content">Sort by Type</div>
+              <a class="dropdown-toggle" href="javascript:void(0)">
+                <div class="button-content">
+                  <span ng-if="pageStateModel.isGroupByCategory()">Sort by: Type</span>
+                  <span ng-if="pageStateModel.isGroupByDay()">Sort by: Day</span>
+                  <span class="glyphicon glyphicon-chevron-down"></span>
+                </div>
               </a>
+              <ul class="dropdown-menu sorting-dropdown">
+                <li>
+                  <a ng-click="groupByCategory()" href="javascript:void(0)">Sort by Category</a>
+                </li>
+                <li>
+                  <a ng-click="groupByDay()" href="javascript:void(0)">Sort by Day</a>
+                </li>
+              </ul>
             </div>
-            <div class="col-md-4 sort-button">
-              <a ng-click="groupByDay()" href="javascript:void(0)">
-                <div class="button-content">Sort by Day</div>
+            <div class="col-md-4 day-planner-button">
+              <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
+                <div class="button-content">Day Planner</div>
               </a>
             </div>
             <div class="col-md-4 add-place-button">

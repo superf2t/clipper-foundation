@@ -161,8 +161,16 @@ hr.dropdown-separator {
   background-color: #f7f8f8;
 }
 
-#trip-plan-header .sort-button:hover, #trip-plan-header .add-place-button:hover {
+#trip-plan-header .sort-button:hover,
+#trip-plan-header .day-planner-button:hover,
+#trip-plan-header .add-place-button:hover {
   background-color: #777;
+}
+
+#trip-plan-header .day-planner-button {
+  text-align: center;
+  background-color: #3ce2b4;
+  color: #000;
 }
 
 #trip-plan-header .add-place-button {
@@ -171,8 +179,25 @@ hr.dropdown-separator {
   color: #000;
 }
 
-#trip-plan-header .sort-button, #trip-plan-header .add-place-button {
+#trip-plan-header .sort-button,
+#trip-plan-header .day-planner-button,
+#trip-plan-header .add-place-button {
   padding: 8px 0;
+}
+
+#trip-plan-header .sort-button .glyphicon {
+  font-size: 0.7em;
+}
+
+#trip-plan-header .sorting-dropdown {
+  margin: 0;
+  border-radius: 0;
+  background-color: #f7f8f8;
+  text-align: left;
+}
+
+#trip-plan-header .sorting-dropdown a:hover {
+  background-color: #ccc;
 }
 
 /* Map View */
