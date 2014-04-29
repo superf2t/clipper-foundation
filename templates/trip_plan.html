@@ -784,7 +784,8 @@
           {% endif %}
         </ul>
       </div>
-      <div class="control-buttons container-fluid">
+      <div class="control-buttons container-fluid"
+        tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container">
         <div class="row">
           <div class="col-md-4 sort-button">
             <a ng-click="groupByCategory()" href="javascript:void(0)">

@@ -1967,6 +1967,25 @@ function tcGalleryCarousel() {
   }
 }
 
+function tcLockAfterScroll() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollParent = $('#' + attrs.scrollParentId);
+      var elem = $(element);
+      var spread = elem.offset().top - scrollParent.offset().top;
+      var classWhenFixed = attrs.classWhenFixed;
+      scrollParent.on('scroll', function() {
+        if (scrollParent.scrollTop() >= spread) {
+          elem.addClass(classWhenFixed);
+        } else {
+          elem.removeClass(classWhenFixed);
+        }
+      });
+    }
+  };
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -2350,6 +2369,7 @@ angular.module('directivesModule', [])
   .directive('tcDragover', directiveForEvent('dragover'))
   .directive('tcDragend', directiveForEvent('dragend'))
   .directive('tcFocusOn', tcFocusOn)
+  .directive('tcLockAfterScroll', tcLockAfterScroll)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])
