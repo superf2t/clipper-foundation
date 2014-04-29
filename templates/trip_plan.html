@@ -784,9 +784,9 @@
           <div class="row">
             <div class="col-md-4 sort-button">
               <a class="dropdown-toggle" href="javascript:void(0)">
-                <div class="button-content">
-                  <span>Sort Places</span>
-                </div>
+                <span class="button-content">
+                  Sort Places
+                </span>
               </a>
               <ul class="dropdown-menu sorting-dropdown">
                 <li>
@@ -804,16 +804,22 @@
                 </li>
               </ul>
             </div>
+            {% if allow_editing %}
             <div class="col-md-4 day-planner-button">
               <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
-                <div class="button-content">Plan Itinerary</div>
+                <span class="button-content">Plan Itinerary</span>
               </a>
             </div>
             <div class="col-md-4 add-place-button">
               <a ng-click="toggleOmnibox()" href="javascript:void(0)">
-                <div class="button-content">Add Place to Trip</div>
+                <span class="button-content">Add Place to Trip</span>
               </a>
             </div>
+            {% else %}
+            <div class="col-md-8 button-filler">
+              &nbsp;
+            </div>
+            {% endif %}
           </div>
         </div>
         <div ng-include="'omnibox-template'" ng-show="omniboxState.visible">

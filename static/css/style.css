@@ -200,6 +200,11 @@ right: 10px;
   font-size: 0.7em;
 }
 
+#trip-plan-header .button-filler {
+  background-color: #f7f8f8;
+  padding: 8px 0;
+}
+
 #trip-plan-header .sorting-dropdown {
   margin: 0;
   border-radius: 0;
