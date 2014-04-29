@@ -27,7 +27,11 @@ a:hover {
 }
 
 #travel-clip-navbar {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #FFFFFF;
+  border: none;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
 }
 
 #header-plan-navigation {
@@ -94,7 +98,7 @@ hr.dropdown-separator {
   height: 100%;
   overflow: scroll;
   padding-top: 51px;
-  width: 25%;
+  width: 30%;
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -108,7 +112,7 @@ hr.dropdown-separator {
   margin: 0px;
   padding: 10px;
   display: inline-block;
-  color: #000;
+  color: #000000;
 }
 
 .item-group-header a:hover {
@@ -127,15 +131,18 @@ hr.dropdown-separator {
 }
 
 .one-entity-mapview {
-  border: 1px solid #bbb;
+
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   background-color: #777;
-  margin: 10px;
+  margin: 15px;
   position: relative;
   cursor: pointer;
 }
 
 .one-entity-mapview .main-row {
-  height: 100px;
+  height: 120px;
 }
 
 .one-entity-mapview.expanded {
@@ -161,14 +168,14 @@ hr.dropdown-separator {
 
 .one-entity-mapview .main-details {
   height: 100%;
-  padding: 5px;
+  padding: 8px;
   background-color: #fff;
 }
 
 .one-entity-mapview .title {
   font-size: 1em;
-  font-family: 'Raleway';
-  color: #000;
+  font-family: 'Nunito';
+  color: #666666;
 }
 
 .one-entity-mapview .category-info {
@@ -180,15 +187,15 @@ hr.dropdown-separator {
 
 .one-entity-mapview .day-info {
   position: absolute;
-  left: 5px;
-  bottom: 5px;
+  left: 8px;
+  bottom: 8px;
   font-size: 0.9em;
 }
 
 .one-entity-mapview .main-controls {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
+  bottom: 8px;
+  right: 8px;
   font-size: 0.9em;
 }
 
@@ -203,7 +210,7 @@ hr.dropdown-separator {
   border-top: 1px solid #cdcdcd;
   padding: 5px;
   font-size: 1.0em;
-  font-family: 'Raleway';
+  font-family: 'Nunito';
   color: #000;
 }
 
@@ -403,8 +410,8 @@ hr.dropdown-separator {
   position: fixed;
   height: calc(100% - 51px);
   top: 51px;
-  width: 75%;
-  left: 25%;
+  width: 70%;
+  left: 30%;
 }
 
 #gallery-panel {
@@ -574,7 +581,7 @@ hr.dropdown-separator {
   font-weight: bold;
   font-size: 16pt;
   padding-bottom: 10px;
-  font-family: 'Raleway';
+  font-family: 'Nunito';
 }
 
 .apc-address {
