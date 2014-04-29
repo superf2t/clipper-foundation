@@ -37,7 +37,11 @@ a:hover {
 }
 
 #travel-clip-navbar {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #FFFFFF;
+  border: none;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
 }
 
 #header-plan-navigation {
@@ -95,11 +99,11 @@ hr.dropdown-separator {
 
 #trip-plan-header {
   position: relative;
-  font-family: 'Raleway';
+  font-family: 'Nunito';
 }
 
 #trip-plan-header .title {
-  padding: 5px;
+  padding: 10px;
   font-size: 1.2em;
   color: #000;
 }
@@ -119,27 +123,28 @@ hr.dropdown-separator {
 }
 
 #trip-plan-header .settings-control {
-  position: absolute;
-  right: 5px;
-  top: 5px;
+font-size: 1.1em;
+position: absolute;
+top: 15px;
+right: 10px;
 }
 
 #trip-plan-header .control-panel {
   width: 100%;
+  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #bbb;
 }
 
 #trip-plan-header .control-panel.fixed {
   position: fixed;
   top: 41px;
   z-index: 2;
-  width: 25%;
+  width: 30%;
 }
 
 #trip-plan-header .control-buttons {
   width: 100%;
-  font-size: 0.8em;
-  border-top: 1px solid #bbb;
-  border-bottom: 1px solid #bbb;
+  font-size: 1em;
 }
 
 #trip-plan-header .nav-vertical-placeholder {
@@ -178,12 +183,12 @@ hr.dropdown-separator {
 #trip-plan-header .sort-button:hover,
 #trip-plan-header .day-planner-button:hover,
 #trip-plan-header .add-place-button:hover {
-  background-color: #777;
+  background-color: #dddddd;
 }
 
 #trip-plan-header .day-planner-button {
   text-align: center;
-  background-color: #3ce2b4;
+  background-color: #f7f8f8;
   color: #000;
 }
 
@@ -220,8 +225,8 @@ hr.dropdown-separator {
   position: fixed;
   height: 100%;
   overflow: scroll;
+  width: 30%;
   top: 41px;
-  width: 25%;
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -235,7 +240,8 @@ hr.dropdown-separator {
   margin: 0px;
   padding: 10px;
   display: inline-block;
-  color: #000;
+  color: #000000;
+  font-family: 'Nunito';
 }
 
 .item-group-header a:hover {
@@ -254,15 +260,17 @@ hr.dropdown-separator {
 }
 
 .one-entity-mapview {
-  border: 1px solid #bbb;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   background-color: #777;
-  margin: 10px;
+  margin: 15px;
   position: relative;
   cursor: pointer;
 }
 
 .one-entity-mapview .main-row {
-  height: 100px;
+  height: 120px;
 }
 
 .one-entity-mapview.expanded {
@@ -288,35 +296,42 @@ hr.dropdown-separator {
 
 .one-entity-mapview .main-details {
   height: 100%;
-  padding: 5px;
+  padding: 8px;
   background-color: #fff;
 }
 
 .one-entity-mapview .title {
   font-size: 1em;
-  font-family: 'Raleway';
-  color: #000;
+  font-family: 'Nunito';
+  color: #666666;
 }
 
 .one-entity-mapview .category-info {
   position: absolute;
   left: 3px;
   top: 3px;
-  opacity: 0.6;
 }
 
 .one-entity-mapview .day-info {
   position: absolute;
-  left: 5px;
-  bottom: 5px;
+  left: 8px;
+  bottom: 8px;
   font-size: 0.9em;
+}
+
+/* Temporary until we figure out how to style this better */
+.one-entity-mapview .expand-controls {
+  position: absolute;
+  left: calc(50% - 8px);
+  bottom: 4px;
+  font-size: 0.8em;
 }
 
 .one-entity-mapview .main-controls {
   position: absolute;
-  bottom: 5px;
-  right: 5px;
-  font-size: 0.9em;
+  bottom: 8px;
+  right: 8px;
+  font-size: 1.1em;
 }
 
 .one-entity-mapview select.day-select-pill {
@@ -330,7 +345,7 @@ hr.dropdown-separator {
   border-top: 1px solid #cdcdcd;
   padding: 5px;
   font-size: 1.0em;
-  font-family: 'Raleway';
+  font-family: 'Nunito';
   color: #000;
 }
 
@@ -365,7 +380,8 @@ hr.dropdown-separator {
 }
 
 #gallery-panel .hero-container {
-  height: 66%;
+  height: 70%;
+  width: 100%;
   padding: 20px;
   text-align: center;
 }
@@ -373,10 +389,12 @@ hr.dropdown-separator {
 #gallery-panel .hero-container img {
   max-width: 100%;
   max-height: 100%;
+  vertical-align: middle;
+  display: inline-block;
 }
 
 #gallery-panel .gallery-carousel {
-  height: 34%;
+  height: 30%;
   text-align: center;
   padding: 20px;
 }
@@ -386,9 +404,38 @@ hr.dropdown-separator {
 }
 
 #gallery-panel .gallery-carousel img {
-  padding: 20px;
+  padding: 8px;
   max-height: 100%;
-  max-width: calc(33% - 40px);
+  max-width: calc(33% - 16px);
+  vertical-align: middle;
+}
+
+#gallery-panel .img-vertical-align {
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+}
+
+.gallery-carousel-controls {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.gallery-carousel-controls .show-previous-control {
+  position: absolute;
+  left: 0px;
+  top: calc(50% - 7px);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.gallery-carousel-controls .show-next-control {
+  position: absolute;
+  right: 0px;
+  top: calc(50% - 7px);
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .modal-carousel.modal {
@@ -528,14 +575,14 @@ hr.dropdown-separator {
   position: fixed;
   height: calc(100% - 41px);
   top: 41px;
-  width: 75%;
-  left: 25%;
+  width: 70%;
+  left: 30%;
 }
 
 #gallery-panel {
   width: 66%;
   height: 100%;
-  background-color: #292a2a;
+  background-color: #222222;
 }
 
 #right-panel.map-view #gallery-panel,
@@ -648,7 +695,8 @@ hr.dropdown-separator {
   height: 54px;
   z-index: 1031;
   padding: 10px;
-  background-color: #4a90e2;
+  background-color: #f7f8f8;
+  border-top: 1px solid #bbb;
 }
 
 #search-spinner {
@@ -694,7 +742,7 @@ hr.dropdown-separator {
   font-weight: bold;
   font-size: 16pt;
   padding-bottom: 10px;
-  font-family: 'Raleway';
+  font-family: 'Nunito';
 }
 
 .apc-address {
