@@ -167,6 +167,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.tripPlanData['trip_plan_id'];
   };
 
+  this.tripPlanName = function() {
+    return this.tripPlanData['name'];
+  };
+
   this.updateEntities = function(entityDatas) {
     var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
     $.each(this.entityDatas, function(i, entityData) {
@@ -1870,7 +1874,7 @@ function tcEntityScroll() {
 }
 
 function scrollMapviewToId(container, scrollDestElem, opt_classToAdd, opt_removeClassAfter) {
-  var newScrollTop = container.scrollTop() + scrollDestElem.offset().top - 73;
+  var newScrollTop = container.scrollTop() + scrollDestElem.offset().top - 63;
   if (newScrollTop != 0) {
     container.animate({scrollTop: newScrollTop}, 500);
   }

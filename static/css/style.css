@@ -21,9 +21,19 @@ a:hover {
 
 /* Navigation */
 
+.navbar {
+  min-height: 40px;
+  margin-bottom: 0;
+}
+
+.navbar-brand {
+  height: 40px;
+  padding: 10px;
+}
+
 #logo {
   font-family: 'Raleway';
-  font-size: 1.6em;
+  font-size: 1.4em;
 }
 
 #travel-clip-navbar {
@@ -52,10 +62,6 @@ a:hover {
   top: 8px;
   width: 200px;
   margin: 0px 3px 0px 3px;
-}
-
-.view-mode-pill {
-  margin: 5px 2px;
 }
 
 #add-place-to-trip-btn {
@@ -87,13 +93,66 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+#trip-plan-header {
+  position: relative;
+  font-family: 'Raleway';
+}
+
+#trip-plan-header .title {
+  padding: 5px;
+  font-size: 1.2em;
+  color: #000;
+}
+
+#trip-plan-header .settings-control {
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+#trip-plan-header .control-buttons {
+  width: 100%;
+  font-size: 0.8em;
+  border-top: 1px solid #bbb;
+  border-bottom: 1px solid #bbb;
+}
+
+#trip-plan-header .control-buttons .button-content {
+  width: 100%;
+  height: 100%;
+}
+
+#trip-plan-header .control-buttons a:hover {
+  color: #000;
+}
+
+#trip-plan-header .sort-button {
+  border-right: 1px solid #bbb;
+  text-align: center;
+  background-color: #f7f8f8;
+}
+
+#trip-plan-header .sort-button:hover, #trip-plan-header .add-place-button:hover {
+  background-color: #777;
+}
+
+#trip-plan-header .add-place-button {
+  text-align: center;
+  background-color: #4a90e2;
+  color: #000;
+}
+
+#trip-plan-header .sort-button, #trip-plan-header .add-place-button {
+  padding: 8px 0;
+}
+
 /* Map View */
 
 #entity-container {
   position: fixed;
   height: 100%;
   overflow: scroll;
-  padding-top: 51px;
+  padding-top: 41px;
   width: 25%;
 }
 
@@ -347,18 +406,11 @@ hr.dropdown-separator {
   text-align: center;
 }
 
-.offset-anchor {
-  position: relative;
-  top: -51px;
-  display: block;
-  visibility: hidden;
-}
-
 .account-dropdown {
   position: fixed;
   z-index: 10000;
   width: 300px;
-  top: 51px;
+  top: 41px;
   right: 0px;
   background-color: white;
   padding: 20px;
@@ -401,8 +453,8 @@ hr.dropdown-separator {
 #right-panel,
 #right-panel.map-view #map-container {
   position: fixed;
-  height: calc(100% - 51px);
-  top: 51px;
+  height: calc(100% - 41px);
+  top: 41px;
   width: 75%;
   left: 25%;
 }
