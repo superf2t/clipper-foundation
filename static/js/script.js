@@ -587,6 +587,10 @@ function PageStateModel() {
   this.groupByDay = function() {
     this.grouping = Grouping.DAY;
   };
+
+  this.entityIsSelected = function(entityId) {
+    return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
+  };
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -738,6 +742,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
+      $scope.pageStateModel.selectedEntity = null;
       $scope.pageStateModel.showMapView();
       $timeout(function() {
         google.maps.event.trigger($map, 'resize');

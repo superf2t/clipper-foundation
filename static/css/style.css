@@ -270,7 +270,9 @@ right: 10px;
   height: 120px;
 }
 
-.one-entity-mapview.expanded {
+.one-entity-mapview.selected {
+  border: 15px solid #222;
+  margin: 0;
 }
 
 .one-entity-mapview .img-container {

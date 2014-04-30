@@ -527,7 +527,7 @@
 
   <script type="text/ng-template" id="mapview-one-entity-template">
     <div ng-controller="EntityCtrl" class="one-entity-mapview container-fluid"
-      ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded}"
+      ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded, 'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-click="openGalleryView(ed)"
       ng-mouseenter="openInfowindow(ed['entity_id'])">
