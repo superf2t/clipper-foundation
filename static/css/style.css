@@ -878,6 +878,7 @@ right: 10px;
 
 #clipper-navbar {
   margin: 0px;
+  background-color: #FFFFFF;
 }
 
 .clipper-trip-plan-selector {
@@ -1068,6 +1069,7 @@ right: 10px;
 
 .day-planner-left-panel-drag-area {
   width: 100%;
+  height: 100%;
 }
 
 .day-planner-left-panel-drag-area.dragactive {

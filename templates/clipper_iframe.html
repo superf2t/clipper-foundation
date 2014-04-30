@@ -11,16 +11,17 @@
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
   <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
-  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body">
+  <nav class="navbar navbar-default" id="clipper-navbar">
+    <div class="navbar-brand" id="logo" href="#">TravelClipper</div>
+  </nav>
+
   <div ng-if="clipperState.showControls()" class="clipper-controls-section">
-    <nav class="navbar navbar-default" id="clipper-navbar">
-      <div class="navbar-brand" id="logo" href="#">TravelClip</div>
-    </nav>
     <div class="clipper-trip-plan-selector">
       Clip to
       <div tc-trip-plan-select-dropdown

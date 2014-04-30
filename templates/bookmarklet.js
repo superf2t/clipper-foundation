@@ -36,7 +36,7 @@
       width: 300,
       height: 600,
       zIndex: 2147483647,
-      backgroundColor: 'rgba(240, 240, 255, 1.0)',
+      backgroundColor: '#f3f4f4',
       position: 'fixed',
       top: 10,
       right: 10,
