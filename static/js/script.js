@@ -243,7 +243,8 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
     google.maps.event.addListener(marker, 'click', function() {
-      $pagePositionManager.scrollToEntity(entityModel.data['entity_id'], true);
+      $scope.pageStateModel.selectedEntity = entityModel.data;
+      $pagePositionManager.scrollToEntity(entityModel.data['entity_id']);
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow(entityModel, marker, true);
     });
@@ -419,7 +420,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
           if ($pageStateModel.isGroupByDay()) {
             $dataRefreshManager.redrawGroupings(function() {
               $timeout(function() {
-                $pagePositionManager.scrollToEntity($scope.ed['entity_id'], true);
+                $pagePositionManager.scrollToEntity($scope.ed['entity_id']);
               });
             });
           }
@@ -726,8 +727,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     highlight: false
   };
 
-  $scope.$on('scrolltoentity', function($event, entityId, opt_highlight) {
-    $scope.scrollState.highlight = opt_highlight;
+  $scope.$on('scrolltoentity', function($event, entityId) {
     $scope.scrollState.entityId = entityId;
   });
 
@@ -1126,8 +1126,8 @@ function DataRefreshManager($rootScope) {
 }
 
 function PagePositionManager($rootScope) {
-  this.scrollToEntity = function(entityId, opt_highlight) {
-    $rootScope.$broadcast('scrolltoentity', entityId, opt_highlight);
+  this.scrollToEntity = function(entityId) {
+    $rootScope.$broadcast('scrolltoentity', entityId);
   };
 }
 
@@ -1898,18 +1898,11 @@ function tcEntityScroll() {
     },
     link: function(scope, elem, attrs) {
       var container = $(elem);
-      var highlightClass = attrs.scrollHighlightClass;
-      var highlightDuration = parseInt(attrs.scrollHighlightDuration);
       scope.$watch('scrollState.entityId', function(newEntityId, oldEntityId) {
         if (newEntityId) {
           var entityElem = container.find('[tc-entity-id="' + newEntityId + '"]');
-          if (scope.scrollState.highlight) {
-            scrollMapviewToId(container, entityElem, highlightClass, highlightDuration);
-          } else {
-            scrollMapviewToId(container, entityElem);
-          }
+          scrollMapviewToId(container, entityElem);
           scope.scrollState.entityId = null;
-          scope.scrollState.highlight = false;
         }
       });
     }
