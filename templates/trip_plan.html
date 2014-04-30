@@ -674,11 +674,16 @@
       <div class="welcome">
         Welcome to your new trip plan
       </div>
-      <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
-        <button class="btn btn-info" id="btn-bookmarklet">
-          Travel Clipper
-        </button>
-      </a> <-- If you haven't already, drag me to your Bookmarks Bar
+      <div>
+        <p>If you haven't already, drag the clipper to your Bookmarks Bar.</p>
+      </div>
+      <div class="bookmarklet">
+        <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();">
+          <button class="btn btn-info" id="btn-bookmarklet">
+            Travel Clipper
+          </button>
+        </a>
+      </div>
       <div class="step">
         Step 1
       </div>
@@ -686,11 +691,26 @@
         Pick a travel destination then browse popular travel websites for hotel, restaurant, and attraction options
       </p>
       <p>
-        Try these supported sites - 
-        <a href="http://www.hotels.com/hotel/details.html?pa=5&pn=1&ps=5&tab=description&destinationId=504261&searchDestination=Paris&hotelId=218097&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first" target="_blank">Hotels.com</a>, 
-        <a href="https://www.airbnb.com/rooms/2095577?s=6yRc" target="_blank">Airbnb</a>, 
-        <a href="http://www.tripadvisor.com/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html" target="_blank">TripAdvisor</a>, 
-        <a href="http://www.yelp.com/biz/la-compagnie-des-vins-surnaturels-paris" target="_blank">Yelp</a>
+        Try these supported sites: 
+        <p>
+          <a href="http://www.hotels.com/hotel/details.html?pa=5&pn=1&ps=5&tab=description&destinationId=504261&searchDestination=Paris&hotelId=218097&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first"
+            target="_blank" class="site-link">
+            <img src="http://www.hotels.com/favicon.ico" class="favicon"/> Hotels.com
+          </a>
+          <br/>
+          <a href="https://www.airbnb.com/rooms/2095577?s=6yRc" target="_blank" class="site-link">
+            <img src="http://www.airbnb.com/favicon.ico" class="favicon"/> Airbnb
+          </a>
+          <br/>
+          <a href="http://www.tripadvisor.com/Attraction_Review-g187147-d188150-Reviews-Musee_d_Orsay-Paris_Ile_de_France.html"
+            target="_blank" class="site-link">
+            <img src="http://www.tripadvisor.com/favicon.ico" class="favicon"/> TripAdvisor
+          </a>
+          <br/>
+          <a href="http://www.yelp.com/biz/la-compagnie-des-vins-surnaturels-paris" target="_blank" class="site-link">
+            <img src="http://www.yelp.com/favicon.ico" class="favicon"/> Yelp
+          </a>
+        </p>
       </p>
       <div class="step">
         Step 2

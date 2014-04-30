@@ -479,8 +479,27 @@ right: 10px;
 }
 
 .getting-started-directions {
+  font-family: 'Nunito';
+  color: #000;
   padding: 20px 40px;
   font-size: 1.1em;
+}
+
+.getting-started-directions .bookmarklet {
+  text-align: center;
+}
+
+.getting-started-directions .favicon {
+  max-width: 16px;
+  max-height: 16px;
+}
+
+.getting-started-directions a.site-link {
+  color: #39b3d7;
+}
+
+.getting-started-directions a.site-link:hover {
+  color: #2D73A0;
 }
 
 .welcome {
