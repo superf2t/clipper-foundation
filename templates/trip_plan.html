@@ -346,7 +346,7 @@
   <script type="text/ng-template" id="day-planner-template">
     <div ng-controller="DayPlannerCtrl" class="day-planner-modal">
       <div class="day-planner-header">
-        <div class="day-planner-header-text">Day Planner</div>
+        <div class="day-planner-header-text">Plan Itinerary</div>
         <div class="day-planner-persistent-controls">
           <button class="btn btn-primary" ng-click="saveOrderings()">
             Save
@@ -358,19 +358,21 @@
       </div>
       <div class="container-fluid day-planner-body">
         <div class="row-fluid">
-          <div class="col-md-5 day-planner-left-panel"
-            ng-class="{'dragactive': showLeftPanelDragActive(), 'dragover': showLeftPanelDragover()}"
-            tc-dragenter="onLeftPanelDragenter($event)"
-            tc-dragleave="leftPanelDragover = false"
-            tc-dragover="onLeftPanelDragover($event)"
-            tc-dragend="onDragend(); leftPanelDragover = false"
-            tc-drop="handleLeftPanelDrop($event)"
-          >
-            <h4 class="day-planner-panel-header">Unsorted</h4>
-            <div ng-repeat="item in dpm.unorderedItems" class="day-planner-unsorted-item">
-              <tc-draggable-entity item="item" drag-item="dragItem"
-                on-dragstart="onDragstart($event, item)" on-dragend="onDragend()">
-              </tc-draggable-entity>
+          <div class="col-md-5 day-planner-left-panel">
+            <div class="col-md-5 day-planner-left-panel-drag-area"
+              ng-class="{'dragactive': showLeftPanelDragActive(), 'dragover': showLeftPanelDragover()}"
+              tc-dragenter="onLeftPanelDragenter($event)"
+              tc-dragleave="leftPanelDragover = false"
+              tc-dragover="onLeftPanelDragover($event)"
+              tc-dragend="onDragend(); leftPanelDragover = false"
+              tc-drop="handleLeftPanelDrop($event)"
+            >
+              <h4 class="day-planner-panel-header">Not Planned By Day</h4>
+              <div ng-repeat="item in dpm.unorderedItems" class="day-planner-unsorted-item">
+                <tc-draggable-entity item="item" drag-item="dragItem"
+                  on-dragstart="onDragstart($event, item)" on-dragend="onDragend()">
+                </tc-draggable-entity>
+              </div>
             </div>
           </div>
           <div class="col-md-7 day-planner-right-panel">
@@ -417,7 +419,7 @@
                   </textarea>
                 </div>
                 <div ng-show="!dayModel.hasItems()" class="day-planner-day-cta">
-                  Drag and drop places here to organize them
+                  Drag and drop places here to plan by day
                 </div>
                 <div tc-item-drop-target day="dayModel.dayNumber" position="0"
                   drag-item="dragItem" on-drop="handleDrop(dayModel.dayNumber, 0)">
@@ -513,7 +515,7 @@
         Day [[itemGroupModel.groupKey]]
       </span>
       <span ng-if="!itemGroupModel.groupKey">
-        Unordered
+        Not Planned By Day
       </span>
     </span>
     <span ng-if="itemGroupModel.isCategoryGrouping()">
@@ -521,7 +523,7 @@
         <span ng-switch-when="lodging">Lodging</span>
         <span ng-switch-when="food_and_drink">Food &amp; Drink</span>
         <span ng-switch-when="attractions">Attractions</span>
-        <span ng-switch-default>Uncategorized</span>
+        <span ng-switch-default>Not Categorized</span>
       </span>
     </span>
   </script>
