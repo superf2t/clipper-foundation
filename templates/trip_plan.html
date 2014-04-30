@@ -887,6 +887,15 @@
           on-place-change="placeChanged($newPlace)"
           tc-focus-on="ready"/>
       </div>
+      <div ng-show="searching" class="search-spinner">
+        <img src="/static/img/spinner-small.gif"/>
+      </div>
+      <div class="search-results" ng-show="searchResults">
+        <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
+          <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+          [[result['formatted_address'] ]]
+        </div>
+      </div>
     </div>
   </script>
   {% endif %}

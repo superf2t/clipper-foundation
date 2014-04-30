@@ -991,6 +991,8 @@ function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanServic
   var me = this;
   $scope.ready = false;
   $scope.locationText = '';
+  $scope.searchResults = null;
+  $scope.searching = false;
   // Very strange, something is stealing the focus from the
   // input when setting the ready state either immediately or after
   // a 0-second timeout.
@@ -1002,6 +1004,30 @@ function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanServic
     if (!place) {
       return;
     }
+    if (!place['geometry']) {
+      return me.searchForPlace(place['name']);
+    }
+    $scope.selectResult(place);
+  };
+
+  this.searchForPlace = function(query) {
+    $scope.searchResults = null;
+    $scope.searching = true;
+    var request = {
+      query: query
+    };
+    var searchService = new google.maps.places.PlacesService($map);
+    searchService.textSearch(request, function(results, status) {
+      $scope.searching = false;
+      if (status != google.maps.places.PlacesServiceStatus.OK) {
+        alert('Search failed, please try again.');
+        return;
+      }
+      $scope.searchResults = results;
+    });
+  };
+
+  $scope.selectResult = function(place) {
     var tripPlanDetails = me.placeToTripPlanDetails(place);
     tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
     $tripPlanService.editTripPlan(tripPlanDetails)
@@ -2481,10 +2507,11 @@ function tcGooglePlaceAutocomplete($parse) {
 
       google.maps.event.addListener(gPlace, 'place_changed', function() {
         if (placeChangeFn) {
-          placeChangeFn(scope, {$newPlace: gPlace.getPlace()});
+          scope.$apply(function() {
+            placeChangeFn(scope, {$newPlace: gPlace.getPlace()});
+          });
         };
       });
-
     }
   };
 }

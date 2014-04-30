@@ -1221,3 +1221,27 @@ right: 10px;
   font-size: 1.5em;
   margin-bottom: 20px;
 }
+
+.start-new-trip-modal .search-spinner {
+  position: relative;
+  top: -28px;
+  left: 50%;
+}
+
+.start-new-trip-modal .search-results {
+  margin-top: 20px;
+}
+
+.start-new-trip-modal .one-result {
+  padding: 15px 5px;
+  cursor: pointer;
+}
+
+.start-new-trip-modal .one-result:hover {
+  background-color: #ccc;
+}
+
+.start-new-trip-modal .result-icon {
+  max-width: 25px;
+  max-height: 25px;
+}
