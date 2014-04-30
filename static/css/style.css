@@ -220,7 +220,7 @@ right: 10px;
 
 #entity-container {
   position: fixed;
-  height: 100%;
+  height: calc(100% - 41px);
   overflow: scroll;
   width: 30%;
   top: 41px;
