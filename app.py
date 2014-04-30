@@ -33,9 +33,10 @@ app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
 @app.route('/')
 def index():
-    session_info = decode_session(request.cookies)
-    response = render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
-    return process_response(response, request, session_info)
+    return redirect('/trip_plan')
+    # session_info = decode_session(request.cookies)
+    # response = render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
+    # return process_response(response, request, session_info)
 
 @app.route('/clipper_iframe')
 def clipper_iframe():
