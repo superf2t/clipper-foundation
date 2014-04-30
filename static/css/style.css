@@ -1214,3 +1214,15 @@ right: 10px;
 .day-planner-right-panel .day-planner-draggable-entity:hover .draggable-entity-controls {
   display: block;
 }
+
+.start-new-trip-modal {
+  font-family: 'Nunito';
+  color: #000;
+  padding: 20px;
+}
+
+.start-new-trip-modal .prompt {
+  text-align: center;
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
