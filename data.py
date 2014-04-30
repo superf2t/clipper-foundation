@@ -19,6 +19,15 @@ class LatLng(serializable.Serializable):
         self.lat = lat
         self.lng = lng
 
+class LatLngBounds(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.objf('southwest', LatLng),
+        serializable.objf('northeast', LatLng))
+
+    def __init__(self, southwest=None, northeast=None):
+        self.southwest = southwest
+        self.northeast = northeast
+
 # For backwards compatibility
 ENTITY_TYPE_TO_ICON_URL = {
     'Attraction': 'sight-2.png',
@@ -128,6 +137,8 @@ class Note(serializable.Serializable):
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
+        'location_name', serializable.objf('location_latlng', LatLng),
+        serializable.objf('location_bounds', LatLngBounds),
         serializable.objlistf('entities', Entity),
         serializable.objlistf('notes', Note),
         'creator', serializable.listf('editors'),
@@ -135,10 +146,15 @@ class TripPlan(serializable.Serializable):
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
-    def __init__(self, trip_plan_id=None, name=None, entities=(), notes=(),
+    def __init__(self, trip_plan_id=None, name=None,
+            location_name=None, location_latlng=None, location_bounds=None,
+            entities=(), notes=(),
             creator=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
         self.trip_plan_id = trip_plan_id
         self.name = name
+        self.location_name = location_name
+        self.location_latlng = location_latlng
+        self.location_bounds = location_bounds
         self.entities = entities or []
         self.notes = notes or []
         self.last_modified = last_modified

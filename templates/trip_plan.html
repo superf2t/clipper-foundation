@@ -859,16 +859,35 @@
       <div ng-show="!loadingData">
         <div>
           <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
-          tc-google-place-autocomplete
+          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+          on-place-change="placeChanged($newPlace)"
           tc-focus-on="omniboxState.visible"
           ng-keyup="onOmniboxKeyup($event)"
           ng-model="inputState.rawText"
-          on-place-change="placeChanged($newPlace)"
           ng-paste="textPasted()"/>
         </div>
       </div>
       <div ng-show="loadingData" id="search-spinner">
         <img src="/static/img/spinner-small.gif"/>
+      </div>
+    </div>
+  </script>
+  {% endif %}
+
+  {% if allow_editing and not plan.location_name %}
+  <script type="text/ng-template" id="start-new-trip-modal-template">
+    <div class="start-new-trip-modal" ng-controller="StartNewTripModalCtrl">
+      <div class="prompt">
+        Where are you traveling?
+      </div>
+      <div>
+        <input type="text" class="form-control"
+          placeholder="e.g. Paris, Thailand, New England"
+          ng-model="locationText"
+          tc-google-place-autocomplete
+          location-types="(regions)"
+          on-place-change="placeChanged($newPlace)"
+          tc-focus-on="ready"/>
       </div>
     </div>
   </script>

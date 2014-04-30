@@ -163,6 +163,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.entityDatas.length == 0;
   };
 
+  this.hasLocation = function() {
+    return !!this.tripPlanData['location_name'];
+  };
+
   this.tripPlanId = function() {
     return this.tripPlanData['trip_plan_id'];
   };
@@ -201,6 +205,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     this.notes.push.apply(this.notes, _.values(newNotesById));
 
     this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
+  };
+
+  this.updateTripPlan = function(tripPlanData) {
+    $.extend(this.tripPlanData, tripPlanData);
   };
 
   this.updateLastModified = function(lastModified) {
@@ -884,6 +892,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('closeallinfowindows');
   });
 
+  if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
+    $modal.open({
+      templateUrl: 'start-new-trip-modal-template',
+      scope: $scope.$new(true),
+      backdrop: 'static',
+      keyboard: false
+    });
+  }
+
   this.refresh = function(opt_force, opt_callback) {
     // TODO: Don't even register the refresh loop if editing is not allowed.
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
@@ -934,9 +951,23 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $timeout(refreshPoll, refreshInterval);
 }
 
-function createMap() {
+function gmapsLatLngFromJson(latlngJson) {
+  return new google.maps.LatLng(latlngJson['lat'], latlngJson['lng']);
+}
+
+function gmapsBoundsFromJson(latlngBoundsJson) {
+  return new google.maps.LatLngBounds(
+    gmapsLatLngFromJson(latlngBoundsJson['southwest']),
+    gmapsLatLngFromJson(latlngBoundsJson['northeast']))
+}
+
+function createMap(tripPlanData) {
+  var center = new google.maps.LatLng(0, 0);
+  if (tripPlanData['location_latlng']) {
+    center = gmapsLatLngFromJson(tripPlanData['location_latlng']);
+  }
   var mapOptions = {
-    center: new google.maps.LatLng(0, 0),
+    center: center,
     zoom: 2,
     panControl: false,
     scaleControl: true,
@@ -949,7 +980,67 @@ function createMap() {
       position: google.maps.ControlPosition.RIGHT_TOP
     }
   };
-  return new google.maps.Map($('#map')[0], mapOptions);
+  var map = new google.maps.Map($('#map')[0], mapOptions);
+  if (tripPlanData['location_bounds']) {
+    map.fitBounds(gmapsBoundsFromJson(tripPlanData['location_bounds']));
+  }
+  return map;
+}
+
+function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanService, $map) {
+  var me = this;
+  $scope.ready = false;
+  $scope.locationText = '';
+  // Very strange, something is stealing the focus from the
+  // input when setting the ready state either immediately or after
+  // a 0-second timeout.
+  $timeout(function() {
+    $scope.ready = true;
+  }, 500);
+
+  $scope.placeChanged = function(place) {
+    if (!place) {
+      return;
+    }
+    var tripPlanDetails = me.placeToTripPlanDetails(place);
+    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
+    $tripPlanService.editTripPlan(tripPlanDetails)
+      .success(function(response) {
+        $map.setCenter(place['geometry']['location']);
+        $map.fitBounds(place['geometry']['viewport']);
+        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
+        $scope.$close();
+      });
+  };
+
+  this.placeToTripPlanDetails = function(place) {
+    var geometry = place['geometry'];
+    var location = geometry && geometry['location'];
+    var viewport = geometry && geometry['viewport'];
+    var tripPlanDetails = {
+      'name': place['name'],
+      'location_name': place['formatted_address']
+    };
+    if (location) {
+      tripPlanDetails['location_latlng'] = {
+        'lat': location.lat(),
+        'lng': location.lng()
+      };
+    }
+    if (viewport) {
+      tripPlanDetails['location_bounds'] = {
+        'southwest': {
+          'lat': viewport.getSouthWest().lat(),
+          'lng': viewport.getSouthWest().lng()
+        },
+        'northeast': {
+          'lat': viewport.getNorthEast().lat(),
+          'lng': viewport.getNorthEast().lng()
+        }
+      }
+    }
+    return tripPlanDetails;
+  };
 }
 
 function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $accountInfo, $tripPlan, $allTripPlans) {
@@ -2372,13 +2463,21 @@ function bnLazySrc( $window, $document, $rootScope ) {
 
 function tcGooglePlaceAutocomplete($parse) {
   return {
+    restrict: 'A',
     link: function(scope, element, attrs, model) {
       var placeChangeFn = $parse(attrs.onPlaceChange);
+      var types = attrs.locationTypes ? attrs.locationTypes.split(',') : [];
       var options = {
-        types: [],
+        types: types,
         componentRestrictions: {}
       };
       var gPlace = new google.maps.places.Autocomplete(element[0], options);
+
+      scope.$watch(attrs.searchBoundsJson, function(value, oldValue) {
+        if (value) {
+          gPlace.setBounds(gmapsBoundsFromJson(value));
+        }
+      });
 
       google.maps.event.addListener(gPlace, 'place_changed', function() {
         if (placeChangeFn) {
@@ -2453,7 +2552,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$allowEditing', allowEditing);
 
   angular.module('mapModule', [])
-    .value('$map', createMap())
+    .value('$map', createMap(tripPlan))
     .value('$mapBounds', new google.maps.LatLngBounds());
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'servicesModule',
@@ -2479,6 +2578,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
       '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
+    .controller('StartNewTripModalCtrl', ['$scope', '$timeout',
+      '$tripPlanModel', '$tripPlanService', '$map', StartNewTripModalCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)
