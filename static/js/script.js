@@ -1917,7 +1917,7 @@ function tcEntityScroll() {
 }
 
 function scrollMapviewToId(container, scrollDestElem, opt_classToAdd, opt_removeClassAfter) {
-  var newScrollTop = container.scrollTop() + scrollDestElem.offset().top - 63;
+  var newScrollTop = container.scrollTop() + scrollDestElem.offset().top - 88;
   if (newScrollTop != 0) {
     container.animate({scrollTop: newScrollTop}, 500);
   }
