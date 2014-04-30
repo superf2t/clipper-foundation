@@ -951,9 +951,23 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $timeout(refreshPoll, refreshInterval);
 }
 
-function createMap() {
+function gmapsLatLngFromJson(latlngJson) {
+  return new google.maps.LatLng(latlngJson['lat'], latlngJson['lng']);
+}
+
+function gmapsBoundsFromJson(latlngBoundsJson) {
+  return new google.maps.LatLngBounds(
+    gmapsLatLngFromJson(latlngBoundsJson['southwest']),
+    gmapsLatLngFromJson(latlngBoundsJson['northeast']))
+}
+
+function createMap(tripPlanData) {
+  var center = new google.maps.LatLng(0, 0);
+  if (tripPlanData['location_latlng']) {
+    center = gmapsLatLngFromJson(tripPlanData['location_latlng']);
+  }
   var mapOptions = {
-    center: new google.maps.LatLng(0, 0),
+    center: center,
     zoom: 2,
     panControl: false,
     scaleControl: true,
@@ -966,7 +980,11 @@ function createMap() {
       position: google.maps.ControlPosition.RIGHT_TOP
     }
   };
-  return new google.maps.Map($('#map')[0], mapOptions);
+  var map = new google.maps.Map($('#map')[0], mapOptions);
+  if (tripPlanData['location_bounds']) {
+    map.fitBounds(gmapsBoundsFromJson(tripPlanData['location_bounds']));
+  }
+  return map;
 }
 
 function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanService, $map) {
@@ -2527,7 +2545,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$allowEditing', allowEditing);
 
   angular.module('mapModule', [])
-    .value('$map', createMap())
+    .value('$map', createMap(tripPlan))
     .value('$mapBounds', new google.maps.LatLngBounds());
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'servicesModule',
