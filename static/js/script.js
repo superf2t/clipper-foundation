@@ -2463,6 +2463,7 @@ function bnLazySrc( $window, $document, $rootScope ) {
 
 function tcGooglePlaceAutocomplete($parse) {
   return {
+    restrict: 'A',
     link: function(scope, element, attrs, model) {
       var placeChangeFn = $parse(attrs.onPlaceChange);
       var types = attrs.locationTypes ? attrs.locationTypes.split(',') : [];
@@ -2471,6 +2472,12 @@ function tcGooglePlaceAutocomplete($parse) {
         componentRestrictions: {}
       };
       var gPlace = new google.maps.places.Autocomplete(element[0], options);
+
+      scope.$watch(attrs.searchBoundsJson, function(value, oldValue) {
+        if (value) {
+          gPlace.setBounds(gmapsBoundsFromJson(value));
+        }
+      });
 
       google.maps.event.addListener(gPlace, 'place_changed', function() {
         if (placeChangeFn) {

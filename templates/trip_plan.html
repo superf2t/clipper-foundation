@@ -857,11 +857,11 @@
       <div ng-show="!loadingData">
         <div>
           <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
-          tc-google-place-autocomplete
+          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+          on-place-change="placeChanged($newPlace)"
           tc-focus-on="omniboxState.visible"
           ng-keyup="onOmniboxKeyup($event)"
           ng-model="inputState.rawText"
-          on-place-change="placeChanged($newPlace)"
           ng-paste="textPasted()"/>
         </div>
       </div>
