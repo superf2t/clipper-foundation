@@ -529,7 +529,7 @@
     <div ng-controller="EntityCtrl" class="one-entity-mapview container-fluid"
       ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded, 'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
       tc-entity-id="[[ed['entity_id'] ]]"
-      ng-click="openGalleryView(ed)"
+      ng-click="toggleGalleryView(ed)"
       ng-mouseenter="openInfowindow(ed['entity_id'])">
       <div class="row main-row">
         <div class="col-md-4 img-container"

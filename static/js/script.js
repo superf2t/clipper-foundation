@@ -776,16 +776,21 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     }
   };
 
-  $scope.openGalleryView = function(entityData) {
-    $scope.$broadcast('closeallinfowindows');
-    $scope.pageStateModel.selectedEntity = entityData;
-    $scope.showGalleryView(function() {
-      var entityModel = new EntityModel(entityData);
-      if (entityModel.hasLocation()) {
-        $map.setCenter(entityModel.gmapsLatLng());
-      }
-    });
-
+  $scope.toggleGalleryView = function(entityData) {
+    if ($scope.pageStateModel.inGalleryView()
+      && $scope.pageStateModel.selectedEntity
+      && $scope.pageStateModel.selectedEntity['entity_id'] == entityData['entity_id']) {
+      $scope.showMapView();
+    } else {
+      $scope.$broadcast('closeallinfowindows');
+      $scope.pageStateModel.selectedEntity = entityData;
+      $scope.showGalleryView(function() {
+        var entityModel = new EntityModel(entityData);
+        if (entityModel.hasLocation()) {
+          $map.setCenter(entityModel.gmapsLatLng());
+        }
+      });
+    }
   };
 
   $scope.toggleAccountDropdown = function() {
