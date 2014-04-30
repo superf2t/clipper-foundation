@@ -1,7 +1,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  font-family: 'Roboto';
+  font-family: 'Nunito';
   background-color: #ebecec;
   color: #666666;
 }
@@ -17,6 +17,10 @@ a:hover {
 
 .light-label {
   font-weight: 400;
+}
+
+.btn-primary {
+  background-color: #4a90e2;
 }
 
 /* Navigation */
@@ -99,7 +103,6 @@ hr.dropdown-separator {
 
 #trip-plan-header {
   position: relative;
-  font-family: 'Nunito';
 }
 
 #trip-plan-header .title {
@@ -187,7 +190,6 @@ right: 10px;
 #trip-plan-header .add-place-button {
   text-align: center;
   background-color: #4a90e2;
-  color: #000;
 }
 
 #trip-plan-header .sort-button,
@@ -238,7 +240,6 @@ right: 10px;
   padding: 10px;
   display: inline-block;
   color: #000000;
-  font-family: 'Nunito';
 }
 
 .item-group-header a:hover {
@@ -296,7 +297,6 @@ right: 10px;
 
 .one-entity-mapview .title {
   font-size: 1em;
-  font-family: 'Nunito';
   color: #666666;
 }
 
@@ -339,7 +339,6 @@ right: 10px;
   border-top: 1px solid #cdcdcd;
   padding: 5px;
   font-size: 1.0em;
-  font-family: 'Nunito';
   color: #000;
 }
 
@@ -474,7 +473,6 @@ right: 10px;
 }
 
 .getting-started-directions {
-  font-family: 'Nunito';
   color: #000;
   padding: 20px 40px;
   font-size: 1.1em;
@@ -757,7 +755,6 @@ right: 10px;
   font-weight: bold;
   font-size: 16pt;
   padding-bottom: 10px;
-  font-family: 'Nunito';
 }
 
 .apc-address {
@@ -1059,20 +1056,26 @@ right: 10px;
 
 .day-planner-left-panel {
   height: calc(100% - 20px);
+  padding: 10px;
   overflow: scroll;
 }
 
 .day-planner-right-panel {
   height: 100%;
+  padding: 10px;
   overflow: scroll;
 }
 
-.day-planner-left-panel.dragactive {
+.day-planner-left-panel-drag-area {
+  width: 100%;
+}
+
+.day-planner-left-panel-drag-area.dragactive {
   background-color: #f5f5f5;
 }
 
-.day-planner-left-panel.dragover {
-  background-color: #3276b1;
+.day-planner-left-panel-drag-area.dragover {
+  box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
 }
 
 .day-planner-drop-target {
@@ -1086,7 +1089,7 @@ right: 10px;
   height: 50%;
   position: relative;
   top: 5px;
-  background-color: #ebecec;
+  background-color: #f3f4f4;
   border-radius: 10px;
 }
 
@@ -1100,7 +1103,7 @@ right: 10px;
 
 .day-planner-draggable-entity {
   width: 80%;
-  height: 60px;
+  height: 80px;
   margin: 0 auto;
   background-color: #fff;
   cursor: move;
@@ -1118,7 +1121,7 @@ right: 10px;
 }
 
 .day-planner-controls {
-  margin-top: 20px;
+  margin: 20px 0px;
 }
 
 .day-planner-add-day-button {
@@ -1128,17 +1131,20 @@ right: 10px;
 
 .day-planner-panel-header {
   text-align: center;
-  margin-top: 0;
+  margin-top: 10px;
 }
 
 .day-planner-one-day {
-  border: 1px solid #bbb;
   margin-bottom: 10px;
-  padding: 0px 10px 10px 10px;
+  padding: 5px 10px 10px 10px;
+  background-color: #f3f4f4;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
 }
 
 .day-planner-one-day.dragover {
-  border: 1px solid #3276b1;
+  box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
 }
 
 .day-planner-day-cta {
@@ -1154,17 +1160,19 @@ right: 10px;
 
 .day-planner-one-day-note {
   white-space: pre-wrap;
+  margin: 0px 10px;
 }
 
 .day-planner-entity-image-container {
   display: inline-block;
   height: 100%;
-  width: 60px;
+  width: 80px;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: 50% 50%;
   padding: 0;
   margin: 0;
+  background-color: #666666;
 }
 
 .day-planner-entity-image-container img {
@@ -1177,7 +1185,7 @@ right: 10px;
 .day-planner-entity-info {
   display: inline-block;
   vertical-align: top;
-  width: calc(100% - 68px);
+  width: calc(100% - 90px);
   margin-left: 5px;
 }
 
