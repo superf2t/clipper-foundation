@@ -252,10 +252,6 @@ right: 10px;
   bottom: 6px;
 }
 
-.one-entity-highlighted {
-  box-shadow: 0px 0px 5px 5px rgba(126, 173, 224, 0.8) !important;
-}
-
 .one-entity-mapview {
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
@@ -271,8 +267,7 @@ right: 10px;
 }
 
 .one-entity-mapview.selected {
-  border: 15px solid #222;
-  margin: 0;
+  box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
 }
 
 .one-entity-mapview .img-container {
