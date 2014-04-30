@@ -634,11 +634,12 @@ right: 10px;
 #page-mode-toggle-control {
   position: absolute;
   top: 10px;
-  right: 10px;
+  left: 10px;
   background-color: #fff;
   opacity: 0.9;
   padding: 5px;
   border-radius: 3px;
+  z-index: 1;
 }
 
 #entity-info-box {

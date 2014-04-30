@@ -62,6 +62,19 @@
     </div>
 
     <div id="right-panel" ng-class="{'map-view': pageStateModel.inMapView(), 'gallery-view': pageStateModel.inGalleryView()}">
+      <div id="page-mode-toggle-control"
+        ng-show="pageStateModel.selectedEntity || pageStateModel.inGalleryView()">
+        <a ng-click="openGalleryView()"
+          ng-show="pageStateModel.selectedEntity && !pageStateModel.inGalleryView()"
+          href="javascript:void(0)">
+          Show Gallery View
+          <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+        <a ng-click="showMapView()" ng-show="!pageStateModel.inMapView()" href="javascript:void(0)">
+          Show Map View
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+      </div>
       <div id="gallery-panel">
         <div ng-include="'gallery-panel-template'" class="full-height">
         </div>
@@ -69,17 +82,6 @@
       <div id="info-panel">
         <div id="map-container">
           <div id="map">
-          </div>
-          <div id="page-mode-toggle-control">
-            <a ng-click="showGalleryView()" ng-show="!pageStateModel.inGalleryView() && pageStateModel.selectedEntity"
-              href="javascript:void(0)">
-              Show Gallery View
-              <span class="glyphicon glyphicon-chevron-right"></span>
-            </a>
-            <a ng-click="showMapView()" ng-show="!pageStateModel.inMapView()" href="javascript:void(0)">
-              Show Map View
-              <span class="glyphicon glyphicon-chevron-left"></span>
-            </a>
           </div>
         </div>
         <div id="entity-info-box">
@@ -527,10 +529,11 @@
 
   <script type="text/ng-template" id="mapview-one-entity-template">
     <div ng-controller="EntityCtrl" class="one-entity-mapview container-fluid"
-      ng-class="{'expanded': detailsExpanded, 'collapsed': !detailsExpanded, 'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
+      ng-class="{'expanded': detailsExpanded,
+      'collapsed': !detailsExpanded,
+      'selected': pageStateModel.inGalleryView() && pageStateModel.entityIsSelected(ed['entity_id'])}"
       tc-entity-id="[[ed['entity_id'] ]]"
-      ng-click="toggleGalleryView(ed)"
-      ng-mouseenter="openInfowindow(ed['entity_id'])">
+      ng-click="openInfowindow(ed['entity_id']); selectEntity(ed)">
       <div class="row main-row">
         <div class="col-md-4 img-container"
           ng-style="{'background-image': 'url(' + ed['photo_urls'][0] +')'}">

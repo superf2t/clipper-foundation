@@ -742,10 +742,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
-      $scope.pageStateModel.selectedEntity = null;
       $scope.pageStateModel.showMapView();
       $timeout(function() {
+        var oldCenter = $map.getCenter();
         google.maps.event.trigger($map, 'resize');
+        $map.setCenter(oldCenter);
       });
     }
   };
@@ -776,26 +777,33 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     }
   };
 
-  $scope.toggleGalleryView = function(entityData) {
-    if ($scope.pageStateModel.inGalleryView()
-      && $scope.pageStateModel.selectedEntity
-      && $scope.pageStateModel.selectedEntity['entity_id'] == entityData['entity_id']) {
-      $scope.showMapView();
-    } else {
-      $scope.$broadcast('closeallinfowindows');
-      $scope.pageStateModel.selectedEntity = entityData;
-      $scope.showGalleryView(function() {
-        var entityModel = new EntityModel(entityData);
+  $scope.openGalleryView = function() {
+    $scope.$broadcast('closeallinfowindows');
+    var openCallback = null;
+    if ($scope.pageStateModel.selectedEntity) {
+      openCallback = function() {
+        var entityModel = new EntityModel($scope.pageStateModel.selectedEntity);
         if (entityModel.hasLocation()) {
           $map.setCenter(entityModel.gmapsLatLng());
         }
-      });
+      };
+    }
+    $scope.showGalleryView(openCallback);
+  };
+
+  $scope.selectEntity = function(entityData) {
+    $scope.pageStateModel.selectedEntity = entityData;
+    if ($scope.pageStateModel.inGalleryView()) {
+      var entityModel = new EntityModel($scope.pageStateModel.selectedEntity);
+      if (entityModel.hasLocation()) {
+        $map.setCenter(entityModel.gmapsLatLng());
+      }
     }
   };
 
   $scope.toggleAccountDropdown = function() {
     $scope.accountDropdownOpen = !$scope.accountDropdownOpen;
-  }
+  };
 
   $scope.editTripPlanSettings = function() {
     $scope.editingTripPlanSettings = true;
@@ -936,6 +944,9 @@ function createMap() {
     mapTypeControlOptions: {
       mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
       position: google.maps.ControlPosition.RIGHT_BOTTOM
+    },
+    zoomControlOptions: {
+      position: google.maps.ControlPosition.RIGHT_TOP
     }
   };
   return new google.maps.Map($('#map')[0], mapOptions);
