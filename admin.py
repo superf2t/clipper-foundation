@@ -7,7 +7,7 @@ SORTINGS = {
     'name': lambda t1, t2: cmp(t1.name, t2.name),
     'creator': lambda t1, t2: cmp(t1.creator, t2.creator),
     'entity_count': lambda t1, t2: cmp(len(t1.entities), len(t2.entities)),
-    'last_modified': lambda t1, t2: cmp(t1.last_modified_datetime(), t2.last_modified_datetime()),
+    'last_modified': lambda t1, t2: t1.compare(t2),
     'status': lambda t1, t2: cmp(t1.status, t2.status),
 }
 
