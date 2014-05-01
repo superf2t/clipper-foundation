@@ -179,6 +179,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.tripPlanData['name'];
   };
 
+  this.demoQueryString = function() {
+    return escape(this.tripPlanData['location_name']);
+  };
+
   this.updateEntities = function(entityDatas) {
     var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
     $.each(this.entityDatas, function(i, entityData) {
