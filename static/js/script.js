@@ -1044,7 +1044,9 @@ function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanServic
     $tripPlanService.editTripPlan(tripPlanDetails)
       .success(function(response) {
         $map.setCenter(place['geometry']['location']);
-        $map.fitBounds(place['geometry']['viewport']);
+        if (place['geometry']['viewport']) {
+          $map.fitBounds(place['geometry']['viewport']);
+        }
         $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
         document.title = response['trip_plans'][0]['name'];
         $scope.$close();
