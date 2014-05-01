@@ -5,7 +5,7 @@ def dict_from_attrs(objs, attr_name):
     attrgetter = operator.attrgetter(attr_name)
     return dict((attrgetter(obj), obj) for obj in objs)
 
-LATLNG_SPLITTER = re.compile('[^\d.NSEW]')
+LATLNG_SPLITTER = re.compile('[^\d.NSEW]+')
 
 # Takes inputs of the form:
 # 48^51'29.6"N, 2^17'40.2"E
