@@ -802,7 +802,7 @@
             <div class="col-md-4 sort-button"
               ng-class="{'inactive': planModel.numEntities() <= 1}">
               <a class="dropdown-toggle" href="javascript:void(0)"
-                tooltip="[[planModel.numEntities() <=1 ? 'Add more places to enable sorting' : null]]"
+                tooltip="[[planModel.numEntities() <=1 ? 'Add places first' : null]]"
                 tooltip-placement="bottom">
                 <span class="button-content">
                   Sort Places
@@ -828,7 +828,7 @@
             <div class="col-md-4 day-planner-button"
               ng-class="{'inactive': planModel.numEntities() <= 1}">
               <a ng-click="planModel.numEntities() > 1 && openDayPlanner('day-planner-modal-window')" href="javascript:void(0)"
-                tooltip="[[planModel.numEntities() <=1 ? 'Add more places to enable itinerary planning' : null]]"
+                tooltip="[[planModel.numEntities() <=1 ? 'Add places first' : null]]"
                 tooltip-placement="bottom">
                 <span class="button-content">Plan Itinerary</span>
               </a>
