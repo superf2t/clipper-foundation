@@ -11,6 +11,7 @@ from lxml import etree
 import crossreference
 import geocode
 import google_places
+import utils
 import values
 
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36'
@@ -765,6 +766,58 @@ class FodorsScraper(ScrapedPage):
         return google_place_entity.photo_urls[:] if google_place_entity else []
 
 
+class WikipediaScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns(
+        '^http(s)?://[a-z]{2,3}\.wikipedia\.org/wiki/\w+$')
+
+    NAME_XPATH = './/h1[@id="firstHeading"]//span'
+    PRIMARY_PHOTO_XPATH = './/table[@class="infobox vcard"]//a[@class="image"]//img'
+
+    @fail_returns_none
+    def get_address(self):
+        infocard_cells = self.root.findall('.//table[@class="infobox vcard"]//tr')
+        for tr in infocard_cells:
+            th = tr.find('.//th')
+            if th is not None and th.text == 'Address':
+                return tostring(tr.find('.//td'))
+        return None
+
+    def get_category(self):
+        return values.Category.ATTRACTIONS
+
+    def parse_latlng(self):
+        lat_elem = self.root.find('.//span[@class="geo-default"]//span[@class="latitude"]')
+        lng_elem = self.root.find('.//span[@class="geo-default"]//span[@class="longitude"]')
+        if lat_elem is not None:
+            return utils.latlng_to_decimal(tostring(lat_elem), tostring(lng_elem))
+        geo_elem = self.root.find('.//span[@class="geo-default"]//span[@class="geo"]')
+        if geo_elem is not None:
+            lat, lng = tostring(geo_elem).split(';')
+            return {
+                'lat': float(lat.strip()),
+                'lng': float(lng.strip())
+                }
+        return None
+
+    @fail_returns_none
+    def get_location_precision(self):
+        if self.parse_latlng():
+            return 'Precise'
+        return super(WikipediaScraper, self).get_location_precision()
+
+    @fail_returns_none
+    def get_photos(self):
+        img_urls = []
+        imgs = self.root.findall('.//a[@class="image"]//img')
+        for img in imgs:
+            if img.get('alt') and 'icon' in img.get('alt').lower():
+                continue
+            srcset = img.get('srcset')
+            if srcset:
+                largest_src = srcset.split(',')[-1].strip().split(' ')[0]
+                img_urls.append(largest_src)
+        return img_urls
+
 def tostring_with_breaks(element):
     raw_html = etree.tostring(element)
     elem = element
@@ -895,6 +948,9 @@ if __name__ == '__main__':
         'http://www.fodors.com/world/europe/spain/barcelona/review-164246.html',
         'http://www.fodors.com/world/africa-and-middle-east/kenya/review-586358.html',
         'http://www.fodors.com/world/europe/italy/rome/review-38440.html',
+        'http://en.wikipedia.org/wiki/San_Francisco_Ferry_Building',
+        'http://en.wikipedia.org/wiki/Eiffel_tower',
+        'http://en.wikipedia.org/wiki/Bahnhofstrasse',
         ):
         scrapers = build_scrapers(url, scraper_page_source.get_page_source(url))
         for scraper in scrapers:
