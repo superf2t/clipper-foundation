@@ -229,7 +229,7 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 }
 
 function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer,
-    $pagePositionManager, $tripPlan, $allowEditing) {
+    $pagePositionManager, $tripPlanModel, $allowEditing) {
   var me = this;
   $scope.show = true;
 
@@ -271,12 +271,13 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
     });
   });
   // TODO: Move this after all have initialized.
-  if (!$mapBounds.isEmpty() && $scope.pageStateModel.inMapView()) {
+  if (!$mapBounds.isEmpty() && $scope.pageStateModel.inMapView()
+    && $tripPlanModel.numEntities() > 1) {
     $map.fitBounds($mapBounds);
   }
 
   this.saveEntity = function(entityData) {
-    $entityService.editEntity(entityData, $tripPlan['trip_plan_id'])
+    $entityService.editEntity(entityData, $tripPlanModel.tripPlanId())
       .error(function() {
         alert('Failed to save new marker location');
       });
@@ -2605,7 +2606,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
-      '$templateToStringRenderer', '$pagePositionManager', '$tripPlan', '$allowEditing', ItemGroupCtrl])
+      '$templateToStringRenderer', '$pagePositionManager', '$tripPlanModel', '$allowEditing', ItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
     .controller('GalleryPanelCtrl', ['$scope', GalleryPanelCtrl])
