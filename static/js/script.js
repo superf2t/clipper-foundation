@@ -163,6 +163,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.entityDatas.length == 0;
   };
 
+  this.numEntities = function() {
+    return this.entityDatas ? this.entityDatas.length : 0;
+  };
+
   this.hasLocation = function() {
     return !!this.tripPlanData['location_name'];
   };

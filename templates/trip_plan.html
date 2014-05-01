@@ -805,13 +805,16 @@
         parent-class-when-fixed="nav-fixed">
         <div class="control-buttons container-fluid">
           <div class="row">
-            <div class="col-md-4 sort-button">
-              <a class="dropdown-toggle" href="javascript:void(0)">
+            <div class="col-md-4 sort-button"
+              ng-class="{'inactive': planModel.numEntities() <= 1}">
+              <a class="dropdown-toggle" href="javascript:void(0)"
+                tooltip="[[planModel.numEntities() <=1 ? 'Add more places to enable sorting' : null]]"
+                tooltip-placement="bottom">
                 <span class="button-content">
                   Sort Places
                 </span>
               </a>
-              <ul class="dropdown-menu sorting-dropdown">
+              <ul class="dropdown-menu sorting-dropdown" ng-if="planModel.numEntities() > 1">
                 <li>
                   <a ng-click="groupByCategory()" href="javascript:void(0)">
                     Sort by Type
@@ -828,8 +831,11 @@
               </ul>
             </div>
             {% if allow_editing %}
-            <div class="col-md-4 day-planner-button">
-              <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
+            <div class="col-md-4 day-planner-button"
+              ng-class="{'inactive': planModel.numEntities() <= 1}">
+              <a ng-click="planModel.numEntities() > 1 && openDayPlanner('day-planner-modal-window')" href="javascript:void(0)"
+                tooltip="[[planModel.numEntities() <=1 ? 'Add more places to enable itinerary planning' : null]]"
+                tooltip-placement="bottom">
                 <span class="button-content">Plan Itinerary</span>
               </a>
             </div>
