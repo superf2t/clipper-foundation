@@ -515,7 +515,10 @@ function ReclipConfirmationCtrl($scope, $timeout, $entityService) {
 
   $scope.reclipEntity = function() {
     var tripPlanId = $scope.selectionState.selectedTripPlan['trip_plan_id'];
-    $entityService.saveNewEntity($scope.entityModel.data, tripPlanId)
+    var entityToSave = angular.copy($scope.entityModel.data);
+    delete entityToSave['day'];
+    delete entityToSave['day_position'];
+    $entityService.saveNewEntity(entityToSave, tripPlanId)
       .success(function(response) {
         $scope.reclipSucceeded = true;
         $timeout($scope.$close, 3000);
