@@ -181,6 +181,11 @@ right: 10px;
   background-color: #dddddd;
 }
 
+#trip-plan-header .sort-button.inactive:hover,
+#trip-plan-header .day-planner-button.inactive:hover {
+  background-color: #f7f8f8;
+}
+
 #trip-plan-header .day-planner-button {
   text-align: center;
   background-color: #f7f8f8;
@@ -190,6 +195,17 @@ right: 10px;
 #trip-plan-header .add-place-button {
   text-align: center;
   background-color: #4a90e2;
+}
+
+#trip-plan-header .sort-button.inactive,
+#trip-plan-header .day-planner-button.inactive {
+  opacity: 0.3;
+  cursor: default;
+}
+
+#trip-plan-header .sort-button.inactive a,
+#trip-plan-header .day-planner-button.inactive a {
+  cursor: default;
 }
 
 #trip-plan-header .sort-button,
