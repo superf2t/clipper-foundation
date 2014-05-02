@@ -621,7 +621,8 @@ function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
   this.sortedItems = [];
 
   this.addItem = function(item) {
-    var insertionIndex = _.sortedIndex(this.sortedItems, item, itemRankFn);
+    var insertionIndex = itemRankFn ? _.sortedIndex(this.sortedItems, item, itemRankFn)
+      : this.sortedItems.length;
     this.sortedItems.splice(insertionIndex, 0, item);
   };
 
@@ -684,9 +685,7 @@ var SUB_CATEGORY_NAME_TO_SORTING_RANK = {
 
 function createCategoryItemGroupModel(categoryName) {
   var groupRank = CATEGORY_NAME_TO_SORTING_RANK[categoryName];
-  return new ItemGroupModel(Grouping.CATEGORY, categoryName, groupRank, function(item) {
-    return SUB_CATEGORY_NAME_TO_SORTING_RANK[item.data['sub_category']];
-  });
+  return new ItemGroupModel(Grouping.CATEGORY, categoryName, groupRank, null);
 }
 
 function processIntoGroups(grouping, items) {
