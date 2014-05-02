@@ -768,7 +768,7 @@ class FodorsScraper(ScrapedPage):
 
 class WikipediaScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns(
-        '^http(s)?://[a-z]{2,3}\.wikipedia\.org/wiki/\w+$')
+        '^http(s)?://[a-z]{2,3}\.wikipedia\.org/wiki/.+$')
 
     NAME_XPATH = './/h1[@id="firstHeading"]//span'
     PRIMARY_PHOTO_XPATH = './/table[@class="infobox vcard"]//a[@class="image"]//img'
