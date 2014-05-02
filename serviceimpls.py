@@ -86,7 +86,7 @@ class EntityMutateRequest(service.ServiceRequest):
         self.operations = operations
 
     def trip_plan_ids(self):
-        return [operation.trip_plan_id for operation in self.operations]
+        return set(operation.trip_plan_id for operation in self.operations)
 
 class EntityMutateResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
@@ -173,6 +173,9 @@ class EntityService(service.Service):
         entities = [op.result for op in operations]
         return EntityMutateResponse(
             response_code=service.ResponseCode.SUCCESS.name,
+            # TODO: This implementation for last_modified is currently insufficient
+            # if multiple trip plans are being edited together, since each will be saved
+            # at a different time.
             entities=entities, last_modified=trip_plans[0].last_modified)
 
     def validate_operation_fields(self, operations):
@@ -290,7 +293,7 @@ class TripPlanMutateRequest(service.ServiceRequest):
         self.operations = operations
 
     def trip_plan_ids(self):
-        return [operation.trip_plan.trip_plan_id for operation in self.operations if operation.trip_plan.trip_plan_id]
+        return set(operation.trip_plan.trip_plan_id for operation in self.operations if operation.trip_plan.trip_plan_id)
 
 class TripPlanMutateResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
@@ -476,7 +479,7 @@ class NoteMutateRequest(service.ServiceRequest):
         self.operations = operations
 
     def trip_plan_ids(self):
-        return [operation.trip_plan_id for operation in self.operations]
+        return set(operation.trip_plan_id for operation in self.operations)
 
 class NoteMutateResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(

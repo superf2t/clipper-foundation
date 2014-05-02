@@ -278,6 +278,9 @@ function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStri
 
   this.saveEntity = function(entityData) {
     $entityService.editEntity(entityData, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        $tripPlanModel.updateLastModified(response['last_modified']);
+      })
       .error(function() {
         alert('Failed to save new marker location');
       });
@@ -859,7 +862,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
         var newName = $scope.editableTripPlanSettings.name;
         document.title = newName;
         $tripPlanModel.tripPlanData['name'] = newName;
-        $tripPlanModel.updateLastModified(response['last_modified']);
+        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
         // TODO: This might be redundant now.
         $tripPlan['name'] = newName;
         me.alreadySaving = false;
@@ -921,6 +924,9 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $entityService.getByTripPlanId($tripPlan['trip_plan_id'], lastModified)
       .success(function(response) {
         if ($scope.refreshState.paused) {
+          return;
+        }
+        if ($tripPlan['last_modified'] == response['last_modified']) {
           return;
         }
         var planModel = $scope.planModel;
