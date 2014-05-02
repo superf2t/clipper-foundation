@@ -468,7 +468,7 @@
     <div draggable="true" class="day-planner-draggable-entity"
       ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
       tc-dragstart="onDragstart({$event: $event})" tc-dragend="onDragend()">
-      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(\'' + item.data['photo_urls'][0] + '\'')'}">
+      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(&quot;' + item.data['photo_urls'][0] + '&quot;)'}">
       </div>
       <div class="day-planner-entity-info">
         <div>
@@ -539,7 +539,7 @@
       <div class="row main-row">
         <div class="col-md-4 img-container"
           ng-click="openGalleryView()"
-          ng-style="{'background-image': 'url(' + ed['photo_urls'][0] +')'}">
+          ng-style="{'background-image': 'url(&quot;' + ed['photo_urls'][0] +'&quot;)'}">
           <div class="category-info">
             <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
           </div>
