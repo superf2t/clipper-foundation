@@ -57,6 +57,7 @@
         margin: 0;
         padding: 0;
         position: relative;
+        cursor: move;
       }
 
       .__tc-iframe-container {
@@ -142,7 +143,7 @@
     iframe.attr('src', absUrl('/clipper_iframe?url=' + escape(window.location.href)));
     $('head').append(style);
     $(document.body).append(wrapper);
-    wrapper.draggable({axis: 'x'});
+    wrapper.draggable({axis: 'x', iframeFix: true});
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
