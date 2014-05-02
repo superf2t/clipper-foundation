@@ -40,7 +40,7 @@
         width: 300px;
         height: 100%;
         z-index: 2147483647;
-        background-color: #f3f4f4;
+        background-color: #fff;
         position: fixed;
         top: 0;
         right: 0;
@@ -58,6 +58,11 @@
         padding: 0;
         position: relative;
         cursor: move;
+        box-shadow: 0px 1px 2px #aaaaaa;
+      }
+
+      .__tc-logo {
+        padding: 5px;
       }
 
       .__tc-iframe-container {
@@ -65,7 +70,7 @@
         height: calc(100% - 30px);
         padding: 0;
         margin: 0;
-        background-color: #fff;
+        background-color: #ebecec;
         background-image: url("https://{{host}}/static/img/spinner.gif");
         background-position: center;
         background-repeat: no-repeat;
@@ -81,13 +86,13 @@
       }
 
       .__tc-droptarget {
-          width: 100%;
-          height: 100%;
-          position: absolute;
-          top: 0;
-          left: 0;
-          background-color: blue;
-          opacity: 0.5;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: blue;
+        opacity: 0.5;
       }
 
       .__tc-button {
@@ -113,7 +118,7 @@
         position: absolute;
         top: 0;
         right: 0;
-        background-color: #fff;
+        background-color: #ddd;
         margin: 5px;
       }
 
@@ -126,7 +131,7 @@
     var wrapper = $('{% strip %}
       <div class="__tc-clipper">
         <div class="__tc-header">
-          TravelClipper
+          <img src="https://{{host}}/static/img/tc-logo.png" class="__tc-logo"/>
           <button class="__tc-button" id="__tc-x-button">
             X
           </button>
