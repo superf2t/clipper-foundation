@@ -468,7 +468,7 @@
     <div draggable="true" class="day-planner-draggable-entity"
       ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
       tc-dragstart="onDragstart({$event: $event})" tc-dragend="onDragend()">
-      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(' + item.data['photo_urls'][0] +')'}">
+      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(\'' + item.data['photo_urls'][0] + '\'')'}">
       </div>
       <div class="day-planner-entity-info">
         <div>
