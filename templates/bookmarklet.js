@@ -38,12 +38,12 @@
     var style = $('<style>').attr('type', 'text/css').text('{% strip %}
       .__tc-clipper {
         width: 300px;
-        height: 600px;
+        height: 100%;
         z-index: 2147483647;
         background-color: #f3f4f4;
         position: fixed;
-        top: 10px;
-        right: 10px;
+        top: 0;
+        right: 0;
         padding: 0;
         margin: 0;
         opacity: 1.0;
@@ -56,11 +56,12 @@
         height: 30px;
         margin: 0;
         padding: 0;
+        position: relative;
       }
 
       .__tc-iframe-container {
         width: 300px;
-        height: 570px;
+        height: calc(100% - 30px);
         padding: 0;
         margin: 0;
         background-color: #fff;
@@ -87,12 +88,47 @@
           background-color: blue;
           opacity: 0.5;
       }
+
+      .__tc-button {
+        display: inline-block;
+        margin-bottom: 0;
+        font-weight: 400;
+        text-align: center;
+        vertical-align: middle;
+        cursor: pointer;
+        background-image: none;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        padding: 3px 6px;
+        font-size: 12px;
+        line-height: 1.0;
+        border-radius: 4px;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      #__tc-x-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #fff;
+        margin: 5px;
+      }
+
+      #__tc-x-button:hover {
+        background-color: #777;
+      }
     {% endstrip %}');
     window['__tcNodes'].push(style);
 
     var wrapper = $('{% strip %}
       <div class="__tc-clipper">
         <div class="__tc-header">
+          TravelClipper
+          <button class="__tc-button" id="__tc-x-button">
+            X
+          </button>
         </div>
         <div class="__tc-iframe-container">
           <iframe class="__tc-iframe">
@@ -108,10 +144,8 @@
     $(document.body).append(wrapper);
     wrapper.draggable({axis: 'x'});
 
-    $(document.body).on('click', function(event) {
-      if (wrapper && !wrapper.has(event.target).length) {
-        clearElements();
-      }
+    $('#__tc-x-button').on('click', function(event) {
+      clearElements();
     });
 
     var dropTarget = null;
