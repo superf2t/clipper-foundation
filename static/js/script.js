@@ -2590,7 +2590,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$mapBounds', new google.maps.LatLngBounds());
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'servicesModule',
-      'directivesModule', 'filtersModule', 'ui.bootstrap'],
+      'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',

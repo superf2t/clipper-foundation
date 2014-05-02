@@ -6,6 +6,7 @@
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
   <script src="/static/js/services.js"></script>  
   <script src="/static/js/script.js"></script>
@@ -84,7 +85,7 @@
           </div>
         </div>
         <div id="entity-info-box">
-          <div class="description">[[pageStateModel.selectedEntity['description'] ]]</div>
+          <div class="description"><span ng-bind-html="pageStateModel.selectedEntity['description'] | linky:'_blank'"></span></div>
         </div>
       </div>
     </div>
@@ -625,7 +626,7 @@
           [[ed['address'] ]]
         </div>
         <div class="description-section" >
-          <div ng-show="!editing" class="description">[[ed['description'] ]]</div>
+          <div ng-show="!editing" class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
           {% if allow_editing %}
           <div class="add-description-link" ng-show="!editing">
             <a ng-click="openEditEntity(); $event.stopPropagation()" href="javascript:void(0)">
