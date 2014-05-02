@@ -731,28 +731,24 @@
     <div ng-controller="GalleryPanelCtrl" class="full-height">
       <div class="hero-container">
         <span class="img-vertical-align"></span><!--
-        --><img ng-src="[[selectedHeroImg()]]"/>
+        --><img ng-src="[[selectedHeroImg()]]" ng-show="selectedHeroImg()"
+              ng-click="advanceImg()"/>
       </div>
-      <div tc-gallery-carousel urls="ed()['photo_urls']" on-select="selectImg($img)"
-        page-size="3"
-        class="gallery-carousel">
+      <div class="gallery-carousel">
+        <div class="gallery-carousel-controls">
+          <a ng-show="hasPrevImgs()" ng-click="showPrevPage()" class="show-previous-control" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-chevron-left"></span>
+          </a>
+          <a ng-repeat="img in imgsToShow()" ng-init="imgIndex = currentPage * pageSize + $index" href="javascript:void(0)"
+            ng-click="selectImg(imgIndex)">
+            <span class="img-vertical-align"></span><!--
+            --><img ng-src="[[img]]" ng-class="{'selected': imgIndex == selectedImgIndex}"/>
+          </a>
+          <a ng-show="hasNextImgs()" ng-click="showNextPage()" class="show-next-control" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-chevron-right"></span>
+          </a>
+        </div>
       </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="gallery-carousel-template">
-    <div class="gallery-carousel-controls">
-      <a ng-show="hasPrevImgs()" ng-click="showPrevPage()" class="show-previous-control" href="javascript:void(0)">
-        <span class="glyphicon glyphicon-chevron-left"></span>
-      </a>
-      <a ng-repeat="img in imgsToShow()" href="javascript:void(0)"
-        ng-click="onSelect({$img: img})">
-        <span class="img-vertical-align"></span><!--
-        --><img ng-src="[[img]]"/>
-      </a>
-      <a ng-show="hasNextImgs()" ng-click="showNextPage()" class="show-next-control" href="javascript:void(0)">
-        <span class="glyphicon glyphicon-chevron-right"></span>
-      </a>
     </div>
   </script>
 

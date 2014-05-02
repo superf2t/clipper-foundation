@@ -1130,56 +1130,62 @@ function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $account
 }
 
 function GalleryPanelCtrl($scope) {
-  var selectedImg = null;
+  $scope.pageSize = 3;
+  $scope.currentPage = 0;
+  $scope.selectedImgIndex = 0;
 
   $scope.$watch('pageStateModel.selectedEntity', function() {
-    selectedImg = null;
+    $scope.selectedImgIndex = 0;
+    $scope.currentPage = 0;
   });
+
+  var urls = function() {
+    return ($scope.ed() && $scope.ed()['photo_urls']) || [];
+  };
 
   $scope.ed = function() {
     return $scope.pageStateModel.selectedEntity;
   };
 
   $scope.selectedHeroImg = function() {
-    return selectedImg || ($scope.ed() && $scope.ed()['photo_urls'][0]);
-  };
-
-  $scope.selectImg = function(imgUrl) {
-    selectedImg = imgUrl;
-  };
-}
-
-function GalleryCarouselCtrl($scope) {
-  var pageSize = parseInt($scope.pageSize);
-  var currentPage = 0;
-
-  $scope.$watch('urls', function() {
-    currentPage = 0;
-  });
-
-  var urls = function() {
-    return $scope.urls || [];
+    if (urls().length) {
+      return $scope.ed()['photo_urls'][$scope.selectedImgIndex];
+    }
+    return null;
   };
 
   $scope.imgsToShow = function() {
-    var startIndex = currentPage * pageSize;
-    return urls().slice(startIndex, startIndex + pageSize);
+    var startIndex = $scope.currentPage * $scope.pageSize;
+    return urls().slice(startIndex, startIndex + $scope.pageSize);
   };
 
   $scope.hasNextImgs = function() {
-    return (currentPage + 1) * pageSize < urls().length;
+    return ($scope.currentPage + 1) * $scope.pageSize < urls().length;
   };
 
   $scope.hasPrevImgs = function() {
-    return currentPage > 0 && urls().length > pageSize;
+    return $scope.currentPage > 0 && urls().length > $scope.pageSize;
   };
 
   $scope.showNextPage = function() {
-    currentPage++;
+    $scope.currentPage++;
   };
 
   $scope.showPrevPage = function() {
-    currentPage--;
+    $scope.currentPage--;
+  };
+
+  $scope.selectImg = function(index) {
+    $scope.selectedImgIndex = index;
+  };
+
+  $scope.advanceImg = function() {
+    if ($scope.selectedImgIndex + 1 < urls().length) {
+      $scope.selectedImgIndex++;
+      if ($scope.selectedImgIndex == ($scope.pageSize) * ($scope.currentPage + 1)) {
+        $scope.currentPage++;
+      }
+    }
   };
 }
 
@@ -2122,19 +2128,6 @@ function tcDraggableEntity() {
   };
 }
 
-function tcGalleryCarousel() {
-  return {
-    restrict: 'AE',
-    templateUrl: 'gallery-carousel-template',
-    controller: GalleryCarouselCtrl,
-    scope: {
-      urls: '=',
-      pageSize: '=',
-      onSelect: '&'
-    }
-  }
-}
-
 function tcLockAfterScroll() {
   return {
     restrict: 'A',
@@ -2625,7 +2618,6 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)
-    .directive('tcGalleryCarousel', tcGalleryCarousel)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);

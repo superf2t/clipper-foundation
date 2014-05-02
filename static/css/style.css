@@ -400,6 +400,7 @@ right: 10px;
   max-height: 100%;
   vertical-align: middle;
   display: inline-block;
+  cursor: pointer;
 }
 
 #gallery-panel .gallery-carousel {
@@ -417,6 +418,10 @@ right: 10px;
   max-height: 100%;
   max-width: calc(33% - 16px);
   vertical-align: middle;
+}
+
+#gallery-panel .gallery-carousel img.selected {
+  border: 1px solid #fff;
 }
 
 #gallery-panel .img-vertical-align {
