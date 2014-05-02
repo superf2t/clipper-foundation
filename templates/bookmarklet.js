@@ -19,64 +19,98 @@
   // TODO: May not need this anymore.
   window['__tc$'] = $;
   var HOST = '{{host}}';
+  window['__tcNodes'] = [];
 
   function absUrl(relativeUrl) {
     return 'https://' + HOST + relativeUrl;
   }
 
-  function clearOverlay() {
-    if (window['__tcOverlay']) {
-      window['__tcOverlay'].remove();
-    }
+  function clearElements() {
+    $.each(window['__tcNodes'], function(i, node) {
+      node.remove();
+    });
+    window['__tcNodes'] = [];
   }
 
   function createElements() {
-    clearOverlay();
-    var wrapper = window['__tcOverlay'] = $('<div>').css({
-      width: 300,
-      height: 600,
-      zIndex: 2147483647,
-      backgroundColor: '#f3f4f4',
-      position: 'fixed',
-      top: 10,
-      right: 10,
-      padding: 0,
-      margin: 0,
-      opacity: 1.0,
-      border: '1px solid #bbbbbb',
-      boxShadow: '0px 1px 2px #aaaaaa'
-    }).append($('<div>').css({
-      width: '100%',
-      height: 30,
-      margin: 0,
-      padding: 0
-    }));
-    wrapper.draggable();
-    var iframeContainer = $('<div>').css({
-      width: 300,
-      height: 570,
-      padding: 0,
-      margin: 0,
-      backgroundColor: '#fff',
-      backgroundImage: 'url("' + absUrl('/static/img/spinner.gif') + '")',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat'
-    });
-    var iframe = $('<iframe>').css({
-      width: '100%',
-      height: '100%',
-      padding: 0,
-      margin: 0,
-      border: 0,
-      backgroundColor: 'transparent'
-    }).attr('src', absUrl('/clipper_iframe?url=' + escape(window.location.href)));
-    iframeContainer.append(iframe);
-    wrapper.append(iframeContainer);
+    clearElements();
+
+    var style = $('<style>').attr('type', 'text/css').text('{% strip %}
+      .__tc-clipper {
+        width: 300px;
+        height: 600px;
+        z-index: 2147483647;
+        background-color: #f3f4f4;
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        padding: 0;
+        margin: 0;
+        opacity: 1.0;
+        border: 1px solid #bbbbbb;
+        box-shadow: 0px 1px 2px #aaaaaa;
+      }
+
+      .__tc-header {
+        width: 100%;
+        height: 30px;
+        margin: 0;
+        padding: 0;
+      }
+
+      .__tc-iframe-container {
+        width: 300px;
+        height: 570px;
+        padding: 0;
+        margin: 0;
+        background-color: #fff;
+        background-image: url("https://{{host}}/static/img/spinner.gif");
+        background-position: center;
+        background-repeat: no-repeat;
+      }
+
+      .__tc-iframe {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        background-color: transparent;
+      }
+
+      .__tc-droptarget {
+          width: 100%;
+          height: 100%;
+          position: absolute;
+          top: 0;
+          left: 0;
+          background-color: blue;
+          opacity: 0.5;
+      }
+    {% endstrip %}');
+    window['__tcNodes'].push(style);
+
+    var wrapper = $('{% strip %}
+      <div class="__tc-clipper">
+        <div class="__tc-header">
+        </div>
+        <div class="__tc-iframe-container">
+          <iframe class="__tc-iframe">
+          </iframe>
+        </div>
+      </div>
+      {% endstrip %}');
+    window['__tcNodes'].push(wrapper);
+
+    var iframe = wrapper.find('iframe')
+    iframe.attr('src', absUrl('/clipper_iframe?url=' + escape(window.location.href)));
+    $('head').append(style);
     $(document.body).append(wrapper);
+    wrapper.draggable({axis: 'x'});
 
     $(document.body).on('click', function(event) {
       if (wrapper && !wrapper.has(event.target).length) {
-        cleanup();
+        clearElements();
       }
     });
 
@@ -126,7 +160,7 @@
     $(window).on('message', function(event) {
       var data = event.originalEvent.data;
       if (data == 'tc-close-clipper') {
-        cleanup();
+        clearElements();
       } else if (data == 'tc-needs-page-source') {
         var data = {
           message: 'tc-page-source',
@@ -137,15 +171,7 @@
     });
 
     function createDropTarget() {
-      dropTarget = $('<div>').css({
-        width: '100%',
-        height: '100%',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        backgroundColor: 'blue',
-        opacity: 0.5
-      });
+      dropTarget = $('<div>').addClass('__tc-droptarget');
       wrapper.append(dropTarget);
     }
 
@@ -153,13 +179,6 @@
       if (dropTarget) {
         dropTarget.remove();
         dropTarget = null;
-      }
-    }
-
-    function cleanup() {
-      if (wrapper) {
-        wrapper.remove();
-        wrapper = null;
       }
     }
   }

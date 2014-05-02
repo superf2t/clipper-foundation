@@ -14,6 +14,9 @@ import serviceimpls
 import values
 
 class MyFlask(Flask):
+    jinja_options = dict(Flask.jinja_options)
+    jinja_options['extensions'].append('jinja2htmlcompress.SelectiveHTMLCompress')
+
     def get_send_file_max_age(self, name):
         if name in ('js/script.js', 'js/services.js', 'css/style.css'):
             return 0
