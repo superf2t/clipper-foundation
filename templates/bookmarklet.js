@@ -37,7 +37,7 @@
 
     var style = $('<style>').attr('type', 'text/css').text('{% strip %}
       .__tc-clipper {
-        width: 300px;
+        width: 340px;
         height: 100%;
         z-index: 2147483647;
         background-color: #fff;
@@ -66,7 +66,7 @@
       }
 
       .__tc-iframe-container {
-        width: 300px;
+        width: 100%;
         height: calc(100% - 30px);
         padding: 0;
         margin: 0;

@@ -18,7 +18,7 @@ class MyFlask(Flask):
     jinja_options['extensions'].append('jinja2htmlcompress.SelectiveHTMLCompress')
 
     def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'js/services.js', 'css/style.css'):
+        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'css/style.css', 'css/clipper.css'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 
@@ -60,6 +60,7 @@ def clipper_iframe():
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     return render_template('clipper_iframe.html',
         entity=entity,
+        entities_json=serializable.to_json_str([entity] if entity else []),
         needs_page_source=needs_page_source,
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)

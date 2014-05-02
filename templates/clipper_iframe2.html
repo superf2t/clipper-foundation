@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <title>Travel Clipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
+  <script src="/static/js/services.js"></script>
+  <script src="/static/js/script.js"></script>
+  <script src="/static/js/clipper.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/clipper.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+</head>
+<body ng-controller="ClipperRootCtrl2" class="clipper-body">
+
+  <div class="intro-text">
+    <span ng-if="entities.length > 1">
+      We found the following [[entities.length]] places:
+    </span>
+    <span ng-if="entities.length == 1">
+      We found the following place:
+    </span>
+    <span ng-if="entities.length == 0">
+      Uh oh, we couldn't find the place(s) on this page.
+      <br/>
+      Help us help you by tagging this page with a place.
+    </span>
+  </div>
+
+  <div>
+    <div ng-repeat="entity in entities" ng-include="'one-entity-clipper-template'">
+    </div>
+  </div>
+
+  <script type="text/ng-template" id="one-entity-clipper-template">
+    <div class="container-fluid one-entity-clipper" ng-controller="ClipperEntityCtrl">
+      <div class="row main-row">
+        <div class="col-xs-4 img-container"
+          ng-style="{'background-image': 'url(&quot;' + ed['photo_urls'][0] +'&quot;)'}">
+        </div>
+        <div class="col-xs-8 details-container">
+          <div class="main-details">
+            <div class="title">
+              [[ed['name'] ]]
+            </div>
+            <div class="note-control">
+              <a href="javascript:void(0)">
+                <span class="glyphicon glyphicon-pencil"></span> Add note
+              </a>
+            </div>
+            <div class="main-controls">
+              <a href="javascript:void(0)" class="dropdown-toggle">
+                <span class="glyphicon glyphicon-cog"></span>
+              </a>
+              <ul class="dropdown-menu right-bottom-dropdown-menu">
+                <li>
+                  <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-edit"></span> Edit name and location
+                  </a>
+                </li>
+                <li>
+                  <a ng-click="reclipEntity()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-camera"></span> Edit photos
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script>
+    initClipper2(
+      {{entities_json|safe}},
+      {{needs_page_source|jsbool}},
+      {{all_trip_plans_json|safe}},
+      {{all_datatype_values.to_json_str()|safe}});
+  </script>
+</body>
+</html>
