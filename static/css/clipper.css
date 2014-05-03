@@ -86,3 +86,28 @@ a:hover {
   right: 5px;
   font-size: 1.1em;
 }
+
+.save-to-trip-plan-panel {
+  background-color: #fff;
+  position: absolute;
+  width: 100%;
+  bottom: 0px;
+  padding: 10px 10px 30px 10px;
+}
+
+.save-to-trip-plan-panel .save-prompt-text {
+  font-size: 1.2em;
+}
+
+.save-to-trip-plan-panel .trip-plan-dropdown {
+  padding: 10px 0;
+}
+
+.save-to-trip-plan-panel .save-button {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.clip-success .checkmark {
+  fill: green;
+}

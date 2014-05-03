@@ -4,6 +4,7 @@
   <title>Travel Clipper</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
   <script src="/static/js/services.js"></script>
@@ -16,22 +17,62 @@
 </head>
 <body ng-controller="ClipperRootCtrl2" class="clipper-body">
 
-  <div class="intro-text">
-    <span ng-if="entities.length > 1">
-      We found the following [[entities.length]] places:
-    </span>
-    <span ng-if="entities.length == 1">
-      We found the following place:
-    </span>
-    <span ng-if="entities.length == 0">
-      Uh oh, we couldn't find the place(s) on this page.
-      <br/>
-      Help us help you by tagging this page with a place.
-    </span>
+  <div ng-if="!clipperState.inConfirmation()">
+    <div class="intro-text">
+      <span ng-if="entityModels.length > 1">
+        We found the following [[entityModels.length]] places:
+      </span>
+      <span ng-if="entityModels.length == 1">
+        We found the following place:
+      </span>
+      <span ng-if="entityModels.length == 0">
+        Uh oh, we couldn't find the place(s) on this page.
+        <br/>
+        Help us help you by tagging this page with a place.
+      </span>
+    </div>
+
+    <div>
+      <div ng-repeat="entityModel in entityModels" ng-include="'one-entity-clipper-template'">
+      </div>
+    </div>
+
+    <div class="save-to-trip-plan-panel" ng-show="showSaveControls()">
+      <div class="save-prompt-text">
+        <span ng-if="entityModels.length > 1">
+          Save [[entityModels.length]] selected places to a trip
+        </span>
+        <span ng-if="entityModels.length == 1">
+          Save [[entityModels[0]['name'] ]] to a trip
+        </span>
+      </div>
+      <div tc-trip-plan-select-dropdown
+        select-trip-plan-to="selectedTripPlanState.tripPlan"
+        class="trip-plan-dropdown">
+      </div> 
+      <div class="save-button">
+        <button class="btn btn-primary" ng-click="saveEntities()">Save to trip</button>
+      </div>
+    </div>
   </div>
 
-  <div>
-    <div ng-repeat="entity in entities" ng-include="'one-entity-clipper-template'">
+  <div ng-if="clipperState.inConfirmation()" class="clip-success">
+    <div class="checkmark">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
+      <g>
+        <g>
+          <polygon points="94.587,27.48 31.657,86.15 31.217,85.68 18.847,72.41 0.566,52.81 14.106,40.19 32.387,59.79 81.776,13.74"/>
+        </g>
+      </g>
+      </svg>
+    </div>
+    <div>
+      Place(s) successfully clipped to
+    </div>
+    <div class="trip-plan-name">
+      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
+        [[selectedTripPlanState.tripPlan['name'] ]]
+      </a>
     </div>
   </div>
 
@@ -73,6 +114,8 @@
       </div>
     </div>
   </script>
+
+  {% include 'widgets.html' %}
 
   <script>
     initClipper2(
