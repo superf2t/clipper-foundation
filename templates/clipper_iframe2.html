@@ -17,7 +17,7 @@
 </head>
 <body ng-controller="ClipperRootCtrl2" class="clipper-body">
 
-  <div ng-if="!clipperState.inConfirmation()">
+  <div ng-if="clipperState.status == ClipperState.SUMMARY || clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
     <div class="intro-text">
       <span ng-if="entityModels.length > 1">
         We found the following [[entityModels.length]] places:
@@ -56,7 +56,7 @@
     </div>
   </div>
 
-  <div ng-if="clipperState.inConfirmation()" class="clip-success">
+  <div ng-if="clipperState.status == ClipperState.SUCCESS_CONFIRMATION" class="clip-success">
     <div class="checkmark">
       <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
       <g>
@@ -74,6 +74,10 @@
         [[selectedTripPlanState.tripPlan['name'] ]]
       </a>
     </div>
+  </div>
+
+  <div ng-if="clipperState.status == ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE">
+    <div class="full-spinner"></div>
   </div>
 
   <script type="text/ng-template" id="one-entity-clipper-template">

@@ -36,6 +36,18 @@
     clearElements();
 
     var style = $('<style>').attr('type', 'text/css').text('{% strip %}
+      ._tc-clipper div, ._tc-clipper span,
+      ._tc-clipper iframe,
+      ._tc-clipper button,
+      ._tc-clipper p, ._tc-clipper img {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+      }
+
       .__tc-clipper {
         width: 340px;
         height: 100%;
@@ -120,6 +132,9 @@
         right: 0;
         background-color: #ddd;
         margin: 5px;
+        width: 21px;
+        height: 20px;
+        color: #000;
       }
 
       #__tc-x-button:hover {

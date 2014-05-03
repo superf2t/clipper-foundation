@@ -1,9 +1,5 @@
 function ClipperStateModel(initialStatus) {
   this.status = initialStatus;
-
-  this.inConfirmation = function() {
-    return this.status == ClipperState.SUCCESS_CONFIRMATION;
-  };
 }
 
 var ClipperState = {
@@ -29,6 +25,8 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
   var me = this;
   $scope.clipperState = new ClipperStateModel();
 
+  $scope.ClipperState = ClipperState;
+
   this.setupEntityState = function(entities) {
     $scope.entityModels = _.map(entities, function(entity) {
       return new ClipperEntityModel(entity, true);
@@ -52,7 +50,7 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
       var pageSource = event.originalEvent.data['data'];
       $entityService.pagesourcetoentity(getParameterByName('url'), pageSource)
         .success(function(response) {
-          me.prepareEntityState(response['entity']);
+          me.setupEntityState([response['entity']]);
         });
     });
     window.parent.postMessage('tc-needs-page-source', '*'); 

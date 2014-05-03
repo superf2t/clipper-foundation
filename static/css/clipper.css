@@ -24,6 +24,12 @@ a:hover {
   text-align: left;
 }
 
+.full-spinner {
+  background-image: url('/static/img/spinner.gif');
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
 .intro-text {
   margin: 10px;
   font-size: 1.2em;
