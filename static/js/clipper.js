@@ -200,7 +200,11 @@ function ClipperEntityCtrl($scope) {
       $scope.ed['address'] = place['formatted_address'];
     }
     if (place['geometry']) {
+      if (_.isEmpty($scope.ed['latlng'])) {
+        $scope.ed['latlng'] = {};
+      }
       var location = place['geometry']['location'];
+      // TODO: Reset precision.
       $scope.ed['latlng']['lat'] = location.lat();
       $scope.ed['latlng']['lng'] = location.lng();
       $scope.map.setCenter(location);
