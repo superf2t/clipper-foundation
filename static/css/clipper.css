@@ -231,3 +231,32 @@ a:hover {
   font-size: 1.2em;
   padding-bottom: 10px;
 }
+
+.omnibox-panel .search-spinner {
+  position: relative;
+  top: -28px;
+  left: 50%;
+}
+
+.omnibox-panel .search-results {
+  margin-top: 20px;
+}
+
+.omnibox-panel .one-result {
+  padding: 10px 5px;
+  cursor: pointer;
+  font-size: 10pt;
+}
+
+.omnibox-panel .one-result:hover {
+  background-color: #ccc;
+}
+
+.omnibox-panel .result-icon {
+  max-width: 20px;
+  max-height: 20px;
+}
+
+.omnibox-panel .result-address {
+  color: #aaa;
+}

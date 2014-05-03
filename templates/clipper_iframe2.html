@@ -68,6 +68,16 @@
       <input class="form-control" ng-model="rawInputText" placeholder="Search for a place name or address"
             tc-google-place-autocomplete search-bounds-json="selectedTripPlanState.tripPlan['location_bounds']"
             on-place-change="placeChanged($newPlace)"/>
+      <div ng-show="loadingData" class="search-spinner">
+        <img src="/static/img/spinner-small.gif"/>
+      </div>
+      <div class="search-results" ng-show="searchResults">
+        <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
+          <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+          [[result['name'] ]]
+          <span class="result-address">[[result['formatted_address'] ]]</span>
+        </div>
+      </div>
     </div>
   </div>
 

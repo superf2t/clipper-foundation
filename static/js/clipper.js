@@ -47,7 +47,14 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
   };
 
   $scope.selectedTripPlanState = {
-    tripPlan: null
+    tripPlan: null,
+    bounds: function() {
+      if ($scope.selectedTripPlanState.tripPlan
+        && !_.isEmpty($scope.selectedTripPlanState.tripPlan['location_bounds'])) {
+        return gmapsBoundsFromJson($scope.selectedTripPlanState.tripPlan['location_bounds']);
+      }
+      return null;
+    }
   };
 
   if ($needsPageSource) {
@@ -296,12 +303,17 @@ function ClipperOmniboxCtrl($scope, $entityService) {
   var me = this;
   $scope.loadingData = false;
   $scope.rawInputText = '';
+  $scope.searchResults = null;
 
   $scope.placeChanged = function(newPlace) {
-    if (!newPlace || !newPlace['reference']) {
+    if (!newPlace) {
       return;
     }
-    me.loadEntityByGooglePlaceReference(newPlace['reference']);
+    if (!newPlace['reference']) {
+      me.searchForPlace(newPlace['name']);
+    } else {
+      me.loadEntityByGooglePlaceReference(newPlace['reference']);      
+    }
   };
 
   this.loadEntityByGooglePlaceReference = function(reference) {
@@ -315,7 +327,35 @@ function ClipperOmniboxCtrl($scope, $entityService) {
         $scope.rawInputText = '';
         // This is defined on the parent scope, not ideal.
         $scope.addEntity(entity);
+      }).error(function() {
+        $scope.loadingData = false;
       });
+  };
+
+  this.searchForPlace = function(query) {
+    $scope.loadingData = true;
+    var request = {
+      query: query,
+      bounds: $scope.selectedTripPlanState.bounds()
+    };
+    console.log(request);
+    var dummyMap = new google.maps.Map($('<div>')[0], {
+      center: new google.maps.LatLng(0, 0)
+    });
+    var searchService = new google.maps.places.PlacesService(dummyMap);
+    searchService.textSearch(request, function(results, status) {
+      $scope.$apply(function() {
+        $scope.loadingData = false;
+        if (status == google.maps.places.PlacesServiceStatus.OK) {
+          $scope.searchResults = results;
+        }
+      });
+    });
+  };
+
+  $scope.selectResult = function(result) {
+    $scope.searchResults = null;
+    me.loadEntityByGooglePlaceReference(result['reference']);
   };
 }
 
