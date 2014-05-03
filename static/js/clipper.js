@@ -379,7 +379,7 @@ function ClipperOmniboxCtrl($scope, $entityService) {
   };
 }
 
-window['initClipper2'] = function(entities, needsPageSource,
+window['initClipper'] = function(entities, needsPageSource,
     allTripPlans, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$entities', entities)
