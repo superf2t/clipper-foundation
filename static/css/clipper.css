@@ -93,6 +93,8 @@ a:hover {
   width: 100%;
   bottom: 0px;
   padding: 10px 10px 30px 10px;
+  max-height: 50%;
+  overflow: scroll;
 }
 
 .save-to-trip-plan-panel .save-prompt-text {

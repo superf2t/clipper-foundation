@@ -484,7 +484,7 @@ function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
   if (!$scope.selectedTripPlan) {
     $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
   }
-  $scope.newTripPlanName = ''
+  $scope.newTripPlanRawLocation = ''
   $scope.showCreateTripPlanForm = false;
   $scope.$watch('selectedTripPlan', function(newValue) {
     if (newValue.createNew) {
@@ -494,12 +494,9 @@ function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
     }
   });
 
-  $scope.saveNewTripPlan = function() {
-    if (!$scope.newTripPlanName) {
-      return;
-    }
+  $scope.saveNewTripPlan = function(tripPlanDetails) {
     var newTripPlan = {'name': $scope.newTripPlanName};
-    $tripPlanService.saveNewTripPlan(newTripPlan)
+    $tripPlanService.saveNewTripPlan(tripPlanDetails)
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.showCreateTripPlanForm = false;
@@ -906,10 +903,26 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('closeallinfowindows');
   });
 
+  var startTripPlanModal = null;
+
+  this.selectTripLocation = function(tripPlanDetails) {
+    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
+    $tripPlanService.editTripPlan(tripPlanDetails)
+      .success(function(response) {
+        $map.setCenter(gmapsLatLngFromJson(tripPlanDetails['location_latlng']));
+        if (tripPlanDetails['location_bounds']) {
+          $map.fitBounds(gmapsBoundsFromJson(tripPlanDetails['location_bounds']));
+        }
+        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
+        document.title = response['trip_plans'][0]['name'];
+        startTripPlanModal && startTripPlanModal.close();
+      });
+  };
+
   if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
-    $modal.open({
+    startTripPlanModal = $modal.open({
       templateUrl: 'start-new-trip-modal-template',
-      scope: $scope.$new(true),
+      scope: $.extend($scope.$new(true), {selectTripLocation: this.selectTripLocation}),
       backdrop: 'static',
       keyboard: false
     });
@@ -1004,7 +1017,7 @@ function createMap(tripPlanData) {
   return map;
 }
 
-function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanService, $map) {
+function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
   var me = this;
   $scope.ready = false;
   $scope.locationText = '';
@@ -1033,30 +1046,25 @@ function StartNewTripModalCtrl($scope, $timeout, $tripPlanModel, $tripPlanServic
     var request = {
       query: query
     };
-    var searchService = new google.maps.places.PlacesService($map);
+    var dummyMap = new google.maps.Map($('<div>')[0], {
+      center: new google.maps.LatLng(0, 0)
+    });
+    var searchService = new google.maps.places.PlacesService(dummyMap);
     searchService.textSearch(request, function(results, status) {
-      $scope.searching = false;
-      if (status != google.maps.places.PlacesServiceStatus.OK) {
-        alert('Search failed, please try again.');
-        return;
-      }
-      $scope.searchResults = results;
+      $scope.$apply(function() {
+        $scope.searching = false;
+        if (status != google.maps.places.PlacesServiceStatus.OK) {
+          alert('Search failed, please try again.');
+          return;
+        }
+        $scope.searchResults = results;
+      });
     });
   };
 
   $scope.selectResult = function(place) {
     var tripPlanDetails = me.placeToTripPlanDetails(place);
-    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
-    $tripPlanService.editTripPlan(tripPlanDetails)
-      .success(function(response) {
-        $map.setCenter(place['geometry']['location']);
-        if (place['geometry']['viewport']) {
-          $map.fitBounds(place['geometry']['viewport']);
-        }
-        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
-        document.title = response['trip_plans'][0]['name'];
-        $scope.$close();
-      });
+    $scope.onSelectPlace({$tripPlanDetails: tripPlanDetails});
   };
 
   this.placeToTripPlanDetails = function(place) {
@@ -2104,6 +2112,17 @@ function tcTripPlanSelectDropdown() {
   };
 }
 
+function tcStartNewTripInput() {
+  return {
+    retrict: 'AE',
+    templateUrl: 'start-new-trip-input-template',
+    controller: StartNewTripInputCtrl,
+    scope: {
+      onSelectPlace: '&'
+    }
+  };
+}
+
 function tcItemDropTarget() {
   return {
     restrict: 'AE',
@@ -2618,11 +2637,10 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
       '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
-    .controller('StartNewTripModalCtrl', ['$scope', '$timeout',
-      '$tripPlanModel', '$tripPlanService', '$map', StartNewTripModalCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)
+    .directive('tcStartNewTripInput', tcStartNewTripInput)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);

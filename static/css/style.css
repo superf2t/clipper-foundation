@@ -865,7 +865,7 @@ right: 10px;
 }
 
 .reclip-confirmation-modal {
-  height: 150px; 
+  min-height: 150px; 
   margin: 20px;
 }
 
@@ -873,11 +873,7 @@ right: 10px;
   margin: 20px 0;
 }
 
-.trip-plan-select-dropdown-new-trip-plan-form {
-  margin-top: 10px;
-}
-
-.trip-plan-select-dropdown-controls {
+.reclip-confirmation-modal .start-new-trip-form {
   margin-top: 10px;
 }
 
@@ -1242,37 +1238,5 @@ right: 10px;
 }
 
 .start-new-trip-modal {
-  font-family: 'Nunito';
-  color: #000;
   padding: 20px;
-}
-
-.start-new-trip-modal .prompt {
-  text-align: center;
-  font-size: 1.5em;
-  margin-bottom: 20px;
-}
-
-.start-new-trip-modal .search-spinner {
-  position: relative;
-  top: -28px;
-  left: 50%;
-}
-
-.start-new-trip-modal .search-results {
-  margin-top: 20px;
-}
-
-.start-new-trip-modal .one-result {
-  padding: 15px 5px;
-  cursor: pointer;
-}
-
-.start-new-trip-modal .one-result:hover {
-  background-color: #ccc;
-}
-
-.start-new-trip-modal .result-icon {
-  max-width: 25px;
-  max-height: 25px;
 }

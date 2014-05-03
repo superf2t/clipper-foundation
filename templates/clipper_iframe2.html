@@ -37,7 +37,7 @@
       </div>
     </div>
 
-    <div class="save-to-trip-plan-panel" ng-show="showSaveControls()">
+    <div class="save-to-trip-plan-panel">
       <div class="save-prompt-text">
         <span ng-if="entityModels.length > 1">
           Save [[entityModels.length]] selected places to a trip
@@ -50,7 +50,7 @@
         select-trip-plan-to="selectedTripPlanState.tripPlan"
         class="trip-plan-dropdown">
       </div> 
-      <div class="save-button">
+      <div class="save-button" ng-show="showSaveControls()">
         <button class="btn btn-primary" ng-click="saveEntities()">Save to trip</button>
       </div>
     </div>

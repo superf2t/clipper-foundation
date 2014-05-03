@@ -875,27 +875,8 @@
 
   {% if allow_editing and not plan.location_name %}
   <script type="text/ng-template" id="start-new-trip-modal-template">
-    <div class="start-new-trip-modal" ng-controller="StartNewTripModalCtrl">
-      <div class="prompt">
-        Where are you traveling?
-      </div>
-      <div>
-        <input type="text" class="form-control"
-          placeholder="e.g. Paris, Thailand, New England"
-          ng-model="locationText"
-          tc-google-place-autocomplete
-          location-types="(regions)"
-          on-place-change="placeChanged($newPlace)"
-          tc-focus-on="ready"/>
-      </div>
-      <div ng-show="searching" class="search-spinner">
-        <img src="/static/img/spinner-small.gif"/>
-      </div>
-      <div class="search-results" ng-show="searchResults">
-        <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
-          <img ng-src="[[result['icon'] ]]" class="result-icon"/>
-          [[result['formatted_address'] ]]
-        </div>
+    <div class="start-new-trip-modal">
+      <div tc-start-new-trip-input on-select-place="selectTripLocation($tripPlanDetails)">
       </div>
     </div>
   </script>

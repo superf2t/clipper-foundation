@@ -1,3 +1,40 @@
+<style type="text/css">
+  .start-new-trip-form {
+    font-family: 'Nunito';
+    color: #000;
+  }
+
+  .start-new-trip-form .prompt {
+    text-align: center;
+    font-size: 1.5em;
+    margin-bottom: 20px;
+  }
+
+  .start-new-trip-form .search-spinner {
+    position: relative;
+    top: -28px;
+    left: 50%;
+  }
+
+  .start-new-trip-form .search-results {
+    margin-top: 20px;
+  }
+
+  .start-new-trip-form .one-result {
+    padding: 15px 5px;
+    cursor: pointer;
+  }
+
+  .start-new-trip-form .one-result:hover {
+    background-color: #ccc;
+  }
+
+  .start-new-trip-form .result-icon {
+    max-width: 25px;
+    max-height: 25px;
+  }
+</style>
+
 <script type="text/ng-template" id="carousel-template">
   <div ng-controller="CarouselCtrl" class="carousel">
     <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
@@ -23,19 +60,36 @@
     <select class="form-control" ng-model="selectedTripPlan"
       ng-options="tp['name'] for tp in tripPlanSelectOptions">
     </select>
-    <div ng-show="showCreateTripPlanForm"
+    <div ng-if="showCreateTripPlanForm"
       class="trip-plan-select-dropdown-new-trip-plan-form">
-      <form ng-submit="saveNewTripPlan()">
-        <input type="text" class="form-control"
-          ng-model="newTripPlanName"
-          placeholder="Enter a trip plan name"
-          tc-focus-on="showCreateTripPlanForm"/>
-        <div class="trip-plan-select-dropdown-controls">
-          <button class="btn btn-info" ng-disabled="!newTripPlanName">
-            Create new trip plan
-          </button>
-        </div>
-      </form>
+      <div tc-start-new-trip-input on-select-place="saveNewTripPlan($tripPlanDetails)">
+      </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/ng-template" id="start-new-trip-input-template">
+  <div class="start-new-trip-form">
+    <div class="prompt">
+      Where are you traveling?
+    </div>
+    <div>
+      <input type="text" class="form-control"
+        placeholder="e.g. Paris, Thailand, New England"
+        ng-model="locationText"
+        tc-google-place-autocomplete
+        location-types="(regions)"
+        on-place-change="placeChanged($newPlace)"
+        tc-focus-on="ready"/>
+    </div>
+    <div ng-show="searching" class="search-spinner">
+      <img src="/static/img/spinner-small.gif"/>
+    </div>
+    <div class="search-results" ng-show="searchResults">
+      <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
+        <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+        [[result['formatted_address'] ]]
+      </div>
     </div>
   </div>
 </script>

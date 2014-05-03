@@ -228,7 +228,8 @@ window['initClipper2'] = function(entities, needsPageSource,
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
     .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])
-    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl]);
+    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
+    .directive('tcStartNewTripInput', tcStartNewTripInput);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);
