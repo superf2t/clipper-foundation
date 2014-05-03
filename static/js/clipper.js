@@ -229,6 +229,53 @@ function ClipperEntityCtrl($scope) {
   };
 }
 
+function ClipperPhotoCtrl($scope) {
+  if (_.isEmpty($scope.ed['photo_urls'])) {
+    $scope.ed['photo_urls'] = [];
+  }
+  var urls = $scope.ed['photo_urls'];
+  var selectedImgIndex = urls.length ? 0 : null;
+
+  $scope.selectedImg = function() {
+    return urls[selectedImgIndex];
+  };
+
+  $scope.hasImgs = function() {
+    return urls.length > 0;
+  };
+
+  $scope.hasPrevImg = function() {
+    return selectedImgIndex > 0;
+  };
+
+  $scope.hasNextImg = function() {
+    return selectedImgIndex < (urls.length - 1);
+  };
+
+  $scope.prevImg = function() {
+    selectedImgIndex--;
+  };
+
+  $scope.nextImg = function() {
+    if ($scope.hasNextImg()) {
+      selectedImgIndex++;      
+    }
+  };
+
+  $scope.setAsPrimary = function() {
+    var url = urls.splice(selectedImgIndex, 1)[0];
+    urls.splice(0, 0, url);
+    selectedImgIndex = 0;
+  };
+
+  $scope.deletePhoto = function() {
+    urls.splice(selectedImgIndex, 1);
+    if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
+      selectedImgIndex--;
+    }
+  };
+}
+
 function ClipperOmniboxCtrl($scope, $entityService) {
   var me = this;
   $scope.loadingData = false;
@@ -280,6 +327,7 @@ window['initClipper2'] = function(entities, needsPageSource,
     .controller('ClipperRootCtrl2', ['$scope', '$http', '$timeout', '$entityService',
       '$needsPageSource', '$entities', '$allTripPlans', '$datatypeValues', ClipperRootCtrl2])
     .controller('ClipperEntityCtrl', ['$scope', ClipperEntityCtrl])
+    .controller('ClipperPhotoCtrl', ['$scope', ClipperPhotoCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
     .directive('tcStartNewTripInput', tcStartNewTripInput);
 
