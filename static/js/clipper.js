@@ -150,6 +150,8 @@ function ClipperEntityCtrl($scope) {
       }
       entityData['latlng']['lat'] = marker.getPosition().lat();
       entityData['latlng']['lng'] = marker.getPosition().lng();
+      entityData['address_precision'] = 'Precise';
+      me.updateMarkerIcon();
     });
     return marker;
   };
@@ -204,15 +206,26 @@ function ClipperEntityCtrl($scope) {
         $scope.ed['latlng'] = {};
       }
       var location = place['geometry']['location'];
-      // TODO: Reset precision.
       $scope.ed['latlng']['lat'] = location.lat();
       $scope.ed['latlng']['lng'] = location.lng();
+      $scope.ed['address_precision'] = 'Precise';
       $scope.map.setCenter(location);
       marker.setPosition(location);
+      me.updateMarkerIcon();
       if (place['geometry']['viewport']) {
         $scope.map.fitBounds(place['geometry']['viewport']);
       }
     }
+  };
+
+  this.updateMarkerIcon = function() {
+    var data =  $scope.ed;
+    var iconUrl = categoryToIconUrl(
+      data['category'] && data['category']['name'],
+      data['sub_category'] && data['sub_category']['name'],
+      data['address_precision']);
+    data['icon_url'] = iconUrl;
+    marker.setIcon('/static/img/' + iconUrl)
   };
 }
 
