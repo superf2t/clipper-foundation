@@ -2,7 +2,7 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Nunito';
-  background-color: #ebecec;
+  background-color: #fff;
   color: #000;
 }
 
@@ -14,7 +14,6 @@ a:hover {
   text-decoration: none;
   color: #2D73A0;
 }
-
 
 .dropdown-menu.right-bottom-dropdown-menu { /* DUPE */
   left: auto;
@@ -30,6 +29,11 @@ a:hover {
   background-position: center center;
   width: 100%;
   height: 100%;
+}
+
+.upper-panel {
+  background-color: #ebecec;
+  padding: 1px 0 20px 0;
 }
 
 .intro-text {
@@ -194,11 +198,8 @@ a:hover {
 
 .save-to-trip-plan-panel {
   background-color: #fff;
-  position: absolute;
   width: 100%;
-  bottom: 0px;
   padding: 10px 10px 30px 10px;
-  max-height: 50%;
   overflow: scroll;
 }
 
@@ -217,4 +218,16 @@ a:hover {
 
 .clip-success .checkmark {
   fill: green;
+}
+
+.omnibox-panel {
+  background-color: #fff;
+  width: 100%;
+  padding: 10px 10px 30px 10px;
+  overflow: scroll;
+}
+
+.omnibox-panel .search-prompt-text {
+  font-size: 1.2em;
+  padding-bottom: 10px;
 }

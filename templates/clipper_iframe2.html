@@ -17,23 +17,20 @@
 </head>
 <body ng-controller="ClipperRootCtrl2" class="clipper-body">
 
-  <div ng-if="clipperState.status == ClipperState.SUMMARY || clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
-    <div class="intro-text">
-      <span ng-if="entityModels.length > 1">
-        We found the following [[entityModels.length]] places:
-      </span>
-      <span ng-if="entityModels.length == 1">
-        We found the following place:
-      </span>
-      <span ng-if="entityModels.length == 0">
-        Uh oh, we couldn't find the place(s) on this page.
-        <br/>
-        Help us help you by tagging this page with a place.
-      </span>
-    </div>
+  <div ng-if="clipperState.status == ClipperState.SUMMARY">
+    <div class="upper-panel">
+      <div class="intro-text">
+        <span ng-if="entityModels.length > 1">
+          We found the following [[entityModels.length]] places:
+        </span>
+        <span ng-if="entityModels.length == 1">
+          We found the following place:
+        </span>
+      </div>
 
-    <div>
-      <div ng-repeat="entityModel in entityModels" ng-include="'one-entity-clipper-template'">
+      <div>
+        <div ng-repeat="entityModel in entityModels" ng-include="'one-entity-clipper-template'">
+        </div>
       </div>
     </div>
 
@@ -53,6 +50,24 @@
       <div class="save-button" ng-show="showSaveControls()">
         <button class="btn btn-primary" ng-click="saveEntities()">Save to trip</button>
       </div>
+    </div>
+  </div>
+
+  <div ng-if="clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
+    <div class="upper-panel">
+      <div class="intro-text">
+        <span ng-if="entityModels.length == 0">
+          Uh oh, we couldn't find the place(s) on this page.
+          <br/>
+          Help us help you by tagging this page with a place.
+        </span>
+      </div>
+    </div>
+    <div class="omnibox-panel" ng-controller="ClipperOmniboxCtrl">
+      <div class="search-prompt-text">Search</div>
+      <input class="form-control" ng-model="rawInputText" placeholder="Search for a place name or address"
+            tc-google-place-autocomplete search-bounds-json="selectedTripPlanState.tripPlan['location_bounds']"
+            on-place-change="placeChanged($newPlace)"/>
     </div>
   </div>
 

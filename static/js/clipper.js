@@ -70,6 +70,11 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
 
+  $scope.addEntity = function(entityData) {
+    $scope.entityModels.push(new ClipperEntityModel(entityData, true));
+    $scope.clipperState.status = ClipperState.SUMMARY;
+  };
+
   this.selectedEntityModels = function() {
     return _.filter($scope.entityModels, function(entityModel) {
       return entityModel.selected;
@@ -290,7 +295,6 @@ function ClipperPhotoCtrl($scope, $window) {
 function ClipperOmniboxCtrl($scope, $entityService) {
   var me = this;
   $scope.loadingData = false;
-  $scope.entityNotFound = false;
   $scope.rawInputText = '';
 
   $scope.placeChanged = function(newPlace) {
@@ -300,26 +304,17 @@ function ClipperOmniboxCtrl($scope, $entityService) {
     me.loadEntityByGooglePlaceReference(newPlace['reference']);
   };
 
-  $scope.openEditManually = function() {
-    // This is a method defined on the parent scope, not ideal.    
-    $scope.openEditor();
-  };
-
   this.loadEntityByGooglePlaceReference = function(reference) {
     $scope.loadingData = true;
     $entityService.googleplacetoentity(reference)
       .success(function(response) {
         var entity = response['entity'];
-        if (entity) {
-          var sourceUrl = getParameterByName('url');
-          entity['source_url'] = sourceUrl;
-          // This is a method defined on the parent scope, not ideal.
-          $scope.openEditorWithEntity(entity);
-        } else {
-          $scope.entityNotFound = true;
-        }
+        var sourceUrl = getParameterByName('url');
+        entity['source_url'] = sourceUrl;
         $scope.loadingData = false;
         $scope.rawInputText = '';
+        // This is defined on the parent scope, not ideal.
+        $scope.addEntity(entity);
       });
   };
 }
