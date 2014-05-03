@@ -58,7 +58,7 @@ def clipper_iframe():
         trip_plan = create_and_save_default_trip_plan(session_info)
         all_trip_plans = [trip_plan]
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
-    return render_template('clipper_iframe.html',
+    return render_template('clipper_iframe2.html',
         entity=entity,
         entities_json=serializable.to_json_str([entity] if entity else []),
         needs_page_source=needs_page_source,

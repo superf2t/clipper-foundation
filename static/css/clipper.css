@@ -48,7 +48,6 @@ a:hover {
   background-color: #777;
   margin: 10px;
   position: relative;
-  cursor: pointer;
 }
 
 .one-entity-clipper .main-row {
@@ -259,4 +258,20 @@ a:hover {
 
 .omnibox-panel .result-address {
   color: #aaa;
+}
+
+.enter-manually-link {
+  position: absolute;
+  bottom: 20px;
+  text-align: center;
+  width: 100%;
+  font-size: 14pt;
+}
+
+.enter-manually-link a {
+  color: #428bca;
+}
+
+.enter-manually-link a:hover {
+  color: #2D73A0;
 }

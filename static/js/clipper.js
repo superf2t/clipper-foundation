@@ -82,6 +82,14 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
     $scope.clipperState.status = ClipperState.SUMMARY;
   };
 
+  $scope.startManualEntry = function() {
+    var entityData = {
+      'icon_url': 'sight-2.png',
+      'source_url': getParameterByName('url')
+    };
+    $scope.addEntity(entityData);
+  };
+
   this.selectedEntityModels = function() {
     return _.filter($scope.entityModels, function(entityModel) {
       return entityModel.selected;
@@ -96,6 +104,17 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
     return me.selectedEntityModels().length
       && $scope.selectedTripPlanState.tripPlan
       && $scope.selectedTripPlanState.tripPlan['trip_plan_id'] > 0;
+  };
+
+  $scope.saveButtonEnabled = function() {
+    var selectedEntities = me.selectedEntities();
+    if (!selectedEntities.length) {
+      return false;
+    }
+    var entitiesWithNames = _.filter(selectedEntities, function(entity) {
+      return !!entity['name'];
+    });
+    return entitiesWithNames.length > 0;
   };
 
   $scope.saveEntities = function() {
@@ -137,7 +156,8 @@ var ClipperEntityState = {
 function ClipperEntityCtrl($scope, $window) {
   var me = this;
   $scope.ed = $scope.entityModel.data;
-  $scope.state = ClipperEntityState.NOT_EDITING;
+  $scope.state = $scope.ed['name'] ? ClipperEntityState.NOT_EDITING
+    : ClipperEntityState.EDITING_LOCATION;
   $scope.ClipperEntityState = ClipperEntityState;
 
   this.createMarker = function(latlng, opt_map) {

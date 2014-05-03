@@ -48,7 +48,10 @@
         class="trip-plan-dropdown">
       </div> 
       <div class="save-button" ng-show="showSaveControls()">
-        <button class="btn btn-primary" ng-click="saveEntities()">Save to trip</button>
+        <button class="btn btn-primary" ng-click="saveEntities()"
+          ng-disabled="!saveButtonEnabled()">
+          Save to trip
+        </button>
       </div>
     </div>
   </div>
@@ -78,6 +81,11 @@
           <span class="result-address">[[result['formatted_address'] ]]</span>
         </div>
       </div>
+    </div>
+    <div class="enter-manually-link">
+      <a ng-click="startManualEntry()" href="javascript:void(0)">
+        Or enter place manually
+      </a>
     </div>
   </div>
 
