@@ -174,9 +174,6 @@
         </div>
         <div ng-show="state == ClipperEntityState.EDITING_PHOTOS" class="photo-editor"
           ng-controller="ClipperPhotoCtrl">
-          <div class="prompt-text">
-            Drag and drop images anywhere in the clipper to add them.
-          </div>
           <div ng-if="hasImgs()" class="photo-carousel">
             <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
               <span class="glyphicon glyphicon-chevron-left"></span>
@@ -197,6 +194,9 @@
             <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
               <span class="glyphicon glyphicon-chevron-right"></span>
             </a>
+          </div>
+          <div class="imgs-prompt">
+            <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
           </div>
         </div>
       </div>
