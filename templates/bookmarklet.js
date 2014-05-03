@@ -103,8 +103,12 @@
         position: absolute;
         top: 0;
         left: 0;
-        background-color: blue;
-        opacity: 0.5;
+        background-color: rgba(126, 173, 224, 0.4);
+        box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
+      }
+
+      .__tc-droptarget.__tc-dragover {
+        background-color: rgba(126, 173, 224, 0.8);
       }
 
       .__tc-button {
@@ -170,9 +174,10 @@
     });
 
     var dropTarget = null;
+    var photoEditingActive = false;
 
     $(document.body).on('dragstart', function(event) {
-      if (!wrapper || !iframe || dropTarget) {
+      if (!wrapper || !iframe || dropTarget || !photoEditingActive) {
         return;
       }
       if (wrapper.has(event.target).length || wrapper[0] == event.target) {
@@ -180,16 +185,16 @@
       }
       var target = $(event.target);
       var imgUrl = target.is('img') ? target.attr('src') : target.find('img').attr('src');
-      event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl);
+      event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl || '');
       createDropTarget();
     }).on('dragend', removeDropTarget);
 
     wrapper.on('dragenter', function(event) {
       if (!dropTarget) return;
-      dropTarget.css('backgroundColor', 'red');
+      dropTarget.addClass('__tc-dragover');
     }).on('dragleave', function(event) {
       if (!dropTarget) return;
-      dropTarget.css('backgroundColor', 'blue');
+      dropTarget.removeClass('__tc-dragover');
     }).on('dragover', function(event) {
       event.preventDefault();
       return false;
@@ -222,6 +227,10 @@
           data: $('html')[0].innerHTML
         }
         iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+      } else if (data == 'tc-photo-editing-active') {
+        photoEditingActive = true;
+      } else if (data == 'tc-photo-editing-inactive') {
+        photoEditingActive = false;
       }
     });
 

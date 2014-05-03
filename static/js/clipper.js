@@ -28,7 +28,7 @@ ClipperEntityModel.getData = function(entityModel) {
   return entityModel.data;
 };
 
-function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
+function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
     $needsPageSource, $entities, $allTripPlans, $datatypeValues) {
   var me = this;
   $scope.clipperState = new ClipperStateModel();
@@ -51,7 +51,7 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
   };
 
   if ($needsPageSource) {
-    $(window).on('message', function(event) {
+    $($window).on('message', function(event) {
       if (!event.originalEvent.data['message'] == 'tc-page-source') {
         return;
       }
@@ -61,7 +61,7 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
           me.setupEntityState([response['entity']]);
         });
     });
-    window.parent.postMessage('tc-needs-page-source', '*'); 
+    $window.parent.postMessage('tc-needs-page-source', '*'); 
     $scope.clipperState = new ClipperStateModel(ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE);
   } else {
     this.setupEntityState($entities);
@@ -69,14 +69,6 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
-
-  $(window).on('message', function(event) {
-    $scope.$apply(function(){
-      if (event.originalEvent.data['message'] == 'tc-image-dropped') {
-        $scope.$broadcast('image-dropped', event.originalEvent.data['data']);
-      }
-    });
-  });
 
   this.selectedEntityModels = function() {
     return _.filter($scope.entityModels, function(entityModel) {
@@ -119,7 +111,7 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
   };
 
   $scope.dismissClipper = function() {
-    window.parent.postMessage('tc-close-clipper', '*');
+    $window.parent.postMessage('tc-close-clipper', '*');
   };
 }
 
@@ -130,7 +122,7 @@ var ClipperEntityState = {
   EDITING_LOCATION: 4
 };
 
-function ClipperEntityCtrl($scope) {
+function ClipperEntityCtrl($scope, $window) {
   var me = this;
   $scope.ed = $scope.entityModel.data;
   $scope.state = ClipperEntityState.NOT_EDITING;
@@ -181,6 +173,7 @@ function ClipperEntityCtrl($scope) {
 
   $scope.closeEditor = function() {
     $scope.state = ClipperEntityState.NOT_EDITING;
+    $window.parent.postMessage('tc-photo-editing-inactive', '*'); 
   };
 
   $scope.openEditNote = function() {
@@ -193,6 +186,7 @@ function ClipperEntityCtrl($scope) {
 
   $scope.openEditPhotos = function() {
     $scope.state = ClipperEntityState.EDITING_PHOTOS;
+    $window.parent.postMessage('tc-photo-editing-active', '*'); 
   };
 
   $scope.addressSelected = function(place) {
@@ -229,12 +223,29 @@ function ClipperEntityCtrl($scope) {
   };
 }
 
-function ClipperPhotoCtrl($scope) {
+function ClipperPhotoCtrl($scope, $window) {
   if (_.isEmpty($scope.ed['photo_urls'])) {
     $scope.ed['photo_urls'] = [];
   }
   var urls = $scope.ed['photo_urls'];
   var selectedImgIndex = urls.length ? 0 : null;
+
+  $($window).on('message', function(event) {
+    $scope.$apply(function() {
+      if ($scope.state != ClipperEntityState.EDITING_PHOTOS) {
+        return;
+      }
+      if (event.originalEvent.data['message'] == 'tc-image-dropped') {
+        var imgUrl = event.originalEvent.data['data']['tc-drag-image-url'];
+        if (imgUrl) {
+          urls.push(imgUrl);
+          selectedImgIndex = urls.length - 1;
+        } else {
+          alert("Sorry, we couldn't recognize that image!");
+        }
+      }
+    });
+  });
 
   $scope.selectedImg = function() {
     return urls[selectedImgIndex];
@@ -324,10 +335,10 @@ window['initClipper2'] = function(entities, needsPageSource,
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule', 'ui.bootstrap'],
       interpolator)
-    .controller('ClipperRootCtrl2', ['$scope', '$http', '$timeout', '$entityService',
+    .controller('ClipperRootCtrl2', ['$scope', '$window', '$http', '$timeout', '$entityService',
       '$needsPageSource', '$entities', '$allTripPlans', '$datatypeValues', ClipperRootCtrl2])
-    .controller('ClipperEntityCtrl', ['$scope', ClipperEntityCtrl])
-    .controller('ClipperPhotoCtrl', ['$scope', ClipperPhotoCtrl])
+    .controller('ClipperEntityCtrl', ['$scope', '$window', ClipperEntityCtrl])
+    .controller('ClipperPhotoCtrl', ['$scope', '$window', ClipperPhotoCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
     .directive('tcStartNewTripInput', tcStartNewTripInput);
 
