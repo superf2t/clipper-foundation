@@ -91,9 +91,14 @@
             <div class="title">
               [[ed['name'] ]]
             </div>
-            <div class="note-control">
-              <a href="javascript:void(0)">
+            <div class="note-control" ng-show="!editing()">
+              <a ng-click="openEditNote()" href="javascript:void(0)">
                 <span class="glyphicon glyphicon-pencil"></span> Add note
+              </a>
+            </div>
+            <div class="edit-close-control" ng-show="editing()">
+              <a ng-click="closeEditor()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-chevron-up"></span>
               </a>
             </div>
             <div class="main-controls">
@@ -102,18 +107,39 @@
               </a>
               <ul class="dropdown-menu right-bottom-dropdown-menu">
                 <li>
-                  <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+                  <a ng-click="openEditLocation()" href="javascript:void(0)">
                     <span class="glyphicon glyphicon-edit"></span> Edit name and location
                   </a>
                 </li>
                 <li>
-                  <a ng-click="reclipEntity()" href="javascript:void(0)">
+                  <a ng-click="openEditPhotos()" href="javascript:void(0)">
                     <span class="glyphicon glyphicon-camera"></span> Edit photos
                   </a>
                 </li>
               </ul>
             </div>
           </div>
+        </div>
+      </div>
+      <div class="row expanded-row" ng-show="editing()">
+        <div ng-show="state == ClipperEntityState.EDITING_NOTE">
+          <textarea class="form-control note-input" placeholder="Add a note" ng-model="ed['description']"
+            tc-focus-on="state">
+          </textarea>
+        </div>
+        <div ng-show="state == ClipperEntityState.EDITING_LOCATION" class="location-editor">
+          <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
+            tc-focus-on="state"/>
+          <input class="form-control" ng-model="ed['address']" placeholder="Address"
+            tc-google-place-autocomplete search-bounds-json="selectedTripPlanState.tripPlan['location_bounds']"
+            location-types="geocode" on-place-change="addressSelected($newPlace)"/>
+          <div class="map-container">
+            <div class="map" tc-google-map map="map" map-options="mapOptions" after-creation="setupMap($map)"
+              resize-when="state == ClipperEntityState.EDITING_LOCATION">
+            </div>
+          </div>
+        </div>
+        <div ng-show="state == ClipperEntityState.EDITING_PHOTOS">
         </div>
       </div>
     </div>

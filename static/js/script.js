@@ -2548,6 +2548,30 @@ function tcGooglePlaceAutocomplete($parse) {
   };
 }
 
+function tcGoogleMap() {
+  return {
+    restrict: 'AE',
+    scope: {
+      map: '=',
+      mapOptions: '=',
+      resizeWhen: '=',
+      afterCreation: '&'
+    },
+    link: function(scope, element, attrs) {
+      var mapOptions = scope.mapOptions || {};
+      var map = scope.map = new google.maps.Map(element[0], mapOptions);
+      scope.$watch('resizeWhen', function(newValue) {
+        if (newValue) {
+          var oldCenter = map.getCenter();
+          google.maps.event.trigger(map, 'resize');
+          map.setCenter(oldCenter);
+        }
+      });
+      scope.afterCreation({$map: map});
+    }
+  };
+}
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -2581,6 +2605,7 @@ angular.module('directivesModule', [])
   .directive('tcStarRating', tcStarRating)
   .directive('bnLazySrc', bnLazySrc)
   .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
+  .directive('tcGoogleMap', tcGoogleMap)
   .directive('tcDrop', directiveForEvent('drop'))
   .directive('tcDragenter', directiveForEvent('dragenter'))
   .directive('tcDragstart', directiveForEvent('dragstart'))

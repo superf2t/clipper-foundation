@@ -88,11 +88,47 @@ a:hover {
   color: #666;
 }
 
+.one-entity-clipper .edit-close-control {
+  position: absolute;
+  bottom: 0;
+  left: 25%;
+}
+
 .one-entity-clipper .main-controls {
   position: absolute;
   bottom: 0;
   right: 5px;
   font-size: 1.1em;
+}
+
+.one-entity-clipper .expanded-row {
+  background-color: #f3f4f4;
+  border-top: 1px solid #cdcdcd;
+  padding: 5px;
+  font-size: 1.0em;
+  color: #000;
+}
+
+.one-entity-clipper .note-input {
+  height: 100px;
+}
+
+.one-entity-clipper .location-editor {
+  width: 100%;
+}
+
+.one-entity-clipper .location-editor input {
+  margin-bottom: 10px;
+}
+
+.one-entity-clipper .map-container {
+  width: 100%;
+  height: 250px;
+}
+
+.one-entity-clipper .map {
+  width: 100%;
+  height: 100%;
 }
 
 .save-to-trip-plan-panel {

@@ -14,6 +14,14 @@ var ClipperState = {
 function ClipperEntityModel(entityData, opt_selected) {
   this.data = entityData;
   this.selected = opt_selected;
+
+  this.hasLocation = function() {
+    return !_.isEmpty(this.data['latlng']);
+  };
+
+  this.gmapsLatLng = function() {
+    return gmapsLatLngFromJson(this.data['latlng']);
+  };
 }
 
 ClipperEntityModel.getData = function(entityModel) {
@@ -115,8 +123,93 @@ function ClipperRootCtrl2($scope, $http, $timeout, $entityService,
   };
 }
 
+var ClipperEntityState = {
+  NOT_EDITING: 1,
+  EDITING_NOTE: 2,
+  EDITING_PHOTOS: 3,
+  EDITING_LOCATION: 4
+};
+
 function ClipperEntityCtrl($scope) {
+  var me = this;
   $scope.ed = $scope.entityModel.data;
+  $scope.state = ClipperEntityState.NOT_EDITING;
+  $scope.ClipperEntityState = ClipperEntityState;
+
+  this.createMarker = function(latlng, opt_map) {
+    var marker = new google.maps.Marker({
+      draggable: true,
+      position: latlng,
+      icon: '/static/img/' + $scope.ed['icon_url'],
+      map: opt_map
+    });
+    google.maps.event.addListener(marker, 'dragend', function() {
+      var entityData = $scope.ed;
+      if (_.isEmpty(entityData['latlng'])) {
+        entityData['latlng'] = {};
+      }
+      entityData['latlng']['lat'] = marker.getPosition().lat();
+      entityData['latlng']['lng'] = marker.getPosition().lng();
+    });
+    return marker;
+  };
+
+  $scope.map = null;
+  var center = $scope.entityModel.hasLocation()
+    ? $scope.entityModel.gmapsLatLng()
+    : new google.maps.LatLng(0, 0);
+  var marker = this.createMarker(center);
+  $scope.mapOptions = {
+    center: center,
+    zoom: $scope.entityModel.hasLocation() ? 15 : 2,
+    panControl: false,
+    scaleControl: false,
+    scrollwheel: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+
+  $scope.setupMap = function($map) {
+    marker.setMap($map);
+  };
+
+  $scope.editing = function() {
+    return $scope.state != ClipperEntityState.NOT_EDITING;
+  };
+
+  $scope.closeEditor = function() {
+    $scope.state = ClipperEntityState.NOT_EDITING;
+  };
+
+  $scope.openEditNote = function() {
+    $scope.state = ClipperEntityState.EDITING_NOTE;
+  };
+
+  $scope.openEditLocation = function() {
+    $scope.state = ClipperEntityState.EDITING_LOCATION;
+  };
+
+  $scope.openEditPhotos = function() {
+    $scope.state = ClipperEntityState.EDITING_PHOTOS;
+  };
+
+  $scope.addressSelected = function(place) {
+    if (place['formatted_address']) {
+      // ng-model is set to ed['address'] but the place
+      // change event fires before the model gets updated
+      $scope.ed['address'] = place['formatted_address'];
+    }
+    if (place['geometry']) {
+      var location = place['geometry']['location'];
+      $scope.ed['latlng']['lat'] = location.lat();
+      $scope.ed['latlng']['lng'] = location.lng();
+      $scope.map.setCenter(location);
+      marker.setPosition(location);
+      if (place['geometry']['viewport']) {
+        $scope.map.fitBounds(place['geometry']['viewport']);
+      }
+    }
+  };
 }
 
 function ClipperOmniboxCtrl($scope, $entityService) {
@@ -156,59 +249,6 @@ function ClipperOmniboxCtrl($scope, $entityService) {
   };
 }
 
-function ClipperEditorCtrl($scope, $timeout) {
-
-  this.makeMarker = function(entityData, map) {
-    var latlngJson = entityData['latlng'] || {};
-    var latlng = new google.maps.LatLng(
-      latlngJson['lat'] || 0.0, latlngJson['lng'] || 0.0);
-    return new google.maps.Marker({
-      draggable: true,
-      position: latlng,
-      icon: '/static/img/' + entityData['icon_url'],
-      map: map
-    });
-  };
-
-  var mapOptions = {
-    center: new google.maps.LatLng(0, 0),
-    zoom: 15,
-    panControl: false,
-    scaleControl: false,
-    streetViewControl: false,
-    mapTypeControl: false
-  };
-  var editableMap = new google.maps.Map($('#clipper-editor-map')[0], mapOptions);
-  var editableMarker = this.makeMarker($scope.entityModel.data, editableMap);
-  google.maps.event.addListener(editableMarker, 'dragend', function() {
-    var entityData = $scope.entityModel.data;
-    if (!entityData['latlng']) {
-      entityData['latlng'] = {};
-    }
-    entityData['latlng']['lat'] = editableMarker.getPosition().lat();
-    entityData['latlng']['lng'] = editableMarker.getPosition().lng();
-  });
-  $timeout(function() {
-    google.maps.event.trigger(editableMap, 'resize');
-    editableMap.setCenter(editableMarker.getPosition());    
-  });
-
-  $scope.categoryChanged = function() {
-    $scope.ed['sub_category'] = null;
-    $scope.updateMarkerIcon();
-  };
-
-  $scope.updateMarkerIcon = function() {
-    var data =  $scope.entityModel.data;
-    var iconUrl = categoryToIconUrl(
-      data['category'] && data['category']['name'],
-      data['sub_category'] && data['sub_category']['name'],
-      data['address_precision']);
-    $scope.entityModel.data['icon_url'] = iconUrl;
-    editableMarker.setIcon('/static/img/' + iconUrl)
-  };
-}
-
 window['initClipper2'] = function(entities, needsPageSource,
     allTripPlans, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
@@ -223,10 +263,7 @@ window['initClipper2'] = function(entities, needsPageSource,
     .controller('ClipperRootCtrl2', ['$scope', '$http', '$timeout', '$entityService',
       '$needsPageSource', '$entities', '$allTripPlans', '$datatypeValues', ClipperRootCtrl2])
     .controller('ClipperEntityCtrl', ['$scope', ClipperEntityCtrl])
-    .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
-    .controller('ClipperEditorCtrl', ['$scope', '$timeout', ClipperEditorCtrl])
-    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .directive('tcStartNewTripInput', tcStartNewTripInput);
 
   angular.element(document).ready(function() {
