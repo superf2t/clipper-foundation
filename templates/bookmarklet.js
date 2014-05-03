@@ -184,7 +184,7 @@
         return;
       }
       var target = $(event.target);
-      var imgUrl = target.is('img') ? target.attr('src') : target.find('img').attr('src');
+      var imgUrl = findImgUrl(target);
       event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl || '');
       createDropTarget();
     }).on('dragend', removeDropTarget);
@@ -244,6 +244,28 @@
         dropTarget.remove();
         dropTarget = null;
       }
+    }
+
+    function findImgUrl(target) {
+      if (target.is('img')) {
+        return target.attr('src');
+      }
+      var childImg = target.find('img');
+      if (childImg.length) {
+        return childImg.attr('src');
+      }
+      // Now look for sibling elements, in case what was clicked on
+      // was a shim.
+      var width = target.width();
+      var height = target.height();
+      var siblings = target.siblings();
+      for (var i = 0, I = siblings.length; i < I; i++) {
+        var node = $(siblings[i]);
+        if (node.is('img') && node.width() == width && node.height() == height) {
+          return node.attr('src');
+        }
+      }
+      return null;
     }
   }
 
