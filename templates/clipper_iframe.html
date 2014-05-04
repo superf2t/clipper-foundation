@@ -15,7 +15,7 @@
   <link rel="stylesheet" href="/static/css/clipper.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="ClipperRootCtrl2" class="clipper-body">
+<body ng-controller="ClipperRootCtrl" class="clipper-body">
 
   <div ng-if="clipperState.status == ClipperState.SUMMARY">
     <div class="upper-panel">
@@ -29,6 +29,8 @@
       </div>
 
       <div>
+        <div ng-if="entityModels.length > 1" ng-include="'select-all-checkbox-row-template'">
+        </div>
         <div ng-repeat="entityModel in entityModels" ng-include="'one-entity-clipper-template'">
         </div>
       </div>
@@ -117,6 +119,17 @@
   <div ng-if="clipperState.status == ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE"
     class="full-spinner">
   </div>
+
+  <script type="text/ng-template" id="select-all-checkbox-row-template">
+    <div class="select-all-checkbox-row">
+      <div class="checkbox-container">
+        <div ng-click="toggleSelectAll()" class="entity-checkbox">
+          <span class="glyphicon glyphicon-check" ng-show="allEntitiesSelected()"></span>
+          <span class="glyphicon glyphicon-unchecked" ng-show="!allEntitiesSelected()"></span>
+        </div>
+      </div>
+    </div>
+  </script>
 
   <script type="text/ng-template" id="one-entity-clipper-template">
     <div ng-controller="ClipperEntityCtrl" class="one-entity-row">

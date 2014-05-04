@@ -41,7 +41,13 @@ a:hover {
   font-size: 1.2em;
 }
 
-.one-entity-row .checkbox-container {
+.select-all-checkbox-row {
+  position: relative;
+  top: 10px;
+}
+
+.one-entity-row .checkbox-container,
+.select-all-checkbox-row .checkbox-container {
   display: inline-block;
   width: 10%;
   vertical-align: top;
@@ -58,12 +64,16 @@ a:hover {
   width: calc(90% - 4px);
 }
 
-.one-entity-row .entity-checkbox {
-  position: relative;
-  top: 50px;
+.one-entity-row .entity-checkbox,
+.select-all-checkbox-row .entity-checkbox {
   font-size: 14pt;
   margin-right: -10px;
   text-align: center;
+}
+
+.one-entity-row .entity-checkbox {
+  position: relative;
+  top: 50px;
 }
 
 .one-entity-clipper {

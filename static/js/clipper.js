@@ -28,7 +28,7 @@ ClipperEntityModel.getData = function(entityModel) {
   return entityModel.data;
 };
 
-function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
+function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     $needsPageSource, $entities, $allTripPlans, $datatypeValues) {
   var me = this;
   $scope.clipperState = new ClipperStateModel();
@@ -133,14 +133,15 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
       });
   };
 
-  $scope.openEditor = function() {
-    $scope.clipperState.status = ClipperState.EDIT;
+  $scope.allEntitiesSelected = function() {
+    return $scope.entityModels.length == me.selectedEntityModels().length;
   };
 
-  $scope.openEditorWithEntity = function(entityData) {
-    $scope.entityModel = new EntityModel(entityData);
-    $scope.ed = entityData;
-    $scope.openEditor();
+  $scope.toggleSelectAll = function() {
+    var newSelectedState = !$scope.allEntitiesSelected()
+    $.each($scope.entityModels, function(i, entityModel) {
+      entityModel.selected = newSelectedState;
+    });
   };
 
   $scope.dismissClipper = function() {
@@ -392,8 +393,8 @@ window['initClipper'] = function(entities, needsPageSource,
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule', 'ui.bootstrap'],
       interpolator)
-    .controller('ClipperRootCtrl2', ['$scope', '$window', '$http', '$timeout', '$entityService',
-      '$needsPageSource', '$entities', '$allTripPlans', '$datatypeValues', ClipperRootCtrl2])
+    .controller('ClipperRootCtrl', ['$scope', '$window', '$http', '$timeout', '$entityService',
+      '$needsPageSource', '$entities', '$allTripPlans', '$datatypeValues', ClipperRootCtrl])
     .controller('ClipperEntityCtrl', ['$scope', '$window', ClipperEntityCtrl])
     .controller('ClipperPhotoCtrl', ['$scope', '$window', ClipperPhotoCtrl])
     .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
