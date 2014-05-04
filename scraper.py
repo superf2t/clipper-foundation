@@ -372,7 +372,7 @@ class HotelsDotComScraper(ScrapedPage):
 HotelsDotComScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$',
     ('(?i)^http(s)?://([a-z]{2,3})\.hotels\.com/ho\d+/.*hotelid=\d+.*$', HotelsDotComScraper.expand_using_hotel_id),
-    ('^http(s)?://([a-z]{2,3})\.hotels\.com/search\.do\?.*$', HotelsDotComScraper.expand_results_page, REQUIRES_SERVER_PAGE_SOURCE))
+    ('^http(s)?://([a-z]{2,3})\.hotels\.com/search\.do\?.*$', HotelsDotComScraper.expand_results_page, False, REQUIRES_CLIENT_PAGE_SOURCE))
 
 class AirbnbScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$')

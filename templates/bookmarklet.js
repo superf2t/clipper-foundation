@@ -222,6 +222,7 @@
       if (data == 'tc-close-clipper') {
         clearElements();
       } else if (data == 'tc-needs-page-source') {
+        if (!iframe.length) return;
         var data = {
           message: 'tc-page-source',
           data: $('html')[0].innerHTML
