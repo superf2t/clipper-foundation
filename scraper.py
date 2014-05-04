@@ -190,8 +190,6 @@ Photo urls: %s''' % (
 
 
 class TripAdvisorScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$')
-
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
 
@@ -267,6 +265,15 @@ class TripAdvisorScraper(ScrapedPage):
                 urls.extend(additional_urls)
         return urls
 
+    @staticmethod
+    def expand_3_days_article(url, page_source_tree):
+        root = page_source_tree.getroot()
+        links = root.findall('.//div[@id="GUIDE_DETAIL"]//div[@class="guideItemInfo"]//a[@class="titleLink"]')
+        return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
+
+TripAdvisorScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+    '^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$',
+    ('^http(s)?://www\.tripadvisor\.com/Guide-.*\.html$', TripAdvisorScraper.expand_3_days_article, REQUIRES_SERVER_PAGE_SOURCE))
 
 class YelpScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/biz/.*$')
