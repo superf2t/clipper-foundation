@@ -17,7 +17,10 @@
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body">
 
-  <div ng-if="clipperState.status == ClipperState.SUMMARY">
+  <div ng-if="clipperState.status == ClipperState.SUMMARY"
+    class="summary-panel"
+    tc-watch-for-overflow class-when-overflowing="has-overflow"
+    watch-expr="entityModels">
     <div class="upper-panel">
       <div class="intro-text">
         <span ng-if="entityModels.length > 1">

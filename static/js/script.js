@@ -2196,6 +2196,25 @@ function tcSetScrollTop($timeout) {
   };
 }
 
+function tcWatchForOverflow($window, $timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      var classWhenOverflowing = attrs.classWhenOverflowing;
+      scope.$watch(attrs.watchExpr, function() {
+        $timeout(function() {
+          if (elem.prop('scrollHeight') > $window.innerHeight) {
+            elem.addClass(classWhenOverflowing);
+          } else {
+            elem.removeClass(classWhenOverflowing);
+          }
+        });
+      });
+    }
+  };
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -2615,6 +2634,7 @@ angular.module('directivesModule', [])
   .directive('tcFocusOn', tcFocusOn)
   .directive('tcLockAfterScroll', tcLockAfterScroll)
   .directive('tcSetScrollTop', tcSetScrollTop)
+  .directive('tcWatchForOverflow', tcWatchForOverflow)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])
