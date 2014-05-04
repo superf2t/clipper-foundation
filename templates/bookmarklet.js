@@ -164,7 +164,7 @@
     window['__tcNodes'].push(wrapper);
 
     var iframe = wrapper.find('iframe')
-    iframe.attr('src', absUrl('/clipper_iframe?url=' + escape(window.location.href)));
+    iframe.attr('src', absUrl('/clipper_iframe?url=' + encodeURIComponent(window.location.href)));
     $('head').append(style);
     $(document.body).append(wrapper);
     wrapper.draggable({axis: 'x', iframeFix: true});

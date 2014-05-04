@@ -47,9 +47,9 @@ def clipper_iframe():
     if not session_info.logged_in:
         return render_template('clipper_iframe_not_logged_in.html')
     url = request.values['url']
-    needs_page_source = clip_logic.needs_page_source_to_scrape(url)
+    needs_client_page_source = clip_logic.needs_client_page_source_to_scrape(url)
     entities = []
-    if not needs_page_source:
+    if not needs_client_page_source:
         entities = clip_logic.scrape_entities_from_url(url)
     trip_plan_service = serviceimpls.TripPlanService(session_info)
     all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
@@ -60,7 +60,7 @@ def clipper_iframe():
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     return render_template('clipper_iframe.html',
         entities_json=serializable.to_json_str(entities),
-        needs_page_source=needs_page_source,
+        needs_client_page_source=needs_client_page_source,
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)
 

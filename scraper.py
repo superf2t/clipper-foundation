@@ -34,8 +34,9 @@ def fail_returns_empty(fn):
             return ()
     return wrapped
 
-# Convenience constant for making url declarations more readable.
-REQUIRES_PAGE_SOURCE = True
+# Convenience constants for making url declarations more readable.
+REQUIRES_SERVER_PAGE_SOURCE = True
+REQUIRES_CLIENT_PAGE_SOURCE = True
 
 def urlpatterns(*patterns):
     # Each element is either a single string value that should become a regex,
@@ -43,12 +44,12 @@ def urlpatterns(*patterns):
     output = []
     for pattern in patterns:
         if isinstance(pattern, basestring):
-            output.append((re.compile(pattern), None, False))
+            output.append((re.compile(pattern), None, False, False))
         else:
             expander_fn = pattern[1]
-            requires_page_source = pattern[2] if len(pattern) >= 3 else False
-
-            output.append((re.compile(pattern[0]), expander_fn, requires_page_source))
+            requires_server_page_source = pattern[2] if len(pattern) >= 3 else False
+            requires_client_page_source = pattern[3] if len(pattern) >= 4 else False
+            output.append((re.compile(pattern[0]), expander_fn, requires_server_page_source, requires_client_page_source))
     return tuple(output)
 
 class LocationResolutionStrategy(object):
@@ -77,7 +78,7 @@ class ScrapedPage(object):
 
     @classmethod
     def handleable_urls(cls, incoming_url, page_source_tree):
-        for regex, expander_fn, ignored in cls.HANDLEABLE_URL_PATTERNS:
+        for regex, expander_fn, ignored, ignored in cls.HANDLEABLE_URL_PATTERNS:
             if regex.match(incoming_url):
                 if expander_fn:
                     return expander_fn(incoming_url, page_source_tree)
@@ -86,9 +87,16 @@ class ScrapedPage(object):
         return ()
 
     @classmethod
-    def url_requires_page_source(cls, url):
-        for regex, ignored, requires_page_source in cls.HANDLEABLE_URL_PATTERNS:
-            if requires_page_source and regex.match(url):
+    def url_requires_client_page_source(cls, url):
+        for regex, ignored, ignored, requires_client_page_source in cls.HANDLEABLE_URL_PATTERNS:
+            if requires_client_page_source and regex.match(url):
+                return True
+        return False
+
+    @classmethod
+    def url_requires_server_page_source(cls, url):
+        for regex, ignored, requires_server_page_source, ignored in cls.HANDLEABLE_URL_PATTERNS:
+            if requires_server_page_source and regex.match(url):
                 return True
         return False
 
@@ -357,9 +365,16 @@ class HotelsDotComScraper(ScrapedPage):
         new_url = 'http://www.hotels.com/hotel/details.html?hotelId=%s' % hotel_id
         return (new_url,)
 
+    @staticmethod
+    def expand_results_page(url, page_source_tree):
+        root = page_source_tree.getroot()
+        links = root.findall('.//li[@class=" hotel"]//h3[@class="hotel-name"]//a')
+        return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
+
 HotelsDotComScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$',
-    ('(?i)^http(s)?://([a-z]{2,3})\.hotels\.com/ho\d+/.*hotelid=\d+.*$', HotelsDotComScraper.expand_using_hotel_id))
+    ('(?i)^http(s)?://([a-z]{2,3})\.hotels\.com/ho\d+/.*hotelid=\d+.*$', HotelsDotComScraper.expand_using_hotel_id),
+    ('^http(s)?://([a-z]{2,3})\.hotels\.com/search\.do\?.*$', HotelsDotComScraper.expand_results_page, REQUIRES_SERVER_PAGE_SOURCE))
 
 class AirbnbScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$')
@@ -467,7 +482,7 @@ class HyattScraper(ScrapedPage):
 
 HyattScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/home.html.*$',
-    ('^http(s)?://[^/]+\.hyatt.com/hyatt/reservations.*$', HyattScraper.expand_reservation_page, REQUIRES_PAGE_SOURCE),
+    ('^http(s)?://[^/]+\.hyatt.com/hyatt/reservations.*$', HyattScraper.expand_reservation_page, False, REQUIRES_CLIENT_PAGE_SOURCE),
     ('^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/(?!home).*$', HyattScraper.expand_deep_info_page))
 
 
@@ -578,7 +593,7 @@ class HiltonScraper(ScrapedPage):
 HiltonScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/index\.html.*$',
     ('^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/[\w-]+/[\w-]+\.html.*$', HiltonScraper.expand_info_page_url),
-    ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page, REQUIRES_PAGE_SOURCE))
+    ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page, False, REQUIRES_CLIENT_PAGE_SOURCE))
 
 
 class LonelyPlanetScraper(ScrapedPage):
@@ -878,15 +893,18 @@ def parse_tree(url):
     tree = etree.parse(html, parser)
     return tree
 
+def parse_tree_from_string(page_source_string):
+    html = cStringIO.StringIO(page_source_string)
+    parser = etree.HTMLParser()
+    return etree.parse(html, parser)
+
 ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, ScrapedPage))
 
-def build_scrapers(url, page_source=None):
-    if page_source:
-        html = cStringIO.StringIO(page_source)
-        parser = etree.HTMLParser()
-        page_source_tree = etree.parse(html, parser)
-    else:
-        page_source_tree = None
+def build_scrapers(url, client_page_source=None):
+    page_source_tree = parse_tree_from_string(client_page_source) if client_page_source else None
+    if not page_source_tree and url_requires_server_page_source(url):
+        print 'Fetching source for %s' % url
+        page_source_tree = parse_tree(url)
 
     scraped_pages = []
     for scraper_class in ALL_SCRAPERS:
@@ -895,6 +913,9 @@ def build_scrapers(url, page_source=None):
             reqs = [urllib2.Request(url, headers={'User-Agent': USER_AGENT}) for url in handleable_urls]
             resps = parallel_urlopen(reqs)
             for url, resp in zip(handleable_urls, resps):
+                if not resp:
+                    print 'Failed to fetch url: %s' % url
+                    continue
                 tree = etree.parse(resp, etree.HTMLParser())
                 scraper = scraper_class(url, tree)
                 scraped_pages.append(scraper)
@@ -905,14 +926,21 @@ def build_scraper(url, page_source=None):
     scrapers = build_scrapers(url, page_source)
     return scrapers[0] if scrapers else None
 
-def url_requires_page_source(url):
+def url_requires_client_page_source(url):
     for scraper_class in ALL_SCRAPERS:
-        if scraper_class.url_requires_page_source(url):
+        if scraper_class.url_requires_client_page_source(url):
+            return True
+    return False
+
+def url_requires_server_page_source(url):
+    for scraper_class in ALL_SCRAPERS:
+        if scraper_class.url_requires_server_page_source(url):
             return True
     return False
 
 def parallel_urlopen(reqs):
     queue = Queue.Queue()
+    # TODO: Add retries in case of failure.
     def fetch(req, index):
         resp = urllib2.urlopen(req)
         queue.put((resp, index))
@@ -938,6 +966,7 @@ if __name__ == '__main__':
         'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',
         'http://www.hotels.com/hotel/details.html?pa=1&pn=1&ps=1&tab=description&destinationId=1493604&searchDestination=San+Francisco&hotelId=108742&rooms[0].numberOfAdults=2&roomno=1&validate=false&previousDateful=false&reviewOrder=date_newest_first',
         'http://www.hotels.com/ho276485/hotel-banke-paris-france/?gclid=CIHStK3B470CFc1afgodSjMAVg&hotelid=276485&PSRC=G21&rffrid=sem.hcom.US.google.003.03.02.s.kwrd%3DZzZz.s1lKbc1kl.0.33721657110.10205l017840.d.c',
+        # 'http://www.hotels.com/search.do?current-location=Kuala+Lumpur%2C+Malaysia&arrivalDate=&departureDate=&searchParams.rooms.compact_occupancy_dropdown=compact_occupancy_1_2&rooms=1&searchParams.rooms%5B0%5D.numberOfAdults=2&children%5B0%5D=0&srsReport=HomePage%7CAutoS%7Ccity%7Cchicago%7C6%7C3%7C3%7C3%7C1%7C15%7C1497539&pageName=HomePage&searchParams.landmark=&resolvedLocation=CITY%3A1497539%3APROVIDED%3APROVIDED#pageName=SearchResultPage&dn=Chicago,+Illinois,+United+States&nr=1&pn=1&upn=0&so=BEST_SELLER&vt=LIST&rl=CITY%3A1497539%3APROVIDED%3APROVIDED&pfm=1&pfcc=USD&maxp=500&sr%5B%5D=5&sr%5B%5D=4&ming=4&r=2&cpr=0,'
         'https://www.airbnb.com/rooms/2407670',
         'https://www.airbnb.com/rooms/2576604',
         'https://www.airbnb.com/rooms/1581737',
