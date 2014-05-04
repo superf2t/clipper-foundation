@@ -83,7 +83,7 @@
         padding: 0;
         margin: 0;
         background-color: #ebecec;
-        background-image: url("https://{{host}}/static/img/spinner.gif");
+        background-image: url("https://{{host}}/static/img/spinner2.gif");
         background-position: center;
         background-repeat: no-repeat;
       }
