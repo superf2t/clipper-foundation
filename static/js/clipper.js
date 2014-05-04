@@ -114,14 +114,16 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
     var entitiesWithNames = _.filter(selectedEntities, function(entity) {
       return !!entity['name'];
     });
-    return entitiesWithNames.length > 0;
+    return entitiesWithNames.length > 0 && selectedEntities.length == entitiesWithNames.length;
   };
 
   $scope.saveEntities = function() {
-    $entityService.saveNewEntities(me.selectedEntities(), $scope.selectedTripPlanState.tripPlan['trip_plan_id'])
+    var entitiesToSave = me.selectedEntities();
+    $entityService.saveNewEntities(entitiesToSave, $scope.selectedTripPlanState.tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.clipperState.status = ClipperState.SUCCESS_CONFIRMATION;
+          $scope.savedEntities = entitiesToSave;
           $timeout($scope.dismissClipper, 3000);
         } else {
           $scope.clipperState.status = ClipperState.CLIP_ERROR;

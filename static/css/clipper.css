@@ -226,6 +226,20 @@ a:hover {
   margin-top: 10px;
 }
 
+.clip-success {
+  margin: 20px;
+  text-align: center;
+  font-size: 14pt;
+}
+
+.clip-success a {
+  color: #428bca;
+}
+
+.clip-success a:hover {
+  color: #2D73A0;
+}
+
 .clip-success .checkmark {
   fill: green;
 }

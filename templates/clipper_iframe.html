@@ -100,7 +100,12 @@
       </svg>
     </div>
     <div>
-      Place(s) successfully clipped to
+      <span ng-if="savedEntities.length == 1">
+        Successfully clipped [[savedEntities[0]['name'] ]] to
+      </span>
+      <span ng-if="savedEntities.length > 1">
+        Successfully clipped [[savedEntities.length]] places to
+      </span>
     </div>
     <div class="trip-plan-name">
       <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
