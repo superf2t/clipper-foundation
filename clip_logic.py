@@ -11,11 +11,9 @@ def entity_from_scraper(scr, url):
         primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
         source_url=scr.get_url())
 
-def scrape_entity_from_url(url, page_source=None):
-    scr = scraper.build_scraper(url, page_source)
-    if not scr or scr.is_base_scraper():
-        return None
-    return entity_from_scraper(scr, url)
+def scrape_entities_from_url(url, page_source=None):
+    scrapers = scraper.build_scrapers(url, page_source)
+    return [entity_from_scraper(scr, url) for scr in scrapers if scr]
 
 def needs_page_source_to_scrape(url):
     return scraper.url_requires_page_source(url)

@@ -1,8 +1,10 @@
 import cStringIO
 import decimal
 import json
+import Queue
 import re
 import string
+import threading
 import urllib2
 import urlparse
 
@@ -890,9 +892,11 @@ def build_scrapers(url, page_source=None):
     for scraper_class in ALL_SCRAPERS:
         handleable_urls = scraper_class.handleable_urls(url, page_source_tree)
         if handleable_urls:
-            for handleable_url in handleable_urls:
-                tree = parse_tree(handleable_url)
-                scraper = scraper_class(handleable_url, tree)
+            reqs = [urllib2.Request(url, headers={'User-Agent': USER_AGENT}) for url in handleable_urls]
+            resps = parallel_urlopen(reqs)
+            for url, resp in zip(handleable_urls, resps):
+                tree = etree.parse(resp, etree.HTMLParser())
+                scraper = scraper_class(url, tree)
                 scraped_pages.append(scraper)
             break
     return scraped_pages
@@ -907,6 +911,21 @@ def url_requires_page_source(url):
             return True
     return False
 
+def parallel_urlopen(reqs):
+    queue = Queue.Queue()
+    def fetch(req, index):
+        resp = urllib2.urlopen(req)
+        queue.put((resp, index))
+    threads = [threading.Thread(target=fetch, args=(req, i)) for i, req in enumerate(reqs)]
+    for thread in threads:
+        thread.start()
+    for thead in threads:
+        thread.join()
+    response = [None] * len(reqs)
+    while not queue.empty():
+        item = queue.get()
+        response[item[1]] = item[0]
+    return response
 
 if __name__ == '__main__':
     from tests.testdata import scraper_page_source

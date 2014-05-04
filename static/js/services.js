@@ -86,12 +86,12 @@ function EntityService($http) {
     return $http.post('/entityservice/urltoentity', request);
   };
 
-  this.pagesourcetoentity = function(url, pageSource) {
+  this.pagesourcetoentities = function(url, pageSource) {
     var request = {
       'url': url,
       'page_source': pageSource
     };
-    return $http.post('/entityservice/pagesourcetoentity', request);
+    return $http.post('/entityservice/pagesourcetoentities', request);
   };
 }
 

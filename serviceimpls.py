@@ -126,13 +126,22 @@ class GenericEntityResponse(service.ServiceResponse):
         super(GenericEntityResponse, self).__init__(**kwargs)
         self.entity = entity
 
+class GenericMultiEntityResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('entities', data.Entity)))
+
+    def __init__(self, entities=None, **kwargs):
+        super(GenericMultiEntityResponse, self).__init__(**kwargs)
+        self.entities = entities
+
 class EntityService(service.Service):
     METHODS = service.servicemethods(
         ('get', EntityGetRequest, EntityGetResponse),
         ('mutate', EntityMutateRequest, EntityMutateResponse),
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
         ('urltoentity', UrlToEntityRequest, GenericEntityResponse),
-        ('pagesourcetoentity', PageSourceToEntityRequest, GenericEntityResponse))
+        ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -252,12 +261,12 @@ class EntityService(service.Service):
             response_code=service.ResponseCode.SUCCESS.name,
             entity=entity)
 
-    def pagesourcetoentity(self, request):
+    def pagesourcetoentities(self, request):
         # TODO: Move unicode encoding into the json deserializer
-        entity = clip_logic.scrape_entity_from_url(request.url, request.page_source.encode('utf-8'))
-        return GenericEntityResponse(
+        entities = clip_logic.scrape_entities_from_url(request.url, request.page_source.encode('utf-8'))
+        return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
-            entity=entity)
+            entities=entities)
 
 
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND')

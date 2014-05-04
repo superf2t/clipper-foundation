@@ -63,9 +63,9 @@ function ClipperRootCtrl2($scope, $window, $http, $timeout, $entityService,
         return;
       }
       var pageSource = event.originalEvent.data['data'];
-      $entityService.pagesourcetoentity(getParameterByName('url'), pageSource)
+      $entityService.pagesourcetoentities(getParameterByName('url'), pageSource)
         .success(function(response) {
-          me.setupEntityState([response['entity']]);
+          me.setupEntityState(response['entities']);
         });
     });
     $window.parent.postMessage('tc-needs-page-source', '*'); 
