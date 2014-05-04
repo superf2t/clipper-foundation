@@ -100,12 +100,6 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     return _.map(this.selectedEntityModels(), ClipperEntityModel.getData);
   };
 
-  $scope.showSaveControls = function() {
-    return me.selectedEntityModels().length
-      && $scope.selectedTripPlanState.tripPlan
-      && $scope.selectedTripPlanState.tripPlan['trip_plan_id'] > 0;
-  };
-
   $scope.saveButtonEnabled = function() {
     var selectedEntities = me.selectedEntities();
     if (!selectedEntities.length) {
@@ -114,7 +108,11 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     var entitiesWithNames = _.filter(selectedEntities, function(entity) {
       return !!entity['name'];
     });
-    return entitiesWithNames.length > 0 && selectedEntities.length == entitiesWithNames.length;
+    if (entitiesWithNames.length == 0 || selectedEntities.length != entitiesWithNames.length) {
+      return false;
+    }
+    return $scope.selectedTripPlanState.tripPlan
+      && $scope.selectedTripPlanState.tripPlan['trip_plan_id'] > 0;
   };
 
   $scope.saveEntities = function() {
