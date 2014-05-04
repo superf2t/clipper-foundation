@@ -144,7 +144,7 @@ a:hover {
   border: 1px dashed #ccc;
   resize: none;
   text-align: center;
-  padding-top: 25px;
+  padding: 10px;
   background-color: #fff;
   cursor: default;
 }
