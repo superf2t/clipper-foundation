@@ -1,5 +1,7 @@
 import operator
+import Queue
 import re
+import threading
 
 def dict_from_attrs(objs, attr_name):
     attrgetter = operator.attrgetter(attr_name)
@@ -27,3 +29,37 @@ def coord_to_decimal(coord_str):
         int(parts[0]), int(parts[1]), float(parts[2]), parts[3].upper())
     sign = 1 if direction in ('N', 'E') else -1
     return sign * (degrees + minutes / 60.0 + seconds / 3600.0)
+
+def parallelize(fn, args_list):
+    queue = Queue.Queue()
+    def target(args, index, queue):
+        value = fn(*args)
+        queue.put((value, index))
+    threads = [threading.Thread(target=target, args=(args, i, queue)) for i, args in enumerate(args_list)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    response = [None] * len(args_list)
+    while not queue.empty():
+        item = queue.get()
+        response[item[1]] = item[0]
+    return response
+
+def retryable(fn, retries):
+    if retries < 1:
+        raise Exception('Must give a positive number of retries, instead given %s' % retries)
+    def fn_with_retries(*args):
+        local_retries = retries
+        resp = None
+        while local_retries > 0:
+            try:
+                resp = fn(*args)
+            except:
+                pass
+            if resp:
+                return resp
+            else:
+                local_retries -= 1
+        return resp
+    return fn_with_retries

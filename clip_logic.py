@@ -1,6 +1,8 @@
 import data
 import scraper
 
+import utils
+
 def entity_from_scraper(scr, url):
     latlng_json = scr.get_latlng()
     latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
@@ -13,7 +15,7 @@ def entity_from_scraper(scr, url):
 
 def scrape_entities_from_url(url, page_source=None):
     scrapers = scraper.build_scrapers(url, page_source)
-    return [entity_from_scraper(scr, url) for scr in scrapers if scr]
+    return utils.parallelize(entity_from_scraper, [(scr, url) for scr in scrapers])
 
 def needs_client_page_source_to_scrape(url):
     return scraper.url_requires_client_page_source(url)

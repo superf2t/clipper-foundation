@@ -1,10 +1,8 @@
 import cStringIO
 import decimal
 import json
-import Queue
 import re
 import string
-import threading
 import urllib2
 import urlparse
 
@@ -903,7 +901,6 @@ ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type a
 def build_scrapers(url, client_page_source=None):
     page_source_tree = parse_tree_from_string(client_page_source) if client_page_source else None
     if not page_source_tree and url_requires_server_page_source(url):
-        print 'Fetching source for %s' % url
         page_source_tree = parse_tree(url)
 
     scraped_pages = []
@@ -911,7 +908,7 @@ def build_scrapers(url, client_page_source=None):
         handleable_urls = scraper_class.handleable_urls(url, page_source_tree)
         if handleable_urls:
             reqs = [urllib2.Request(url, headers={'User-Agent': USER_AGENT}) for url in handleable_urls]
-            resps = parallel_urlopen(reqs)
+            resps = utils.parallelize(utils.retryable(urllib2.urlopen, 3), [(req,) for req in reqs])
             for url, resp in zip(handleable_urls, resps):
                 if not resp:
                     print 'Failed to fetch url: %s' % url
@@ -937,23 +934,6 @@ def url_requires_server_page_source(url):
         if scraper_class.url_requires_server_page_source(url):
             return True
     return False
-
-def parallel_urlopen(reqs):
-    queue = Queue.Queue()
-    # TODO: Add retries in case of failure.
-    def fetch(req, index):
-        resp = urllib2.urlopen(req)
-        queue.put((resp, index))
-    threads = [threading.Thread(target=fetch, args=(req, i)) for i, req in enumerate(reqs)]
-    for thread in threads:
-        thread.start()
-    for thead in threads:
-        thread.join()
-    response = [None] * len(reqs)
-    while not queue.empty():
-        item = queue.get()
-        response[item[1]] = item[0]
-    return response
 
 if __name__ == '__main__':
     from tests.testdata import scraper_page_source
