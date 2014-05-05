@@ -169,6 +169,12 @@
                   </a>
                 </div>
                 <div class="main-controls">
+                  <a ng-if="!entityModel.hasLocation()" ng-click="openEditLocation()">
+                    <span class="glyphicon glyphicon-exclamation-sign"
+                      tooltip="No location found for this place.  Click to add one."
+                      tooltip-placement="left" tooltip-append-to-body="true">
+                    </span>
+                  </a>
                   <a href="javascript:void(0)" class="dropdown-toggle">
                     <span class="glyphicon glyphicon-cog"></span>
                   </a>
