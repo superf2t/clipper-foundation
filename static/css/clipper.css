@@ -15,6 +15,14 @@ a:hover {
   color: #2D73A0;
 }
 
+.blue-links a {
+  color: #428bca;
+}
+
+.blue-links a:hover {
+  color: #2D73A0;
+}
+
 .dropdown-menu.right-bottom-dropdown-menu { /* DUPE */
   left: auto;
   right: 0px;
@@ -248,6 +256,11 @@ a:hover {
 
 .one-entity-clipper .photo-carousel .img-carousel-control.right {
   right: 0;
+}
+
+.missing-add-place {
+  margin: 20px 10px 0px 10px;
+  font-size: 11pt;
 }
 
 .save-to-trip-plan-panel {

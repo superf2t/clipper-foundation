@@ -36,6 +36,11 @@
         </div>
         <div ng-repeat="entityModel in entityModels" ng-include="'one-entity-clipper-template'">
         </div>
+
+        <div class="missing-add-place blue-links">
+          Missing a place?
+          <a ng-click="startManualEntry()" href="javascript:void(0)">Click to add</a>
+        </div>
       </div>
     </div>
 
