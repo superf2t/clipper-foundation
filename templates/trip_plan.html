@@ -85,6 +85,7 @@
           </div>
         </div>
         <div id="entity-info-box">
+          <div class="address">[[pageStateModel.selectedEntity['address'] ]]</div>
           <div class="description"><span ng-bind-html="pageStateModel.selectedEntity['description'] | linky:'_blank'"></span></div>
         </div>
       </div>
@@ -622,9 +623,6 @@
         </div>
       </div>
       <div class="row expanded-row" ng-show="detailsExpanded">
-        <div class="address">
-          [[ed['address'] ]]
-        </div>
         <div class="description-section" >
           <div ng-show="!editing" class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
           {% if allow_editing %}

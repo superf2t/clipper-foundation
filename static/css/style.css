@@ -371,10 +371,6 @@ right: 10px;
   color: #666;
 }
 
-.one-entity-mapview .address {
-  padding-bottom: 5px;
-}
-
 .one-entity-mapview .source-icon {
   max-width: 16px;
   max-height: 16px;
@@ -663,6 +659,11 @@ right: 10px;
   top: 50%;
   padding: 10px;
   background-color: #f3f4f4;
+}
+
+#entity-info-box .address {
+  color: #000;
+  padding-bottom: 5px;
 }
 
 #entity-info-box .description {
