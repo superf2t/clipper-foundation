@@ -17,11 +17,15 @@ def lookup_latlng(address):
     except:
         return None
 
-def lookup_place(query):
+def lookup_place(query, latlng_dict=None):
     if not query:
         return None
     url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?sensor=false&key=%s&query=%s' % (
         constants.GOOGLE_PLACES_API_KEY, urllib.quote(query.encode('utf-8')))
+    if latlng_dict:
+        latlng = '%(lat)s,%(lng)s' % latlng_dict
+        radius_meters = 1000
+        url += '&location=%s&radius=%d' % (latlng, radius_meters)
     response = urllib2.urlopen(url).read()
     data = json.loads(response)
     try:

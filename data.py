@@ -65,6 +65,8 @@ ENTITY_TYPE_TO_SUB_CATEGORY = {
     'Attraction': None  # TODO
 }
 
+DEFAULT_ICON_URL = 'sight-2.png'
+
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name', 'entity_type',
         serializable.objf('category', values.Category),
@@ -113,7 +115,7 @@ class Entity(serializable.Serializable):
             icon_url = CATEGORY_NAME_TO_ICON_URL.get(self.category.name)
         if icon_url and self.address_precision == 'Imprecise':
             icon_url = icon_url.replace('.', '_imprecise.')
-        self.icon_url = icon_url
+        self.icon_url = icon_url or DEFAULT_ICON_URL
 
     @staticmethod
     def chronological_cmp(e1, e2):

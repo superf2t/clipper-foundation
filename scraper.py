@@ -857,13 +857,16 @@ class WikipediaScraper(ScrapedPage):
                 img_urls.append(largest_src)
         return img_urls
 
-def tostring_with_breaks(element):
+def tostring_with_breaks(element, with_tail=False, strip_punctuation=True):
     raw_html = etree.tostring(element)
     elem = element
     if '<br/>' in raw_html or '<br>' in raw_html:
         modified_html = raw_html.replace('<br/>', '<br/> ').replace('<br>', '<br> ')
         elem = etree.fromstring(modified_html)
-    return etree.tostring(elem, encoding='unicode', method='text').strip(string.punctuation).strip()
+    value = etree.tostring(elem, encoding='unicode', method='text', with_tail=with_tail).strip()
+    if strip_punctuation:
+        value = value.strip(string.punctuation).strip()
+    return value
 
 def tostring(element, normalize_whitespace=False, with_tail=True):
     s = etree.tostring(element, encoding='unicode', method='text', with_tail=with_tail).strip()

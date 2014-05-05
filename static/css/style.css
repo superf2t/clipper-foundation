@@ -101,6 +101,11 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+.gmaps-icon {
+  max-width: 16px;
+  max-height: 16px;
+}
+
 #trip-plan-header {
   position: relative;
 }
@@ -1096,4 +1101,48 @@ right: 10px;
 
 .start-new-trip-modal {
   padding: 20px;
+}
+
+.gmaps-importer-modal {
+  margin: 20px;
+}
+
+.gmaps-importer-modal h3 {
+  text-align: center;
+}
+
+.gmaps-importer-modal .paste-prompt-text {
+  font-size: 12pt;
+  text-align: center;
+}
+
+.gmaps-importer-modal .search-spinner {
+  position: relative;
+  top: -28px;
+  left: 50%;
+}
+
+.gmaps-importer-modal .save-spinner {
+  text-align: center;
+}
+
+.gmaps-importer-modal .import-success-text {
+  font-size: 12pt;
+}
+
+.gmaps-importer-modal .map-name {
+  color: #000;
+}
+
+.gmaps-importer-modal .buttons {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.gmaps-importer-modal a {
+  color: #428bca;
+}
+
+.gmaps-importer-modal a:hover {
+  color: #2D73A0;
 }

@@ -139,6 +139,11 @@ function TripPlanService($http) {
     var request = {'trip_plan_id': tripPlanId};
     return $http.post('/tripplanservice/clone', request);
   };
+
+  this.gmapsimport = function(url) {
+    var request = {'gmaps_url': url};
+    return $http.post('/tripplanservice/gmapsimport', request);
+  }
 }
 
 

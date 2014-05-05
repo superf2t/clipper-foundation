@@ -6,6 +6,7 @@ import data
 import enums
 import clip_logic
 import google_places
+import kml_import
 import serializable
 import service
 import utils
@@ -269,7 +270,7 @@ class EntityService(service.Service):
             entities=entities)
 
 
-TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND')
+TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 
 class TripPlanGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields(serializable.listf('trip_plan_ids'), 'include_entities', 'include_notes')
@@ -328,11 +329,27 @@ class TripPlanCloneResponse(service.ServiceResponse):
         super(TripPlanCloneResponse, self).__init__(**kwargs)
         self.trip_plan = trip_plan
 
+class GmapsImportRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('gmaps_url')
+
+    def __init__(self, gmaps_url=None):
+        self.gmaps_url = gmaps_url
+
+class GmapsImportResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objf('trip_plan', data.TripPlan)))
+
+    def __init__(self, trip_plan=None, **kwargs):
+        super(GmapsImportResponse, self).__init__(**kwargs)
+        self.trip_plan = trip_plan
+
 class TripPlanService(service.Service):
     METHODS = service.servicemethods(
         ('get', TripPlanGetRequest, TripPlanGetResponse),
         ('mutate', TripPlanMutateRequest, TripPlanMutateResponse),
-        ('clone', TripPlanCloneRequest, TripPlanCloneResponse))
+        ('clone', TripPlanCloneRequest, TripPlanCloneResponse),
+        ('gmapsimport', GmapsImportRequest, GmapsImportResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -449,6 +466,18 @@ class TripPlanService(service.Service):
             entity.entity_id = data.generate_entity_id()
         return new_entities
 
+    def gmapsimport(self, request):
+        kml_url = kml_import.get_kml_url(request.gmaps_url)
+        if not kml_url:
+            self.validation_errors.append(service.ServiceError(
+                TripPlanServiceError.INVALID_GOOGLE_MAPS_URL,
+                'This url could not be recognized as a valid Google Maps url.',
+                'gmaps_url'))
+            self.raise_if_errors()
+        trip_plan = kml_import.parse_from_kml_url(kml_url)
+        return GmapsImportResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plan=trip_plan)
 
 class NoteGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
