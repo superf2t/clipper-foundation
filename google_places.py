@@ -4,6 +4,7 @@ import urllib2
 
 import constants
 import data
+import utils
 import values
 
 def lookup_place_by_reference(reference):
@@ -48,11 +49,8 @@ class PlaceDetails(object):
 
     @staticmethod
     def make_photo_urls(photo_objs):
-        photo_urls = []
-        for obj in photo_objs:
-            url = resolve_photo_url(obj['photo_reference'], obj['width'], obj['height'])
-            photo_urls.append(url)
-        return photo_urls
+        return utils.parallelize(resolve_photo_url,
+            [(obj['photo_reference'], obj['width'], obj['height']) for obj in photo_objs])
 
     @staticmethod
     def types_to_category(places_api_types):
