@@ -20,7 +20,7 @@
   <div ng-if="clipperState.status == ClipperState.SUMMARY"
     class="summary-panel"
     tc-watch-for-overflow class-when-overflowing="has-overflow"
-    watch-expr="entityModels">
+    watch-expr="displayState.dirtyCounter">
     <div class="upper-panel">
       <div class="intro-text">
         <span ng-if="entityModels.length > 1">
@@ -47,10 +47,10 @@
     <div class="save-to-trip-plan-panel">
       <div class="save-prompt-text">
         <span ng-if="entityModels.length > 1">
-          Save [[entityModels.length]] selected places to a trip
+          Save [[selectedEntityModels().length]] selected places to a trip
         </span>
         <span ng-if="entityModels.length == 1">
-          Save [[entityModels[0]['name'] ]] to a trip
+          Save [[entityModels[0].data['name'] ]] to a trip
         </span>
       </div>
       <div tc-trip-plan-select-dropdown

@@ -32,8 +32,12 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     $needsPageSource, $entities, $allTripPlans, $datatypeValues) {
   var me = this;
   $scope.clipperState = new ClipperStateModel();
-
   $scope.ClipperState = ClipperState;
+
+  // Dummy counter to increment when models have changed
+  // in a way that may affect the amount of content displayed
+  // in the UI, so that directives can listen for changes.
+  $scope.displayState = {dirtyCounter: 0};
 
   this.setupEntityState = function(entities) {
     $scope.entityModels = _.map(entities, function(entity) {
@@ -44,6 +48,7 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     } else {
       $scope.clipperState.status = ClipperState.NO_AUTO_PLACE_FOUND;
     }
+    $scope.displayState.dirtyCounter++;
   };
 
   $scope.selectedTripPlanState = {
@@ -80,6 +85,7 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
   $scope.addEntity = function(entityData) {
     $scope.entityModels.push(new ClipperEntityModel(entityData, true));
     $scope.clipperState.status = ClipperState.SUMMARY;
+    $scope.displayState.dirtyCounter++;
   };
 
   $scope.startManualEntry = function() {
@@ -90,14 +96,14 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     $scope.addEntity(entityData);
   };
 
-  this.selectedEntityModels = function() {
+  $scope.selectedEntityModels = function() {
     return _.filter($scope.entityModels, function(entityModel) {
       return entityModel.selected;
     });
   };
 
   this.selectedEntities = function() {
-    return _.map(this.selectedEntityModels(), ClipperEntityModel.getData);
+    return _.map($scope.selectedEntityModels(), ClipperEntityModel.getData);
   };
 
   $scope.saveButtonEnabled = function() {
@@ -132,7 +138,7 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
   };
 
   $scope.allEntitiesSelected = function() {
-    return $scope.entityModels.length == me.selectedEntityModels().length;
+    return $scope.entityModels.length == $scope.selectedEntityModels().length;
   };
 
   $scope.toggleSelectAll = function() {
@@ -206,20 +212,24 @@ function ClipperEntityCtrl($scope, $window) {
 
   $scope.closeEditor = function() {
     $scope.state = ClipperEntityState.NOT_EDITING;
-    $window.parent.postMessage('tc-photo-editing-inactive', '*'); 
+    $window.parent.postMessage('tc-photo-editing-inactive', '*');
+    $scope.displayState.dirtyCounter++;
   };
 
   $scope.openEditNote = function() {
     $scope.state = ClipperEntityState.EDITING_NOTE;
+    $scope.displayState.dirtyCounter++;
   };
 
   $scope.openEditLocation = function() {
     $scope.state = ClipperEntityState.EDITING_LOCATION;
+    $scope.displayState.dirtyCounter++;
   };
 
   $scope.openEditPhotos = function() {
     $scope.state = ClipperEntityState.EDITING_PHOTOS;
     $window.parent.postMessage('tc-photo-editing-active', '*'); 
+    $scope.displayState.dirtyCounter++;
   };
 
   $scope.addressSelected = function(place) {

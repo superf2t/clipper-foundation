@@ -2202,7 +2202,17 @@ function tcWatchForOverflow($window, $timeout) {
     link: function(scope, element, attrs) {
       var elem = $(element);
       var classWhenOverflowing = attrs.classWhenOverflowing;
-      scope.$watch(attrs.watchExpr, function() {
+      scope.$watch(attrs.watchExpr, function(newValue, oldValue) {
+        if (elem.hasClass(classWhenOverflowing)) {
+          // This is not ideal but right now we say that once the
+          // element has overflowed once, it will keep the overflow
+          // class indefinitely.  This is because once the overflow
+          // class is set, you can't accurately measure the height
+          // of the element since it is by design now restricted to
+          // the window height.  You would have to remove the overflow
+          // class to accurately measure height, but that causes a flicker.
+          return;
+        }
         $timeout(function() {
           if (elem.prop('scrollHeight') > $window.innerHeight) {
             elem.addClass(classWhenOverflowing);
