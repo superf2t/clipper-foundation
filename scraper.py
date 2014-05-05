@@ -188,8 +188,23 @@ Photo urls: %s''' % (
     self.get_primary_photo(),
     self.get_photos())
 
+    @staticmethod
+    def expand_result_page(xpath, url, page_source_tree):
+        root = page_source_tree.getroot()
+        links = root.findall(xpath)
+        return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
+
+    @staticmethod
+    def result_page_expander(xpath):
+        return lambda url, page_source_tree: ScrapedPage.expand_result_page(xpath, url, page_source_tree)
 
 class TripAdvisorScraper(ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = urlpatterns(
+        '^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$',
+        ('^http(s)?://www\.tripadvisor\.com/Guide-.*\.html$', 
+            ScrapedPage.result_page_expander('.//div[@id="GUIDE_DETAIL"]//div[@class="guideItemInfo"]//a[@class="titleLink"]'),
+            REQUIRES_SERVER_PAGE_SOURCE))
+
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
 
@@ -265,18 +280,16 @@ class TripAdvisorScraper(ScrapedPage):
                 urls.extend(additional_urls)
         return urls
 
-    @staticmethod
-    def expand_3_days_article(url, page_source_tree):
-        root = page_source_tree.getroot()
-        links = root.findall('.//div[@id="GUIDE_DETAIL"]//div[@class="guideItemInfo"]//a[@class="titleLink"]')
-        return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
-
-TripAdvisorScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
-    '^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$',
-    ('^http(s)?://www\.tripadvisor\.com/Guide-.*\.html$', TripAdvisorScraper.expand_3_days_article, REQUIRES_SERVER_PAGE_SOURCE))
 
 class YelpScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/biz/.*$')
+    HANDLEABLE_URL_PATTERNS = urlpatterns(
+        '^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/biz/.*$',
+        ('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/search\?.*$',
+            ScrapedPage.result_page_expander('.//div[@class="results-wrapper"]//h3[@class="search-result-title"]//a[@class="biz-name"]'),
+            False, REQUIRES_CLIENT_PAGE_SOURCE),
+        ('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/user_details.*$',
+            ScrapedPage.result_page_expander('.//div[@id="user-details"]//div[@class="biz_info"]//h4//a'),
+            False, REQUIRES_CLIENT_PAGE_SOURCE))
 
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address[@itemprop="address"]'
@@ -370,19 +383,20 @@ class HotelsDotComScraper(ScrapedPage):
         new_url = 'http://www.hotels.com/hotel/details.html?hotelId=%s' % hotel_id
         return (new_url,)
 
-    @staticmethod
-    def expand_results_page(url, page_source_tree):
-        root = page_source_tree.getroot()
-        links = root.findall('.//li[@class=" hotel"]//h3[@class="hotel-name"]//a')
-        return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
-
 HotelsDotComScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
     '^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$',
     ('(?i)^http(s)?://([a-z]{2,3})\.hotels\.com/ho\d+/.*hotelid=\d+.*$', HotelsDotComScraper.expand_using_hotel_id),
-    ('^http(s)?://([a-z]{2,3})\.hotels\.com/search\.do\?.*$', HotelsDotComScraper.expand_results_page, False, REQUIRES_CLIENT_PAGE_SOURCE))
+    ('^http(s)?://([a-z]{2,3})\.hotels\.com/search\.do\?.*$', 
+        ScrapedPage.result_page_expander('.//li[@class=" hotel"]//h3[@class="hotel-name"]//a'),
+        False, REQUIRES_CLIENT_PAGE_SOURCE))
+
 
 class AirbnbScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$')
+    HANDLEABLE_URL_PATTERNS = urlpatterns(
+        '^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$',
+        ('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/s/.*$',
+            ScrapedPage.result_page_expander('.//div[@class="search-results"]//li[@class="search-result"]//a[@class="listing-quick-info"]'),
+            False, REQUIRES_CLIENT_PAGE_SOURCE))
 
     NAME_XPATH = 'body//div[@id="listing_name"]'
     ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
@@ -409,7 +423,10 @@ class AirbnbScraper(ScrapedPage):
 
 
 class BookingDotComScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.booking\.com/hotel/.*$')
+    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.booking\.com/hotel/.*$',
+        ('^http(s)?://www\.booking\.com/(flexiblesr|searchresults).*$',
+            ScrapedPage.result_page_expander('.//div[@class="sr_item_content"]//a[@class="hotel_name_link url "]'),
+            REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = 'body//h1//span[@id="hp_hotel_name"]'
     ADDRESS_XPATH = 'body//p[@class="address"]/span'
