@@ -2059,7 +2059,8 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
   };
 }
 
-function GmapsImporterCtrl($scope, $timeout, $tripPlanService, $entityService, $tripPlanModel) {
+function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
+    $entityService, $dataRefreshManager, $tripPlanModel) {
   var me = this;
   $scope.url = '';
   $scope.importing = false;
@@ -2068,8 +2069,16 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService, $entityService, $
   $scope.currentTripPlanName = $tripPlanModel.tripPlanData['name'];
   $scope.pendingTripPlan = null;
   $scope.newTripPlan = null;
+  $scope.urlInvalid = false;
+
+  $scope.ready = false;
+  // HACK: Figure out the right time to set focus.
+  $timeout(function() {
+    $scope.ready = true;
+  }, 100);
 
   $scope.urlPasted = function() {
+    $scope.urlInvalid = false;
     $timeout(function() {
       if (!$scope.url) {
         return;
@@ -2080,6 +2089,9 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService, $entityService, $
           if (response['response_code'] == ResponseCode.SUCCESS) {
             $scope.pendingTripPlan = response['trip_plan'];
             $scope.importing = false;
+          } else if (extractError(response, TripPlanServiceError.INVALID_GOOGLE_MAPS_URL)) {
+            $scope.urlInvalid = true;
+            $scope.importing = false;
           }
         });
       });
@@ -2089,7 +2101,7 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService, $entityService, $
     if ($scope.importAction == 'new') {
       $scope.savePendingAsNewTripPlan();
     } else if ($scope.importAction == 'import') {
-      
+      $scope.importPendingToExistingTrip();
     }
   };
 
@@ -2108,6 +2120,19 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService, $entityService, $
             $scope.saving = false;
         });
     });
+  };
+
+  $scope.importPendingToExistingTrip = function() {
+    var tripPlan = $scope.pendingTripPlan;
+    $scope.saving = true;
+    $entityService.saveNewEntities(tripPlan['entities'], $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $scope.saving = false;
+          $dataRefreshManager.askToRefresh();
+          $scope.$close();
+        }
+      });
   };
 
   this.computeBoundsFromEntities = function(entities) {
@@ -2775,7 +2800,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .controller('GmapsImporterCtrl', ['$scope', '$timeout', '$tripPlanService',
-      '$entityService', '$tripPlanModel', GmapsImporterCtrl])
+      '$entityService', '$dataRefreshManager', '$tripPlanModel', GmapsImporterCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)

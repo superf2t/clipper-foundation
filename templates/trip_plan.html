@@ -791,7 +791,7 @@
           <hr class="dropdown-separator"/>
           <li>
             <a ng-click="startGmapsImport()" href="javascript:void(0)">
-              <img class="gmaps-icon" src="https://maps.gstatic.com/favicon3.ico"/> Import Google custom map
+              <img src="/static/img/gmaps-icon.png"/> Import Google custom map
             </a>
           </li>
           {% endif %}
@@ -895,15 +895,19 @@
           Paste a Google Maps Engine or My Maps url
         </div>
         <input type="text" class="form-control" placeholder="Paste a url"
-          ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"/>
+          ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"
+          tc-focus-on="ready"/>
         <div ng-show="importing" class="search-spinner">
           <img src="/static/img/spinner-small.gif"/>
+        </div>
+        <div ng-show="urlInvalid" class="text-danger">
+          That's not a vaid Google custom maps url.
         </div>
       </div>
       <div ng-if="saving" class="save-spinner">
         <img src="/static/img/spinner2.gif"/>
       </div>
-      <div ng-show="pendingTripPlan && !newTripPlan">
+      <div ng-show="pendingTripPlan && !newTripPlan && !saving">
         <div class="import-success-text">
           Successfully imported [[pendingTripPlan['entities'].length ]] places
           from the map

@@ -470,7 +470,7 @@ class TripPlanService(service.Service):
         kml_url = kml_import.get_kml_url(request.gmaps_url)
         if not kml_url:
             self.validation_errors.append(service.ServiceError(
-                TripPlanServiceError.INVALID_GOOGLE_MAPS_URL,
+                TripPlanServiceError.INVALID_GOOGLE_MAPS_URL.name,
                 'This url could not be recognized as a valid Google Maps url.',
                 'gmaps_url'))
             self.raise_if_errors()

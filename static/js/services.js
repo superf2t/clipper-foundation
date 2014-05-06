@@ -146,6 +146,9 @@ function TripPlanService($http) {
   }
 }
 
+var TripPlanServiceError = {
+  INVALID_GOOGLE_MAPS_URL: 'INVALID_GOOGLE_MAPS_URL'
+};
 
 function NoteService($http) {
   this.getByTripPlanId = function(tripPlanId, opt_lastModifiedTime) {
