@@ -273,7 +273,7 @@ class TripAdvisorScraper(ScrapedPage):
                             some_json = json.loads(line)
                             urls.append(some_json['data'])
                 break
-        if self.get_category == values.Category.LODGING:
+        if self.get_category() == values.Category.LODGING:
             hotelsdotcom_url = crossreference.find_hotelsdotcom_url(self.get_entity_name())
             if hotelsdotcom_url:
                 additional_urls = build_scraper(hotelsdotcom_url).get_photos()
