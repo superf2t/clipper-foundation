@@ -18,7 +18,8 @@ class MyFlask(Flask):
     jinja_options['extensions'].append('jinja2htmlcompress.SelectiveHTMLCompress')
 
     def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'css/style.css', 'css/clipper.css'):
+        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'js/admin.js',
+            'css/style.css', 'css/clipper.css', 'css/admin.css'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 
@@ -143,6 +144,16 @@ def adminpage():
     trip_plans = admin.fetch_trip_plans(
         sorting=request.values.get('sorting'), reverse=reverse)
     return render_template('admin.html', trip_plans=trip_plans)
+
+@app.route('/admin/editor/<int:trip_plan_id>')
+def admin_editor(trip_plan_id):
+    session_info = decode_session(request.cookies)
+    trip_plan_service = serviceimpls.TripPlanService(session_info)
+    trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
+    entity_service = serviceimpls.EntityService(session_info)
+    entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
+    return render_template('admin_editor.html',
+        trip_plan=trip_plan, entities_json=serializable.to_json_str(entities))
 
 def create_and_save_default_trip_plan(session_info):
     operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))

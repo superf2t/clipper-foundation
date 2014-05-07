@@ -998,8 +998,15 @@ function gmapsBoundsFromJson(latlngBoundsJson) {
     gmapsLatLngFromJson(latlngBoundsJson['northeast']))
 }
 
+function latlngFromGmaps(gmapsLatlng) {
+  return gmapsLatlng && {
+    'lat': gmapsLatlng.lat(),
+    'lng': gmapsLatlng.lng()
+  };
+}
+
 function boundsJsonFromGmapsBounds(gmapsBounds) {
-  return {
+  return gmapsBounds && {
     'southwest': {
       'lat': gmapsBounds.getSouthWest().lat(),
       'lng': gmapsBounds.getSouthWest().lng()
