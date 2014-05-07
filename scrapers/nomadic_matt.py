@@ -21,7 +21,8 @@ class NomadicMatt(article_parser.ArticleParser):
         return summary_text
 
     def get_raw_entities(self):
-        items = self.root.xpath(".//div[@id='guides']//h3[text() = 'Top Things to Do']/following-sibling::ul//li")
+        items = self.root.xpath(
+            ".//div[@id='guides']//h3[text() = 'Top Things to Do' or text() = 'Top Things to See and Do']/following-sibling::ul//li")
         entities = []
         for item in items:
             raw_text  = scraper.tostring(item).strip()
