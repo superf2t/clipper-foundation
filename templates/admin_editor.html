@@ -74,12 +74,15 @@
             </textarea>
           </div>
           <form class="form-inline categories-form" role="form">
-            <select>
-              <option>Category</option>
+            <select class="form-control" ng-model="entity['category']"
+              ng-options="c['display_name'] for c in categories track by c['category_id']"
+              ng-change="updateMarkerIcon()">
             </select>
-            <select>
-              <option>SubCategory</option>
+            <select class="form-control" ng-model="entity['sub_category']"
+              ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+              ng-change="updateMarkerIcon()">
             </select>
+            <img ng-src="/static/img/[[entity['icon_url'] ]]"/>
           </form>
           <div class="entity-source">
             <form class="form-inline" role="form">
@@ -97,7 +100,9 @@
         <div class="col-md-3 full-height">
           <div class="entity-address">
             <input type="text" class="form-control" ng-model="entity['address']"
-              placeholder="Address"/>
+              placeholder="Address"
+              tc-google-place-autocomplete
+              on-place-change="addressChanged($newPlace)"/>
           </div>
           <div class="entity-map-container">
             <div class="entity-map" tc-google-map map="entityMap"
@@ -120,7 +125,8 @@
   <script>
     initAdminEditor(
       {{trip_plan.to_json_str()|safe}},
-      {{entities_json|safe}});
+      {{entities_json|safe}},
+      {{all_datatype_values.to_json_str()|safe}});
   </script>
 </body>
 </html>

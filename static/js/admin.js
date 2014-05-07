@@ -1,6 +1,9 @@
-function AdminEditorCtrl($scope, $tripPlan, $entities) {
+function AdminEditorCtrl($scope, $tripPlan, $entities, $datatypeValues) {
   $scope.tripPlan = $tripPlan;
   $scope.entities = $entities;
+
+  $scope.categories = $datatypeValues['categories'];
+  $scope.subCategories = $datatypeValues['sub_categories'];
 
   this.createMapOptions = function(tripPlan) {
     var center = new google.maps.LatLng(0, 0);
@@ -85,7 +88,7 @@ function AdminEntityCtrl($scope) {
       entityData['latlng']['lat'] = marker.getPosition().lat();
       entityData['latlng']['lng'] = marker.getPosition().lng();
       entityData['address_precision'] = 'Precise';
-      me.updateMarkerIcon();
+      $scope.updateMarkerIcon();
     });
     return marker;
   };
@@ -109,8 +112,8 @@ function AdminEntityCtrl($scope) {
     marker.setMap(map);
   };
 
-  this.updateMarkerIcon = function() {
-    var data =  $scope.ed;
+  $scope.updateMarkerIcon = function() {
+    var data =  $scope.entity;
     var iconUrl = categoryToIconUrl(
       data['category'] && data['category']['name'],
       data['sub_category'] && data['sub_category']['name'],
@@ -118,17 +121,31 @@ function AdminEntityCtrl($scope) {
     data['icon_url'] = iconUrl;
     marker.setIcon('/static/img/' + iconUrl)
   };
+
+  $scope.addressChanged = function(place) {
+    if (!place['reference']) {
+      return;
+    }
+    var geometry = place['geometry'];
+    var location = geometry && geometry['location'];
+    $scope.entity['latlng'] = latlngFromGmaps(location);
+    marker.setPosition(location);
+    $scope.entityMap.setCenter(location);
+    $scope.entity['address'] = place['formatted_address'];
+  };
 }
 
-window['initAdminEditor'] = function(tripPlan, entities) {
+window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$entities', entities);
+    .value('$entities', entities)
+    .value('$datatypeValues', datatypeValues);
 
   angular.module('adminEditorModule', ['initialDataModule', 'servicesModule',
       'directivesModule', 'filtersModule', 'ui.bootstrap', ],
       interpolator)
-    .controller('AdminEditorCtrl', ['$scope', '$tripPlan', '$entities', AdminEditorCtrl])
+    .controller('AdminEditorCtrl', ['$scope', '$tripPlan',
+      '$entities', '$datatypeValues', AdminEditorCtrl])
     .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl]);
 
   angular.element(document).ready(function() {
