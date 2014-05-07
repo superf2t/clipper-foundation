@@ -76,6 +76,14 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
     }
   };
 
+  $scope.coverImgDropped = function($dataTransfer) {
+    var imgUrl = $dataTransfer.getData('text/uri-list');
+    if (!imgUrl) {
+      return;
+    }
+    $tripPlan['cover_image_url'] = imgUrl;
+  };
+
   $scope.saveEverything = function() {
     $scope.saving = true;
     $modal.open({
@@ -196,6 +204,14 @@ function AdminEntityCtrl($scope) {
   $scope.unmarkAsDeleted = function() {
     $scope.entity._deleted = false;
   };
+
+  $scope.imgDropped = function($dataTransfer) {
+    var imgUrl = $dataTransfer.getData('text/uri-list');
+    if (!imgUrl) {
+      return;
+    }
+    $scope.$broadcast('photo-appended', imgUrl);
+  };
 }
 
 function AdminEntityPhotoCtrl($scope) {
@@ -204,6 +220,11 @@ function AdminEntityPhotoCtrl($scope) {
   }
   var urls = $scope.entity['photo_urls'];
   var selectedImgIndex = urls.length ? 0 : null;
+
+  $scope.$on('photo-appended', function(event, imgUrl) {
+    urls.push(imgUrl);
+    selectedImgIndex = urls.length - 1;
+  });
 
   $scope.selectedImg = function() {
     return urls[selectedImgIndex];
@@ -251,6 +272,58 @@ function AdminService($http) {
   };
 }
 
+function tcBasicDropTarget($document, $parse) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      if (attrs.dragstartClass) {
+        $document.on('dragstart', function() {
+          elem.addClass(attrs.dragstartClass);
+        }).on('dragend', function() {
+          elem.removeClass(attrs.dragstartClass);
+        });
+      }
+      if (attrs.dragenterClass) {
+        elem.on('dragenter', function() {
+          elem.addClass(attrs.dragenterClass);
+        }).on('dragleave', function() {
+          elem.removeClass(attrs.dragenterClass);
+        });
+      }
+      if (attrs.dragoverClass) {
+        elem.on('dragover', function() {
+          elem.addClass(attrs.dragoverClass);
+        }).on('dragleave', function() {
+          elem.removeClass(attrs.dragoverClass);
+        });
+      }
+      if (attrs.tcOndrop) {
+        var ondropFn = $parse(attrs.tcOndrop);
+        elem.on('dragover', function(event) {
+          event.preventDefault();
+        });
+        elem.on('drop', function(event) {
+          try {
+            scope.$apply(function() {
+              ondropFn(scope, {
+                $event: event,
+                $dataTransfer: event.originalEvent.dataTransfer
+              });
+            });
+          } catch (error) {
+            console.log(error);
+          }
+          if (attrs.dragoverClass) {
+            elem.removeClass(attrs.dragoverClass);          
+          }
+          event.preventDefault();
+        });
+      }
+    }
+  };
+}
+
 window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -265,7 +338,8 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
       AdminEditorCtrl])
     .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl])
     .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl])
-    .service('$adminService', ['$http', AdminService]);
+    .service('$adminService', ['$http', AdminService])
+    .directive('tcBasicDropTarget', tcBasicDropTarget);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['adminEditorModule']);

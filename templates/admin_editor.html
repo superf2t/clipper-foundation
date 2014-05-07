@@ -40,7 +40,9 @@
   </footer>
 
   <script type="text/ng-template" id="trip-plan-settings-template">
-    <div class="trip-plan-settings container-fluid">
+    <div class="trip-plan-settings container-fluid"
+      tc-basic-drop-target dragover-class="dragover"
+      tc-ondrop="coverImgDropped($dataTransfer)">
       <h2>Trip Plan Settings</h2>
       <div class="row">
         <div class="col-md-4">
@@ -85,7 +87,8 @@
         [[entity['name'] ]] (deleted)
         <a ng-click="unmarkAsDeleted()" href="javascript:void(0)">undo</a>
       </div>
-      <div class="one-entity-admin container-fluid" ng-if="!entity._deleted">
+      <div class="one-entity-admin container-fluid" ng-if="!entity._deleted"
+        tc-basic-drop-target dragover-class="dragover" tc-ondrop="imgDropped($dataTransfer)">
         <div class="row full-height">
           <div class="col-md-4">
             <div class="entity-name">
