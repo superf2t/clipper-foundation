@@ -50,6 +50,16 @@ html, body {
   max-width: 600px;
 }
 
+.trip-plan-settings .cover-img-container {
+  height: calc(100% - 56px);
+  width: 100%;
+}
+
+.trip-plan-settings .cover-img-container img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
 .trip-plan-settings .trip-plan-location-map-container {
   width: 300px;
   height: 300px;

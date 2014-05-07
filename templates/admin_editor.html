@@ -43,7 +43,7 @@
     <div class="trip-plan-settings container-fluid">
       <h2>Trip Plan Settings</h2>
       <div class="row">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <h3>Name and Description</h3>
           <div class="trip-plan-name">
             <input type="text" ng-model="tripPlan['name']" class="form-control"
@@ -55,7 +55,13 @@
             </textarea>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+          <h3>Cover Image</h3>
+          <div class="cover-img-container">
+            <img ng-src="[[tripPlan['cover_image_url'] ]]"/>
+          </div>
+        </div>
+        <div class="col-md-4">
           <h3>Location name, center, and search bounds</h3>
           <div class="trip-plan-location">
             <input type="text" class="form-control" ng-model="tripPlan['location_name']"
