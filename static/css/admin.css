@@ -10,6 +10,18 @@ html, body {
   height: 100%;
 }
 
+.account-info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
+  font-size: 11px;
+}
+
+.account-info .account-email {
+  color: #000;
+}
+
 .trip-plan-settings {
   padding: 15px;
   margin-bottom: 20px;

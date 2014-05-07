@@ -162,7 +162,8 @@ def admin_editor(trip_plan_id):
     return render_template('admin_editor.html',
         trip_plan=trip_plan,
         entities_json=serializable.to_json_str(entities),
-        all_datatype_values=values.ALL_VALUES)
+        all_datatype_values=values.ALL_VALUES,
+        account_info=data.AccountInfo(session_info.email))
 
 def create_and_save_default_trip_plan(session_info):
     operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))

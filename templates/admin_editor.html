@@ -19,6 +19,9 @@
 <body ng-controller="AdminEditorCtrl">
   <div ng-include="'trip-plan-settings-template'">
   </div>
+  <div class="account-info">
+    (Logged in as <span class="account-email">{{account_info.email}}</span>)
+  </div>
 
   <div ng-include="'save-panel-template'" onload="saveBarPosition = 'top'">
   </div>
