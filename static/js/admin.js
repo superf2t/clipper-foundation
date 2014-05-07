@@ -1,12 +1,14 @@
-function AdminEditorCtrl($scope, $tripPlan, $entities,
-    $datatypeValues, $tripPlanService, $entityService, $modal) {
+function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
+    $datatypeValues, $tripPlanService, $entityService, $adminService) {
   $scope.tripPlan = $tripPlan;
   $scope.entities = $entities;
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
 
-  $scope.lookupLocationsOnSave = false;
+  $scope.saveSettings = {
+    lookupLocationsOnSave: false
+  };
 
   this.createMapOptions = function(tripPlan) {
     var center = new google.maps.LatLng(0, 0);
@@ -75,20 +77,38 @@ function AdminEditorCtrl($scope, $tripPlan, $entities,
   };
 
   $scope.saveEverything = function() {
+    $scope.saving = true;
     $modal.open({
       templateUrl: 'saving-modal-template',
-      scope: $scope
+      scope: $scope,
+      backdrop: 'static',
+      keyboard: false
     });
     $scope.saveTripPlanSettings()
       .success(function(response) {
-        $scope.saveEntities()
-          .success(function(response) {
-            if ($scope.lookupLocationsOnSave) {
-              $adminCtrl.augmententities($tripPlan['trip_plan_id']);
-            } else {
-              $scope.saved = true;              
-            }
-        });
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $scope.saveEntities()
+            .success(function(response) {
+              if ($scope.saveSettings.lookupLocationsOnSave) {
+                $adminService.augmententities($tripPlan['trip_plan_id'])
+                  .success(function(response) {
+                    if (response['response_code'] == ResponseCode.SUCCESS) {
+                      $scope.saved = true; 
+                      $scope.saving = false;
+                    } else if (extractError(response, CommonError.NOT_AUTHORIZED_FOR_OPERATION)) {
+                      $scope.notAuthorized = true;
+                      $scope.saving = false;
+                    }
+                  });
+              } else {
+                $scope.saved = true;     
+                $scope.saving = false;         
+              }
+            });
+        } else if (extractError(response, CommonError.NOT_AUTHORIZED_FOR_OPERATION)) {
+          $scope.notAuthorized = true;
+          $scope.saving = false;
+        }
       });
   };
 
@@ -225,6 +245,12 @@ function AdminEntityPhotoCtrl($scope) {
   };
 }
 
+function AdminService($http) {
+  this.augmententities = function(tripPlanId) {
+    return $http.post('/adminservice/augmententities', {'trip_plan_id': tripPlanId});
+  };
+}
+
 window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -234,11 +260,12 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('adminEditorModule', ['initialDataModule', 'servicesModule',
       'directivesModule', 'filtersModule', 'ui.bootstrap', ],
       interpolator)
-    .controller('AdminEditorCtrl', ['$scope', '$tripPlan',
-      '$entities', '$datatypeValues', '$tripPlanService', '$entityService',
-      '$modal', AdminEditorCtrl])
+    .controller('AdminEditorCtrl', ['$scope', '$modal', '$tripPlan', '$entities',
+      '$datatypeValues', '$tripPlanService', '$entityService', '$adminService',
+      AdminEditorCtrl])
     .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl])
-    .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl]);
+    .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl])
+    .service('$adminService', ['$http', AdminService]);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['adminEditorModule']);

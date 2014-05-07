@@ -10,6 +10,10 @@ var Operator = {
   DELETE: 'DELETE'
 };
 
+var CommonError = {
+  NOT_AUTHORIZED_FOR_OPERATION: 'NOT_AUTHORIZED_FOR_OPERATION'
+}
+
 function extractError(response, errorCode) {
   return _.find(response['errors'], function(error) {
     return error['error_code'] == errorCode;

@@ -138,6 +138,13 @@ def accountservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return process_response(json.jsonify(response), request, session_info)
 
+@app.route('/adminservice/<method_name>', methods=['POST'])
+def adminservice(method_name):
+    session_info = decode_session(request.cookies)
+    service = serviceimpls.AdminService(session_info)
+    response = service.invoke_with_json(method_name, request.json)
+    return process_response(json.jsonify(response), request, session_info)
+
 @app.route('/admin')
 def adminpage():
     reverse = True if request.values.get('reverse') else False

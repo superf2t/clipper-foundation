@@ -7,6 +7,7 @@ import enums
 import clip_logic
 import google_places
 import kml_import
+from scrapers import trip_plan_creator
 import serializable
 import service
 import utils
@@ -663,3 +664,47 @@ class AccountService(service.Service):
             self.validation_errors.append(service.ServiceError.from_enum(
                 AccountServiceError.INVALID_EMAIL, 'email'))
         self.raise_if_errors()
+
+
+class AugmentEntitiesRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id')
+
+    def __init__(self, trip_plan_id=None):
+        self.trip_plan_id = trip_plan_id
+
+class AugmentEntitiesResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(
+            serializable.objlistf('entities', data.Entity)))
+
+    def __init__(self, entities=None, **kwargs):
+        super(AugmentEntitiesResponse, self).__init__(**kwargs)
+        self.entities = entities
+
+class AdminService(service.Service):
+    METHODS = service.servicemethods(
+        ('augmententities', AugmentEntitiesRequest, AugmentEntitiesResponse))
+
+    def __init__(self, session_info=None):
+        self.session_info = session_info
+        self.validation_errors = []
+
+    def raise_if_errors(self):
+        if self.validation_errors:
+            raise service.ServiceException.request_error(self.validation_errors)
+
+    def validate_admin_auth(self):
+        if not self.session_info.is_admin():
+            self.validation_errors.append(service.ServiceError.from_enum(
+                CommonError.NOT_AUTHORIZED_FOR_OPERATION))
+        self.raise_if_errors()
+
+    def augmententities(self, request):
+        self.validate_admin_auth()
+        trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
+        augmented_trip_plan = trip_plan_creator.augment_trip_plan(trip_plan)
+        data.save_trip_plan(augmented_trip_plan)
+        return AugmentEntitiesResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=augmented_trip_plan.entities)
