@@ -848,8 +848,10 @@
             {% endif %}
           </div>
         </div>
+        {% if allow_editing %}
         <div ng-include="'omnibox-template'" ng-show="omniboxState.visible">
         </div>
+        {% endif %}
       </div>
       <div class="nav-vertical-placeholder" ng-class="{'omnibox-open': omniboxState.visible}">
       </div>

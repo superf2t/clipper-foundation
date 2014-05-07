@@ -41,6 +41,9 @@ class LocationResult(object):
     def latlng_json(self):
         return self.raw_result['geometry']['location']
 
+    def viewport_json(self):
+        return self.raw_result['geometry'].get('viewport')
+
     def is_precise(self):
         raise NotImplementedError()
 

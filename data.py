@@ -141,6 +141,7 @@ class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
         'location_name', serializable.objf('location_latlng', LatLng),
         serializable.objf('location_bounds', LatLngBounds),
+        'description', 'cover_image_url', 'source_url',
         serializable.objlistf('entities', Entity),
         serializable.objlistf('notes', Note),
         'creator', serializable.listf('editors'),
@@ -150,6 +151,7 @@ class TripPlan(serializable.Serializable):
 
     def __init__(self, trip_plan_id=None, name=None,
             location_name=None, location_latlng=None, location_bounds=None,
+            description=None, cover_image_url=None, source_url=None,
             entities=(), notes=(),
             creator=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
         self.trip_plan_id = trip_plan_id
@@ -157,6 +159,9 @@ class TripPlan(serializable.Serializable):
         self.location_name = location_name
         self.location_latlng = location_latlng
         self.location_bounds = location_bounds
+        self.description = description
+        self.cover_image_url = cover_image_url
+        self.source_url = source_url
         self.entities = entities or []
         self.notes = notes or []
         self.last_modified = last_modified
