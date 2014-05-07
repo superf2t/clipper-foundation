@@ -65,6 +65,10 @@ html, body {
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
 }
 
+.one-entity-admin.deleted {
+  height: 40px;
+}
+
 .one-entity-admin textarea {
   height: 100px;
 }
@@ -165,4 +169,22 @@ html, body {
 
 .one-entity-admin .photo-carousel .img-carousel-control.right {
   right: 0;
+}
+
+.saving-modal {
+  margin: 20px;
+  text-align: center;
+}
+
+.save-panel {
+  text-align: center;
+}
+
+.save-panel .lookup-locations-checkbox {
+  margin-left: 10px;
+}
+
+footer {
+  text-align: center;
+  margin: 20px 0 10px 0;
 }

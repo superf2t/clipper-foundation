@@ -1,9 +1,12 @@
-function AdminEditorCtrl($scope, $tripPlan, $entities, $datatypeValues) {
+function AdminEditorCtrl($scope, $tripPlan, $entities,
+    $datatypeValues, $tripPlanService, $entityService, $modal) {
   $scope.tripPlan = $tripPlan;
   $scope.entities = $entities;
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
+
+  $scope.lookupLocationsOnSave = false;
 
   this.createMapOptions = function(tripPlan) {
     var center = new google.maps.LatLng(0, 0);
@@ -70,6 +73,37 @@ function AdminEditorCtrl($scope, $tripPlan, $entities, $datatypeValues) {
       $scope.locationMap.fitBounds(viewport);
     }
   };
+
+  $scope.saveEverything = function() {
+    $modal.open({
+      templateUrl: 'saving-modal-template',
+      scope: $scope
+    });
+    $scope.saveTripPlanSettings()
+      .success(function(response) {
+        $scope.saveEntities()
+          .success(function(response) {
+            if ($scope.lookupLocationsOnSave) {
+              $adminCtrl.augmententities($tripPlan['trip_plan_id']);
+            } else {
+              $scope.saved = true;              
+            }
+        });
+      });
+  };
+
+  $scope.saveTripPlanSettings = function() {
+    return $tripPlanService.editTripPlan($tripPlan);
+  };
+
+  $scope.saveEntities = function() {
+    var operations = _.map($entities, function(entity) {
+      return $entityService.operationFromEntity(entity,
+        $tripPlan['trip_plan_id'],
+        entity._deleted ? Operator.DELETE : Operator.EDIT);
+    });
+    return $entityService.mutate({'operations': operations});
+  };
 }
 
 function AdminEntityCtrl($scope) {
@@ -109,6 +143,7 @@ function AdminEntityCtrl($scope) {
   };
 
   $scope.setupEntityMap = function(map) {
+    $scope.entityMap = map;
     marker.setMap(map);
   };
 
@@ -132,6 +167,14 @@ function AdminEntityCtrl($scope) {
     marker.setPosition(location);
     $scope.entityMap.setCenter(location);
     $scope.entity['address'] = place['formatted_address'];
+  };
+
+  $scope.markAsDeleted = function() {
+    $scope.entity._deleted = true;
+  };
+
+  $scope.unmarkAsDeleted = function() {
+    $scope.entity._deleted = false;
   };
 }
 
@@ -192,7 +235,8 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
       'directivesModule', 'filtersModule', 'ui.bootstrap', ],
       interpolator)
     .controller('AdminEditorCtrl', ['$scope', '$tripPlan',
-      '$entities', '$datatypeValues', AdminEditorCtrl])
+      '$entities', '$datatypeValues', '$tripPlanService', '$entityService',
+      '$modal', AdminEditorCtrl])
     .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl])
     .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl]);
 

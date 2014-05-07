@@ -20,11 +20,21 @@
   <div ng-include="'trip-plan-settings-template'">
   </div>
 
+  <div ng-include="'save-panel-template'" onload="saveBarPosition = 'top'">
+  </div>
+
   <div class="entities-list">
     <h2>Places</h2>
     <div ng-repeat="entity in entities" ng-include="'one-entity-template'">
     </div>
   </div>
+
+  <div ng-include="'save-panel-template'" onload="saveBarPosition = 'bottom'">
+  </div>
+
+  <footer>
+    Copyright 2014 Unicycle Labs
+  </footer>
 
   <script type="text/ng-template" id="trip-plan-settings-template">
     <div class="trip-plan-settings container-fluid">
@@ -61,82 +71,121 @@
   </script>
 
   <script type="text/ng-template" id="one-entity-template">
-    <div class="one-entity-admin container-fluid" ng-controller="AdminEntityCtrl">
-      <div class="row full-height">
-        <div class="col-md-4">
-          <div class="entity-name">
-            <input type="text" class="form-control" ng-model="entity['name']"
-              placeholder="Place name"/>
-          </div>
-          <div class="entity-description">
-            <textarea class="form-control" ng-model="entity['description']"
-              placeholder="Description">
-            </textarea>
-          </div>
-          <form class="form-inline categories-form" role="form">
-            <select class="form-control" ng-model="entity['category']"
-              ng-options="c['display_name'] for c in categories track by c['category_id']"
-              ng-change="updateMarkerIcon()">
-            </select>
-            <select class="form-control" ng-model="entity['sub_category']"
-              ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
-              ng-change="updateMarkerIcon()">
-            </select>
-            <img ng-src="/static/img/[[entity['icon_url'] ]]"/>
-          </form>
-          <div class="entity-source">
-            <form class="form-inline" role="form">
-              <img class="source-icon" ng-src="http://[[entity['source_url'] | hostname ]]/favicon.ico"/>
-              <input type="text" class="form-control" ng-model="entity['source_url']"
-                placeholder="Source url"/>
+    <div ng-controller="AdminEntityCtrl">
+      <div class="one-entity-admin deleted" ng-if="entity._deleted">
+        [[entity['name'] ]] (deleted)
+        <a ng-click="unmarkAsDeleted()" href="javascript:void(0)">undo</a>
+      </div>
+      <div class="one-entity-admin container-fluid" ng-if="!entity._deleted">
+        <div class="row full-height">
+          <div class="col-md-4">
+            <div class="entity-name">
+              <input type="text" class="form-control" ng-model="entity['name']"
+                placeholder="Place name"/>
+            </div>
+            <div class="entity-description">
+              <textarea class="form-control" ng-model="entity['description']"
+                placeholder="Description">
+              </textarea>
+            </div>
+            <form class="form-inline categories-form" role="form">
+              <select class="form-control" ng-model="entity['category']"
+                ng-options="c['display_name'] for c in categories track by c['category_id']"
+                ng-change="updateMarkerIcon()">
+              </select>
+              <select class="form-control" ng-model="entity['sub_category']"
+                ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+                ng-change="updateMarkerIcon()">
+              </select>
+              <img ng-src="/static/img/[[entity['icon_url'] ]]"/>
             </form>
+            <div class="entity-source">
+              <form class="form-inline" role="form">
+                <img class="source-icon" ng-src="http://[[entity['source_url'] | hostname ]]/favicon.ico"/>
+                <input type="text" class="form-control" ng-model="entity['source_url']"
+                  placeholder="Source url"/>
+              </form>
+            </div>
           </div>
-        </div>
-        <div class="col-md-4">
-          <div ng-controller="AdminEntityPhotoCtrl">
-            <div ng-if="hasImgs()" class="photo-carousel">
-              <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-chevron-left"></span>
-              </a>
-              <span class="carousel-img-container">
-                <div class="img-overlay-control top">
-                  <a ng-click="setAsPrimary()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-picture"></span> Set as primary
-                  </a>
-                </div>
-                <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
-                <div class="img-overlay-control bottom">
-                  <a ng-click="deletePhoto()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-trash"></span> Delete photo
-                  </a>
-                </div>
-              </span>
-              <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-chevron-right"></span>
+          <div class="col-md-4">
+            <div ng-controller="AdminEntityPhotoCtrl">
+              <div ng-if="hasImgs()" class="photo-carousel">
+                <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-chevron-left"></span>
+                </a>
+                <span class="carousel-img-container">
+                  <div class="img-overlay-control top">
+                    <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-picture"></span> Set as primary
+                    </a>
+                  </div>
+                  <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+                  <div class="img-overlay-control bottom">
+                    <a ng-click="deletePhoto()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-trash"></span> Delete photo
+                    </a>
+                  </div>
+                </span>
+                <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 full-height">
+            <div class="entity-address">
+              <input type="text" class="form-control" ng-model="entity['address']"
+                placeholder="Address"
+                tc-google-place-autocomplete
+                on-place-change="addressChanged($newPlace)"/>
+            </div>
+            <div class="entity-map-container">
+              <div class="entity-map" tc-google-map map="entityMap"
+                map-options="entityMapOptions" 
+                after-creation="setupEntityMap($map)">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-1">
+            <div class="entity-controls">
+              <a ng-click="markAsDeleted()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-remove"></span>
               </a>
             </div>
           </div>
         </div>
-        <div class="col-md-3 full-height">
-          <div class="entity-address">
-            <input type="text" class="form-control" ng-model="entity['address']"
-              placeholder="Address"
-              tc-google-place-autocomplete
-              on-place-change="addressChanged($newPlace)"/>
-          </div>
-          <div class="entity-map-container">
-            <div class="entity-map" tc-google-map map="entityMap"
-              map-options="entityMapOptions" 
-              after-creation="setupEntityMap($map)">
-            </div>
-          </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="save-panel-template">
+    <div class="save-panel">
+      <button class="btn btn-primary" ng-click="saveEverything()">
+        Save edits
+      </button>
+      <span class="lookup-locations-checkbox">
+        <input type="checkbox" ng-model="lookupLocationsOnSave"
+          id="lookup-locations-checkbox-[[saveBarPosition]]"/>
+        <label for="lookup-locations-checkbox-[[saveBarPosition]]">Also lookup entity locations</label>
+      </span>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="saving-modal-template">
+    <div class="saving-modal">
+      <div ng-show="!saved">
+        <h3>Saving...</h3>
+        <div class="saving-spinner">
+          <img src="/static/img/spinner2.gif"/>
         </div>
-        <div class="col-md-1">
-          <div class="entity-controls">
-            <a href="javascript:void(0)">
-              <span class="glyphicon glyphicon-remove"></span>
-            </a>
-          </div>
+      </div>
+      <div ng-show="saved">
+        <h3>Save successful</h3>
+        <div>
+          View the saved <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">trip plan</a>
+        </div>
+        <div>
+          <a onclick="location.href = location.href" href="javascript:void(0)">Reload</a> the admin editor
         </div>
       </div>
     </div>

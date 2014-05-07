@@ -193,7 +193,7 @@ class TripPlan(serializable.Serializable):
         return False
 
     def editable_by(self, session_info):
-        return str(self.creator) in (session_info.email, str(session_info.sessionid))
+        return str(self.creator) in (session_info.email, str(session_info.sessionid)) or session_info.is_admin()
 
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
@@ -242,6 +242,9 @@ class SessionInfo(object):
     @property
     def user_identifier(self):
         return self.email or self.sessionid
+
+    def is_admin(self):
+        return self.email in ('admin@unicyclelabs.com', 'jonathan@unicyclelabs.com', 'matt@unicyclelabs.com')
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
