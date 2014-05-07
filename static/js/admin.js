@@ -135,6 +135,53 @@ function AdminEntityCtrl($scope) {
   };
 }
 
+function AdminEntityPhotoCtrl($scope) {
+  if (_.isEmpty($scope.entity['photo_urls'])) {
+    $scope.entity['photo_urls'] = [];
+  }
+  var urls = $scope.entity['photo_urls'];
+  var selectedImgIndex = urls.length ? 0 : null;
+
+  $scope.selectedImg = function() {
+    return urls[selectedImgIndex];
+  };
+
+  $scope.hasImgs = function() {
+    return urls.length > 0;
+  };
+
+  $scope.hasPrevImg = function() {
+    return selectedImgIndex > 0;
+  };
+
+  $scope.hasNextImg = function() {
+    return selectedImgIndex < (urls.length - 1);
+  };
+
+  $scope.prevImg = function() {
+    selectedImgIndex--;
+  };
+
+  $scope.nextImg = function() {
+    if ($scope.hasNextImg()) {
+      selectedImgIndex++;
+    }
+  };
+
+  $scope.setAsPrimary = function() {
+    var url = urls.splice(selectedImgIndex, 1)[0];
+    urls.splice(0, 0, url);
+    selectedImgIndex = 0;
+  };
+
+  $scope.deletePhoto = function() {
+    urls.splice(selectedImgIndex, 1);
+    if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
+      selectedImgIndex--;
+    }
+  };
+}
+
 window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -146,7 +193,8 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
       interpolator)
     .controller('AdminEditorCtrl', ['$scope', '$tripPlan',
       '$entities', '$datatypeValues', AdminEditorCtrl])
-    .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl]);
+    .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl])
+    .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl]);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['adminEditorModule']);

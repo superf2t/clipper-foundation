@@ -93,8 +93,28 @@
           </div>
         </div>
         <div class="col-md-4">
-          <div class="entity-carousel">
-            <img ng-src="[[entity['photo_urls'][0] ]]"/>
+          <div ng-controller="AdminEntityPhotoCtrl">
+            <div ng-if="hasImgs()" class="photo-carousel">
+              <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-chevron-left"></span>
+              </a>
+              <span class="carousel-img-container">
+                <div class="img-overlay-control top">
+                  <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-picture"></span> Set as primary
+                  </a>
+                </div>
+                <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+                <div class="img-overlay-control bottom">
+                  <a ng-click="deletePhoto()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-trash"></span> Delete photo
+                  </a>
+                </div>
+              </span>
+              <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-chevron-right"></span>
+              </a>
+            </div>
           </div>
         </div>
         <div class="col-md-3 full-height">
