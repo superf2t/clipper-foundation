@@ -21,10 +21,10 @@ class NomadicMatt(article_parser.ArticleParser):
         return summary_text
 
     def get_raw_entities(self):
-        items = self.root.xpath(".//div[@id='guides']//h3[text() = 'Top Things to Do']/following-sibling::ul/li")
+        items = self.root.xpath(".//div[@id='guides']//h3[text() = 'Top Things to Do']/following-sibling::ul//li")
         entities = []
         for item in items:
             raw_text  = scraper.tostring(item).strip()
-            name, desc = re.split(u'\s(?:\u2013|-)\s', raw_text, 1, re.UNICODE)[:2]
+            name, desc = re.split(u'\s?(?:\u2013|-)\s?', raw_text, 1, re.UNICODE)[:2]
             entities.append(data.Entity(name=name, description=desc))
         return entities

@@ -19,8 +19,9 @@
 <body ng-controller="AdminEditorCtrl">
   <div ng-include="'trip-plan-settings-template'">
   </div>
-  <div class="account-info">
-    (Logged in as <span class="account-email">{{account_info.email}}</span>)
+  <div class="quick-info-panel">
+    <div>(Logged in as <span class="account-email">{{account_info.email}}</span>)</div>
+    <div><a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]" target="_blank">View trip plan</a></div>
   </div>
 
   <div ng-include="'save-panel-template'" onload="saveBarPosition = 'top'">
@@ -56,6 +57,13 @@
               placeholder="Trip plan description">
             </textarea>
           </div>
+          <div class="source">
+              <form class="form-inline" role="form">
+              <img class="source-icon" ng-src="http://[[tripPlan['source_url'] | hostname ]]/favicon.ico" ng-if="tripPlan['source_url']"/>
+              <input type="text" class="form-control" ng-model="tripPlan['source_url']"
+                placeholder="Source url"/>
+            </form>
+        </div>
         </div>
         <div class="col-md-4">
           <h3>Cover Image</h3>

@@ -36,8 +36,8 @@ class PlaceDetails(object):
         location = js['geometry']['location']
         return data.Entity(
             name=js['name'],
-            category=PlaceDetails.types_to_category(js['types']),
-            sub_category=PlaceDetails.types_to_sub_category(js['types']),
+            category=PlaceDetails.types_to_category(js.get('types')),
+            sub_category=PlaceDetails.types_to_sub_category(js.get('types')),
             address=js['formatted_address'],
             latlng=data.LatLng(lat=location['lat'], lng=location['lng']),
             address_precision='Precise',  # TODO
@@ -54,7 +54,7 @@ class PlaceDetails(object):
 
     @staticmethod
     def types_to_category(places_api_types):
-        types = dict((t, True) for t in places_api_types)
+        types = dict((t, True) for t in places_api_types or ())
         if 'bar' in types or 'restaurant' in types or 'cafe' in types or 'food' in types:
             return values.Category.FOOD_AND_DRINK
         elif 'lodging' in types:
@@ -64,7 +64,7 @@ class PlaceDetails(object):
 
     @staticmethod
     def types_to_sub_category(places_api_types):
-        types = dict((t, True) for t in places_api_types)
+        types = dict((t, True) for t in places_api_types or ())
         if 'bar' in types:
             return values.SubCategory.BAR
         elif 'restaurant' in types or 'cafe' in types or 'food' in types:

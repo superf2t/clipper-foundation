@@ -37,6 +37,8 @@ class TripPlanCreator(object):
 
 def augment_trip_plan(raw_trip_plan):
     location_latlng = raw_trip_plan.location_latlng.to_json_obj() if raw_trip_plan.location_latlng else None
+    print "incoming"
+    print raw_trip_plan.entities
     entities = utils.parallelize(augment_entity, [(e, location_latlng) for e in raw_trip_plan.entities])
     trip_plan = raw_trip_plan.copy()
     trip_plan.entities = entities
@@ -49,8 +51,12 @@ def augment_entity(entity, latlng_dict=None):
         place_result = google_places.lookup_place_by_reference(search_result.get_reference())
         google_place_entity = place_result.to_entity()
         google_place_entity.update(entity)
+        print "returning google place entity"
+        print google_place_entity
         return google_place_entity
     else:
+        print "returning old entity"
+        print entity.copy()
         return entity.copy()
 
 ALL_PARSERS = (nomadic_matt.NomadicMatt,)

@@ -10,12 +10,13 @@ html, body {
   height: 100%;
 }
 
-.account-info {
+.quick-info-panel {
   position: absolute;
   top: 0;
   right: 0;
   margin: 10px;
   font-size: 11px;
+  text-align: right;
 }
 
 .account-info .account-email {
@@ -48,6 +49,15 @@ html, body {
 .trip-plan-settings .trip-plan-description textarea {
   max-width: 600px;
   height: 250px;
+}
+
+.trip-plan-settings .source input {
+  width: calc(100% - 20px);
+}
+
+.trip-plan-settings .source .source-icon {
+  max-height: 16px;
+  max-width: 16px;
 }
 
 .trip-plan-settings .trip-plan-location input {
