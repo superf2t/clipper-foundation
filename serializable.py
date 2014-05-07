@@ -33,8 +33,11 @@ class Serializable(object):
     '''
     PUBLIC_FIELDS = {}
 
-    def to_json_str(self):
-        return json.dumps(self.to_json_obj())
+    def to_json_str(self, pretty_print=False):
+        if pretty_print:
+            return json.dumps(self.to_json_obj(), sort_keys=True, indent=4, separators=(',', ': '))
+        else:
+            return json.dumps(self.to_json_obj())
 
     def to_json_obj(self):
         obj = {}
