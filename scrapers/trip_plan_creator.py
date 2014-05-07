@@ -11,10 +11,11 @@ from scrapers import nomadic_matt
 import utils
 
 class TripPlanCreator(object):
-    def __init__(self, url, creator=None, trip_plan_name=None):
+    def __init__(self, url, creator=None, trip_plan_name=None, parser_type_name=None):
         self.url = url
         self.creator = creator
         self.trip_plan_name = trip_plan_name
+        self.parser_type_name = parser_type_name
 
     def get_creator(self):
         if self.creator:
@@ -22,12 +23,12 @@ class TripPlanCreator(object):
         host = urlparse.urlparse(self.url).netloc.lower().lstrip('www.')
         return 'admin@%s' % host
 
-    def parse_full(self, url):
-        trip_plan = self.parse_candidate(url)
+    def parse_full(self):
+        trip_plan = self.parse_candidate()
         return augment_trip_plan(trip_plan)
 
-    def parse_candidate(self, url):
-        parser = make_article_parser(url)
+    def parse_candidate(self):
+        parser = make_article_parser(self.url, self.parser_type_name)
         trip_plan = parser.make_raw_trip_plan()
         trip_plan.creator = self.get_creator()
         if self.trip_plan_name:
@@ -54,10 +55,15 @@ def augment_entity(entity, latlng_dict=None):
 
 ALL_PARSERS = (nomadic_matt.NomadicMatt,)
 
-def make_article_parser(url):
-    for parser_class in ALL_PARSERS:
-        if parser_class.can_parse(url):
-            return parser_class(url, scraper.parse_tree(url))
+def make_article_parser(url, parser_type_name=None):
+    if parser_type_name:
+        for parser_class in ALL_PARSERS:
+            if parser_class.__name__ == parser_type_name:
+                return parser_class(url, scraper.parse_tree(url))
+    else:
+        for parser_class in ALL_PARSERS:
+            if parser_class.can_parse(url):
+                return parser_class(url, scraper.parse_tree(url))
     return None
 
 def main(cmd, input):
@@ -65,9 +71,9 @@ def main(cmd, input):
         url = input
         creator = TripPlanCreator(url)
         if cmd == 'full':
-            trip_plan = creator.parse_full(url)
+            trip_plan = creator.parse_full()
         elif cmd == 'candidate':
-            trip_plan = creator.parse_candidate(url)
+            trip_plan = creator.parse_candidate()
         else:
             return
         trip_plan.trip_plan_id = data.generate_trip_plan_id()

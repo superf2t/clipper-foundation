@@ -104,7 +104,7 @@
             </form>
             <div class="entity-source">
               <form class="form-inline" role="form">
-                <img class="source-icon" ng-src="http://[[entity['source_url'] | hostname ]]/favicon.ico"/>
+                <img class="source-icon" ng-src="http://[[entity['source_url'] | hostname ]]/favicon.ico" ng-if="entity['source_url']"/>
                 <input type="text" class="form-control" ng-model="entity['source_url']"
                   placeholder="Source url"/>
               </form>

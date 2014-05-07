@@ -666,6 +666,8 @@ class AccountService(service.Service):
         self.raise_if_errors()
 
 
+AdminServiceError = enums.enum('INVALID_PARSER_TYPE')
+
 class AugmentEntitiesRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id')
 
@@ -682,9 +684,34 @@ class AugmentEntitiesResponse(service.ServiceResponse):
         super(AugmentEntitiesResponse, self).__init__(**kwargs)
         self.entities = entities
 
+class ParseTripPlanRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('url', 'augment_entities',
+        'parser_type', 'creator', 'trip_plan_name')
+
+    def __init__(self, url=None, augment_entities=None,
+            parser_type=None, creator=None, trip_plan_name=None):
+        self.url = url
+        self.augment_entities = augment_entities
+        self.parser_type = parser_type
+        self.creator = creator
+        self.trip_plan_name = trip_plan_name
+
+class ParseTripPlanResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(
+            serializable.objf('trip_plan', data.TripPlan),
+            serializable.objlistf('entities', data.Entity)))
+
+    def __init__(self, trip_plan=None, entities=None, **kwargs):
+        super(ParseTripPlanResponse, self).__init__(**kwargs)
+        self.trip_plan = trip_plan
+        self.entities = entities
+
 class AdminService(service.Service):
     METHODS = service.servicemethods(
-        ('augmententities', AugmentEntitiesRequest, AugmentEntitiesResponse))
+        ('augmententities', AugmentEntitiesRequest, AugmentEntitiesResponse),
+        ('parsetripplan', ParseTripPlanRequest, ParseTripPlanResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -708,3 +735,23 @@ class AdminService(service.Service):
         return AugmentEntitiesResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entities=augmented_trip_plan.entities)
+
+    def parsetripplan(self, request):
+        tp_creator = trip_plan_creator.TripPlanCreator(request.url,
+            request.creator, request.trip_plan_name, request.parser_type)
+        if not tp_creator:
+            self.validation_errors.append(service.ServiceError.from_enum(
+                AdminServiceError.INVALID_PARSER_TYPE, 'parser_type'))
+            self.raise_if_errors()
+        if request.augment_entities:
+            trip_plan = tp_creator.parse_full()
+        else:
+            trip_plan = tp_creator.parse_candidate()
+        trip_plan.trip_plan_id = data.generate_trip_plan_id()
+        data.save_trip_plan(trip_plan)
+        entities = trip_plan.entities
+        trip_plan.entities = ()
+        return ParseTripPlanResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plan=trip_plan, entities=entities)
+

@@ -9,6 +9,7 @@ import admin
 import clip_logic
 import constants
 import data
+from scrapers import trip_plan_creator
 import serializable
 import serviceimpls
 import values
@@ -164,6 +165,11 @@ def admin_editor(trip_plan_id):
         entities_json=serializable.to_json_str(entities),
         all_datatype_values=values.ALL_VALUES,
         account_info=data.AccountInfo(session_info.email))
+
+@app.route('/admin/scrape')
+def admin_scrape():
+    return render_template('admin_scrape.html',
+        all_scrapers=[s.__name__ for s in trip_plan_creator.ALL_PARSERS])
 
 def create_and_save_default_trip_plan(session_info):
     operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))

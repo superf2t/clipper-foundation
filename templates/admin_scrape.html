@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+  <title>Admin Scraper Panel</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
+  <script src="/static/js/services.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+  <style type="text/css">
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Nunito';
+      background-color: #ebecec;
+      color: #666666;
+      text-align: center;
+    }
+
+    .full-width {
+      width: 100%;
+    }
+
+    .url-input {
+      width: 500px;
+      margin: auto;
+    }
+
+    .url-input input {
+      text-align: center;
+    }
+
+    .scraper-type-control {
+      margin: auto;
+    }
+
+    .scraper-type-control select {
+      width: 300px;
+      margin: auto;
+    }
+
+    .name-and-creator {
+      width: 100%;
+      margin: 20px auto;
+    }
+
+    .name-and-creator .form-inline .form-control {
+      width: 250px;
+    }
+
+    .spacer {
+      display: inline-block;
+      width: 20px;
+    }
+
+    .buttons {
+      padding-top: 20px;
+    }
+
+    .buttons .btn {
+      font-size: 14pt;
+    }
+  </style>
+  <script>
+    function ScrapePanelCtrl($scope, $http) {
+      $scope.running = false;
+      $scope.finished = false;
+      $scope.error = false;
+
+      $scope.request = {
+        'url': null,
+        'augment_entities': false,
+        'parser_type': '',
+        'creator': null,
+        'trip_plan_name': null
+      };
+
+      $scope.submit = function() {
+        $scope.running = true;
+        $http.post('/adminservice/parsetripplan', $scope.request)
+          .success(function(response) {
+            $scope.finished = true;
+            if (response['response_code'] == ResponseCode.SUCCESS) {
+              $scope.tripPlan = response['trip_plan'];
+              $scope.entities = response['entities'];
+            } else {
+              $scope.error = true;
+            }
+          })
+          .error(function() {
+            $scope.finished = true;
+            $scope.error = true;
+          });
+      };
+    }
+
+    function interpolator($interpolateProvider) {
+      $interpolateProvider.startSymbol('[[');
+      $interpolateProvider.endSymbol(']]');
+    }
+
+    angular.module('appModule', [], interpolator)
+      .controller('ScrapePanelCtrl', ScrapePanelCtrl);
+
+    angular.element(document).ready(function() {
+      angular.bootstrap(document, ['appModule']);
+    });
+  </script>
+</head>
+<body ng-controller="ScrapePanelCtrl">
+  <h1>Scraper Panel</h1>
+
+  <div class="full-width" ng-show="!running && !finished">
+    <div class="url-input">
+      <h3>Paste a url</h3>
+      <input type="text" class="form-control" placeholder="url to scrape"
+        ng-model="request['url']" autofocus/>
+    </div>
+
+    <div class="scraper-type-control">
+      <h3>Scraper Type</h3>
+      <select class="form-control" ng-model="request['parser_type']">
+        <option value="">Autodetect</option>
+        {% for scraper_name in all_scrapers %}
+        <option value="{{scraper_name}}">{{scraper_name}}</option>
+        {% endfor %}
+      </select>
+      <form class="form-inline" role="form">
+        <label for="augment-entities-false">Don't lookup entity locations</label>
+        <input type="radio" class="form-control" ng-model="request['augment_entities']" ng-value="false"
+          id="augment-entities-false"/>
+        <span class="spacer"></span>
+        <label for="augment-entities-true">Also lookup entity locations</label>
+        <input type="radio" class="form-control" ng-model="request['augment_entities']" ng-value="true"
+          id="augment-entities-true"/>
+      </form>
+    </div>
+
+    <div class="name-and-creator">
+      <h3>Optional Overrides</h3>
+      <form class="form-inline" role="form">
+        <label>Creator email</label>
+        <input type="text" class="form-control" placeholder="leave blank for admin@<domain>"
+          ng-model="request['creator']"/>
+        <span class="spacer"></span>
+        <label>Trip plan name</label>
+        <input type="text" class="form-control" placeholder="leave blank for autodetect"
+          ng-model="request['trip_plan_name']"/>
+      </form>
+    </div>
+
+    <div class="buttons">
+      <button class="btn btn-primary" ng-click="submit()">
+        Start
+      </button>
+    </div>
+  </div>
+
+  <div ng-show="running && !finished">
+    <h3>Running...</h3>
+    <img src="/static/img/spinner2.gif"/>
+  </div>
+
+  <div ng-show="finished && !error">
+    <h3>Scrape Successful</h3>
+    <div>
+      Created a new trip plan [[tripPlan['name'] ]] with [[entities.length]] places
+    </div>
+    <div>
+      <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">View trip plan</a>
+    </div>
+    <div>
+      <a ng-href="/admin/editor/[[tripPlan['trip_plan_id'] ]]">Open in admin editor</a>
+    </div>
+  </div>
+
+  <div ng-show="finished && error">
+    <h3>Scrape Error</h3>
+    <div class="text-danger">There was an error processing this request.</div>
+  </div>
+
+</body>
+</html>

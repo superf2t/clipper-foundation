@@ -244,7 +244,7 @@ class SessionInfo(object):
         return self.email or self.sessionid
 
     def is_admin(self):
-        return self.email in ('admin@unicyclelabs.com', 'jonathan@unicyclelabs.com', 'matt@unicyclelabs.com')
+        return self.email in ('admin@unicyclelabs.com',)
 
 def generate_sessionid():
     sessionid = uuid.uuid4().bytes[:8]
