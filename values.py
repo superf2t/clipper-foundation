@@ -11,6 +11,7 @@ class Category(serializable.Serializable):
     def __str__(self):
         return self.name
 
+Category.NONE = Category(0, 'none', 'None')
 Category.LODGING = Category(1, 'lodging', 'Lodging')
 Category.FOOD_AND_DRINK = Category(2, 'food_and_drink', 'Food & Drink')
 Category.ATTRACTIONS = Category(3, 'attractions', 'Attractions')
@@ -26,6 +27,7 @@ class SubCategory(serializable.Serializable):
     def __str__(self):
         return self.name
 
+SubCategory.NONE = SubCategory(0, 'none', 'None')
 SubCategory.HOTEL = SubCategory(1, 'hotel', 'Hotel')
 SubCategory.PRIVATE_RENTAL = SubCategory(2, 'private_rental', 'Private rental')
 SubCategory.RESTAURANT = SubCategory(3, 'restaurant', 'Restaurant')
@@ -43,5 +45,5 @@ class ValueCollection(serializable.Serializable):
         self.sub_categories = sub_categories
 
 ALL_VALUES = ValueCollection(
-    (Category.LODGING, Category.FOOD_AND_DRINK, Category.ATTRACTIONS),
-    (SubCategory.HOTEL, SubCategory.PRIVATE_RENTAL, SubCategory.HOSTEL, SubCategory.BED_AND_BREAKFAST, SubCategory.RESTAURANT, SubCategory.BAR))
+    (Category.NONE, Category.LODGING, Category.FOOD_AND_DRINK, Category.ATTRACTIONS),
+    (SubCategory.NONE, SubCategory.HOTEL, SubCategory.PRIVATE_RENTAL, SubCategory.HOSTEL, SubCategory.BED_AND_BREAKFAST, SubCategory.RESTAURANT, SubCategory.BAR))

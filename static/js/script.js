@@ -1272,6 +1272,8 @@ var CATEGORY_NAME_TO_ICON_URL = {
     'attractions': 'sight-2.png'
 };
 
+var DEFAULT_ICON_URL = 'sight-2.png';
+
 function categoryToIconUrl(categoryName, subCategoryName, precision) {
   var iconUrl = '';
   if (subCategoryName) {
@@ -1282,7 +1284,7 @@ function categoryToIconUrl(categoryName, subCategoryName, precision) {
   if (precision == 'Imprecise') {
     iconUrl = iconUrl.replace('.', '_imprecise.');
   }
-  return iconUrl;
+  return iconUrl || DEFAULT_ICON_URL;
 }
 
 function DataRefreshManager($rootScope) {
