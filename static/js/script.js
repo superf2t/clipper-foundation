@@ -191,6 +191,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.hasCoverImage() || this.tripPlanData['description'];
   };
 
+  this.hasSource = function() {
+    return !!this.tripPlanData['source_url'];
+  };
+
   this.updateEntities = function(entityDatas) {
     var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
     $.each(this.entityDatas, function(i, entityData) {
@@ -584,7 +588,8 @@ var Grouping = {
 
 var View = {
   MAP_VIEW: 1,
-  GUIDE_VIEW: 2
+  GUIDE_VIEW: 2,
+  SOURCE_VIEW: 3
 };
 
 function PageStateModel() {
@@ -600,12 +605,20 @@ function PageStateModel() {
     return this.view == View.GUIDE_VIEW;
   };
 
+  this.inSourceView = function() {
+    return this.view == View.SOURCE_VIEW;
+  };
+
   this.showMapView = function() {
     this.view = View.MAP_VIEW;
   };
 
   this.showGuideView = function() {
     this.view = View.GUIDE_VIEW;
+  };
+
+  this.showSourceView = function() {
+    this.view = View.SOURCE_VIEW;
   };
 
   this.isGroupByCategory = function() {
@@ -731,7 +744,7 @@ function processIntoGroups(grouping, items) {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $pageStateModel, $entityService, $datatypeValues, $allowEditing) {
+    $map, $pageStateModel, $entityService, $datatypeValues, $allowEditing, $sce) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.planModel = $tripPlanModel;
@@ -769,6 +782,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     opt_callback && opt_callback();
   });
 
+  $scope.trustSource = function(src) {
+    return $sce.trustAsResourceUrl(src);
+  };
+
   $scope.toggleOmnibox = function() {
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
   };
@@ -800,6 +817,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.showGuideView = function() {
     $scope.pageStateModel.showGuideView();
+  };
+
+  $scope.showSourceView = function() {
+    $scope.alreadyLoadedSourceView = true;
+    $scope.pageStateModel.showSourceView();
   };
 
   $scope.coverImageClicked = function() {
@@ -2845,7 +2867,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
-      '$entityService', '$datatypeValues', '$allowEditing', RootCtrl])
+      '$entityService', '$datatypeValues', '$allowEditing', '$sce', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',

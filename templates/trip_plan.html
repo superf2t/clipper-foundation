@@ -71,6 +71,10 @@
       </div>
       <div ng-include="'page-mode-controls-template'">
       </div>
+      <div class="full-width full-height" ng-show="pageStateModel.inSourceView()">
+        <iframe ng-if="alreadyLoadedSourceView" ng-src="[[trustSource(planModel.tripPlanData['source_url'])]]" id="source-iframe">
+        </iframe>
+      </div>
     </div>
 
   </div>  {# end map view #}
@@ -122,6 +126,9 @@
       </button>
       <button class="btn" ng-click="showGuideView()" ng-disabled="pageStateModel.inGuideView()" >
         Guide
+      </button>
+      <button class="btn" ng-click="showSourceView()" ng-disabled="pageStateModel.inSourceView()" ng-if="planModel.hasSource()">
+        Source
       </button>
     </div>
   </script>
