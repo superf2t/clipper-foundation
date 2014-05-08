@@ -482,6 +482,9 @@ function NoteCtrl($scope, $noteService, $tripPlanModel) {
   };
 }
 
+function GuideviewItemGroupCtrl($scope) {
+}
+
 function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
   $scope.tripPlanSelectOptions = $allTripPlans.slice(0);
   $scope.tripPlanSelectOptions.push({
@@ -577,8 +580,7 @@ var Grouping = {
 
 var View = {
   MAP_VIEW: 1,
-  GALLERY_VIEW: 2,
-  GUIDE_VIEW: 3
+  GUIDE_VIEW: 2
 };
 
 function PageStateModel() {
@@ -586,20 +588,12 @@ function PageStateModel() {
   this.grouping = Grouping.CATEGORY;
   this.selectedEntity = null;
 
-  this.inGalleryView = function() {
-    return this.view == View.GALLERY_VIEW;
-  };
-
   this.inMapView = function() {
     return this.view == View.MAP_VIEW;
   };
 
   this.inGuideView = function() {
     return this.view == View.GUIDE_VIEW;
-  };
-
-  this.showGalleryView = function() {
-    this.view = View.GALLERY_VIEW;
   };
 
   this.showMapView = function() {
@@ -759,8 +753,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   this.processItemsIntoGroups();
 
   $scope.scrollState = {
-    entityId: null,
-    highlight: false
+    entityId: null
   };
 
   $scope.$on('scrolltoentity', function($event, entityId) {
@@ -787,18 +780,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     }
   };
 
-  $scope.showGalleryView = function(opt_callback) {
-    if (!$scope.pageStateModel.inGalleryView()) {
-      $scope.pageStateModel.showGalleryView();
-      $timeout(function() {
-        google.maps.event.trigger($map, 'resize');
-        opt_callback && opt_callback();
-      });
-    } else {
-      opt_callback && opt_callback();
-    }
-  };
-
   $scope.groupByCategory = function() {
     if (!$scope.pageStateModel.isGroupByCategory()) {
       $scope.pageStateModel.groupByCategory();
@@ -813,28 +794,19 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     }
   };
 
-  $scope.openGalleryView = function() {
-    $scope.$broadcast('closeallinfowindows');
-    var openCallback = null;
-    if ($scope.pageStateModel.selectedEntity) {
-      openCallback = function() {
-        var entityModel = new EntityModel($scope.pageStateModel.selectedEntity);
-        if (entityModel.hasLocation()) {
-          $map.setCenter(entityModel.gmapsLatLng());
-        }
-      };
+  $scope.showGuideView = function() {
+    $scope.pageStateModel.showGuideView();
+  };
+
+  $scope.coverImageClicked = function() {
+    if ($tripPlanModel.hasOverview()) {
+      $scope.showGuideView();
+      $scope.pageStateModel.selectedEntity = null;
     }
-    $scope.showGalleryView(openCallback);
   };
 
   $scope.selectEntity = function(entityData) {
     $scope.pageStateModel.selectedEntity = entityData;
-    if ($scope.pageStateModel.inGalleryView()) {
-      var entityModel = new EntityModel($scope.pageStateModel.selectedEntity);
-      if (entityModel.hasLocation()) {
-        $map.setCenter(entityModel.gmapsLatLng());
-      }
-    }
   };
 
   $scope.toggleAccountDropdown = function() {
@@ -1183,66 +1155,6 @@ function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $account
         var newTripPlanId = response['trip_plans'][0]['trip_plan_id'];
         $scope.loadTripPlan(newTripPlanId)
       });
-  };
-}
-
-function GalleryPanelCtrl($scope) {
-  $scope.pageSize = 3;
-  $scope.currentPage = 0;
-  $scope.selectedImgIndex = 0;
-
-  $scope.$watch('pageStateModel.selectedEntity', function() {
-    $scope.selectedImgIndex = 0;
-    $scope.currentPage = 0;
-  });
-
-  var urls = function() {
-    return ($scope.ed() && $scope.ed()['photo_urls']) || [];
-  };
-
-  $scope.ed = function() {
-    return $scope.pageStateModel.selectedEntity;
-  };
-
-  $scope.selectedHeroImg = function() {
-    if (urls().length) {
-      return $scope.ed()['photo_urls'][$scope.selectedImgIndex];
-    }
-    return null;
-  };
-
-  $scope.imgsToShow = function() {
-    var startIndex = $scope.currentPage * $scope.pageSize;
-    return urls().slice(startIndex, startIndex + $scope.pageSize);
-  };
-
-  $scope.hasNextImgs = function() {
-    return ($scope.currentPage + 1) * $scope.pageSize < urls().length;
-  };
-
-  $scope.hasPrevImgs = function() {
-    return $scope.currentPage > 0 && urls().length > $scope.pageSize;
-  };
-
-  $scope.showNextPage = function() {
-    $scope.currentPage++;
-  };
-
-  $scope.showPrevPage = function() {
-    $scope.currentPage--;
-  };
-
-  $scope.selectImg = function(index) {
-    $scope.selectedImgIndex = index;
-  };
-
-  $scope.advanceImg = function() {
-    if ($scope.selectedImgIndex + 1 < urls().length) {
-      $scope.selectedImgIndex++;
-      if ($scope.selectedImgIndex == ($scope.pageSize) * ($scope.currentPage + 1)) {
-        $scope.currentPage++;
-      }
-    }
   };
 }
 
@@ -2208,6 +2120,25 @@ function scrollMapviewToId(container, scrollDestElem, opt_classToAdd, opt_remove
   }
 }
 
+function tcScrollToSelector($interpolate) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      scope.$watch(attrs.scrollOnChangesTo, function(value) {
+        if (value) {
+          var selector = $interpolate(attrs.scrollDestSelector)(scope);
+          var dest = $(selector);
+          var newScrollTop = elem.scrollTop() + dest.offset().top - elem.offset().top;
+          elem.animate({scrollTop: newScrollTop}, 500);
+        } else {
+          elem.animate({scrollTop: 0});
+        }
+      });
+    }
+  };
+}
+
 function tcStarRating() {
   return {
     restrict: 'AEC',
@@ -2382,6 +2313,68 @@ function tcWatchForOverflow($window, $timeout) {
           }
         });
       });
+    }
+  };
+}
+
+function tcImageGallery() {
+  return {
+    retrict: 'AEC',
+    templateUrl: 'image-gallery-template',
+    scope: {
+      urls: '=',
+      pageSize: '='
+    },
+    controller: function($scope) {
+      $scope.currentPage = 0;
+      $scope.selectedImgIndex = 0;
+
+      $scope.featuredImgUrl = function() {
+        return $scope.urls[$scope.selectedImgIndex];
+      };
+
+      $scope.imgsToShow = function() {
+        var startIndex = $scope.currentPage * $scope.pageSize;
+        return $scope.urls.slice(startIndex, startIndex + $scope.pageSize);
+      };
+
+      $scope.hasNextPage = function() {
+        return ($scope.currentPage + 1) * $scope.pageSize < $scope.urls.length;
+      };
+
+      $scope.hasPrevPage = function() {
+        return $scope.currentPage > 0 && $scope.urls.length > $scope.pageSize;
+      };
+
+      $scope.nextPage = function() {
+        $scope.currentPage++;
+      };
+
+      $scope.prevPage = function() {
+        $scope.currentPage--;
+      };
+
+      $scope.showSelector = function() {
+        return $scope.urls.length > 1;
+      };
+
+      $scope.selectImg = function(index) {
+        console.log(index);
+        $scope.selectedImgIndex = index;
+      };
+
+      $scope.advanceImg = function() {
+        if ($scope.selectedImgIndex + 1 < $scope.urls.length) {
+          $scope.selectedImgIndex++;
+          if ($scope.selectedImgIndex == ($scope.pageSize) * ($scope.currentPage + 1)) {
+            $scope.currentPage++;
+          }
+        }
+      };
+
+      $scope.selectorImgMaxWidth = function() {
+        return Math.floor(100 / $scope.pageSize) + '%';
+      };
     }
   };
 }
@@ -2807,6 +2800,8 @@ angular.module('directivesModule', [])
   .directive('tcSetScrollTop', tcSetScrollTop)
   .directive('tcSaveScrollPosition', tcSaveScrollPosition)
   .directive('tcWatchForOverflow', tcWatchForOverflow)
+  .directive('tcImageGallery', tcImageGallery)
+  .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])
@@ -2841,9 +2836,9 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
       '$templateToStringRenderer', '$pagePositionManager', '$tripPlanModel', '$allowEditing', ItemGroupCtrl])
+    .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
-    .controller('GalleryPanelCtrl', ['$scope', GalleryPanelCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])

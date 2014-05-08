@@ -406,80 +406,17 @@ right: 10px;
   height: 100%;
 }
 
-#gallery-panel .hero-container {
-  height: 70%;
-  width: 100%;
-  padding: 20px;
-  text-align: center;
-}
-
-#gallery-panel .hero-container img {
-  max-width: 100%;
-  max-height: 100%;
-  vertical-align: middle;
-  display: inline-block;
-  cursor: pointer;
-}
-
-#gallery-panel .gallery-carousel {
-  height: 30%;
-  text-align: center;
-  padding: 20px;
-}
-
-#gallery-panel .gallery-carousel a {
-  color: #fff;
-}
-
-#gallery-panel .gallery-carousel img {
-  padding: 8px;
-  max-height: 100%;
-  max-width: calc(33% - 16px);
-  vertical-align: middle;
-}
-
-#gallery-panel .gallery-carousel img.selected {
-  border: 1px solid #fff;
-}
-
-#gallery-panel .img-vertical-align {
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-}
-
-.gallery-carousel-controls {
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-
-.gallery-carousel-controls .show-previous-control {
-  position: absolute;
-  left: 0px;
-  top: calc(50% - 7px);
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.gallery-carousel-controls .show-next-control {
-  position: absolute;
-  right: 0px;
-  top: calc(50% - 7px);
-  display: inline-block;
-  vertical-align: middle;
-}
-
 .guide-panel {
   width: 100%;
   height: 100%;
-  background-color: #f8f8f8;
+  background-color: #d8d8d8;
   overflow: scroll;
-  border-left: 1px solid #ccc;
+  color: #000;
 }
 
 .guide-panel .overview {
   width: 100%;
+  background-color: #f8f8f8;
 }
 
 .guide-panel .guide-panel-hero-img {
@@ -504,10 +441,72 @@ right: 10px;
   display: inline-block;
 }
 
-.guide-panel .description {
-  white-space: pre-wrap;
-  padding: 25px;
-  color: #000;
+.guide-panel .overview .description {
+  white-space: pre-line;
+  text-align: justify;
+  padding: 25px 0;
+  margin: auto;
+  width: 90%;
+}
+
+.guide-panel h3,
+.guide-panel h4 {
+  text-align: center;
+}
+
+.guideview-item-group-header {
+  background-color: #ccc;
+  padding: 15px;
+}
+
+.one-entity-guideview {
+  padding: 15px;
+}
+
+.one-entity-guideview.odd {
+  background-color: #fff;
+}
+
+.one-entity-guideview .image-gallery .featured-image-container {
+  text-align: center;
+  margin: auto;
+  max-width: 75%;
+  max-height: 400px;
+}
+
+.one-entity-guideview .image-gallery .featured-image-container img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.one-entity-guideview .image-gallery .image-selector {
+  margin-top: 20px;
+  max-width: 500px;
+  height: 100px;
+}
+
+.one-entity-guideview .image-gallery .image-selector .selector-image-container {
+  padding: 0 10px;
+}
+
+.one-entity-guideview .image-gallery .image-selector img.selected {
+  box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
+}
+
+.one-entity-guideview .metadata {
+  width: 75%;
+  margin: 20px auto;
+}
+
+.one-entity-guideview .metadata .address {
+  font-size: 13pt;
+}
+
+.one-entity-guideview .description {
+  white-space: pre-line;
+  width: 90%;
+  margin: 20px auto;
+  text-align: justify;
 }
 
 .modal-carousel.modal {
@@ -660,47 +659,21 @@ right: 10px;
   font-weight: bold;
 }
 
-#right-panel,
-#right-panel.map-view #map-container {
+#right-panel {
   position: fixed;
   height: calc(100% - 41px);
   top: 41px;
   width: 70%;
   left: 30%;
+  border-left: 1px solid #ccc;
 }
 
-#gallery-panel {
-  width: 66%;
-  height: 100%;
-  background-color: #222222;
-}
-
-#right-panel.map-view #gallery-panel,
-#right-panel.map-view #entity-info-box,
-#right-panel.guide-view #gallery-panel,
-#right-panel.guide-view #entity-info-box {
-  display: none;
-}
-
-#info-panel {
-  width: 34%;
-  height: 100%;
-  left: 66%;
-  top: 0;
-  position: absolute;
-}
-
-#right-panel.gallery-view #map-container {
+#map-container {
   width: 100%;
   height: 100%;
 }
 
-#right-panel.gallery-view #map {
-  width: 100%;
-  height: 50%;
-}
-
-#right-panel.map-view #map {
+ #map {
   width: 100%;
   height: 100%;
 }
@@ -709,11 +682,14 @@ right: 10px;
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: #fff;
-  opacity: 0.9;
-  padding: 5px;
-  border-radius: 3px;
   z-index: 1;
+}
+
+#page-mode-toggle-control button {
+  border-radius: 1px;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
 }
 
 #entity-info-box {

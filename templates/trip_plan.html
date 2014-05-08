@@ -61,40 +61,15 @@
 
     </div>
 
-    <div id="right-panel" ng-class="{'map-view': pageStateModel.inMapView(), 'gallery-view': pageStateModel.inGalleryView(), 'guide-view': pageStateModel.inGuideView()}">
-      <div id="page-mode-toggle-control"
-        ng-show="pageStateModel.selectedEntity || pageStateModel.inGalleryView() || pageStateModel.inGuideView()">
-        <a ng-click="openGalleryView()"
-          ng-show="pageStateModel.selectedEntity && !pageStateModel.inGalleryView() && !pageStateModel.inGuideView()"
-          href="javascript:void(0)">
-          Show Gallery View
-          <span class="glyphicon glyphicon-chevron-right"></span>
-        </a>
-        <a ng-click="showMapView()" ng-show="!pageStateModel.inMapView() && !pageStateModel.inGuideView()" href="javascript:void(0)">
-          Show Map View
-          <span class="glyphicon glyphicon-chevron-left"></span>
-        </a>
-        <a ng-click="showMapView()" ng-show="pageStateModel.inGuideView()" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-chevron-left"></span>
-          Back
-        </a>
-      </div>
-      <div id="gallery-panel">
-        <div ng-include="'gallery-panel-template'" class="full-height">
-        </div>
-      </div>
-      <div id="info-panel">
-        <div id="map-container">
-          <div id="map">
-          </div>
-        </div>
-        <div id="entity-info-box">
-          <div class="address">[[pageStateModel.selectedEntity['address'] ]]</div>
-          <div class="description"><span ng-bind-html="pageStateModel.selectedEntity['description'] | linky:'_blank'"></span></div>
+    <div id="right-panel">
+      <div id="map-container" ng-show="pageStateModel.inMapView()">
+        <div id="map">
         </div>
       </div>
       <div ng-include="'guide-panel-template'" class="full-width full-height"
         ng-show="pageStateModel.inGuideView()">
+      </div>
+      <div ng-include="'page-mode-controls-template'">
       </div>
     </div>
 
@@ -139,6 +114,17 @@
       <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create New Trip Plan</a>
     </li>
   </ul>
+
+  <script type="text/ng-template" id="page-mode-controls-template">
+    <div id="page-mode-toggle-control">
+      <button class="btn" ng-click="showMapView()" ng-disabled="pageStateModel.inMapView()">
+        Map
+      </button>
+      <button class="btn" ng-click="showGuideView()" ng-disabled="pageStateModel.inGuideView()" >
+        Guide
+      </button>
+    </div>
+  </script>
 
   <script type="text/ng-template" id="infowindow-template">
     <div>
@@ -546,7 +532,6 @@
       ng-click="openInfowindow(ed['entity_id']); selectEntity(ed)">
       <div class="row main-row">
         <div class="col-md-4 img-container"
-          ng-click="openGalleryView()"
           ng-style="{'background-image': 'url(&quot;' + ed['photo_urls'][0] +'&quot;)'}">
           <div class="category-info">
             <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
@@ -733,33 +718,10 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="gallery-panel-template">
-    <div ng-controller="GalleryPanelCtrl" class="full-height">
-      <div class="hero-container">
-        <span class="img-vertical-align"></span><!--
-        --><img ng-src="[[selectedHeroImg()]]" ng-show="selectedHeroImg()"
-              ng-click="advanceImg()"/>
-      </div>
-      <div class="gallery-carousel">
-        <div class="gallery-carousel-controls">
-          <a ng-show="hasPrevImgs()" ng-click="showPrevPage()" class="show-previous-control" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-chevron-left"></span>
-          </a>
-          <a ng-repeat="img in imgsToShow()" ng-init="imgIndex = currentPage * pageSize + $index" href="javascript:void(0)"
-            ng-click="selectImg(imgIndex)">
-            <span class="img-vertical-align"></span><!--
-            --><img ng-src="[[img]]" ng-class="{'selected': imgIndex == selectedImgIndex}"/>
-          </a>
-          <a ng-show="hasNextImgs()" ng-click="showNextPage()" class="show-next-control" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-chevron-right"></span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="guide-panel-template">
-    <div class="guide-panel">
+    <div class="guide-panel"
+      tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
+      scroll-dest-selector=".one-entity-guideview[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <div class="overview" ng-if="planModel.hasOverview()">
         <div class="guide-panel-hero-img"
           ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}">
@@ -767,8 +729,44 @@
             [[planModel.tripPlanName()]]
           </div>
         </div>
-        <div class="description">[[planModel.tripPlanData['description'] ]]</div>
+        <div class="description"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
       </div>
+      <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="guideview-item-group-template">
+    <div ng-controller="GuideviewItemGroupCtrl" ng-show="itemGroupModel.hasContent()" ng-if="itemGroupModel.getEntityItems().length != 0">
+      <div class="guideview-item-group-header">
+        <h3 ng-include="'item-group-header-text-template'"></h3>
+      </div>
+      <div>
+<!--         <div ng-repeat="item in itemGroupModel.getNonemptyNoteItems()">
+          <div ng-include="'guideview-one-note-template'">
+          </div>
+        </div> -->
+        <div ng-repeat="item in itemGroupModel.getEntityItems()">
+          <div ng-include="'guideview-one-entity-template'">
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="guideview-one-entity-template">
+    <div ng-controller="EntityCtrl"
+      class="one-entity-guideview" ng-class="{'odd': $odd}"
+      tc-entity-id="[[ed['entity_id'] ]]">
+      <h4>[[ed['name'] ]]</h4>
+      <div tc-image-gallery urls="ed['photo_urls']" page-size="3">
+      </div>
+       <div class="metadata">
+        <div class="address">
+          [[ed['address'] ]]
+        </div>
+      </div>
+      <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
     </div>
   </script>
 
@@ -779,7 +777,7 @@
         'has-overview': planModel.hasOverview()
         }"
         ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}"
-        ng-click="planModel.hasOverview() && pageStateModel.showGuideView()">
+        ng-click="coverImageClicked()">
         <div class="title" ng-show="!editingTripPlanSettings">
           [[planModel.tripPlanName()]]
         </div>

@@ -34,6 +34,34 @@
     max-width: 25px;
     max-height: 25px;
   }
+
+  .image-gallery {
+    text-align: center;
+  }
+
+  .image-gallery .image-selector {
+    margin: auto;
+  }
+
+  .image-gallery .image-selector .selector-images {
+    display: inline-block;
+    max-width: calc(100% - 48px);
+  }
+
+  .image-gallery .image-selector .selector-image-container {
+    display: inline-block;
+  }
+
+  .image-gallery .image-selector .selector-images img {
+    cursor: pointer;
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .image-gallery .image-selector .selector-control {
+    display: inline-block;
+    width: 20px;
+  }
 </style>
 
 <script type="text/ng-template" id="carousel-template">
@@ -45,6 +73,34 @@
     <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
       <span class="icon-next"></span>
     </a>
+  </div>
+</script>
+
+<script type="text/ng-template" id="image-gallery-template">
+  <div class="image-gallery">
+    <div class="featured-image-container">
+      <a ng-click="advanceImg()" href="javascript:void(0)">
+        <img ng-src="[[featuredImgUrl()]]"/>
+      </a>
+    </div>
+    <div class="image-selector" ng-show="showSelector()">
+      <a ng-show="hasPrevPage()" class="selector-control left" ng-click="prevPage()">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+      <span class="selector-images">
+        <span ng-repeat="img in imgsToShow()"
+          ng-init="myIndex = currentPage * pageSize + $index"
+          class="selector-image-container"
+          ng-style="{'max-width': selectorImgMaxWidth() }">
+          <img  ng-src="[[img]]"
+            ng-click="selectImg(myIndex)"
+            ng-class="{'selected': selectedImgIndex == myIndex}"/>
+        </span>
+      </span>
+      <a ng-show="hasNextPage()" class="selector-control right" ng-click="nextPage()">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+    </div>
   </div>
 </script>
 
