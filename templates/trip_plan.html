@@ -765,6 +765,18 @@
         <div class="address">
           [[ed['address'] ]]
         </div>
+        <div class="category-info" ng-show="item.hasCategory()">
+          <span>[[ed['category']['display_name'] ]]</span>
+          <span ng-show="item.hasSubCategory()">/ [[ed['sub_category']['display_name'] ]]</span>
+          <img ng-src="/static/img/[[ed['icon_url'] ]]" class="category-icon"/>
+        </div>
+        <div class="source-info" ng-show="ed['source_url']">
+          <a ng-href="[[ed['source_url'] ]]" target="_blank"
+            tooltip="[[ed['source_url'] | hostname ]]">
+            From
+            <img class="source-icon" ng-src="http://[[ed['source_url'] | hostname ]]/favicon.ico"/>
+          </a>
+        </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
     </div>

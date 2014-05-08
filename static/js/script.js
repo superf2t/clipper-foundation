@@ -465,6 +465,10 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   };
 }
 
+function GuideviewEntityCtrl($scope) {
+  $scope.ed = $scope.item.data;
+}
+
 function NoteCtrl($scope, $noteService, $tripPlanModel) {
   $scope.nd = $scope.item.data;
   $scope.editing = false;
@@ -1532,6 +1536,16 @@ function ItemModel(data) {
 
   this.hasLocation = function() {
     return !!this.data['latlng'];
+  };
+
+  this.hasCategory = function() {
+    return !_.isEmpty(this.data['category'])
+      && this.data['category']['category_id'] != 0;
+  }
+
+  this.hasSubCategory = function() {
+    return !_.isEmpty(this.data['sub_category'])
+      && this.data['sub_category']['sub_category_id'] != 0;
   };
 
   this.categoryDisplayText = function() {

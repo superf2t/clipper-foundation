@@ -502,6 +502,16 @@ right: 10px;
   font-size: 13pt;
 }
 
+.one-entity-guideview .metadata .category-icon {
+  max-width: 25px;
+  max-height: 25px;
+}
+
+.one-entity-guideview .metadata .source-icon  {
+  max-width: 16px;
+  max-height: 16px;
+}
+
 .one-entity-guideview .description {
   white-space: pre-line;
   width: 90%;
