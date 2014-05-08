@@ -105,10 +105,24 @@ hr.dropdown-separator {
   position: relative;
 }
 
+#trip-plan-header .cover-section.has-cover-image {
+  height: 150px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+  padding: 0;
+  margin: 0;
+}
+
 #trip-plan-header .title {
   padding: 10px;
   font-size: 1.2em;
   color: #000;
+}
+
+#trip-plan-header .cover-section.has-cover-image .title {
+  background-color: rgba(0, 0, 0, 0.4);
+  color: #fff;
 }
 
 #trip-plan-header .trip-plan-name-input-container {
@@ -130,6 +144,10 @@ font-size: 1.1em;
 position: absolute;
 top: 15px;
 right: 10px;
+}
+
+#trip-plan-header .cover-section.has-cover-image .settings-control a.dropdown-toggle {
+  color: #fff;
 }
 
 #trip-plan-header .control-panel {

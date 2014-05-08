@@ -753,53 +753,58 @@
 
   <script type="text/ng-template" id="trip-plan-header-template">
     <div id="trip-plan-header">
-      <div class="title" ng-show="!editingTripPlanSettings">
-        [[planModel.tripPlanName()]]
+      <div class="cover-section" ng-class="{'has-cover-image': planModel.hasCoverImage()}"
+        ng-style="{'background-image': 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)'}">
+        <div class="title" ng-show="!editingTripPlanSettings">
+          [[planModel.tripPlanName()]]
+        </div>
+        <div ng-show="editingTripPlanSettings" class="trip-plan-name-input-container ng-hide">
+          <form ng-submit="saveTripPlanSettings()">
+            <input type="text" class="form-control"
+              ng-model="editableTripPlanSettings.name" tc-focus-on="editingTripPlanSettings"
+              ng-blur="saveTripPlanSettings()"
+              ng-keyup="onTripPlanNameKeyup($event)"/>
+          </form>
+        </div>
+
+        <div class="settings-control" ng-show="!editingTripPlanSettings">
+          <a class="dropdown-toggle" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-cog"></span>
+          </a>
+          <ul class="dropdown-menu right-top-dropdown-menu">
+            {% if allow_editing %}
+            <li>
+              <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
+              </a>
+            </li>
+            <hr class="dropdown-separator"/>
+            {% endif %}
+            <li>
+              <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-plus"></span> Clone trip plan
+              </a>
+            </li>
+            {% if allow_editing %}
+            <li>
+              <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-trash"></span> Delete trip plan
+              </a>
+            </li>
+            <hr class="dropdown-separator"/>
+            <li>
+              <a ng-click="startGmapsImport()" href="javascript:void(0)">
+                <img src="/static/img/gmaps-icon.png"/> Import Google custom map
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
       </div>
-      <div ng-show="editingTripPlanSettings" class="trip-plan-name-input-container ng-hide">
-        <form ng-submit="saveTripPlanSettings()">
-          <input type="text" class="form-control"
-            ng-model="editableTripPlanSettings.name" tc-focus-on="editingTripPlanSettings"
-            ng-blur="saveTripPlanSettings()"
-            ng-keyup="onTripPlanNameKeyup($event)"/>
-        </form>
-      </div>
-      <div class="settings-control" ng-show="!editingTripPlanSettings">
-        <a class="dropdown-toggle" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-cog"></span>
-        </a>
-        <ul class="dropdown-menu right-top-dropdown-menu">
-          {% if allow_editing %}
-          <li>
-            <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
-            </a>
-          </li>
-          <hr class="dropdown-separator"/>
-          {% endif %}
-          <li>
-            <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-plus"></span> Clone trip plan
-            </a>
-          </li>
-          {% if allow_editing %}
-          <li>
-            <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-trash"></span> Delete trip plan
-            </a>
-          </li>
-          <hr class="dropdown-separator"/>
-          <li>
-            <a ng-click="startGmapsImport()" href="javascript:void(0)">
-              <img src="/static/img/gmaps-icon.png"/> Import Google custom map
-            </a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
+
       <div class="control-panel"
         tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container"
-        parent-class-when-fixed="nav-fixed">
+        parent-class-when-fixed="nav-fixed" recompute-spread-on="planModel.hasCoverImage()">
         <div class="control-buttons container-fluid">
           <div class="row">
             <div class="col-md-4 sort-button"

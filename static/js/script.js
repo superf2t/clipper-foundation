@@ -183,6 +183,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return escape(this.tripPlanData['location_name']);
   };
 
+  this.hasCoverImage = function() {
+    return !!this.tripPlanData['cover_image_url'];
+  };
+
   this.updateEntities = function(entityDatas) {
     var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
     $.each(this.entityDatas, function(i, entityData) {
@@ -2275,6 +2279,11 @@ function tcLockAfterScroll() {
       var spread = elem.offset().top - scrollParent.offset().top;
       var classWhenFixed = attrs.classWhenFixed;
       var parentClassWhenFixed = attrs.parentClassWhenFixed;
+      if (attrs.recomputeSpreadOn) {
+        scope.$watch(attrs.recomputeSpreadOn, function() {
+          spread = elem.offset().top - scrollParent.offset().top;
+        });
+      }
       scrollParent.on('scroll', function() {
         if (scrollParent.scrollTop() >= spread) {
           elem.addClass(classWhenFixed);
