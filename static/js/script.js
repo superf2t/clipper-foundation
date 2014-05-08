@@ -2334,6 +2334,29 @@ function tcSetScrollTop($timeout) {
   };
 }
 
+function tcSaveScrollPosition($timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      var scrollTop = elem.scrollTop();
+      var resetInProgress = false;
+      elem.on('scroll', function() {
+        if (!resetInProgress) {
+          scrollTop = elem.scrollTop();
+        }
+      });
+      scope.$watch(attrs.scrollPositionWatch, function() {
+        resetInProgress = true;
+        $timeout(function() {
+          elem.scrollTop(scrollTop);
+          resetInProgress = false;
+        });
+      });
+    }
+  };
+}
+
 function tcWatchForOverflow($window, $timeout) {
   return {
     restrict: 'A',
@@ -2782,6 +2805,7 @@ angular.module('directivesModule', [])
   .directive('tcFocusOn', tcFocusOn)
   .directive('tcLockAfterScroll', tcLockAfterScroll)
   .directive('tcSetScrollTop', tcSetScrollTop)
+  .directive('tcSaveScrollPosition', tcSaveScrollPosition)
   .directive('tcWatchForOverflow', tcWatchForOverflow)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
