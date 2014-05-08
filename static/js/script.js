@@ -592,8 +592,14 @@ var View = {
   SOURCE_VIEW: 3
 };
 
+var SidePanelMode = {
+  ENTITIES: 1,
+  ADD_PLACE: 2
+};
+
 function PageStateModel() {
   this.view = View.MAP_VIEW;
+  this.sidePanelMode = SidePanelMode.ENTITIES;
   this.grouping = Grouping.CATEGORY;
   this.selectedEntity = null;
 
@@ -619,6 +625,22 @@ function PageStateModel() {
 
   this.showSourceView = function() {
     this.view = View.SOURCE_VIEW;
+  };
+
+  this.inEntityPanel = function() {
+    return this.sidePanelMode == SidePanelMode.ENTITIES;
+  };
+
+  this.inAddPlacePanel = function() {
+    return this.sidePanelMode == SidePanelMode.ADD_PLACE;
+  };
+
+  this.showEntityPanel = function() {
+    this.sidePanelMode = SidePanelMode.ENTITIES;
+  };
+
+  this.showAddPlacePanel = function() {
+    this.sidePanelMode = SidePanelMode.ADD_PLACE;
   };
 
   this.isGroupByCategory = function() {

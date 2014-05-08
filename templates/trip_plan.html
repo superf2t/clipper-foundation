@@ -39,6 +39,7 @@
 
   <div>
     <div id="entity-container"
+      ng-show="pageStateModel.inEntityPanel()"
       tc-entity-scroll scroll-state="scrollState"
       tc-save-scroll-position scroll-position-watch="itemGroups">
 
@@ -58,7 +59,10 @@
       <div class="mapview-footer">
         Copyright 2014 Unicycle Labs
       </div>
+    </div>
 
+    <div ng-if="pageStateModel.inAddPlacePanel()"
+      ng-include="'add-place-panel-template'">
     </div>
 
     <div id="right-panel">
