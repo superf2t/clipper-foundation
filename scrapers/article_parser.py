@@ -20,7 +20,10 @@ class ArticleParser(object):
         return None
 
     def get_cover_image_url(self):
-        return self.root.xpath(self.COVER_IMAGE_URL_XPATH)[0]
+        img_elem = self.root.xpath(self.COVER_IMAGE_URL_XPATH)
+        if img_elem:
+            return img_elem[0]
+        return None
 
     def get_source_url(self):
         return self.url
