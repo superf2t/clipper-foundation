@@ -105,6 +105,10 @@ hr.dropdown-separator {
   position: relative;
 }
 
+#trip-plan-header .cover-section.has-overview {
+  cursor: pointer;
+}
+
 #trip-plan-header .cover-section.has-cover-image {
   height: 150px;
   background-repeat: no-repeat;
@@ -466,6 +470,46 @@ right: 10px;
   vertical-align: middle;
 }
 
+.guide-panel {
+  width: 100%;
+  height: 100%;
+  background-color: #f8f8f8;
+  overflow: scroll;
+  border-left: 1px solid #ccc;
+}
+
+.guide-panel .overview {
+  width: 100%;
+}
+
+.guide-panel .guide-panel-hero-img {
+  width: 100%;
+  height: 500px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+  text-align: center;
+}
+
+.guide-panel .title-floater {
+  padding: 25px 80px;
+  background-color: #fff;
+  opacity: 0.8;
+  margin: auto;
+  font-size: 16pt;
+  text-align: center;
+  border-radius: 3px;
+  position: relative;
+  top: 65%;
+  display: inline-block;
+}
+
+.guide-panel .description {
+  white-space: pre-wrap;
+  padding: 25px;
+  color: #000;
+}
+
 .modal-carousel.modal {
   top: 15%;
 }
@@ -632,7 +676,9 @@ right: 10px;
 }
 
 #right-panel.map-view #gallery-panel,
-#right-panel.map-view #entity-info-box {
+#right-panel.map-view #entity-info-box,
+#right-panel.guide-view #gallery-panel,
+#right-panel.guide-view #entity-info-box {
   display: none;
 }
 

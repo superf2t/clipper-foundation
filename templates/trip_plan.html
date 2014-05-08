@@ -61,18 +61,22 @@
 
     </div>
 
-    <div id="right-panel" ng-class="{'map-view': pageStateModel.inMapView(), 'gallery-view': pageStateModel.inGalleryView()}">
+    <div id="right-panel" ng-class="{'map-view': pageStateModel.inMapView(), 'gallery-view': pageStateModel.inGalleryView(), 'guide-view': pageStateModel.inGuideView()}">
       <div id="page-mode-toggle-control"
-        ng-show="pageStateModel.selectedEntity || pageStateModel.inGalleryView()">
+        ng-show="pageStateModel.selectedEntity || pageStateModel.inGalleryView() || pageStateModel.inGuideView()">
         <a ng-click="openGalleryView()"
-          ng-show="pageStateModel.selectedEntity && !pageStateModel.inGalleryView()"
+          ng-show="pageStateModel.selectedEntity && !pageStateModel.inGalleryView() && !pageStateModel.inGuideView()"
           href="javascript:void(0)">
           Show Gallery View
           <span class="glyphicon glyphicon-chevron-right"></span>
         </a>
-        <a ng-click="showMapView()" ng-show="!pageStateModel.inMapView()" href="javascript:void(0)">
+        <a ng-click="showMapView()" ng-show="!pageStateModel.inMapView() && !pageStateModel.inGuideView()" href="javascript:void(0)">
           Show Map View
           <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <a ng-click="showMapView()" ng-show="pageStateModel.inGuideView()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+          Back
         </a>
       </div>
       <div id="gallery-panel">
@@ -88,6 +92,9 @@
           <div class="address">[[pageStateModel.selectedEntity['address'] ]]</div>
           <div class="description"><span ng-bind-html="pageStateModel.selectedEntity['description'] | linky:'_blank'"></span></div>
         </div>
+      </div>
+      <div ng-include="'guide-panel-template'" class="full-width full-height"
+        ng-show="pageStateModel.inGuideView()">
       </div>
     </div>
 
@@ -751,10 +758,28 @@
     </div>
   </script>
 
+  <script type="text/ng-template" id="guide-panel-template">
+    <div class="guide-panel">
+      <div class="overview" ng-if="planModel.hasOverview()">
+        <div class="guide-panel-hero-img"
+          ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}">
+          <div class="title-floater">
+            [[planModel.tripPlanName()]]
+          </div>
+        </div>
+        <div class="description">[[planModel.tripPlanData['description'] ]]</div>
+      </div>
+    </div>
+  </script>
+
   <script type="text/ng-template" id="trip-plan-header-template">
     <div id="trip-plan-header">
-      <div class="cover-section" ng-class="{'has-cover-image': planModel.hasCoverImage()}"
-        ng-style="{'background-image': 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)'}">
+      <div class="cover-section" ng-class="{
+        'has-cover-image': planModel.hasCoverImage(),
+        'has-overview': planModel.hasOverview()
+        }"
+        ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}"
+        ng-click="planModel.hasOverview() && pageStateModel.showGuideView()">
         <div class="title" ng-show="!editingTripPlanSettings">
           [[planModel.tripPlanName()]]
         </div>

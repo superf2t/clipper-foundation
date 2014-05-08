@@ -187,6 +187,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return !!this.tripPlanData['cover_image_url'];
   };
 
+  this.hasOverview = function() {
+    return this.hasCoverImage() || this.tripPlanData['description'];
+  };
+
   this.updateEntities = function(entityDatas) {
     var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
     $.each(this.entityDatas, function(i, entityData) {
@@ -573,7 +577,8 @@ var Grouping = {
 
 var View = {
   MAP_VIEW: 1,
-  GALLERY_VIEW: 2
+  GALLERY_VIEW: 2,
+  GUIDE_VIEW: 3
 };
 
 function PageStateModel() {
@@ -589,12 +594,20 @@ function PageStateModel() {
     return this.view == View.MAP_VIEW;
   };
 
+  this.inGuideView = function() {
+    return this.view == View.GUIDE_VIEW;
+  };
+
   this.showGalleryView = function() {
     this.view = View.GALLERY_VIEW;
   };
 
   this.showMapView = function() {
     this.view = View.MAP_VIEW;
+  };
+
+  this.showGuideView = function() {
+    this.view = View.GUIDE_VIEW;
   };
 
   this.isGroupByCategory = function() {
