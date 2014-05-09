@@ -547,7 +547,7 @@
       ng-click="openInfowindow(ed['entity_id']); selectEntity(ed)">
       <div class="row main-row">
         <div class="col-md-4 img-container"
-          ng-style="{'background-image': 'url(&quot;' + ed['photo_urls'][0] +'&quot;)'}">
+          ng-style="{'background-image': 'url(&quot;' + item.getBackgroundImageUrl(planModel.locationLatlng()) +'&quot;)'}">
           <div class="category-info">
             <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
           </div>
