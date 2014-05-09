@@ -9,6 +9,7 @@ import admin
 import clip_logic
 import constants
 import data
+import sample_sites
 from scrapers import trip_plan_creator
 import serializable
 import serviceimpls
@@ -102,7 +103,8 @@ def trip_plan_by_id(trip_plan_id):
         allow_editing=current_trip_plan and current_trip_plan.editable_by(session_info),
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
-        all_datatype_values=values.ALL_VALUES)
+        all_datatype_values=values.ALL_VALUES,
+        sample_sites=sample_sites.SAMPLE_SITES)
     return process_response(response, request, session_info)
 
 @app.route('/bookmarklet.js')

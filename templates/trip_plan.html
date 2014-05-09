@@ -37,7 +37,7 @@
     </div>
   </nav>
 
-  <div>
+  <div id="left-panel">
     <div id="entity-container"
       ng-show="pageStateModel.inEntityPanel()"
       tc-entity-scroll scroll-state="scrollState"
@@ -77,6 +77,10 @@
       </div>
       <div class="full-width full-height" ng-show="pageStateModel.inSourceView()">
         <iframe ng-if="alreadyLoadedSourceView" ng-src="[[trustSource(planModel.tripPlanData['source_url'])]]" id="source-iframe">
+        </iframe>
+      </div>
+      <div class="full-width full-height" ng-if="pageStateModel.inOffsiteView()">
+        <iframe ng-src="[[trustSource(pageStateModel.offsiteUrl)]]" id="offsite-iframe">
         </iframe>
       </div>
     </div>
@@ -124,7 +128,7 @@
   </ul>
 
   <script type="text/ng-template" id="page-mode-controls-template">
-    <div id="page-mode-toggle-control">
+    <div id="page-mode-toggle-control" ng-show="!pageStateModel.inOffsiteView()">
       <button class="btn" ng-click="showMapView()" ng-disabled="pageStateModel.inMapView()">
         Map
       </button>
@@ -800,7 +804,16 @@
         'has-overview': planModel.hasOverview()
         }"
         ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}"
-        ng-click="coverImageClicked()">
+        ng-click="coverImageClicked()"
+        tc-cover-scroll start-threshold="0.4" easing-exponent="1.5"
+        scroll-parent-selector="#entity-container"
+        animate-inverse-on=".header-background-strip"
+        recompute-threshold-on="planModel.hasCoverImage()">
+      </div>
+      <div class="header-background-strip"
+        ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}">
+      </div>
+      <div class="header-strip">
         <div class="title" ng-show="!editingTripPlanSettings">
           [[planModel.tripPlanName()]]
         </div>
@@ -813,100 +826,77 @@
           </form>
         </div>
 
-        <div class="settings-control" ng-show="!editingTripPlanSettings">
-          <a class="dropdown-toggle" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-cog"></span>
-          </a>
-          <ul class="dropdown-menu right-top-dropdown-menu">
-            {% if allow_editing %}
-            <li>
-              <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
-              </a>
-            </li>
-            <hr class="dropdown-separator"/>
-            {% endif %}
-            <li>
-              <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-plus"></span> Clone trip plan
-              </a>
-            </li>
-            {% if allow_editing %}
-            <li>
-              <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
-                <span class="glyphicon glyphicon-trash"></span> Delete trip plan
-              </a>
-            </li>
-            <hr class="dropdown-separator"/>
-            <li>
-              <a ng-click="startGmapsImport()" href="javascript:void(0)">
-                <img src="/static/img/gmaps-icon.png"/> Import Google custom map
-              </a>
-            </li>
-            {% endif %}
-          </ul>
+        <div class="settings-control" ng-show="!editingTripPlanSettings"
+          ng-click="$event.stopPropagation()">
+          {% if allow_editing %}
+          <span class="settings-item">
+            <button class="btn btn-add-place" ng-click="toggleOmnibox()">
+              Add Place
+            </button>
+          </span>
+          {% else %}
+          <span class="alignment-spacer">
+          </span>
+          {% endif %}
+          <span class="settings-item">
+            <a class="dropdown-toggle" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-sort"></span>
+            </a>
+            <ul class="dropdown-menu sorting-dropdown right-top-dropdown-menu" ng-if="planModel.numEntities() > 1">
+              <li>
+                <a ng-click="groupByCategory()" href="javascript:void(0)">
+                  Sort by Type
+                  <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
+                </a>
+              </li>
+              <li>
+                <a ng-click="groupByDay()" href="javascript:void(0)">
+                  Sort by Day
+                  <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
+                </a>
+              </li>
+            </ul>
+          </span>
+          <span class="settings-item">
+            <a class="dropdown-toggle" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-cog"></span>
+            </a>
+            <ul class="dropdown-menu right-top-dropdown-menu">
+              {% if allow_editing %}
+              <li>
+                <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
+                </a>
+              </li>
+              <hr class="dropdown-separator"/>
+              {% endif %}
+              <li>
+                <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-plus"></span> Clone trip plan
+                </a>
+              </li>
+              {% if allow_editing %}
+              <li>
+                <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-trash"></span> Delete trip plan
+                </a>
+              </li>
+              <hr class="dropdown-separator"/>
+              <li>
+                <a ng-click="startGmapsImport()" href="javascript:void(0)">
+                  <img src="/static/img/gmaps-icon.png"/> Import Google custom map
+                </a>
+              </li>
+              {% endif %}
+            </ul>
+          </span>
         </div>
-      </div>
-
-      <div class="control-panel"
-        tc-lock-after-scroll class-when-fixed="fixed" scroll-parent-id="entity-container"
-        parent-class-when-fixed="nav-fixed" recompute-spread-on="planModel.hasCoverImage()">
-        <div class="control-buttons container-fluid">
-          <div class="row">
-            <div class="col-md-4 sort-button"
-              ng-class="{'inactive': planModel.numEntities() <= 1}">
-              <a class="dropdown-toggle" href="javascript:void(0)"
-                tooltip="[[planModel.numEntities() <=1 ? 'Add places first' : null]]"
-                tooltip-placement="bottom">
-                <span class="button-content">
-                  Sort Places
-                </span>
-              </a>
-              <ul class="dropdown-menu sorting-dropdown" ng-if="planModel.numEntities() > 1">
-                <li>
-                  <a ng-click="groupByCategory()" href="javascript:void(0)">
-                    Sort by Type
-                    <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
-                  </a>
-
-                </li>
-                <li>
-                  <a ng-click="groupByDay()" href="javascript:void(0)">
-                    Sort by Day
-                    <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            {% if allow_editing %}
-            <div class="col-md-4 day-planner-button"
-              ng-class="{'inactive': planModel.numEntities() <= 1}">
-              <a ng-click="planModel.numEntities() > 1 && openDayPlanner('day-planner-modal-window')" href="javascript:void(0)"
-                tooltip="[[planModel.numEntities() <=1 ? 'Add places first' : null]]"
-                tooltip-placement="bottom">
-                <span class="button-content">Plan Itinerary</span>
-              </a>
-            </div>
-            <div class="col-md-4 add-place-button">
-              <a ng-click="toggleOmnibox()" href="javascript:void(0)">
-                <span class="button-content">Add Place to Trip</span>
-              </a>
-            </div>
-            {% else %}
-            <div class="col-md-8 button-filler">
-              &nbsp;
-            </div>
-            {% endif %}
-          </div>
-        </div>
-        {% if allow_editing %}
-        <div ng-include="'omnibox-template'" ng-show="omniboxState.visible">
-        </div>
-        {% endif %}
-      </div>
-      <div class="nav-vertical-placeholder" ng-class="{'omnibox-open': omniboxState.visible}">
       </div>
     </div>
+    {% if allow_editing %}
+    <div ng-include="'omnibox-template'" ng-show="omniboxState.visible">
+    </div>
+    {% endif %}
   </script>
 
   {% if allow_editing %}
@@ -997,6 +987,59 @@
           <button class="btn" ng-click="$close()">
             Close
           </button>
+        </div>
+      </div>
+    </div>
+  </script>
+  {% endif %}
+
+  {% if allow_editing %}
+  <script type="text/ng-template" id="add-place-panel-template">
+    <div class="add-place-panel">
+      <div class="header">
+        Search for a place to add to your trip
+        <button class="btn close-panel-button" ng-click="showEntityPanel()">
+          Close
+        </button>
+      </div>
+      <div ng-show="!loadingData" class="search-omnibox">
+        <div class="search-select">
+          <button class="btn dropdown-toggle dropdown-button">
+            TravelClipper search
+            <img src="/static/img/powered-by-google-on-white.png"/>
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            {% for site in sample_sites %}
+            <li><a href="#"><img src="{{site.icon_url}}" class="site-icon"/> {{site.display_name}}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+        <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
+          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+          on-place-change="placeChanged($newPlace)"
+          tc-focus-on="omniboxState.visible"
+          ng-keyup="onOmniboxKeyup($event)"
+          ng-model="inputState.rawText"
+          ng-paste="textPasted()"/>
+      </div>
+      <div ng-show="loadingData" class="search-spinner">
+        <img src="/static/img/spinner-small.gif"/>
+      </div>
+      <div class="search-others">
+        <p>
+          You can also search for other places from other top websites:
+        </p>
+        <div class="sample-sites">
+          {% for site in sample_sites %}
+            <p>
+              <a ng-click="loadOffsiteUrl('{{site.search_url_prefix}}' + planModel.demoQueryString())"
+                href="javascript:void(0)">
+                <img src="{{site.icon_url}}" class="site-icon"/>
+                {{site.display_name}}
+              </a>
+            </p>
+          {% endfor %}
         </div>
       </div>
     </div>

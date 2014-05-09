@@ -589,7 +589,8 @@ var Grouping = {
 var View = {
   MAP_VIEW: 1,
   GUIDE_VIEW: 2,
-  SOURCE_VIEW: 3
+  SOURCE_VIEW: 3,
+  OFFSITE_VIEW: 4
 };
 
 var SidePanelMode = {
@@ -602,6 +603,7 @@ function PageStateModel() {
   this.sidePanelMode = SidePanelMode.ENTITIES;
   this.grouping = Grouping.CATEGORY;
   this.selectedEntity = null;
+  this.offsiteUrl = null;
 
   this.inMapView = function() {
     return this.view == View.MAP_VIEW;
@@ -615,6 +617,10 @@ function PageStateModel() {
     return this.view == View.SOURCE_VIEW;
   };
 
+  this.inOffsiteView = function() {
+    return this.view == View.OFFSITE_VIEW;
+  };
+
   this.showMapView = function() {
     this.view = View.MAP_VIEW;
   };
@@ -625,6 +631,10 @@ function PageStateModel() {
 
   this.showSourceView = function() {
     this.view = View.SOURCE_VIEW;
+  };
+
+  this.showOffsiteView = function() {
+    this.view = View.OFFSITE_VIEW;
   };
 
   this.inEntityPanel = function() {
@@ -844,6 +854,22 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.showSourceView = function() {
     $scope.alreadyLoadedSourceView = true;
     $scope.pageStateModel.showSourceView();
+  };
+
+  $scope.showEntityPanel = function() {
+    $scope.pageStateModel.showEntityPanel();
+    if ($scope.pageStateModel.inOffsiteView()) {
+      $scope.showMapView();
+    }
+  };
+
+  $scope.showAddPlacePanel = function() {
+    $scope.pageStateModel.showAddPlacePanel();
+  };
+
+  $scope.loadOffsiteUrl = function(url) {
+    $scope.pageStateModel.offsiteUrl = url;
+    $scope.pageStateModel.showOffsiteView();
   };
 
   $scope.coverImageClicked = function() {
@@ -2290,17 +2316,97 @@ function tcLockAfterScroll() {
       }
       scrollParent.on('scroll', function() {
         if (scrollParent.scrollTop() >= spread) {
-          elem.addClass(classWhenFixed);
+          if (classWhenFixed) {
+            elem.addClass(classWhenFixed);          
+          }
           if (parentClassWhenFixed) {
             scrollParent.addClass(parentClassWhenFixed);
           }
         } else {
-          elem.removeClass(classWhenFixed);
+          if (classWhenFixed) {
+            elem.removeClass(classWhenFixed);          
+          }
           if (parentClassWhenFixed) {
             scrollParent.removeClass(parentClassWhenFixed);
           }
         }
       });
+    }
+  };
+}
+
+function tcScrollSignal() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      var scrollParent = $(attrs.scrollParentSelector);
+      var referenceElem = attrs.referenceElemSelector
+        ? $(attrs.referenceElemSelector) : scrollParent;
+
+      function computeSpread() {
+        var spread = 0;
+        if (attrs.signalCondition == 'bottom-to-bottom') {
+          spread = elem.offset().top + elem.height() 
+            - (referenceElem.offset().top + referenceElem.height());
+        }
+        return spread;        
+      }
+
+      var spread = computeSpread();
+
+      scrollParent.on('scroll', function() {
+        if (scrollParent.scrollTop() >= spread) {
+          attrs.signalClass && elem.addClass(attrs.signalClass);
+          attrs.parentSignalClass && scrollParent.addClass(attrs.parentSignalClass);
+          attrs.referenceSignalClass && referenceElem.addClass(attrs.referenceSignalClass);
+        } else {
+          attrs.signalClass && elem.removeClass(attrs.signalClass);
+          attrs.parentSignalClass && scrollParent.removeClass(attrs.parentSignalClass);
+          attrs.referenceSignalClass && referenceElem.removeClass(attrs.referenceSignalClass);
+        }
+      });
+
+      if (attrs.recomputeSpreadOn) {
+        scope.$watch(attrs.recomputeSpreadOn, function() {
+          spread = computeSpread();
+        });
+      }
+    }
+  };
+}
+
+function tcCoverScroll() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      var inverseElem = $(attrs.animateInverseOn);
+      var scrollParent = $(attrs.scrollParentSelector);
+      var height = elem.height();
+      var startThreshold = height * parseFloat(attrs.startThreshold);
+      var easingExponent = parseFloat(attrs.easingExponent);
+      scrollParent.on('scroll', function() {
+        var scrollTop = scrollParent.scrollTop();
+        if (scrollTop < startThreshold) {
+          elem.css('opacity', 1);
+          inverseElem.css('opacity', 0);
+        } else if ((scrollTop + 44) >= height) {
+          elem.css('opacity', 0);
+          inverseElem.css('opacity', 1);
+        } else {
+          var opacity = 1 - Math.pow( ((scrollTop - startThreshold) / (height - startThreshold - 44)), easingExponent);
+          elem.css('opacity', opacity);
+          inverseElem.css('opacity', 1 - opacity);
+        }
+      });
+
+      if (attrs.recomputeThresholdOn) {
+        scope.$watch(attrs.recomputeThresholdOn, function() {
+          height = elem.height();
+          startThreshold = height * parseFloat(attrs.startThreshold);
+        });
+      }
     }
   };
 }
@@ -2860,6 +2966,7 @@ angular.module('directivesModule', [])
   .directive('tcWatchForOverflow', tcWatchForOverflow)
   .directive('tcImageGallery', tcImageGallery)
   .directive('tcScrollToSelector', tcScrollToSelector)
+  .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 angular.module('filtersModule', [])
@@ -2913,6 +3020,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
+    .directive('tcCoverScroll', tcCoverScroll)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);
