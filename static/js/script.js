@@ -782,7 +782,7 @@ function processIntoGroups(grouping, items) {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $pageStateModel, $entityService, $datatypeValues, $allowEditing, $sce) {
+    $map, $mapBounds, $pageStateModel, $entityService, $datatypeValues, $allowEditing, $sce) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.planModel = $tripPlanModel;
@@ -828,6 +828,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.omniboxState.visible = !$scope.omniboxState.visible;
   };
 
+  this.mapViewInitialized = $pageStateModel.inMapView();
   $scope.showMapView = function() {
     if (!$scope.pageStateModel.inMapView()) {
       $scope.pageStateModel.showMapView();
@@ -835,6 +836,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
         var oldCenter = $map.getCenter();
         google.maps.event.trigger($map, 'resize');
         $map.setCenter(oldCenter);
+        console.log(me.mapViewInitialized);
+        if (!me.mapViewInitialized) {
+          $map.fitBounds($mapBounds);
+        }
+        me.mapViewInitialized = true;
       });
     }
   };
@@ -3001,7 +3007,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
+      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',
       '$entityService', '$datatypeValues', '$allowEditing', '$sce', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
