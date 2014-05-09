@@ -477,7 +477,7 @@
     <div draggable="true" class="day-planner-draggable-entity"
       ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
       tc-dragstart="onDragstart({$event: $event})" tc-dragend="onDragend()">
-      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(&quot;' + item.data['photo_urls'][0] + '&quot;)'}">
+      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(&quot;' + item.getBackgroundImageUrl(planModel.locationLatlng()) + '&quot;)'}">
       </div>
       <div class="day-planner-entity-info">
         <div>
@@ -839,10 +839,14 @@
               <span class="glyphicon glyphicon-cog"></span>
             </a>
             <ul class="dropdown-menu right-top-dropdown-menu">
-
               <li>
                 <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
+                </a>
+              </li>
+              <li>
+                <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-time"></span> Plan itinerary
                 </a>
               </li>
               <hr class="dropdown-separator"/>

@@ -988,7 +988,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.openDayPlanner = function(windowClass) {
     $modal.open({
       templateUrl: 'day-planner-template',
-      scope: $scope.$new(true),
+      scope: $scope,
       backdrop: 'static',
       windowClass: windowClass
     });
