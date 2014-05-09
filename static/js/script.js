@@ -204,6 +204,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return !!this.tripPlanData['source_url'];
   };
 
+  this.creatorIsUser = function() {
+    return this.tripPlanData['creator'] && this.tripPlanData['creator'].indexOf('@') > -1;
+  };
+
   this.locationLatlng = function() {
     return this.tripPlanData['location_latlng'];
   };

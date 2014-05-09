@@ -892,7 +892,7 @@
         <span ng-if="planModel.hasSource()">
           Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
         </span>
-        <span ng-if="!planModel.hasSource()">
+        <span ng-if="!planModel.hasSource() && planModel.creatorIsUser()">
           Created by: [[planModel.tripPlanData['creator'] | emailPrefix ]]
         </span>
         <div class="clone-control">
