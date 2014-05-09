@@ -251,6 +251,13 @@ def generate_sessionid():
     return struct.unpack('Q', sessionid)[0]
 
 
+class InitialPageState(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('view', 'sort')
+
+    def __init__(self, view=None, sort=None):
+        self.view = view
+        self.sort = sort
+
 class AccountInfo(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('email')
 

@@ -95,6 +95,7 @@ def trip_plan_by_id(trip_plan_id):
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    initial_state = data.InitialPageState(request.values.get('view'), request.values.get('sort'))
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
@@ -104,7 +105,8 @@ def trip_plan_by_id(trip_plan_id):
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
-        sample_sites=sample_sites.SAMPLE_SITES)
+        sample_sites=sample_sites.SAMPLE_SITES,
+        initial_state=initial_state)
     return process_response(response, request, session_info)
 
 @app.route('/bookmarklet.js')

@@ -598,10 +598,10 @@ var SidePanelMode = {
   ADD_PLACE: 2
 };
 
-function PageStateModel() {
-  this.view = View.MAP_VIEW;
+function PageStateModel(view, grouping) {
+  this.view = view;
   this.sidePanelMode = SidePanelMode.ENTITIES;
-  this.grouping = Grouping.CATEGORY;
+  this.grouping = grouping;
   this.selectedEntity = null;
   this.offsiteUrl = null;
 
@@ -672,6 +672,12 @@ function PageStateModel() {
   this.entityIsSelected = function(entityId) {
     return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
   };
+}
+
+PageStateModel.fromInitialState = function(initialState) {
+  var view = initialState['view'] == 'guide' ? View.GUIDE_VIEW : View.MAP_VIEW;
+  var grouping = initialState['sort'] == 'day' ? Grouping.DAY : Grouping.CATEGORY;
+  return new PageStateModel(view, grouping);
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -2977,12 +2983,12 @@ angular.module('filtersModule', [])
   });
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
-    accountInfo, datatypeValues, allowEditing) {
+    accountInfo, datatypeValues, allowEditing, initialState) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
-    .value('$pageStateModel', new PageStateModel())
+    .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
     .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing);
