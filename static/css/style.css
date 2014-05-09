@@ -119,7 +119,6 @@ hr.dropdown-separator {
   background-size: cover;
   background-position: 50% 50%;
   padding: 0;
-  margin: 0 0 10px 0;
 }
 
 #trip-plan-header .title {
@@ -198,6 +197,18 @@ hr.dropdown-separator {
   width: 0;
   height: 34px;
   vertical-align: middle;
+}
+
+#trip-plan-header .creator-info {
+  margin: 0 10px;
+  position: relative;
+  color: #000;
+}
+
+#trip-plan-header .clone-control {
+  position: absolute;
+  top: 2px;
+  right: 0;
 }
 
 /* Map View */

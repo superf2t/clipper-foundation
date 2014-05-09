@@ -6,6 +6,15 @@ function hostnameFromUrl(url) {
   return fullHost;
 }
 
+function hostNoSuffix(url) {
+  var host = hostnameFromUrl(url);
+  return host.split('.')[0];
+}
+
+function emailPrefix(email) {
+  return email.split('@')[0];
+}
+
 function getParameterByName(name) {
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
   var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -2981,12 +2990,16 @@ angular.module('directivesModule', [])
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
+function makeFilter(fn) {
+  return function() {
+    return fn;
+  };
+}
+
 angular.module('filtersModule', [])
-  .filter('hostname', function() {
-    return function(input) {
-      return hostnameFromUrl(input);
-    }
-  });
+  .filter('hostname', makeFilter(hostnameFromUrl))
+  .filter('hostNoSuffix', makeFilter(hostNoSuffix))
+  .filter('emailPrefix', makeFilter(emailPrefix));
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     accountInfo, datatypeValues, allowEditing, initialState) {

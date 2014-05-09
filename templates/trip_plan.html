@@ -834,29 +834,18 @@
               Add Place
             </button>
           </span>
-          {% else %}
-          <span class="alignment-spacer">
-          </span>
-          {% endif %}
           <span class="settings-item">
             <a class="dropdown-toggle" href="javascript:void(0)">
               <span class="glyphicon glyphicon-cog"></span>
             </a>
             <ul class="dropdown-menu right-top-dropdown-menu">
-              {% if allow_editing %}
+
               <li>
                 <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
                 </a>
               </li>
               <hr class="dropdown-separator"/>
-              {% endif %}
-              <li>
-                <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-plus"></span> Clone trip plan
-                </a>
-              </li>
-              {% if allow_editing %}
               <li>
                 <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-trash"></span> Delete trip plan
@@ -868,9 +857,12 @@
                   <img src="/static/img/gmaps-icon.png"/> Import Google custom map
                 </a>
               </li>
-              {% endif %}
             </ul>
           </span>
+          {% else %}
+          <span class="alignment-spacer">
+          </span>
+          {% endif %}
           <span class="settings-item">
             <a class="dropdown-toggle" href="javascript:void(0)">
               <span class="glyphicon glyphicon-sort"></span>
@@ -890,6 +882,20 @@
               </li>
             </ul>
           </span>
+        </div>
+      </div>
+      <div class="creator-info">
+        <span ng-if="planModel.hasSource()">
+          Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
+        </span>
+        <span ng-if="!planModel.hasSource()">
+          Created by: [[planModel.tripPlanData['creator'] | emailPrefix ]]
+        </span>
+        <div class="clone-control">
+          <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)"
+            tooltip="Clone this trip plan" tooltip-placement="left" tooltip-append-to-body="true">
+            <span class="glyphicon glyphicon-new-window"></span>
+          </a>
         </div>
       </div>
     </div>
