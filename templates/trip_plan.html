@@ -840,25 +840,6 @@
           {% endif %}
           <span class="settings-item">
             <a class="dropdown-toggle" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-sort"></span>
-            </a>
-            <ul class="dropdown-menu sorting-dropdown right-top-dropdown-menu" ng-if="planModel.numEntities() > 1">
-              <li>
-                <a ng-click="groupByCategory()" href="javascript:void(0)">
-                  Sort by Type
-                  <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
-                </a>
-              </li>
-              <li>
-                <a ng-click="groupByDay()" href="javascript:void(0)">
-                  Sort by Day
-                  <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
-                </a>
-              </li>
-            </ul>
-          </span>
-          <span class="settings-item">
-            <a class="dropdown-toggle" href="javascript:void(0)">
               <span class="glyphicon glyphicon-cog"></span>
             </a>
             <ul class="dropdown-menu right-top-dropdown-menu">
@@ -888,6 +869,25 @@
                 </a>
               </li>
               {% endif %}
+            </ul>
+          </span>
+          <span class="settings-item">
+            <a class="dropdown-toggle" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-sort"></span>
+            </a>
+            <ul class="dropdown-menu sorting-dropdown right-top-dropdown-menu" ng-if="planModel.numEntities() > 1">
+              <li>
+                <a ng-click="groupByCategory()" href="javascript:void(0)">
+                  Sort by Type
+                  <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
+                </a>
+              </li>
+              <li>
+                <a ng-click="groupByDay()" href="javascript:void(0)">
+                  Sort by Day
+                  <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
+                </a>
+              </li>
             </ul>
           </span>
         </div>
