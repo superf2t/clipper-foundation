@@ -82,7 +82,7 @@
         height: calc(100% - 30px);
         padding: 0;
         margin: 0;
-        background-color: #ebecec;
+        background-color: #EAEAEA;
         background-image: url("https://{{host}}/static/img/spinner2.gif");
         background-position: center;
         background-repeat: no-repeat;

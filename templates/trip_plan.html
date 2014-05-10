@@ -129,13 +129,13 @@
 
   <script type="text/ng-template" id="page-mode-controls-template">
     <div id="page-mode-toggle-control" ng-show="!pageStateModel.inOffsiteView()">
-      <button class="btn" ng-click="showMapView()" ng-disabled="pageStateModel.inMapView()">
+      <button class="btn btn-default" ng-click="showMapView()" ng-disabled="pageStateModel.inMapView()">
         Map
       </button>
-      <button class="btn" ng-click="showGuideView()" ng-disabled="pageStateModel.inGuideView()" >
+      <button class="btn btn-default" ng-click="showGuideView()" ng-disabled="pageStateModel.inGuideView()" >
         Guide
       </button>
-      <button class="btn" ng-click="showSourceView()" ng-disabled="pageStateModel.inSourceView()" ng-if="planModel.hasSource()">
+      <button class="btn btn-default" ng-click="showSourceView()" ng-disabled="pageStateModel.inSourceView()" ng-if="planModel.hasSource()">
         Source
       </button>
     </div>
