@@ -451,8 +451,9 @@ class TripPlanService(service.Service):
             self.validation_errors.append(service.ServiceError(
                 TripPlanServiceError.NO_TRIP_PLAN_FOUND, 'No active trip plan was found with this id.', 'trip_plan_id'))
         self.raise_if_errors()
-        new_trip_plan = data.TripPlan(trip_plan_id=data.generate_trip_plan_id(),
-            name=trip_plan.name, creator=self.session_info.user_identifier)
+        new_trip_plan = trip_plan.copy()
+        new_trip_plan.trip_plan_id = data.generate_trip_plan_id()
+        new_trip_plan.creator = self.session_info.user_identifier
         new_trip_plan.entities = self.clone_entities(trip_plan.entities)
         data.save_trip_plan(new_trip_plan)
         return TripPlanCloneResponse(

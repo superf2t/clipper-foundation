@@ -6,6 +6,15 @@ function hostnameFromUrl(url) {
   return fullHost;
 }
 
+function hostNoSuffix(url) {
+  var host = hostnameFromUrl(url);
+  return host.split('.')[0];
+}
+
+function emailPrefix(email) {
+  return email.split('@')[0];
+}
+
 function getParameterByName(name) {
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
   var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -193,6 +202,14 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 
   this.hasSource = function() {
     return !!this.tripPlanData['source_url'];
+  };
+
+  this.creatorIsUser = function() {
+    return this.tripPlanData['creator'] && this.tripPlanData['creator'].indexOf('@') > -1;
+  };
+
+  this.locationLatlng = function() {
+    return this.tripPlanData['location_latlng'];
   };
 
   this.updateEntities = function(entityDatas) {
@@ -975,7 +992,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.openDayPlanner = function(windowClass) {
     $modal.open({
       templateUrl: 'day-planner-template',
-      scope: $scope.$new(true),
+      scope: $scope,
       backdrop: 'static',
       windowClass: windowClass
     });
@@ -1635,6 +1652,37 @@ function ItemModel(data) {
       return this.data['sub_category']['display_name'];
     }
     return this.data['category']['display_name'];
+  };
+
+  this.hasPhotos = function() {
+    return this.data['photo_urls'] && this.data['photo_urls'].length;
+  };
+
+  this.latlngString = function() {
+    return [this.data['latlng']['lat'], this.data['latlng']['lng']].join(',')
+  };
+
+  this.staticMiniMapUrl = function(opt_referenceLatlng) {
+    var parts = ['//maps.googleapis.com/maps/api/staticmap?sensor=false&size=180x120',
+      '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ',
+      '&center=', this.latlngString(),
+      '&markers=color:red%7C', this.latlngString()];
+    if (opt_referenceLatlng) {
+      var referenceLatlngString = [opt_referenceLatlng['lat'],
+        opt_referenceLatlng['lng']].join(',');
+      parts.push('&markers=size:small%7Ccolor:blue%7C' + referenceLatlngString);
+    }
+    return parts.join('');
+  };
+
+  this.getBackgroundImageUrl = function(opt_referenceLatlng) {
+    if (this.hasPhotos()) {
+      return this.data['photo_urls'][0];
+    } else if (this.hasLocation()) {
+      return this.staticMiniMapUrl(opt_referenceLatlng);
+    } else {
+      return '';
+    }
   };
 }
 
@@ -2981,12 +3029,16 @@ angular.module('directivesModule', [])
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
+function makeFilter(fn) {
+  return function() {
+    return fn;
+  };
+}
+
 angular.module('filtersModule', [])
-  .filter('hostname', function() {
-    return function(input) {
-      return hostnameFromUrl(input);
-    }
-  });
+  .filter('hostname', makeFilter(hostnameFromUrl))
+  .filter('hostNoSuffix', makeFilter(hostNoSuffix))
+  .filter('emailPrefix', makeFilter(emailPrefix));
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     accountInfo, datatypeValues, allowEditing, initialState) {

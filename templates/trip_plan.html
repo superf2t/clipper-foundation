@@ -477,7 +477,7 @@
     <div draggable="true" class="day-planner-draggable-entity"
       ng-class="{'existing-item-dragactive': activeItemIsThis(item)}"
       tc-dragstart="onDragstart({$event: $event})" tc-dragend="onDragend()">
-      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(&quot;' + item.data['photo_urls'][0] + '&quot;)'}">
+      <div class="day-planner-entity-image-container" ng-style="{'background-image': 'url(&quot;' + item.getBackgroundImageUrl(planModel.locationLatlng()) + '&quot;)'}">
       </div>
       <div class="day-planner-entity-info">
         <div>
@@ -547,7 +547,7 @@
       ng-click="openInfowindow(ed['entity_id']); selectEntity(ed)">
       <div class="row main-row">
         <div class="col-md-4 img-container"
-          ng-style="{'background-image': 'url(&quot;' + ed['photo_urls'][0] +'&quot;)'}">
+          ng-style="{'background-image': 'url(&quot;' + item.getBackgroundImageUrl(planModel.locationLatlng()) +'&quot;)'}">
           <div class="category-info">
             <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
           </div>
@@ -834,29 +834,22 @@
               Add Place
             </button>
           </span>
-          {% else %}
-          <span class="alignment-spacer">
-          </span>
-          {% endif %}
           <span class="settings-item">
             <a class="dropdown-toggle" href="javascript:void(0)">
               <span class="glyphicon glyphicon-cog"></span>
             </a>
             <ul class="dropdown-menu right-top-dropdown-menu">
-              {% if allow_editing %}
               <li>
                 <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
                 </a>
               </li>
-              <hr class="dropdown-separator"/>
-              {% endif %}
               <li>
-                <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-plus"></span> Clone trip plan
+                <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-time"></span> Plan itinerary
                 </a>
               </li>
-              {% if allow_editing %}
+              <hr class="dropdown-separator"/>
               <li>
                 <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-trash"></span> Delete trip plan
@@ -868,9 +861,12 @@
                   <img src="/static/img/gmaps-icon.png"/> Import Google custom map
                 </a>
               </li>
-              {% endif %}
             </ul>
           </span>
+          {% else %}
+          <span class="alignment-spacer">
+          </span>
+          {% endif %}
           <span class="settings-item">
             <a class="dropdown-toggle" href="javascript:void(0)">
               <span class="glyphicon glyphicon-sort"></span>
@@ -890,6 +886,20 @@
               </li>
             </ul>
           </span>
+        </div>
+      </div>
+      <div class="creator-info">
+        <span ng-if="planModel.hasSource()">
+          Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
+        </span>
+        <span ng-if="!planModel.hasSource() && planModel.creatorIsUser()">
+          Created by: [[planModel.tripPlanData['creator'] | emailPrefix ]]
+        </span>
+        <div class="clone-control">
+          <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)"
+            tooltip="Clone this trip plan" tooltip-placement="left" tooltip-append-to-body="true">
+            <span class="glyphicon glyphicon-new-window"></span>
+          </a>
         </div>
       </div>
     </div>
