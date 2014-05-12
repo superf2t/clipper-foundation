@@ -1483,6 +1483,10 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel, $sampleSites,
   };
 }
 
+//
+// Shared entity result handling 
+//
+
 var EntityResultState = {
   NOT_EDITING: 1,
   EDITING_NOTE: 2,
@@ -1490,13 +1494,117 @@ var EntityResultState = {
   EDITING_LOCATION: 4
 };
 
-function EntityResultCtrl($scope) {
+function EntityResultCtrl($scope, $window) {
+  var me = this;
   $scope.ed = $scope.entityData;
   $scope.em = new EntityModel($scope.entityData);
   $scope.im = new ItemModel($scope.entityData);
-  $scope.editing = false;
+
   $scope.EntityResultState = EntityResultState;
-  $scope.state = EntityResultState.NOT_EDITING;
+  $scope.state = $scope.ed['name'] ? EntityResultState.NOT_EDITING
+    : EntityResultState.EDITING_LOCATION;
+
+  this.createMarker = function(latlng, opt_map) {
+    var marker = new google.maps.Marker({
+      draggable: true,
+      position: latlng,
+      icon: '/static/img/' + $scope.ed['icon_url'],
+      map: opt_map
+    });
+    google.maps.event.addListener(marker, 'dragend', function() {
+      var entityData = $scope.ed;
+      if (_.isEmpty(entityData['latlng'])) {
+        entityData['latlng'] = {};
+      }
+      entityData['latlng']['lat'] = marker.getPosition().lat();
+      entityData['latlng']['lng'] = marker.getPosition().lng();
+      entityData['address_precision'] = 'Precise';
+      me.updateMarkerIcon();
+    });
+    return marker;
+  };
+
+  $scope.map = null;
+  var center = $scope.em.hasLocation()
+    ? $scope.em.gmapsLatLng()
+    : new google.maps.LatLng(0, 0);
+  var marker = this.createMarker(center);
+  $scope.mapOptions = {
+    center: center,
+    zoom: $scope.em.hasLocation() ? 15 : 2,
+    panControl: false,
+    scaleControl: false,
+    scrollwheel: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+
+  $scope.setupMap = function($map) {
+    marker.setMap($map);
+  };
+
+  $scope.editing = function() {
+    return $scope.state != EntityResultState.NOT_EDITING;
+  };
+
+  $scope.closeEditor = function() {
+    $scope.state = EntityResultState.NOT_EDITING;
+    $scope.displayState.dirtyCounter++;
+    if ($scope.inIframe) {
+      $window.parent.postMessage('tc-photo-editing-inactive', '*');    
+    }
+  };
+
+  $scope.openEditNote = function() {
+    $scope.state = EntityResultState.EDITING_NOTE;
+    $scope.displayState.dirtyCounter++;
+  };
+
+  $scope.openEditLocation = function() {
+    $scope.state = EntityResultState.EDITING_LOCATION;
+    $scope.displayState.dirtyCounter++;
+  };
+
+  $scope.openEditPhotos = function() {
+    $scope.state = EntityResultState.EDITING_PHOTOS;
+    $scope.displayState.dirtyCounter++;
+    if ($scope.inIframe) {
+      $window.parent.postMessage('tc-photo-editing-active', '*'); 
+    }
+  };
+
+  $scope.addressSelected = function(place) {
+    if (place['formatted_address']) {
+      // ng-model is set to ed['address'] but the place
+      // change event fires before the model gets updated
+      $scope.ed['address'] = place['formatted_address'];
+    }
+    if (place['geometry']) {
+      if (_.isEmpty($scope.ed['latlng'])) {
+        $scope.ed['latlng'] = {};
+      }
+      var location = place['geometry']['location'];
+      $scope.ed['latlng']['lat'] = location.lat();
+      $scope.ed['latlng']['lng'] = location.lng();
+      $scope.ed['address_precision'] = 'Precise';
+      $scope.map.setCenter(location);
+      marker.setPosition(location);
+      me.updateMarkerIcon();
+      if (place['geometry']['viewport']) {
+        $scope.map.fitBounds(place['geometry']['viewport']);
+      }
+    }
+  };
+
+  this.updateMarkerIcon = function() {
+    var data =  $scope.ed;
+    var iconUrl = categoryToIconUrl(
+      data['category'] && data['category']['name'],
+      data['sub_category'] && data['sub_category']['name'],
+      data['address_precision']);
+    data['icon_url'] = iconUrl;
+    marker.setIcon('/static/img/' + iconUrl)
+  };
 }
 
 function tcEntityResult() {
@@ -1507,21 +1615,88 @@ function tcEntityResult() {
       entityData: '=',
       activeTripPlan: '=',
       clickToSelect: '=',
-      editable: '='
+      editable: '=',
+      inIframe: '=',
+      displayState: '='
     },
     controller: EntityResultCtrl,
     templateUrl: 'one-entity-result-template'
   };
 }
 
-function EntityResultPhotoCtrl($scope) {
+function EntityResultPhotoCtrl($scope, $window) {
+  if (_.isEmpty($scope.ed['photo_urls'])) {
+    $scope.ed['photo_urls'] = [];
+  }
+  var urls = $scope.ed['photo_urls'];
+  var selectedImgIndex = urls.length ? 0 : null;
 
+  if ($scope.inIframe) {
+    $($window).on('message', function(event) {
+      $scope.$apply(function() {
+        if ($scope.state != EntityResultState.EDITING_PHOTOS) {
+          return;
+        }
+        if (event.originalEvent.data['message'] == 'tc-image-dropped') {
+          var imgUrl = event.originalEvent.data['data']['tc-drag-image-url'];
+          if (imgUrl) {
+            urls.push(imgUrl);
+            selectedImgIndex = urls.length - 1;
+          } else {
+            alert("Sorry, we couldn't recognize that image!");
+          }
+        }
+      });
+    });
+  }
+
+  $scope.selectedImg = function() {
+    return urls[selectedImgIndex];
+  };
+
+  $scope.hasImgs = function() {
+    return urls.length > 0;
+  };
+
+  $scope.hasPrevImg = function() {
+    return selectedImgIndex > 0;
+  };
+
+  $scope.hasNextImg = function() {
+    return selectedImgIndex < (urls.length - 1);
+  };
+
+  $scope.prevImg = function() {
+    selectedImgIndex--;
+  };
+
+  $scope.nextImg = function() {
+    if ($scope.hasNextImg()) {
+      selectedImgIndex++;      
+    }
+  };
+
+  $scope.setAsPrimary = function() {
+    var url = urls.splice(selectedImgIndex, 1)[0];
+    urls.splice(0, 0, url);
+    selectedImgIndex = 0;
+  };
+
+  $scope.deletePhoto = function() {
+    urls.splice(selectedImgIndex, 1);
+    if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
+      selectedImgIndex--;
+    }
+  };
 }
 
 angular.module('entityResultModule', [])
-  .controller('EntityResultPhotoCtrl'['$scope', EntityResultPhotoCtrl])
+  .controller('EntityResultPhotoCtrl'['$scope', '$window', EntityResultPhotoCtrl])
   .directive('tcEntityResult', tcEntityResult);
 
+//
+// End shared entity result handling
+//
 
 
 function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,

@@ -12,6 +12,7 @@
   <script src="/static/js/clipper.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/shared.css">
   <link rel="stylesheet" href="/static/css/clipper.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
@@ -31,10 +32,14 @@
         </span>
       </div>
 
-      <div>
+      <div class="entity-results">
         <div ng-if="entityModels.length > 1" ng-include="'select-all-checkbox-row-template'">
         </div>
-        <div ng-repeat="entityModel in entityModels" ng-include="'one-entity-clipper-template'">
+        <div ng-repeat="entityModel in entityModels" tc-entity-result
+          show-checkboxes="entityModels.length > 1" entity-data="entityModel.data"
+          click-to-select="false" editable="true" in-iframe="true"
+          display-state="displayState"
+          active-trip-plan="selectedTripPlanState.tripPlan">
         </div>
 
         <div class="missing-add-place blue-links">
@@ -47,7 +52,7 @@
     <div class="save-to-trip-plan-panel">
       <div class="save-prompt-text">
         <span ng-if="entityModels.length > 1">
-          Save [[selectedEntityModels().length]] selected places to a trip
+          Save [[selectedEntities().length]] selected places to a trip
         </span>
         <span ng-if="entityModels.length == 1">
           Save [[entityModels[0].data['name'] ]] to a trip
@@ -139,112 +144,7 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="one-entity-clipper-template">
-    <div ng-controller="ClipperEntityCtrl" class="one-entity-row">
-      <div ng-if="entityModels.length > 1" class="checkbox-container">
-        <div ng-click="entityModel.selected = !entityModel.selected" class="entity-checkbox">
-          <span class="glyphicon glyphicon-check" ng-show="entityModel.selected"></span>
-          <span class="glyphicon glyphicon-unchecked" ng-show="!entityModel.selected"></span>
-        </div>
-      </div>
-      <div ng-class="{'row-with-checkbox': entityModels.length > 1}">
-        <div class="container-fluid one-entity-clipper">
-          <div class="row main-row">
-            <div class="col-xs-4 img-container"
-              ng-style="{'background-image': 'url(&quot;' + ed['photo_urls'][0] +'&quot;)'}">
-            </div>
-            <div class="col-xs-8 details-container">
-              <div class="main-details">
-                <div class="title">
-                  [[ed['name'] ]]
-                </div>
-                <div class="note-control" ng-show="!editing()">
-                  <a ng-click="openEditNote()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-pencil"></span> Add note
-                  </a>
-                </div>
-                <div class="edit-close-control" ng-show="editing()">
-                  <a ng-click="closeEditor()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-chevron-up"></span>
-                  </a>
-                </div>
-                <div class="main-controls">
-                  <a ng-if="!entityModel.hasLocation()" ng-click="openEditLocation()">
-                    <span class="glyphicon glyphicon-exclamation-sign"
-                      tooltip="No location found for this place.  Click to add one."
-                      tooltip-placement="left" tooltip-append-to-body="true">
-                    </span>
-                  </a>
-                  <a href="javascript:void(0)" class="dropdown-toggle">
-                    <span class="glyphicon glyphicon-cog"></span>
-                  </a>
-                  <ul class="dropdown-menu right-bottom-dropdown-menu">
-                    <li>
-                      <a ng-click="openEditLocation()" href="javascript:void(0)">
-                        <span class="glyphicon glyphicon-edit"></span> Edit name and location
-                      </a>
-                    </li>
-                    <li>
-                      <a ng-click="openEditPhotos()" href="javascript:void(0)">
-                        <span class="glyphicon glyphicon-camera"></span> Edit photos
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row expanded-row" ng-show="editing()">
-            <div ng-show="state == ClipperEntityState.EDITING_NOTE">
-              <textarea class="form-control note-input" placeholder="Add a note" ng-model="ed['description']"
-                tc-focus-on="state">
-              </textarea>
-            </div>
-            <div ng-show="state == ClipperEntityState.EDITING_LOCATION" class="location-editor">
-              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
-                tc-focus-on="state"/>
-              <input class="form-control" ng-model="ed['address']" placeholder="Address"
-                tc-google-place-autocomplete search-bounds-json="selectedTripPlanState.tripPlan['location_bounds']"
-                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
-              <div class="map-container">
-                <div class="map" tc-google-map map="map" map-options="mapOptions" after-creation="setupMap($map)"
-                  resize-when="state == ClipperEntityState.EDITING_LOCATION">
-                </div>
-              </div>
-            </div>
-            <div ng-show="state == ClipperEntityState.EDITING_PHOTOS" class="photo-editor"
-              ng-controller="ClipperPhotoCtrl">
-              <div ng-if="hasImgs()" class="photo-carousel">
-                <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-chevron-left"></span>
-                </a>
-                <span class="carousel-img-container">
-                  <div class="img-overlay-control top">
-                    <a ng-click="setAsPrimary()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-picture"></span> Set as primary
-                    </a>
-                  </div>
-                  <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
-                  <div class="img-overlay-control bottom">
-                    <a ng-click="deletePhoto()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-trash"></span> Delete photo
-                    </a>
-                  </div>
-                </span>
-                <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-chevron-right"></span>
-                </a>
-              </div>
-              <div class="imgs-prompt">
-                <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </script>
-
+  {% include 'entity-result.html' %}
   {% include 'widgets.html' %}
 
   <script>

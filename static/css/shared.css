@@ -24,7 +24,7 @@
 .one-entity-result-row .entity-checkbox,
 .entity-results .select-all-checkbox-row .entity-checkbox {
   font-size: 14pt;
-  margin-right: -10px;
+  margin-left: -3px;
   text-align: center;
 }
 
