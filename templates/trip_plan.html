@@ -774,7 +774,7 @@
       class="one-entity-guideview" ng-class="{'odd': $odd}"
       tc-entity-id="[[ed['entity_id'] ]]">
       <h4>[[ed['name'] ]]</h4>
-      <div tc-image-gallery urls="ed['photo_urls']" page-size="3">
+      <div ng-if="item.hasPhotos()" tc-image-gallery urls="ed['photo_urls']" page-size="3">
       </div>
        <div class="metadata">
         <div class="address">

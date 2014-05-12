@@ -449,6 +449,11 @@ hr.dropdown-separator {
   height: 100px;
 }
 
+.one-entity-guideview .image-gallery .image-selector .selector-images {
+  width: 80%;
+  margin: auto;  
+}
+
 .one-entity-guideview .image-gallery .image-selector .selector-image-container {
   padding: 0 10px;
 }
