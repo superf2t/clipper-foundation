@@ -8,11 +8,13 @@
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
-  <script src="/static/js/services.js"></script>  
+  <script src="/static/js/sprintf.js"></script>
+  <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/shared.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
 <body ng-controller="RootCtrl">
@@ -61,7 +63,7 @@
       </div>
     </div>
 
-    <div ng-if="pageStateModel.inAddPlacePanel()"
+    <div ng-if="pageStateModel.inAddPlacePanel()" class="add-place-panel-container"
       ng-include="'add-place-panel-template'">
     </div>
 
@@ -72,6 +74,8 @@
       </div>
       <div ng-include="'guide-panel-template'" class="full-width full-height"
         ng-show="pageStateModel.inGuideView()">
+      </div>
+      <div class="right-panel-disabler" ng-show="pageStateModel.inAddPlacePanel() && pageStateModel.inMapView()">
       </div>
       <div ng-include="'page-mode-controls-template'">
       </div>
@@ -830,7 +834,7 @@
           ng-click="$event.stopPropagation()">
           {% if allow_editing %}
           <span class="settings-item">
-            <button class="btn btn-add-place" ng-click="toggleOmnibox()">
+            <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
               Add Place
             </button>
           </span>
@@ -1005,51 +1009,192 @@
 
   {% if allow_editing %}
   <script type="text/ng-template" id="add-place-panel-template">
-    <div class="add-place-panel">
-      <div class="header">
-        Search for a place to add to your trip
-        <button class="btn close-panel-button" ng-click="showEntityPanel()">
-          Close
-        </button>
-      </div>
-      <div ng-show="!loadingData" class="search-omnibox">
-        <div class="search-select">
-          <button class="btn dropdown-toggle dropdown-button">
-            TravelClipper search
-            <img src="/static/img/powered-by-google-on-white.png"/>
-            <span class="caret"></span>
+    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
+      <div class="upper-panel" ng-class="{'has-search-results': searchResults}">
+        <div class="header">
+          Search for a place to add to your trip
+          <button class="btn close-panel-button" ng-click="showEntityPanel()">
+            Close
           </button>
-          <ul class="dropdown-menu">
-            {% for site in sample_sites %}
-            <li><a href="#"><img src="{{site.icon_url}}" class="site-icon"/> {{site.display_name}}</a></li>
-            {% endfor %}
-          </ul>
         </div>
-        <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
-          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
-          on-place-change="placeChanged($newPlace)"
-          tc-focus-on="omniboxState.visible"
-          ng-keyup="onOmniboxKeyup($event)"
-          ng-model="inputState.rawText"
-          ng-paste="textPasted()"/>
+        <div class="search-omnibox">
+          <input type="text" class="form-control"
+            placeholder="Search for a place OR paste a website URL"
+            tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+            on-place-change="googlePlaceSelected($newPlace)"
+            tc-focus-on="sampleSites"
+            ng-model="query"
+            ng-disabled="loadingData"
+            ng-paste="textPasted()"/>
+        </div>
+        <div ng-show="loadingData" class="search-spinner">
+          <img src="/static/img/spinner-small.gif"/>
+        </div>
+
+        <div class="search-others" style="display:none">
+          <p>
+            You can also explore places in [[planModel.tripPlanData['location_name'] ]] on other top websites:
+          </p>
+          <div class="site-select" ng-show="searchResults">
+            <button class="btn dropdown-toggle dropdown-button">
+              <img ng-src="[[selectedSite['icon_url'] ]]" class="site-icon"/>
+              [[selectedSite['display_name'] ]]
+              <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu">
+              <li ng-repeat="site in sampleSites">
+                <a ng-click="loadSite(site)"
+                  href="javascript:void(0)">
+                  <img ng-src="[[site['icon_url'] ]]" class="site-icon"/>
+                  [[site['display_name'] ]]
+                  <span ng-if="site == selectedSite"
+                    class="glyphicon glyphicon-ok">
+                  </span>
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div class="sample-sites" ng-show="!searchResults" style="display: none">
+              <p ng-repeat="site in sampleSites">
+                <a ng-click="loadSite(site)"
+                  href="javascript:void(0)">
+                  <img ng-src="[[site['icon_url'] ]]" class="site-icon"/>
+                  [[site['display_name'] ]]
+                </a>
+              </p>
+          </div>
+        </div>
+
+        <div class="search-results-panel" ng-show="searchResults">
+          <div class="search-results">
+            <hr style="width: 100%"/>
+            <h4>Results from Google Places</h4>
+            <div ng-show="searchResults.length > 1">
+              Click on results to select the places you want to save.
+            </div>
+            <div ng-repeat="result in searchResults" tc-entity-result
+              show-checkboxes="false" entity-data="result"
+              click-to-select="true" editable="false"
+              active-trip-plan="planModel.tripPlanData">
+            </div>
+          </div>
+        </div>
       </div>
-      <div ng-show="loadingData" class="search-spinner">
-        <img src="/static/img/spinner-small.gif"/>
+      <div class="lower-panel" ng-show="searchResults">
+        <div class="save-panel" ng-show="searchResults">
+          <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
+            Save
+          </button>
+        </div>
       </div>
-      <div class="search-others">
-        <p>
-          You can also search for other places from other top websites:
-        </p>
-        <div class="sample-sites">
-          {% for site in sample_sites %}
-            <p>
-              <a ng-click="loadOffsiteUrl('{{site.search_url_prefix}}' + planModel.demoQueryString())"
-                href="javascript:void(0)">
-                <img src="{{site.icon_url}}" class="site-icon"/>
-                {{site.display_name}}
-              </a>
-            </p>
-          {% endfor %}
+    </div>
+  </script>
+  {% endif %}
+
+  {% if allow_editing %}
+  <script type="text/ng-template" id="one-entity-result-template">
+    <div ng-controller="EntityResultCtrl" class="one-entity-result-row">
+      <div ng-if="showCheckboxes" class="checkbox-container">
+        <div ng-click="ed.selected = !ed.selected" class="entity-checkbox">
+          <span class="glyphicon glyphicon-check" ng-show="ed.selected"></span>
+          <span class="glyphicon glyphicon-unchecked" ng-show="!ed.selected"></span>
+        </div>
+      </div>
+      <div ng-class="{'row-with-checkbox': showCheckboxes}">
+        <div class="container-fluid one-entity-result"
+          ng-class="{'selected': ed.selected, 'selectable': clickToSelect}"
+          ng-click="clickToSelect && (ed.selected = !ed.selected)">
+          <div class="row main-row">
+            <div class="col-xs-4 img-container"
+              ng-style="{'background-image': 'url(&quot;' + im.getBackgroundImageUrl(activeTripPlan['location_latlng']) +'&quot;)'}">
+            </div>
+            <div class="col-xs-8 details-container">
+              <div class="main-details">
+                <div class="title">
+                  [[ed['name'] ]]
+                </div>
+                <div class="note-control" ng-show="!editing()" ng-if="editable">
+                  <a ng-click="openEditNote()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-pencil"></span> Add note
+                  </a>
+                </div>
+                <div class="edit-close-control" ng-show="editing()">
+                  <a ng-click="closeEditor()" href="javascript:void(0)">
+                    <span class="glyphicon glyphicon-chevron-up"></span>
+                  </a>
+                </div>
+                <div class="main-controls" ng-if="editable">
+                  <a ng-if="!em.hasLocation()" ng-click="openEditLocation()">
+                    <span class="glyphicon glyphicon-exclamation-sign"
+                      tooltip="No location found for this place.  Click to add one."
+                      tooltip-placement="left" tooltip-append-to-body="true">
+                    </span>
+                  </a>
+                  <a href="javascript:void(0)" class="dropdown-toggle">
+                    <span class="glyphicon glyphicon-cog"></span>
+                  </a>
+                  <ul class="dropdown-menu right-bottom-dropdown-menu">
+                    <li>
+                      <a ng-click="openEditLocation()" href="javascript:void(0)">
+                        <span class="glyphicon glyphicon-edit"></span> Edit name and location
+                      </a>
+                    </li>
+                    <li>
+                      <a ng-click="openEditPhotos()" href="javascript:void(0)">
+                        <span class="glyphicon glyphicon-camera"></span> Edit photos
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row expanded-row" ng-show="editing()">
+            <div ng-show="state == EntityResultState.EDITING_NOTE">
+              <textarea class="form-control note-input" placeholder="Add a note" ng-model="ed['description']"
+                tc-focus-on="state">
+              </textarea>
+            </div>
+            <div ng-show="state == EntityResultState.EDITING_LOCATION" class="location-editor">
+              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
+                tc-focus-on="state"/>
+              <input class="form-control" ng-model="ed['address']" placeholder="Address"
+                tc-google-place-autocomplete search-bounds-json="activeTripPlan['location_bounds']"
+                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
+              <div class="map-container">
+                <div class="map" tc-google-map map="map" map-options="mapOptions" after-creation="setupMap($map)"
+                  resize-when="state == EntityResultState.EDITING_LOCATION">
+                </div>
+              </div>
+            </div>
+            <div ng-show="state == EntityResultState.EDITING_PHOTOS" class="photo-editor"
+              ng-controller="EntityResultPhotoCtrl">
+              <div ng-if="hasImgs()" class="photo-carousel">
+                <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-chevron-left"></span>
+                </a>
+                <span class="carousel-img-container">
+                  <div class="img-overlay-control top">
+                    <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-picture"></span> Set as primary
+                    </a>
+                  </div>
+                  <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+                  <div class="img-overlay-control bottom">
+                    <a ng-click="deletePhoto()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-trash"></span> Delete photo
+                    </a>
+                  </div>
+                </span>
+                <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+              </div>
+              <div class="imgs-prompt">
+                <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1067,6 +1212,7 @@
       {{account_info.to_json_str()|safe}},
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}},
+      {{sample_sites_json|safe}},
       {{initial_state.to_json_str()|safe}});
   </script>
 </body>

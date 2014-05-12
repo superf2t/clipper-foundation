@@ -1412,6 +1412,118 @@ function AddPlaceCtrl($scope, $entityService, $timeout, $modal) {
   };
 }
 
+
+function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel, $sampleSites,
+    $entityService, $dataRefreshManager) {
+  $scope.sampleSites = $sampleSites;
+  $scope.selectedSite = $sampleSites[0];
+  $scope.query = null;
+  $scope.loadingData = false;
+  $scope.searchResults = null;
+
+  $scope.googlePlaceSelected = function(place) {
+    $scope.loadingData = true;
+    var successCallback = function(response) {
+      if (response['entity']) {
+        $scope.searchResults = [response['entity']]
+      } else {
+        $scope.searchResults = response['entities'] || [];
+      }
+      if ($scope.searchResults.length == 1) {
+        $scope.searchResults[0].selected = true;
+      }
+      $scope.loadingData = false;
+    };
+    if (place['reference']) {
+      $entityService.googleplacetoentity(place['reference'])
+        .success(successCallback);
+    } else {
+      $entityService.googletextsearchtoentities(place['name'],
+        $tripPlanModel.tripPlanData['location_latlng'])
+        .success(successCallback);
+    }
+  };
+
+  $scope.selectedResults = function() {
+    return _.filter($scope.searchResults, function(entityData) {
+      return entityData.selected;
+    });
+  };
+
+  $scope.saveButtonEnabled = function() {
+    var selectedResults = $scope.selectedResults();
+    return selectedResults && selectedResults.length;
+  };
+
+  $scope.saveResults = function() {
+    $entityService.saveNewEntities($scope.selectedResults(), $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $dataRefreshManager.askToRefresh();
+          $scope.showEntityPanel();
+        }
+      }).error(function() {
+        alert('Failed to save places');
+      });
+  };
+
+  $scope.selectSearchMode = function(siteInfo) {
+    $scope.selectedSite = siteInfo;
+  };
+
+  $scope.loadSite = function(site) {
+    $scope.selectedSite = site;
+    var context = {
+      'location': encodeURIComponent($tripPlanModel.tripPlanData['location_name']),
+      'lat': $tripPlanModel.tripPlanData['location_latlng']['lat'],
+      'lng': $tripPlanModel.tripPlanData['location_latlng']['lng']
+    };
+    var offsiteUrl = sprintf(site['search_url_template'], context);
+    $scope.loadOffsiteUrl(offsiteUrl);
+  };
+}
+
+var EntityResultState = {
+  NOT_EDITING: 1,
+  EDITING_NOTE: 2,
+  EDITING_PHOTOS: 3,
+  EDITING_LOCATION: 4
+};
+
+function EntityResultCtrl($scope) {
+  $scope.ed = $scope.entityData;
+  $scope.em = new EntityModel($scope.entityData);
+  $scope.im = new ItemModel($scope.entityData);
+  $scope.editing = false;
+  $scope.EntityResultState = EntityResultState;
+  $scope.state = EntityResultState.NOT_EDITING;
+}
+
+function tcEntityResult() {
+  return {
+    restrict: 'AE',
+    scope: {
+      showCheckboxes: '=',
+      entityData: '=',
+      activeTripPlan: '=',
+      clickToSelect: '=',
+      editable: '='
+    },
+    controller: EntityResultCtrl,
+    templateUrl: 'one-entity-result-template'
+  };
+}
+
+function EntityResultPhotoCtrl($scope) {
+
+}
+
+angular.module('entityResultModule', [])
+  .controller('EntityResultPhotoCtrl'['$scope', EntityResultPhotoCtrl])
+  .directive('tcEntityResult', tcEntityResult);
+
+
+
 function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
     $dataRefreshManager, $tripPlan, $datatypeValues) {
   var me = this;
@@ -3041,7 +3153,7 @@ angular.module('filtersModule', [])
   .filter('emailPrefix', makeFilter(emailPrefix));
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
-    accountInfo, datatypeValues, allowEditing, initialState) {
+    accountInfo, datatypeValues, allowEditing, sampleSites, initialState) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
@@ -3049,14 +3161,15 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
     .value('$datatypeValues', datatypeValues)
     .value('$accountInfo', accountInfo)
-    .value('$allowEditing', allowEditing);
+    .value('$allowEditing', allowEditing)
+    .value('$sampleSites', sampleSites);
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan))
     .value('$mapBounds', new google.maps.LatLngBounds());
 
-  angular.module('appModule', ['mapModule', 'initialDataModule', 'servicesModule',
-      'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize'],
+  angular.module('appModule', ['mapModule', 'initialDataModule', 'entityResultModule',
+      'servicesModule', 'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',
@@ -3072,6 +3185,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlaceCtrl', ['$scope', '$entityService', '$timeout', '$modal', AddPlaceCtrl])
+    .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
+     '$sampleSites', '$entityService', '$dataRefreshManager', AddPlacePanelCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
       '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])

@@ -3,8 +3,9 @@ import re
 from dateutil import parser as date_parser
 
 import data
-import enums
 import clip_logic
+import enums
+import geocode
 import google_places
 import kml_import
 from scrapers import trip_plan_creator
@@ -119,6 +120,15 @@ class PageSourceToEntityRequest(service.ServiceRequest):
         self.url = url
         self.page_source = page_source
 
+class GoogleTextSearchToEntitiesRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('query', serializable.objf('latlng', data.LatLng),
+        'max_results')
+
+    def __init__(self, query=None, latlng=None, max_results=None):
+        self.query = query
+        self.latlng = latlng
+        self.max_results = max_results
+
 class GenericEntityResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
         service.ServiceResponse.PUBLIC_FIELDS,
@@ -143,7 +153,8 @@ class EntityService(service.Service):
         ('mutate', EntityMutateRequest, EntityMutateResponse),
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
         ('urltoentity', UrlToEntityRequest, GenericEntityResponse),
-        ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse))
+        ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
+        ('googletextsearchtoentities', GoogleTextSearchToEntitiesRequest, GenericMultiEntityResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -266,6 +277,19 @@ class EntityService(service.Service):
     def pagesourcetoentities(self, request):
         # TODO: Move unicode encoding into the json deserializer
         entities = clip_logic.scrape_entities_from_url(request.url, request.page_source.encode('utf-8'))
+        return GenericMultiEntityResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=entities)
+
+    def googletextsearchtoentities(self, request):
+        latlng = request.latlng.to_json_obj() if request.latlng else None
+        results = geocode.search_for_places(request.query, latlng,
+            radius_meters=10000, max_results=request.max_results) or []
+        def lookup_entity(result):
+            place = google_places.lookup_place_by_reference(result.get_reference())
+            return place.to_entity() if place else None
+        raw_entities = utils.parallelize(lookup_entity, [(result,) for result in results])
+        entities = [e for e in raw_entities if e]
         return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)

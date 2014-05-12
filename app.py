@@ -21,7 +21,7 @@ class MyFlask(Flask):
 
     def get_send_file_max_age(self, name):
         if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'js/admin.js',
-            'css/style.css', 'css/clipper.css', 'css/admin.css'):
+            'css/style.css', 'css/clipper.css', 'css/shared.css', 'css/admin.css'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 
@@ -105,7 +105,7 @@ def trip_plan_by_id(trip_plan_id):
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
-        sample_sites=sample_sites.SAMPLE_SITES,
+        sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
         initial_state=initial_state)
     return process_response(response, request, session_info)
 

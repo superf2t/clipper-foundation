@@ -18,20 +18,25 @@ def lookup_latlng(address):
         return None
 
 def lookup_place(query, latlng_dict=None):
+    results = search_for_places(query, latlng_dict)
+    return results[0] if results else None
+
+def search_for_places(query, latlng_dict=None, radius_meters=1000, max_results=None):
     if not query:
         return None
     url = 'https://maps.googleapis.com/maps/api/place/textsearch/json?sensor=false&key=%s&query=%s' % (
         constants.GOOGLE_PLACES_API_KEY, urllib.quote(query.encode('utf-8')))
     if latlng_dict:
         latlng = '%(lat)s,%(lng)s' % latlng_dict
-        radius_meters = 1000
         url += '&location=%s&radius=%d' % (latlng, radius_meters)
     response = urllib2.urlopen(url).read()
     data = json.loads(response)
-    try:
-        return PlaceResult(data['results'][0])
-    except:
+    raw_results = data['results']
+    if not raw_results:
         return None
+    if max_results:
+        raw_results = raw_results[:max_results]
+    return [PlaceResult(result) for result in raw_results]
 
 
 class LocationResult(object):

@@ -648,6 +648,16 @@ hr.dropdown-separator {
   height: 100%;
 }
 
+#right-panel .right-panel-disabler {
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  opacity: 0.4;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
 #source-iframe,
 #offsite-iframe {
   width: 100%;
@@ -763,9 +773,34 @@ hr.dropdown-separator {
   margin-top: 10px;
 }
 
+.add-place-panel-container {
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+}
+
 .add-place-panel {
-  padding: 10px;
   position: relative;
+  background-color: inherit;
+  height: 100%;
+}
+
+.add-place-panel .upper-panel {
+  padding: 10px;
+  background-color: #ebecec;
+  overflow: scroll;
+  height: 100%;
+}
+
+.add-place-panel .upper-panel.has-search-results {
+  height: calc(100% - 74px);
+}
+
+.add-place-panel .lower-panel {
+  position: relative;
+  -webkit-box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
 }
 
 .add-place-panel .header {
@@ -778,31 +813,29 @@ hr.dropdown-separator {
   right: 10px;
 }
 
-.add-place-panel .search-select {
+.add-place-panel .site-select {
   margin: auto;
   margin-bottom: 20px;
   position: relative;
   width: 300px;
 }
 
-.add-place-panel .search-select .dropdown-button {
+.add-place-panel .site-select .dropdown-button {
   background-color: #fff;
   text-align: center;
   width: 100%;
   border: 1px solid rgba(0,0,0,.15);
 }
 
-.add-place-panel .search-select .dropdown-menu {
+.add-place-panel .site-select .dropdown-menu {
   width: 100%;
   margin: 0;
 }
 
-.add-place-panel .search-omnibox {
-
-}
-
 .add-place-panel .search-spinner {
   text-align: center;
+  position: relative;
+  top: -28px;
 }
 
 .add-place-panel .search-others {
@@ -818,6 +851,16 @@ hr.dropdown-separator {
   width: 16px;
   height: 16px;
 }
+
+.add-place-panel .search-results {
+  margin-bottom: 40px;
+}
+
+.add-place-panel .save-panel {
+  text-align: center;
+  padding: 20px;
+}
+
 
 /* Custom calculation to support 360px image/map */
 

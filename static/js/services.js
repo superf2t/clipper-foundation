@@ -97,6 +97,15 @@ function EntityService($http) {
     };
     return $http.post('/entityservice/pagesourcetoentities', request);
   };
+
+  this.googletextsearchtoentities = function(query, latlng) {
+    var request = {
+      'query': query,
+      'latlng': latlng,
+      'max_results': 5
+    };
+    return $http.post('/entityservice/googletextsearchtoentities', request);
+  };
 }
 
 
