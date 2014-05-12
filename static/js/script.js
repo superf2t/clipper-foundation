@@ -1038,27 +1038,26 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
         if ($scope.refreshState.paused) {
           return;
         }
-        if ($tripPlan['last_modified'] == response['last_modified']) {
+        if ($tripPlan['last_modified'] == response['last_modified']
+          || response['response_summary'] == 'NO_CHANGES_SINCE_LAST_MODIFIED') {
           return;
         }
         var planModel = $scope.planModel;
         var newEntities = response['entities'];
         $tripPlan['last_modified'] = response['last_modified'];
-        if (newEntities && newEntities.length) {
-          $scope.$broadcast('clearallmarkers');
-          // Angular's dirty-checking does not seem to pick up that the
-          // model has changed if we just assign to the new model...
-          // TODO: This is probably a non-issue now.  Dirty-checking should
-          // work if you update a model in-place instead of replacing it.
-          // So the timeout can probably be removed now.
-          $scope.planModel = null;
-          $timeout(function() {
-            planModel.resetEntities(newEntities);
-            $scope.planModel = planModel;
-            me.processItemsIntoGroups();
-            opt_callback && opt_callback;
-          });
-        }
+        $scope.$broadcast('clearallmarkers');
+        // Angular's dirty-checking does not seem to pick up that the
+        // model has changed if we just assign to the new model...
+        // TODO: This is probably a non-issue now.  Dirty-checking should
+        // work if you update a model in-place instead of replacing it.
+        // So the timeout can probably be removed now.
+        $scope.planModel = null;
+        $timeout(function() {
+          planModel.resetEntities(newEntities);
+          $scope.planModel = planModel;
+          me.processItemsIntoGroups();
+          opt_callback && opt_callback;
+        });
       });
   };
 

@@ -67,11 +67,15 @@ class EntityGetResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
         service.ServiceResponse.PUBLIC_FIELDS,
         serializable.fields(serializable.objlistf('entities', data.Entity),
+        'response_summary',
         'last_modified'))
 
-    def __init__(self, entities=(), last_modified=None, **kwargs):
+    ResponseSummary = enums.enum('NO_CHANGES_SINCE_LAST_MODIFIED')
+
+    def __init__(self, entities=(), response_summary=None, last_modified=None, **kwargs):
         super(EntityGetResponse, self).__init__(**kwargs)
         self.entities = entities
+        self.response_summary = response_summary
         self.last_modified = last_modified
 
 class EntityOperation(serializable.Serializable):
@@ -170,13 +174,17 @@ class EntityService(service.Service):
                 CommonError.MISSING_FIELD, 'trip_plan_id'))
         self.raise_if_errors()
         trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
+        response_summary = None
         if (request.if_modified_after and trip_plan.last_modified
             and trip_plan.last_modified_datetime() <= request.if_modified_after_as_datetime()):
             entities = []
+            response_summary = EntityGetResponse.ResponseSummary.NO_CHANGES_SINCE_LAST_MODIFIED.name
         else:
             entities = trip_plan.entities if trip_plan else ()
         return EntityGetResponse(response_code=service.ResponseCode.SUCCESS.name,
-            entities=entities, last_modified=trip_plan.last_modified if trip_plan else None)
+            response_summary=response_summary,
+            entities=entities,
+            last_modified=trip_plan.last_modified if trip_plan else None)
 
     def mutate(self, request):
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')
