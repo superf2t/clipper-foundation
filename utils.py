@@ -25,6 +25,8 @@ def coord_to_decimal(coord_str):
     if type(coord_str) != unicode:
         coord_str = coord_str.decode('utf-8')
     parts = LATLNG_SPLITTER.split(coord_str)
+    if len(parts) == 3:
+        parts.insert(2, 0.0)
     degrees, minutes, seconds, direction = (
         int(parts[0]), int(parts[1]), float(parts[2]), parts[3].upper())
     sign = 1 if direction in ('N', 'E') else -1
