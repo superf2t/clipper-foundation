@@ -216,7 +216,7 @@ hr.dropdown-separator {
 #entity-container {
   width: 100%;
   height: 100%;
-  overflow: scroll;
+  overflow-y: auto;
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -363,7 +363,7 @@ hr.dropdown-separator {
   width: 100%;
   height: 100%;
   background-color: #EAEAEA;
-  overflow: scroll;
+  overflow-y: auto;
   color: #000;
 }
 
@@ -803,16 +803,17 @@ hr.dropdown-separator {
 .add-place-panel .upper-panel {
   padding: 10px;
   background-color: #EAEAEA;
-  overflow: scroll;
+  overflow-y: auto;
   height: 100%;
 }
 
 .add-place-panel .upper-panel.has-search-results {
-  height: calc(100% - 74px);
+  height: calc(100% - 100px);
 }
 
 .add-place-panel .lower-panel {
   position: relative;
+  height: 100px;
   -webkit-box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
   -moz-box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
   box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
@@ -825,7 +826,8 @@ hr.dropdown-separator {
 .add-place-panel .header .close-panel-button {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 20px;
+  z-index: 1;
 }
 
 .add-place-panel .site-select {
@@ -873,9 +875,12 @@ hr.dropdown-separator {
 
 .add-place-panel .save-panel {
   text-align: center;
-  padding: 20px;
+  padding: 10px;
 }
 
+.add-place-panel .save-confirmation {
+  padding: 5px 0px 10px 0px;
+}
 
 /* Custom calculation to support 360px image/map */
 
@@ -1065,13 +1070,13 @@ hr.dropdown-separator {
 .day-planner-left-panel {
   height: calc(100% - 20px);
   padding: 10px;
-  overflow: scroll;
+  overflow-y: auto;
 }
 
 .day-planner-right-panel {
   height: 100%;
   padding: 10px;
-  overflow: scroll;
+  overflow-y: auto;
 }
 
 .day-planner-left-panel-drag-area {

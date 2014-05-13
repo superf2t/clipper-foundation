@@ -918,7 +918,7 @@
     <div ng-controller="AddPlaceCtrl" class="omnibox-container">
       <div ng-show="!loadingData">
         <div>
-          <input type="text" class="form-control" placeholder="Search for a place OR paste a website URL"
+          <input type="text" class="form-control" placeholder="Search for a place"
           tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
           on-place-change="placeChanged($newPlace)"
           tc-focus-on="omniboxState.visible"
@@ -1013,13 +1013,13 @@
       <div class="upper-panel" ng-class="{'has-search-results': searchResults}">
         <div class="header">
           Search for a place to add to your trip
-          <button class="btn close-panel-button" ng-click="showEntityPanel()">
+          <button class="btn btn-default close-panel-button" ng-click="showEntityPanel()">
             Close
           </button>
         </div>
         <div class="search-omnibox">
           <input type="text" class="form-control"
-            placeholder="Search for a place OR paste a website URL"
+            placeholder="Search for a place, business, or address"
             tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
             on-place-change="googlePlaceSelected($newPlace)"
             tc-focus-on="sampleSites"
@@ -1070,7 +1070,7 @@
             <hr style="width: 100%"/>
             <h4>Results from Google Places</h4>
             <div ng-show="searchResults.length > 1">
-              Click on results to select the places you want to save.
+              Select one or more places to save to your trip
             </div>
             <div ng-repeat="result in searchResults" tc-entity-result
               show-checkboxes="false" entity-data="result"
@@ -1082,8 +1082,11 @@
       </div>
       <div class="lower-panel" ng-show="searchResults">
         <div class="save-panel" ng-show="searchResults">
+          <div class="save-confirmation" ng-show="searchResults">
+            Save X places to trip
+          </div>
           <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
-            Save
+            Save Places
           </button>
         </div>
       </div>
