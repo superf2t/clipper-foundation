@@ -1083,7 +1083,12 @@
       <div class="lower-panel" ng-show="searchResults">
         <div class="save-panel" ng-show="searchResults">
           <div class="save-confirmation" ng-show="searchResults">
-            Save X places to trip
+            <span ng-show="selectedResults().length > 1">
+              Save [[selectedResults().length]] places to trip
+            </span>
+            <span ng-show="selectedResults().length == 1">
+              Save [[selectedResults()[0]['name'] ]] to trip
+            </span>
           </div>
           <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
             Save Places
