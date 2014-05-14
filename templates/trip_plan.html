@@ -534,9 +534,14 @@
     </span>
     <span ng-if="itemGroupModel.isCategoryGrouping()">
       <span ng-switch on="itemGroupModel.groupKey">
+        {# TODO: Put the taxonomy here and just get the display name
+           given the category id. #}
         <span ng-switch-when="lodging">Lodging</span>
         <span ng-switch-when="food_and_drink">Food &amp; Drink</span>
         <span ng-switch-when="attractions">Attractions</span>
+        <span ng-switch-when="activities">Activities</span>
+        <span ng-switch-when="entertainment">Entertainment</span>
+        <span ng-switch-when="shopping">Shopping</span>
         <span ng-switch-default>Not Categorized</span>
       </span>
     </span>

@@ -782,7 +782,7 @@ var CATEGORY_NAME_TO_SORTING_RANK = {
   'food_and_drink': 2,
   'attractions': 3,
   'entertainment': 4,
-  'actitives': 5,
+  'activities': 5,
   'shopping': 6
 };
 
