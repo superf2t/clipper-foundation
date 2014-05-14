@@ -90,7 +90,7 @@ function EntityModel(entityData, editable) {
       position: latlng,
       map: null,
       title: entityName,
-      icon: '/static/img/' + entity['icon_url'],
+      icon: '/static/img/map-icons/' + entity['icon_url'],
       draggable: editable
     };
     return new google.maps.Marker(markerData);
@@ -255,6 +255,32 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   };
 
   this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
+}
+
+function TaxonomyTree(categories, subCategories) {
+  var me = this;
+  this.categories = categories;
+  this.subCategoriesByCategoryId = {};
+  $.each(categories, function(i, category) {
+    me.subCategoriesByCategoryId[category['category_id']] = [];
+  });
+  $.each(subCategories, function(i, subCategory) {
+    if (subCategory['category_id']) {
+      me.subCategoriesByCategoryId[subCategory['category_id']].push(subCategory);
+    } else {
+      $.each(me.subCategoriesByCategoryId, function(categoryId, values) {
+        values.unshift(subCategory);
+      });
+    }
+  });
+
+  this.allCategories = function() {
+    return this.categories;
+  };
+
+  this.getSubCategoriesForCategory = function(categoryId) {
+    return this.subCategoriesByCategoryId[categoryId];
+  };
 }
 
 function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer,
@@ -754,16 +780,10 @@ function createDayItemGroupModel(dayNumber) {
 var CATEGORY_NAME_TO_SORTING_RANK = {
   'lodging': 1,
   'food_and_drink': 2,
-  'attractions': 3
-};
-
-var SUB_CATEGORY_NAME_TO_SORTING_RANK = {
-    'hotel': 1,
-    'private_rental': 2,
-    'bed_and_breakfast': 3,
-    'hostel': 4,    
-    'restaurant': 5,
-    'bar': 6
+  'attractions': 3,
+  'entertainment': 4,
+  'actitives': 5,
+  'shopping': 6
 };
 
 function createCategoryItemGroupModel(categoryName) {
@@ -799,7 +819,7 @@ function processIntoGroups(grouping, items) {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $mapBounds, $pageStateModel, $entityService, $datatypeValues, $allowEditing, $sce) {
+    $map, $mapBounds, $pageStateModel, $entityService, $allowEditing, $sce) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.planModel = $tripPlanModel;
@@ -1285,33 +1305,54 @@ function CarouselCtrl($scope) {
 }
 
 var SUB_CATEGORY_NAME_TO_ICON_URL = {
-    'hotel': 'lodging_0star.png',
-    'private_rental': 'lodging_0star.png',
-    'bed_and_breakfast': 'lodging_0star.png',
-    'hostel': 'lodging_0star.png',    
-    'restaurant': 'restaurant.png',
-    'bar': 'bar_coktail.png'
+  'outdoor': 'outdoor.png',
+  'dance': 'dance.png',
+  'food_truck': 'food-truck.png',
+  'coffee_shop': 'coffee.png',
+  'hostel': 'hostel.png',
+  'bakery': 'bakery.png',
+  'sports': 'sports.png',
+  'music': 'music.png',
+  'comedy': 'comedy.png',
+  'friends_and_family': 'friends-and-family.png',
+  'hotel': 'hotel.png',
+  'private_rental': 'private-rental.png',
+  'bed_and_breakfast': 'bed-and-breakfast.png',
+  'theater': 'theater.png',
+  'bar': 'bar.png',
+  'restaurant': 'restaurant.png',
+  'couchsurfing': 'couch-surfing.png',
+  'street_food': 'street-food.png',
+  'nightclub': 'nightclub.png',
+  'tour': 'tour.png',
+  'landmark': 'landmark.png',
+  'musuem': 'museum.png'
 };
 
 var CATEGORY_NAME_TO_ICON_URL = {
-    'lodging': 'lodging_0star.png',
-    'food_and_drink': 'restaurant.png',
-    'attractions': 'sight-2.png'
+  'activities': 'activity.png',
+  'shopping': 'shopping.png',
+  'entertainment': 'entertainment.png',
+  'attractions': 'sight.png',
+  'lodging': 'lodging.png',
+  'food_and_drink': 'food-and-drink.png'
 };
 
-var DEFAULT_ICON_URL = 'sight-2.png';
+var DEFAULT_ICON_URL = 'default.png';
 
 function categoryToIconUrl(categoryName, subCategoryName, precision) {
   var iconUrl = '';
   if (subCategoryName) {
     iconUrl = SUB_CATEGORY_NAME_TO_ICON_URL[subCategoryName];
-  } else if (categoryName) {
+  }
+  if (!iconUrl && categoryName) {
     iconUrl = CATEGORY_NAME_TO_ICON_URL[categoryName];
   }
+  iconUrl = iconUrl || DEFAULT_ICON_URL
   if (precision == 'Imprecise') {
-    iconUrl = iconUrl.replace('.', '_imprecise.');
+    iconUrl = iconUrl.replace('.', '-imprecise.');
   }
-  return iconUrl || DEFAULT_ICON_URL;
+  return iconUrl;
 }
 
 function DataRefreshManager($rootScope) {
@@ -1507,7 +1548,7 @@ function EntityResultCtrl($scope, $window) {
     var marker = new google.maps.Marker({
       draggable: true,
       position: latlng,
-      icon: '/static/img/' + $scope.ed['icon_url'],
+      icon: '/static/img/map-icons/' + $scope.ed['icon_url'],
       map: opt_map
     });
     google.maps.event.addListener(marker, 'dragend', function() {
@@ -1602,7 +1643,7 @@ function EntityResultCtrl($scope, $window) {
       data['sub_category'] && data['sub_category']['name'],
       data['address_precision']);
     data['icon_url'] = iconUrl;
-    marker.setIcon('/static/img/' + iconUrl)
+    marker.setIcon('/static/img/map-icons/' + iconUrl)
   };
 }
 
@@ -1699,11 +1740,14 @@ angular.module('entityResultModule', [])
 
 
 function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
-    $dataRefreshManager, $tripPlan, $datatypeValues) {
+    $dataRefreshManager, $tripPlan, $taxonomy) {
   var me = this;
-  $scope.categories = $datatypeValues['categories'];
-  $scope.subCategories = $datatypeValues['sub_categories'];
   $scope.editingFields = $scope.isEditOfExistingEntity;
+
+  $scope.categories = $taxonomy.allCategories();
+  $scope.getSubCategories = function(categoryId) {
+    return $taxonomy.getSubCategoriesForCategory(categoryId);
+  };
 
   this.makeMarker = function(entityData, map, draggable) {
     var latlngJson = entityData['latlng'] || {};
@@ -1712,7 +1756,7 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
     return new google.maps.Marker({
       draggable: draggable,
       position: latlng,
-      icon: '/static/img/' + entityData['icon_url'],
+      icon: '/static/img/map-icons/' + entityData['icon_url'],
       map: map
     });
   };
@@ -1768,7 +1812,7 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
       data['sub_category'] && data['sub_category']['name'],
       data['address_precision']);
     $scope.entityModel.data['icon_url'] = iconUrl;
-    editableMarker.setIcon('/static/img/' + iconUrl)
+    editableMarker.setIcon('/static/img/map-icons/' + iconUrl)
   };
 
   $scope.saveNewEntity = function() {
@@ -3333,7 +3377,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
     .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
-    .value('$datatypeValues', datatypeValues)
+    .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
     .value('$sampleSites', sampleSites);
@@ -3347,7 +3391,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',
-      '$entityService', '$datatypeValues', '$allowEditing', '$sce', RootCtrl])
+      '$entityService', '$allowEditing', '$sce', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
@@ -3362,7 +3406,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
      '$sampleSites', '$entityService', '$dataRefreshManager', AddPlacePanelCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
-      '$dataRefreshManager', '$tripPlan', '$datatypeValues', AddPlaceConfirmationCtrl])
+      '$dataRefreshManager', '$tripPlan', '$taxonomy', AddPlaceConfirmationCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
       '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
