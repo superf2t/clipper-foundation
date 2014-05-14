@@ -111,13 +111,13 @@
             <form class="form-inline categories-form" role="form">
               <select class="form-control" ng-model="entity['category']"
                 ng-options="c['display_name'] for c in categories track by c['category_id']"
-                ng-change="updateMarkerIcon()">
+                ng-change="categoryChanged()">
               </select>
               <select class="form-control" ng-model="entity['sub_category']"
-                ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+                ng-options="s['display_name'] for s in getSubCategories(entity['category']['category_id']) track by s['sub_category_id']"
                 ng-change="updateMarkerIcon()">
               </select>
-              <img ng-src="/static/img/[[entity['icon_url'] ]]"/>
+              <img ng-src="/static/img/map-icons/[[entity['icon_url'] ]]"/>
             </form>
             <div class="entity-source">
               <form class="form-inline" role="form">

@@ -303,7 +303,7 @@
                   <form class="form-inline" role="form">
                     <label>SubCategory</label>
                     <select class="form-control" ng-model="entityModel.data['sub_category']"
-                      ng-options="s['display_name'] for s in subCategories track by s['sub_category_id']"
+                      ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']"
                       ng-change="updateMarkerIcon()">
                     </select>
                   </form>
@@ -553,7 +553,7 @@
         <div class="col-md-4 img-container"
           ng-style="{'background-image': 'url(&quot;' + item.getBackgroundImageUrl(planModel.locationLatlng()) +'&quot;)'}">
           <div class="category-info">
-            <img ng-src="/static/img/[[ed['icon_url'] ]]"/>
+            <img ng-src="/static/img/map-icons/[[ed['icon_url'] ]]"/>
           </div>
         </div>
         <div class="col-md-8 details-container">
@@ -787,7 +787,7 @@
         <div class="category-info" ng-show="item.hasCategory()">
           <span>[[ed['category']['display_name'] ]]</span>
           <span ng-show="item.hasSubCategory()">/ [[ed['sub_category']['display_name'] ]]</span>
-          <img ng-src="/static/img/[[ed['icon_url'] ]]" class="category-icon"/>
+          <img ng-src="/static/img/map-icons/[[ed['icon_url'] ]]" class="category-icon"/>
         </div>
         <div class="source-info" ng-show="ed['source_url']">
           <a ng-href="[[ed['source_url'] ]]" target="_blank"

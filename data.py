@@ -28,47 +28,49 @@ class LatLngBounds(serializable.Serializable):
         self.southwest = southwest
         self.northeast = northeast
 
-# For backwards compatibility
-ENTITY_TYPE_TO_ICON_URL = {
-    'Attraction': 'sight-2.png',
-    'Restaurant': 'restaurant.png',
-    'Hotel': 'lodging_0star.png',
-    'Nightlife': 'bar_coktail.png',
-}
 
 SUB_CATEGORY_NAME_TO_ICON_URL = {
-    values.SubCategory.HOTEL.name: 'lodging_0star.png',
-    values.SubCategory.PRIVATE_RENTAL.name: 'lodging_0star.png',
-    values.SubCategory.BED_AND_BREAKFAST.name: 'lodging_0star.png',
-    values.SubCategory.HOSTEL.name: 'lodging_0star.png',
+    values.SubCategory.HOTEL.name: 'hotel.png',
+    values.SubCategory.PRIVATE_RENTAL.name: 'private-rental.png',
+    values.SubCategory.BED_AND_BREAKFAST.name: 'bed-and-breakfast.png',
+    values.SubCategory.HOSTEL.name: 'hostel.png',
+    values.SubCategory.COUCHSURFING.name: 'couch-surfing.png',
+    values.SubCategory.FRIENDS_AND_FAMILY.name: 'friends-and-family.png',
+
     values.SubCategory.RESTAURANT.name: 'restaurant.png',
-    values.SubCategory.BAR.name: 'bar_coktail.png',
+    values.SubCategory.BAR.name: 'bar.png',
+    values.SubCategory.NIGHTCLUB.name: 'nightclub.png',
+    values.SubCategory.FOOD_TRUCK.name: 'food-truck.png',
+    values.SubCategory.STREET_FOOD.name: 'street-food.png',
+    values.SubCategory.COFFEE_SHOP.name: 'coffee.png',
+    values.SubCategory.BAKERY.name: 'bakery.png',
+
+    values.SubCategory.LANDMARK.name: 'landmark.png',
+    values.SubCategory.MUSEUM.name: 'museum.png',
+
+    values.SubCategory.TOUR.name: 'tour.png',
+    values.SubCategory.OUTDOOR.name: 'outdoor.png',
+
+    values.SubCategory.MUSIC.name: 'music.png',
+    values.SubCategory.THEATER.name: 'theater.png',
+    values.SubCategory.SPORTS.name: 'sports.png',
+    values.SubCategory.DANCE.name: 'dance.png',
+    values.SubCategory.COMEDY.name: 'comedy.png',
 }
 
 CATEGORY_NAME_TO_ICON_URL = {
-    values.Category.LODGING.name: 'lodging_0star.png',
-    values.Category.FOOD_AND_DRINK.name: 'restaurant.png',
-    values.Category.ATTRACTIONS.name: 'sight-2.png',
+    values.Category.LODGING.name: 'lodging.png',
+    values.Category.FOOD_AND_DRINK.name: 'food-and-drink.png',
+    values.Category.ATTRACTIONS.name: 'sight.png',
+    values.Category.ACTIVITIES.name: 'activity.png',
+    values.Category.SHOPPING.name: 'shopping.png',
+    values.Category.ENTERTAINMENT.name: 'entertainment.png',
 }
 
-# For backwards compatibility
-ENTITY_TYPE_TO_CATEGORY = {
-    'Hotel': values.Category.LODGING,
-    'Restaurant': values.Category.FOOD_AND_DRINK,
-    'Attraction': values.Category.ATTRACTIONS,
-}
-
-# For backwards compatibility
-ENTITY_TYPE_TO_SUB_CATEGORY = {
-    'Hotel': values.SubCategory.HOTEL,
-    'Restaurant': values.SubCategory.RESTAURANT,
-    'Attraction': None  # TODO
-}
-
-DEFAULT_ICON_URL = 'sight-2.png'
+DEFAULT_ICON_URL = 'default.png'
 
 class Entity(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('entity_id', 'name', 'entity_type',
+    PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
         serializable.objf('category', values.Category),
         serializable.objf('sub_category', values.SubCategory),
         'address',
@@ -76,7 +78,7 @@ class Entity(serializable.Serializable):
         'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
         'source_url', 'icon_url', 'google_reference', 'day', 'day_position')
 
-    def __init__(self, entity_id=None, name=None, entity_type=None,
+    def __init__(self, entity_id=None, name=None,
             category=None, sub_category=None,
             address=None, latlng=None,
             address_precision=None, rating=None, description=None,
@@ -84,7 +86,6 @@ class Entity(serializable.Serializable):
             google_reference=None, day=None, day_position=None):
         self.entity_id = entity_id
         self.name = name
-        self.entity_type = entity_type  # Deprecated
         self.category = category
         self.sub_category = sub_category
         self.address = address
@@ -102,9 +103,6 @@ class Entity(serializable.Serializable):
         self.initialize()
 
     def initialize(self):
-        if self.entity_type and not self.category:
-            self.category = ENTITY_TYPE_TO_CATEGORY.get(self.entity_type)
-            self.sub_category = ENTITY_TYPE_TO_SUB_CATEGORY.get(self.entity_type)
         self.set_icon_url()
 
     def set_icon_url(self):
@@ -114,7 +112,7 @@ class Entity(serializable.Serializable):
         elif self.category:
             icon_url = CATEGORY_NAME_TO_ICON_URL.get(self.category.name)
         if icon_url and self.address_precision == 'Imprecise':
-            icon_url = icon_url.replace('.', '_imprecise.')
+            icon_url = icon_url.replace('.', '-imprecise.')
         self.icon_url = icon_url or DEFAULT_ICON_URL
 
     @staticmethod
@@ -170,15 +168,6 @@ class TripPlan(serializable.Serializable):
         # TODO: Make these private fields
         self.creator = creator
         self.editors = editors or []
-
-    def entities_for_type(self, entity_type):
-        return [e for e in self.entities if e.entity_type == entity_type]
-
-    def entities_json_str_for_type(self, entity_type):
-        entities = self.entities_for_type(entity_type)
-        if not entities:
-            return ''
-        return json.dumps([e.to_json_obj() for e in entities])
 
     def entity_by_source_url(self, source_url):
         for entity in self.entities:

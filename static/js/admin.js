@@ -1,10 +1,12 @@
 function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
-    $datatypeValues, $tripPlanService, $entityService, $adminService) {
+    $taxonomy, $tripPlanService, $entityService, $adminService) {
   $scope.tripPlan = $tripPlan;
   $scope.entities = $entities;
 
-  $scope.categories = $datatypeValues['categories'];
-  $scope.subCategories = $datatypeValues['sub_categories'];
+  $scope.categories = $taxonomy.allCategories();
+  $scope.getSubCategories = function(categoryId) {
+    return $taxonomy.getSubCategoriesForCategory(categoryId);
+  };
 
   $scope.saveSettings = {
     lookupLocationsOnSave: false
@@ -134,12 +136,12 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
   };
 }
 
-function AdminEntityCtrl($scope) {
+function AdminEntityCtrl($scope, $taxonomy) {
   this.createMarker = function(latlng, opt_map) {
     var marker = new google.maps.Marker({
       draggable: true,
       position: latlng,
-      icon: '/static/img/' + $scope.entity['icon_url'],
+      icon: '/static/img/map-icons/' + $scope.entity['icon_url'],
       map: opt_map
     });
     google.maps.event.addListener(marker, 'dragend', function() {
@@ -175,6 +177,12 @@ function AdminEntityCtrl($scope) {
     marker.setMap(map);
   };
 
+  $scope.categoryChanged = function() {
+    $scope.entity['sub_category'] = $taxonomy.getSubCategoriesForCategory(
+      $scope.entity['category']['category_id'])[0];
+    $scope.updateMarkerIcon();
+  };
+
   $scope.updateMarkerIcon = function() {
     var data =  $scope.entity;
     var iconUrl = categoryToIconUrl(
@@ -182,7 +190,7 @@ function AdminEntityCtrl($scope) {
       data['sub_category'] && data['sub_category']['name'],
       data['address_precision']);
     data['icon_url'] = iconUrl;
-    marker.setIcon('/static/img/' + iconUrl)
+    marker.setIcon('/static/img/map-icons/' + iconUrl)
   };
 
   $scope.addressChanged = function(place) {
@@ -328,15 +336,15 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$entities', entities)
-    .value('$datatypeValues', datatypeValues);
+    .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']));
 
   angular.module('adminEditorModule', ['initialDataModule', 'servicesModule',
       'directivesModule', 'filtersModule', 'ui.bootstrap', ],
       interpolator)
     .controller('AdminEditorCtrl', ['$scope', '$modal', '$tripPlan', '$entities',
-      '$datatypeValues', '$tripPlanService', '$entityService', '$adminService',
+      '$taxonomy', '$tripPlanService', '$entityService', '$adminService',
       AdminEditorCtrl])
-    .controller('AdminEntityCtrl', ['$scope', AdminEntityCtrl])
+    .controller('AdminEntityCtrl', ['$scope', '$taxonomy', AdminEntityCtrl])
     .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl])
     .service('$adminService', ['$http', AdminService])
     .directive('tcBasicDropTarget', tcBasicDropTarget);
