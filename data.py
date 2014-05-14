@@ -109,11 +109,13 @@ class Entity(serializable.Serializable):
         icon_url = None
         if self.sub_category:
             icon_url = SUB_CATEGORY_NAME_TO_ICON_URL.get(self.sub_category.name)
-        elif self.category:
+        if not icon_url and self.category:
             icon_url = CATEGORY_NAME_TO_ICON_URL.get(self.category.name)
+        if not icon_url:
+            icon_url = DEFAULT_ICON_URL
         if icon_url and self.address_precision == 'Imprecise':
             icon_url = icon_url.replace('.', '-imprecise.')
-        self.icon_url = icon_url or DEFAULT_ICON_URL
+        self.icon_url = icon_url
 
     @staticmethod
     def chronological_cmp(e1, e2):
