@@ -1752,7 +1752,8 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
   };
 
   $scope.categoryChanged = function() {
-    $scope.ed['sub_category'] = null;
+    $scope.ed['sub_category'] = $taxonomy.getSubCategoriesForCategory(
+      $scope.ed['category']['category_id'])[0];
     $scope.updateMarkerIcon();
   };
 
