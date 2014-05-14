@@ -38,8 +38,17 @@ class TripPlanCreator(object):
 
 def augment_trip_plan(raw_trip_plan):
     location_latlng = raw_trip_plan.location_latlng.to_json_obj() if raw_trip_plan.location_latlng else None
-    entities = utils.parallelize(augment_entity, [(e, location_latlng) for e in raw_trip_plan.entities])
+    entities = utils.parallelize(
+        utils.retryable(augment_entity, retries=3),
+        [(e, location_latlng) for e in raw_trip_plan.entities])
     trip_plan = raw_trip_plan.copy()
+    for i, entity in enumerate(entities):
+        # If there's an RPC error, some of these may come back as None.
+        # So as a fallback make sure we at least save the incoming entity.
+        # TODO: Return an error message here so the user can be notified
+        # that not all entities were saved.
+        if not entity:
+            entities[i] = raw_trip_plan.entities[i]
     trip_plan.entities = entities
     return trip_plan
 

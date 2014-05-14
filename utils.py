@@ -25,6 +25,8 @@ def coord_to_decimal(coord_str):
     if type(coord_str) != unicode:
         coord_str = coord_str.decode('utf-8')
     parts = LATLNG_SPLITTER.split(coord_str)
+    if len(parts) == 3:
+        parts.insert(2, 0.0)
     degrees, minutes, seconds, direction = (
         int(parts[0]), int(parts[1]), float(parts[2]), parts[3].upper())
     sign = 1 if direction in ('N', 'E') else -1
@@ -46,20 +48,23 @@ def parallelize(fn, args_list):
         response[item[1]] = item[0]
     return response
 
-def retryable(fn, retries):
+def retryable(fn, retries, raise_on_fail=False):
     if retries < 1:
         raise Exception('Must give a positive number of retries, instead given %s' % retries)
     def fn_with_retries(*args):
         local_retries = retries
         resp = None
+        last_exception = None
         while local_retries > 0:
             try:
                 resp = fn(*args)
-            except:
-                pass
+            except Exception as e:
+                last_exception = e
             if resp:
                 return resp
             else:
                 local_retries -= 1
+        if raise_on_fail and last_exception:
+            raise last_exception
         return resp
     return fn_with_retries
