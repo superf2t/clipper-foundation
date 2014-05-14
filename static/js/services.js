@@ -85,9 +85,9 @@ function EntityService($http) {
     return $http.post('/entityservice/googleplacetoentity', request)
   };
 
-  this.urltoentity = function(url) {
+  this.urltoentities = function(url) {
     var request = {'url': url};
-    return $http.post('/entityservice/urltoentity', request);
+    return $http.post('/entityservice/urltoentities', request);
   };
 
   this.pagesourcetoentities = function(url, pageSource) {

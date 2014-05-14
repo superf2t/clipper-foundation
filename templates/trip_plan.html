@@ -912,32 +912,7 @@
         </div>
       </div>
     </div>
-    {% if allow_editing %}
-    <div ng-include="'omnibox-template'" ng-show="omniboxState.visible">
-    </div>
-    {% endif %}
   </script>
-
-  {% if allow_editing %}
-  <script type="text/ng-template" id="omnibox-template">
-    <div ng-controller="AddPlaceCtrl" class="omnibox-container">
-      <div ng-show="!loadingData">
-        <div>
-          <input type="text" class="form-control" placeholder="Search for a place"
-          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
-          on-place-change="placeChanged($newPlace)"
-          tc-focus-on="omniboxState.visible"
-          ng-keyup="onOmniboxKeyup($event)"
-          ng-model="inputState.rawText"
-          ng-paste="textPasted()"/>
-        </div>
-      </div>
-      <div ng-show="loadingData" id="search-spinner">
-        <img src="/static/img/spinner-small.gif"/>
-      </div>
-    </div>
-  </script>
-  {% endif %}
 
   {% if allow_editing and not plan.location_bounds %}
   <script type="text/ng-template" id="start-new-trip-modal-template">
@@ -1070,10 +1045,11 @@
           </div>
         </div>
 
-        <div class="search-results-panel" ng-show="searchResults">
-          <div class="search-results">
+        <div class="search-results-panel" ng-show="searchComplete">
+          <div class="search-results" ng-show="searchResults && searchResults.length">
             <hr style="width: 100%"/>
-            <h4>Results from Google Places</h4>
+            <h4 ng-show="resultsAreFromSearch">Results from Google Places</h4>
+            <h4 ng-show="!resultsAreFromSearch">Results</h4>
             <div ng-show="searchResults.length > 1">
               Select one or more places to save to your trip
             </div>
@@ -1083,9 +1059,12 @@
               active-trip-plan="planModel.tripPlanData" display-state="{}">
             </div>
           </div>
+          <div ng-show="!searchResults || !searchResults.length">
+            <h4>No places found</h4>
+          </div>
         </div>
       </div>
-      <div class="lower-panel" ng-show="searchResults">
+      <div class="lower-panel" ng-show="searchComplete">
         <div class="save-panel" ng-show="searchResults">
           <div class="save-confirmation" ng-show="searchResults">
             <span ng-show="selectedResults().length > 1">

@@ -111,7 +111,7 @@ class GooglePlaceToEntityRequest(service.ServiceRequest):
     def __init__(self, reference=None):
         self.reference = reference
 
-class UrlToEntityRequest(service.ServiceRequest):
+class UrlToEntitiesRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('url')
 
     def __init__(self, url=None):
@@ -156,7 +156,7 @@ class EntityService(service.Service):
         ('get', EntityGetRequest, EntityGetResponse),
         ('mutate', EntityMutateRequest, EntityMutateResponse),
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
-        ('urltoentity', UrlToEntityRequest, GenericEntityResponse),
+        ('urltoentities', UrlToEntitiesRequest, GenericMultiEntityResponse),
         ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
         ('googletextsearchtoentities', GoogleTextSearchToEntitiesRequest, GenericMultiEntityResponse))
 
@@ -276,11 +276,11 @@ class EntityService(service.Service):
             response_code=service.ResponseCode.SUCCESS.name,
             entity=result.to_entity() if result else None)
 
-    def urltoentity(self, request):
-        entity = clip_logic.scrape_entity_from_url(request.url)
-        return GenericEntityResponse(
+    def urltoentities(self, request):
+        entities = clip_logic.scrape_entities_from_url(request.url)
+        return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
-            entity=entity)
+            entities=entities)
 
     def pagesourcetoentities(self, request):
         # TODO: Move unicode encoding into the json deserializer

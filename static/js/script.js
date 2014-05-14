@@ -1384,105 +1384,55 @@ function PagePositionManager($rootScope) {
   };
 }
 
-function AddPlaceCtrl($scope, $entityService, $timeout, $modal) {
+
+function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel, $sampleSites,
+    $entityService, $dataRefreshManager) {
   var me = this;
-  $scope.loading = false;
-  $scope.inputState = {rawText: ''};
+  $scope.sampleSites = $sampleSites;
+  $scope.selectedSite = $sampleSites[0];
+  $scope.query = null;
+  $scope.loadingData = false;
+  $scope.searchResults = null;
+  $scope.searchComplete = false;
+  $scope.resultsAreFromSearch = true;
 
-  $scope.onOmniboxKeyup = function($event) {
-    if ($event.which == 27) {
-      $scope.omniboxState.visible = false;
-      // TODO: This is not currently clearing the content of the input
-      // but I have no idea why.
-      $scope.inputState.rawText = '';
+  $scope.googlePlaceSelected = function(place) {
+    $scope.loadingData = true;
+    if (place['reference']) {
+      $entityService.googleplacetoentity(place['reference'])
+        .success(me.processResponse);
+    } else {
+      $entityService.googletextsearchtoentities(place['name'],
+        $tripPlanModel.tripPlanData['location_latlng'])
+        .success(me.processResponse);
     }
-  };
-
-  $scope.placeChanged = function(newPlace) {
-    if (!newPlace || !newPlace['reference']) {
-      return;
-    }
-    me.loadEntityByGooglePlaceReference(newPlace['reference']);
   };
 
   $scope.textPasted = function() {
     // Ugly hack to wrap this in a timeout; without it, the paste event
     // fires before the input has been populated with the pasted data.
     $timeout(function() {
-      if (!$scope.inputState.rawText || !looksLikeUrl($scope.inputState.rawText)) {
+      if (!$scope.query || !looksLikeUrl($scope.query)) {
         return;
       }
-      me.loadEntityByUrl($scope.inputState.rawText);
+      $scope.loadingData = true;
+      $scope.resultsAreFromSearch = false;
+      $entityService.urltoentities($scope.query)
+        .success(me.processResponse);
     });
   };
 
-  this.loadEntityByUrl = function(url) {
-    $scope.loadingData = true;
-    $entityService.urltoentity(url)
-      .success(function(response) {
-        var entity = response['entity'];
-        if (entity) {
-          me.openAddPlaceConfirmation(entity);
-        }
-        $scope.loadingData = false;
-      });
-  };
-
-  this.loadEntityByGooglePlaceReference = function(reference) {
-    $scope.loadingData = true;
-    $entityService.googleplacetoentity(reference)
-      .success(function(response) {
-        var entity = response['entity'];
-        if (entity) {
-          me.openAddPlaceConfirmation(entity);
-        }
-        $scope.loadingData = false;
-      });
-  };
-
-  this.openAddPlaceConfirmation = function(entityData) {
-    $scope.omniboxState.visible = false;
-    $scope.inputState.rawText = '';
-    var scope = $scope.$new(true);
-    scope.entityModel = new EntityModel(entityData);
-    scope.ed = scope.entityModel.data;
-    $modal.open({
-      templateUrl: 'add-place-confirmation-template',
-      scope: scope
-    });
-  };
-}
-
-
-function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel, $sampleSites,
-    $entityService, $dataRefreshManager) {
-  $scope.sampleSites = $sampleSites;
-  $scope.selectedSite = $sampleSites[0];
-  $scope.query = null;
-  $scope.loadingData = false;
-  $scope.searchResults = null;
-
-  $scope.googlePlaceSelected = function(place) {
-    $scope.loadingData = true;
-    var successCallback = function(response) {
-      if (response['entity']) {
-        $scope.searchResults = [response['entity']]
-      } else {
-        $scope.searchResults = response['entities'] || [];
-      }
-      if ($scope.searchResults.length == 1) {
-        $scope.searchResults[0].selected = true;
-      }
-      $scope.loadingData = false;
-    };
-    if (place['reference']) {
-      $entityService.googleplacetoentity(place['reference'])
-        .success(successCallback);
+  this.processResponse = function(response) {
+    if (response['entity']) {
+      $scope.searchResults = [response['entity']]
     } else {
-      $entityService.googletextsearchtoentities(place['name'],
-        $tripPlanModel.tripPlanData['location_latlng'])
-        .success(successCallback);
+      $scope.searchResults = response['entities'] || [];
     }
+    if ($scope.searchResults.length == 1) {
+      $scope.searchResults[0].selected = true;
+    }
+    $scope.loadingData = false;
+    $scope.searchComplete = true;
   };
 
   $scope.selectedResults = function() {
@@ -3403,7 +3353,6 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
-    .controller('AddPlaceCtrl', ['$scope', '$entityService', '$timeout', '$modal', AddPlaceCtrl])
     .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
      '$sampleSites', '$entityService', '$dataRefreshManager', AddPlacePanelCtrl])
     .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
