@@ -44,6 +44,7 @@ SUB_CATEGORY_NAME_TO_ICON_URL = {
     values.SubCategory.STREET_FOOD.name: 'street-food.png',
     values.SubCategory.COFFEE_SHOP.name: 'coffee.png',
     values.SubCategory.BAKERY.name: 'bakery.png',
+    values.SubCategory.DESSERT.name: 'dessert.png',
 
     values.SubCategory.LANDMARK.name: 'landmark.png',
     values.SubCategory.MUSEUM.name: 'museum.png',

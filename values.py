@@ -36,7 +36,7 @@ class SubCategory(serializable.Serializable):
     def __str__(self):
         return self.name
 
-# Next id: 23
+# Next id: 25
 
 SubCategory.NONE = SubCategory(0, 'none', 'None')
 
@@ -54,6 +54,7 @@ SubCategory.FOOD_TRUCK = SubCategory(10, 'food_truck', 'Food Truck', Category.FO
 SubCategory.STREET_FOOD = SubCategory(11, 'street_food', 'Street Food', Category.FOOD_AND_DRINK.category_id)
 SubCategory.COFFEE_SHOP = SubCategory(20, 'coffee_shop', 'Coffee Shop', Category.FOOD_AND_DRINK.category_id)
 SubCategory.BAKERY = SubCategory(23, 'bakery', 'Bakery', Category.FOOD_AND_DRINK.category_id)
+SubCategory.DESSERT = SubCategory(24, 'dessert', 'Dessert', Category.FOOD_AND_DRINK.category_id)
 
 SubCategory.LANDMARK = SubCategory(12, 'landmark', 'Landmark', Category.ATTRACTIONS.category_id)
 SubCategory.MUSEUM = SubCategory(13, 'musuem', 'Museum', Category.ATTRACTIONS.category_id)

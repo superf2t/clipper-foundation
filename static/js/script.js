@@ -1311,6 +1311,7 @@ var SUB_CATEGORY_NAME_TO_ICON_URL = {
   'coffee_shop': 'coffee.png',
   'hostel': 'hostel.png',
   'bakery': 'bakery.png',
+  'dessert': 'dessert.png',
   'sports': 'sports.png',
   'music': 'music.png',
   'comedy': 'comedy.png',
