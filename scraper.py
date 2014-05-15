@@ -888,7 +888,7 @@ class FoursquareScaper(ScrapedPage):
 
     def get_photos(self):
         urls = [img.get('src') for img in self.root.findall('.//ul[@class="photos"]//li//img')]
-        return [url.replace('152x152', 'width960').replace('50x50', 'width960') for url in urls]
+        return [url.replace('152x152', 'width960').replace('50x50', 'width960') for url in urls if 'icon-camera' not in url]
 
     def get_primary_photo(self):
         photos = self.get_photos()
