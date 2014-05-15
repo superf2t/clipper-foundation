@@ -59,7 +59,7 @@
           </div>
           <div class="source">
               <form class="form-inline" role="form">
-              <img class="source-icon" ng-src="http://[[tripPlan['source_url'] | hostname ]]/favicon.ico" ng-if="tripPlan['source_url']"/>
+              <img class="source-icon" ng-src="[[tripPlan['source_url'] | hostname | hostToIcon ]]" ng-if="tripPlan['source_url']"/>
               <input type="text" class="form-control" ng-model="tripPlan['source_url']"
                 placeholder="Source url"/>
             </form>
@@ -121,7 +121,7 @@
             </form>
             <div class="entity-source">
               <form class="form-inline" role="form">
-                <img class="source-icon" ng-src="http://[[entity['source_url'] | hostname ]]/favicon.ico" ng-if="entity['source_url']"/>
+                <img class="source-icon" ng-src="[[entity['source_url'] | hostname | hostToIcon ]]" ng-if="entity['source_url']"/>
                 <input type="text" class="form-control" ng-model="entity['source_url']"
                   placeholder="Source url"/>
               </form>

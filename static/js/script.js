@@ -53,6 +53,16 @@ function isWhitespace(str) {
   return /^\s+$/.test(str);
 }
 
+var HOST_TO_ICON = {
+  'foursquare.com': 'https://foursquare.com/img/touch-icon-ipad-retina.png'
+};
+  
+
+function hostToIcon(host) {
+  var iconOverride = HOST_TO_ICON[host];
+  return iconOverride || 'http://' + host + '/favicon.ico';
+}
+
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
@@ -3320,7 +3330,8 @@ function makeFilter(fn) {
 angular.module('filtersModule', [])
   .filter('hostname', makeFilter(hostnameFromUrl))
   .filter('hostNoSuffix', makeFilter(hostNoSuffix))
-  .filter('emailPrefix', makeFilter(emailPrefix));
+  .filter('emailPrefix', makeFilter(emailPrefix))
+  .filter('hostToIcon', makeFilter(hostToIcon));
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     accountInfo, datatypeValues, allowEditing, sampleSites, initialState) {

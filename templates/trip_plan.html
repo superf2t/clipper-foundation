@@ -572,7 +572,7 @@
               <a ng-href="[[ed['source_url'] ]]" target="_blank"
                 tooltip="[[ed['source_url'] | hostname ]]" tooltip-placement="right">
                 From
-                <img class="source-icon" ng-src="http://[[ed['source_url'] | hostname ]]/favicon.ico"/>
+                <img class="source-icon" ng-src="[[ed['source_url'] | hostname | hostToIcon ]]"/>
               </a>
             </div>
             <div class="day-info" ng-show="item.day()">
@@ -798,7 +798,7 @@
           <a ng-href="[[ed['source_url'] ]]" target="_blank"
             tooltip="[[ed['source_url'] | hostname ]]">
             From
-            <img class="source-icon" ng-src="http://[[ed['source_url'] | hostname ]]/favicon.ico"/>
+            <img class="source-icon" ng-src="[[ed['source_url'] | hostname | hostToIcon ]]"/>
           </a>
         </div>
       </div>
