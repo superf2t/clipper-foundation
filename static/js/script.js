@@ -66,6 +66,10 @@ function hostToIcon(host) {
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
+  this.entityId = function() {
+    return this.data['entity_id'];
+  };
+
   this.hasDescription = function() {
     return this.data['description'] && this.data['description'].length;
   };
@@ -293,97 +297,21 @@ function TaxonomyTree(categories, subCategories) {
   };
 }
 
-function ItemGroupCtrl($scope, $map, $mapBounds, $entityService, $templateToStringRenderer,
-    $pagePositionManager, $tripPlanModel, $allowEditing) {
-  var me = this;
+function ItemGroupCtrl($scope) {
   $scope.show = true;
-
-  var entityModels = _.map($scope.itemGroupModel.getEntityItems(), function(item) {
-    return new EntityModel(item.data, $allowEditing);
-  });
-
-  $scope.$on('closeallinfowindows', function() {
-    $.each(entityModels, function(i, entityModel) {
-      if (entityModel.infowindow) {
-        entityModel.infowindow.close();
-      }
-    });
-  });
-
-  $scope.$on('clearallmarkers', function() {
-    $.each(entityModels, function(i, entityModel) {
-      entityModel.clearMarker();
-    });
-  });
-
-  $.each(entityModels, function(i, entityModel) {
-    var marker = entityModel.marker;
-    if (!marker) {
-      return;
-    }
-    marker.setMap($map);
-    $mapBounds.extend(marker.getPosition())
-    google.maps.event.addListener(marker, 'click', function() {
-      $scope.pageStateModel.selectedEntity = entityModel.data;
-      $pagePositionManager.scrollToEntity(entityModel.data['entity_id']);
-      $scope.$emit('asktocloseallinfowindows');
-      me.createInfowindow(entityModel, marker, true);
-    });
-    google.maps.event.addListener(marker, 'dragend', function() {
-      entityModel.data['latlng']['lat'] = marker.getPosition().lat();
-      entityModel.data['latlng']['lng'] = marker.getPosition().lng();
-      me.saveEntity(entityModel.data);
-    });
-  });
-  // TODO: Move this after all have initialized.
-  if (!$mapBounds.isEmpty() && $scope.pageStateModel.inMapView()
-    && $tripPlanModel.numEntities() > 1) {
-    $map.fitBounds($mapBounds);
-  }
-
-  this.saveEntity = function(entityData) {
-    $entityService.editEntity(entityData, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        $tripPlanModel.updateLastModified(response['last_modified']);
-      })
-      .error(function() {
-        alert('Failed to save new marker location');
-      });
-  };
 
   $scope.toggleSection = function() {
     $scope.show = !$scope.show;
-    $.each(entityModels, function(i, entityModel) {
-      if (entityModel.marker) {
-        entityModel.marker.setMap($scope.show ? $map : null);
-      }
-    });
-  };
-
-  $scope.openInfowindow = function(entityId) {
-    if (!$scope.pageStateModel.inMapView()) {
-      return;
-    }
-    $scope.$emit('asktocloseallinfowindows');
-    $.each(entityModels, function(i, entityModel) {
-      if (entityModel.data['entity_id'] == entityId && entityModel.hasLocation()) {
-        me.createInfowindow(entityModel, entityModel.marker);
-      }
-    });
-  };
-
-  this.createInfowindow = function(entityModel, marker, opt_nonAngularOrigin) {
-    var infowindowContent = $templateToStringRenderer.render('infowindow-template', {
-      entity: entityModel
-    }, opt_nonAngularOrigin);
-    entityModel.makeInfowindow(infowindowContent[0]).open($map, marker);
+    $scope.$broadcast('togglemarkers', $scope.show);
   };
 }
 
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
-    $pagePositionManager, $tripPlanModel, $pageStateModel, $timeout) {
+    $pagePositionManager, $tripPlanModel, $pageStateModel, $timeout,
+    $map, $mapBounds, $templateToStringRenderer) {
   var me = this;
   $scope.ed = $scope.item.data;
+  var entityModel = new EntityModel($scope.item.data);
   $scope.editing = false;
   $scope.detailsExpanded = false;
   $scope.selectedDay = null;
@@ -520,6 +448,64 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
         $dataRefreshManager.unfreeze();
       });
   };
+
+  // Map and Marker Controls
+
+  this.initializeMarker = function() {
+    var marker = entityModel.marker;
+    if (!marker) {
+      return;
+    }
+    marker.setMap($map);
+    $mapBounds.extend(marker.getPosition())
+    var toolsOverlay = null;
+    google.maps.event.addListener(marker, 'click', function() {
+      $pageStateModel.selectedEntity = entityModel.data;
+      $pagePositionManager.scrollToEntity(entityModel.entityId());
+      $scope.$emit('asktocloseallinfowindows');
+      me.createInfowindow(entityModel, marker, true);
+    });
+  };
+
+  this.initializeMarker();
+  // TODO: Move this after all have initialized.
+  if (!$mapBounds.isEmpty() && $pageStateModel.inMapView()
+    && $tripPlanModel.numEntities() > 1) {
+    $map.fitBounds($mapBounds);
+  }
+
+  $scope.openInfowindow = function() {
+    if (!$pageStateModel.inMapView()) {
+      return;
+    }
+    $scope.$emit('asktocloseallinfowindows');
+    if (entityModel.marker) {
+      me.createInfowindow(entityModel, entityModel.marker);
+    }
+  };
+
+  this.createInfowindow = function(entityModel, marker, opt_nonAngularOrigin) {
+    var infowindowContent = $templateToStringRenderer.render('infowindow-template', {
+      entity: entityModel
+    }, opt_nonAngularOrigin);
+    entityModel.makeInfowindow(infowindowContent[0]).open($map, marker);
+  };
+
+  $scope.$on('closeallinfowindows', function() {
+    if (entityModel.infowindow) {
+      entityModel.infowindow.close();
+    }
+  });
+
+  $scope.$on('clearallmarkers', function() {
+    entityModel.clearMarker();
+  });
+
+  $scope.$on('togglemarkers', function(event, show) {
+    if (entityModel.marker) {
+      entityModel.marker.setMap(show ? $map : null);
+    }
+  });
 }
 
 function GuideviewEntityCtrl($scope) {
@@ -3357,11 +3343,11 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$entityService', '$allowEditing', '$sce', RootCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
-    .controller('ItemGroupCtrl', ['$scope', '$map', '$mapBounds', '$entityService',
-      '$templateToStringRenderer', '$pagePositionManager', '$tripPlanModel', '$allowEditing', ItemGroupCtrl])
+    .controller('ItemGroupCtrl', ['$scope', ItemGroupCtrl])
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout', EntityCtrl])
+      '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
+      '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
