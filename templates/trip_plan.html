@@ -676,12 +676,12 @@
         </div>
         <div class="description"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
         <div class="clip-cta">
-          Like what you see?  You can copy places to your own trip.
-          <div class="clip-control">
-            <a href="javascript:void(0)">
+          <a href="javascript:void(0)">
+            Like what you see?  You can copy places to your own trip.
+            <span class="clip-control">
               <span class="glyphicon glyphicon-new-window"></span>
-            </a>
-          </div>
+            </span>
+          </a>
         </div>
       </div>
       <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
@@ -763,9 +763,23 @@
         </div>
       </div>
       <div class="controls">
-        <a href="javascript:void(0)">
+        <a class="dropdown-toggle" href="javascript:void(0)">
           Organize <span class="caret"></span>
         </a>
+        <ul class="dropdown-menu organize-dropdown">
+          <li>
+            <a ng-click="groupByCategory()" href="javascript:void(0)">
+              Sort by Type
+              <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
+            </a>
+          </li>
+          <li>
+            <a ng-click="groupByDay()" href="javascript:void(0)">
+              Sort by Day
+              <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
+            </a>
+          </li>
+        </ul>
       </div>
     </div>
   </script>

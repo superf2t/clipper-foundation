@@ -154,6 +154,14 @@ hr.dropdown-separator {
   background-color: #222;
 }
 
+#trip-plan-header .organize-dropdown {
+  background-color: #222;
+}
+
+#trip-plan-header .organize-dropdown a:hover {
+  background-color: #ccc;
+}
+
 /* Map View */
 
 #entity-container {
@@ -263,12 +271,22 @@ hr.dropdown-separator {
   margin: 15px;
 }
 
+
+.guide-panel .overview .clip-cta a {
+  color: #428bca;
+}
+
+.guide-panel .overview .clip-cta a:hover {
+  color: #2D73A0;
+}
+
 .guide-panel .overview .clip-cta {
   margin: 0 15px 15px 15px;
   position: relative;
 }
 
 .guide-panel .overview .clip-control {
+  display: inline-block;
   position: absolute;
   right: 0px;
   top: 0px;
