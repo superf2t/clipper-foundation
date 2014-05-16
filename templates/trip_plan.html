@@ -69,7 +69,7 @@
   </div>
 
   <div id="mid-panel">
-    <div ng-include="'guide-panel-template'">
+    <div ng-include="'guide-panel-template'" class="full-width full-height">
     </div>
   </div>
 
@@ -563,7 +563,8 @@
 
   <script type="text/ng-template" id="one-entity-leftnav-template">
     <div ng-controller="EntityCtrl" class="one-entity-leftnav"
-      ng-click="openInfowindow()">
+      ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
+      ng-click="selectEntity(ed); openInfowindow()">
       <span class="entity-circle-img">
         <img ng-src="[[item.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
       </span>

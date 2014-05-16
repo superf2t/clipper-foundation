@@ -200,6 +200,7 @@ hr.dropdown-separator {
   cursor: pointer;
 }
 
+.one-entity-leftnav.selected,
 .one-entity-leftnav:hover {
   background-color: #ccc;
 }
@@ -229,6 +230,9 @@ hr.dropdown-separator {
 
 .guide-panel {
   color: #000;
+  width: 100%;
+  height: 100%;
+  overflow: scroll;
 }
 
 .guide-panel .overview {
@@ -502,7 +506,6 @@ hr.dropdown-separator {
   top: 41px;
   width: 30%;
   left: 20%;
-  overflow: scroll;
 
   background-color: #FAFAFA;
   border-right: 1px solid #979797;  
