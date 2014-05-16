@@ -69,6 +69,8 @@
   </div>
 
   <div id="mid-panel">
+    <div ng-include="'guide-panel-template'">
+    </div>
   </div>
 
   <div id="map-panel">
@@ -672,25 +674,30 @@
           </div>
         </div>
         <div class="description"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
+        <div class="clip-cta">
+          Like what you see?  You can copy places to your own trip.
+          <div class="clip-control">
+            <a href="javascript:void(0)">
+              <span class="glyphicon glyphicon-new-window"></span>
+            </a>
+          </div>
+        </div>
       </div>
       <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
+      </div>
+      <div class="mapview-footer">
+        Copyright 2014 Unicycle Labs
       </div>
     </div>
   </script>
 
   <script type="text/ng-template" id="guideview-item-group-template">
     <div ng-controller="GuideviewItemGroupCtrl" ng-show="itemGroupModel.hasContent()" ng-if="itemGroupModel.getEntityItems().length != 0">
-      <div class="guideview-item-group-header">
+<!--       <div class="guideview-item-group-header">
         <h3 ng-include="'item-group-header-text-template'"></h3>
-      </div>
-      <div>
-<!--         <div ng-repeat="item in itemGroupModel.getNonemptyNoteItems()">
-          <div ng-include="'guideview-one-note-template'">
-          </div>
-        </div> -->
-        <div ng-repeat="item in itemGroupModel.getEntityItems()">
-          <div ng-include="'guideview-one-entity-template'">
-          </div>
+      </div> -->
+      <div ng-repeat="item in itemGroupModel.getEntityItems()">
+        <div ng-include="'guideview-one-entity-template'">
         </div>
       </div>
     </div>
@@ -698,29 +705,44 @@
 
   <script type="text/ng-template" id="guideview-one-entity-template">
     <div ng-controller="GuideviewEntityCtrl"
-      class="one-entity-guideview" ng-class="{'odd': $odd}"
+      class="one-entity-guideview"
       tc-entity-id="[[ed['entity_id'] ]]">
-      <h4>[[ed['name'] ]]</h4>
-      <div ng-if="item.hasPhotos()" tc-image-gallery urls="ed['photo_urls']" page-size="3">
+      <hr class="entity-separator"/>
+      <div class="name">
+        <h4>[[ed['name'] ]]</h4>
+        <div class="star">
+          {% if allow_editing %}
+          <a ng-click="saveStarState(false)" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']"></span>
+          </a>
+          <a ng-click="saveStarState(true)" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-star-empty" ng-show="!ed['starred']"></span>
+          </a>
+          {% else %}
+          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']"></span>
+          {% endif %}
+        </div>
+      </div>
+      <div ng-if="item.hasPhotos()" class="photo-carousel">
+        <img ng-src="[[ed['photo_urls'][0] ]]"/>
       </div>
        <div class="metadata">
         <div class="address">
           [[ed['address'] ]]
         </div>
-        <div class="category-info" ng-show="item.hasCategory()">
-          <span>[[ed['category']['display_name'] ]]</span>
-          <span ng-show="item.hasSubCategory()">/ [[ed['sub_category']['display_name'] ]]</span>
-          <img ng-src="/static/img/map-icons/[[ed['icon_url'] ]]" class="category-icon"/>
-        </div>
         <div class="source-info" ng-show="ed['source_url']">
-          <a ng-href="[[ed['source_url'] ]]" target="_blank"
-            tooltip="[[ed['source_url'] | hostname ]]">
-            From
-            <img class="source-icon" ng-src="[[ed['source_url'] | hostname | hostToIcon ]]"/>
+          <a ng-href="[[ed['source_url'] ]]" target="_blank">
+            From <span class="source-text">[[ed['source_url'] | hostname ]]</span>
           </a>
         </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+      <div class="clip-cta">
+        <a ng-click="reclipEntity()" href="javascript:void(0)">
+          Clip to My Trip
+          <span class="glyphicon glyphicon-paperclip"></span>
+        </a>
+      </div>
     </div>
   </script>
 

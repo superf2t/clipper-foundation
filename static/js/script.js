@@ -526,8 +526,30 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   });
 }
 
-function GuideviewEntityCtrl($scope) {
+function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
   $scope.ed = $scope.item.data;
+
+  $scope.saveStarState = function(starred) {
+    $scope.ed['starred'] = starred;
+    $entityService.editEntity({
+      'entity_id': $scope.ed['entity_id'],
+      'starred': starred
+    }, $tripPlanModel.tripPlanId())
+    .success(function(response) {
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    });
+  };
+
+  $scope.reclipEntity = function() {
+    var scope = $scope.$new(true);
+    scope.entityModel = new EntityModel(angular.copy($scope.ed));
+    scope.ed = scope.entityModel.data;
+    scope.ed['entity_id'] = null;
+    $modal.open({
+      templateUrl: 'reclip-confirmation-template',
+      scope: scope
+    });
+  };
 }
 
 function NoteCtrl($scope, $noteService, $tripPlanModel) {
@@ -3396,7 +3418,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
       '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
-    .controller('GuideviewEntityCtrl', ['$scope', GuideviewEntityCtrl])
+    .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
+      '$tripPlanModel', '$modal', GuideviewEntityCtrl])
     .controller('MarkerToolsCtrl', ['$scope', MarkerToolsCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])

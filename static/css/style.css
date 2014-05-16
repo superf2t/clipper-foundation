@@ -228,21 +228,16 @@ hr.dropdown-separator {
 }
 
 .guide-panel {
-  width: 100%;
-  height: 100%;
-  background-color: #EAEAEA;
-  overflow-y: auto;
   color: #000;
 }
 
 .guide-panel .overview {
   width: 100%;
-  background-color: #F5F5F5;
 }
 
 .guide-panel .guide-panel-hero-img {
   width: 100%;
-  height: 500px;
+  height: 300px;
   background-repeat: no-repeat;
   background-size: cover;
   background-position: 50% 50%;
@@ -250,30 +245,38 @@ hr.dropdown-separator {
 }
 
 .guide-panel .title-floater {
-  padding: 25px 80px;
-  background-color: #fff;
-  opacity: 0.8;
+  color: #fff;
   margin: auto;
-  font-size: 16pt;
+  font-size: 20pt;
   text-align: center;
-  border-radius: 3px;
   position: relative;
-  top: 65%;
-  display: inline-block;
+  top: 50%;
 }
 
 .guide-panel .overview .description {
   white-space: pre-line;
   text-align: justify;
-  padding: 25px 0;
-  margin: auto;
-  width: 90%;
-  font-size: 1.1em;
+  margin: 15px;
 }
 
-.guide-panel h3,
+.guide-panel .overview .clip-cta {
+  margin: 0 15px 15px 15px;
+  position: relative;
+}
+
+.guide-panel .overview .clip-control {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+
+.guide-panel .entity-separator {
+  border-top: 1px solid #979797;
+  margin: 10px 0;
+}
+
 .guide-panel h4 {
-  text-align: center;
+  font-size: 16px;
 }
 
 .guideview-item-group-header {
@@ -282,77 +285,53 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview {
-  padding: 15px;
+  margin: 0 15px;
 }
 
-.one-entity-guideview.odd {
-  background-color: #F5F5F5;
+.one-entity-guideview .name {
+  position: relative;
 }
 
-.one-entity-guideview .image-gallery {
-  padding: 40px 0 40px 0;
-  width: 80%;
-  margin: auto;
-  background-color: #FFFFFF;
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+.one-entity-guideview .star {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
-.one-entity-guideview .image-gallery .featured-image-container {
+.one-entity-guideview .photo-carousel {
+  height: 250px;
   text-align: center;
-  margin: auto;
-  height: 500px;
 }
 
-.one-entity-guideview .image-gallery .featured-image-container img {
+.one-entity-guideview .photo-carousel img {
   max-width: 100%;
   max-height: 100%;
-  }
-
-.one-entity-guideview .image-gallery .image-selector {
-  margin-top: 20px;
-  max-width: 500px;
-  height: 100px;
-}
-
-.one-entity-guideview .image-gallery .image-selector .selector-images {
-  width: 80%;
-  margin: auto;  
-}
-
-.one-entity-guideview .image-gallery .image-selector .selector-image-container {
-  padding: 0 10px;
-}
-
-.one-entity-guideview .image-gallery .image-selector img.selected {
-  box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
 }
 
 .one-entity-guideview .metadata {
-  width: 80%;
-  margin: 20px auto;
+  margin: 15px 0;
 }
 
-.one-entity-guideview .metadata .address {
-  font-size: 13pt;
-}
-
-.one-entity-guideview .metadata .category-icon {
-  max-width: 25px;
-  max-height: 25px;
-}
-
-.one-entity-guideview .metadata .source-icon  {
-  max-width: 16px;
-  max-height: 16px;
+.one-entity-guideview .metadata .source-text {
+  text-decoration: underline;
 }
 
 .one-entity-guideview .description {
   white-space: pre-line;
-  width: 80%;
-  margin: 20px auto;
   text-align: justify;
+}
+
+.one-entity-guideview .clip-cta {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.one-entity-guideview .clip-cta a {
+  color: #428bca;
+}
+
+.one-entity-guideview .clip-cta a:hover {
+  color: #2D73A0;
 }
 
 .modal-carousel.modal {
@@ -523,6 +502,7 @@ hr.dropdown-separator {
   top: 41px;
   width: 30%;
   left: 20%;
+  overflow: scroll;
 
   background-color: #FAFAFA;
   border-right: 1px solid #979797;  
