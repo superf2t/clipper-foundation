@@ -11,13 +11,13 @@
   <script src="/static/js/sprintf.js"></script>
   <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
-  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/shared.css">
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="RootCtrl">
+<body ng-controller="RootCtrl" ng-class="{'mid-panel-expanded': pageStateModel.midPanelExpanded}">
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="travel-clip-navbar">
     <div class="container-fluid">
       <div class="navbar-header">
@@ -66,30 +66,19 @@
     <div ng-if="pageStateModel.inAddPlacePanel()" class="add-place-panel-container"
       ng-include="'add-place-panel-template'">
     </div>
+  </div>
 
-    <div id="right-panel">
-      <div id="map-container" ng-show="pageStateModel.inMapView()">
-        <div id="map">
-        </div>
-      </div>
-      <div ng-include="'guide-panel-template'" class="full-width full-height"
-        ng-show="pageStateModel.inGuideView()">
-      </div>
-      <div class="right-panel-disabler" ng-show="pageStateModel.inAddPlacePanel() && pageStateModel.inMapView()">
-      </div>
-      <div ng-include="'page-mode-controls-template'">
-      </div>
-      <div class="full-width full-height" ng-show="pageStateModel.inSourceView()">
-        <iframe ng-if="alreadyLoadedSourceView" ng-src="[[trustSource(planModel.tripPlanData['source_url'])]]" id="source-iframe">
-        </iframe>
-      </div>
-      <div class="full-width full-height" ng-if="pageStateModel.inOffsiteView()">
-        <iframe ng-src="[[trustSource(pageStateModel.offsiteUrl)]]" id="offsite-iframe">
-        </iframe>
+  <div id="mid-panel">
+  </div>
+
+  <div id="map-panel">
+    <div id="map-container" ng-show="pageStateModel.inMapView()">
+      <div id="map">
       </div>
     </div>
-
-  </div>  {# end map view #}
+    <div ng-include="'page-mode-controls-template'">
+    </div>
+  </div>
 
   {# This is below the map in the DOM so that it appears visually on top #}
   <ul ng-show="accountDropdownOpen" class="account-dropdown" ng-controller="AccountDropdownCtrl">
@@ -133,14 +122,11 @@
 
   <script type="text/ng-template" id="page-mode-controls-template">
     <div id="page-mode-toggle-control" ng-show="!pageStateModel.inOffsiteView()">
-      <button class="btn btn-default" ng-click="showMapView()" ng-disabled="pageStateModel.inMapView()">
-        Map
+      <button ng-click="toggleMidPanel()" class="btn">
+        <span class="glyphicon glyphicon-minus"></span>
       </button>
-      <button class="btn btn-default" ng-click="showGuideView()" ng-disabled="pageStateModel.inGuideView()" >
-        Guide
-      </button>
-      <button class="btn btn-default" ng-click="showSourceView()" ng-disabled="pageStateModel.inSourceView()" ng-if="planModel.hasSource()">
-        Source
+      <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
+        Add Place
       </button>
     </div>
   </script>
@@ -178,7 +164,7 @@
           <span class="glyphicon glyphicon-star-empty"></span>
         </a>
         <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-star entity-star"></span>
+          <span class="glyphicon glyphicon-star favorite-star"></span>
         </a>
       </span>
       {% endif %}
@@ -532,7 +518,7 @@
           </div>
         </div>
         <div ng-repeat="item in itemGroupModel.getEntityItems()">
-          <div ng-include="'mapview-one-entity-template'">
+          <div ng-include="'one-entity-leftnav-template'">
           </div>
         </div>
       </div>
@@ -573,119 +559,25 @@
     </span>
   </script>
 
-  <script type="text/ng-template" id="mapview-one-entity-template">
-    <div ng-controller="EntityCtrl" class="one-entity-mapview container-fluid"
-      ng-class="{'expanded': detailsExpanded,
-      'collapsed': !detailsExpanded,
-      'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
-      tc-entity-id="[[ed['entity_id'] ]]"
-      ng-click="openInfowindow(ed['entity_id']); selectEntity(ed)">
-      <div class="row main-row">
-        <div class="col-md-4 img-container"
-          ng-style="{'background-image': 'url(&quot;' + item.getBackgroundImageUrl(planModel.locationLatlng()) +'&quot;)'}">
-          <div class="category-info">
-            <img ng-src="/static/img/map-icons/[[ed['icon_url'] ]]"/>
-          </div>
+  <script type="text/ng-template" id="one-entity-leftnav-template">
+    <div ng-controller="EntityCtrl" class="one-entity-leftnav"
+      ng-click="openInfowindow()">
+      <span class="entity-circle-img">
+        <img ng-src="[[item.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
+      </span>
+      <span class="entity-info">
+        <div class="name">
+          [[ed['name'] ]]
         </div>
-        <div class="col-md-8 details-container">
-          <div class="main-details">
-            <div class="title">
-              [[ed['name'] ]]
-            </div>
-            <div tc-star-rating value="[[ed['rating'] ]]" ng-if="ed['rating']">
-            </div tc-star-rating>
-            <div class="source" ng-if="ed['source_url']">
-              <a ng-href="[[ed['source_url'] ]]" target="_blank"
-                tooltip="[[ed['source_url'] | hostname ]]" tooltip-placement="right">
-                From
-                <img class="source-icon" ng-src="[[ed['source_url'] | hostname | hostToIcon ]]"/>
-              </a>
-            </div>
-            <div class="day-info" ng-show="item.day()">
-              Day [[item.day()]]
-            </div>
-            <div class="expand-controls">
-              <a ng-click="toggleDetails($event)" href="javascript:void(0)">
-                <span ng-show="!detailsExpanded" class="glyphicon glyphicon-chevron-down"></span>
-                <span ng-show="detailsExpanded" class="glyphicon glyphicon-chevron-up"></span>
-              </a>
-            </div>
-            <div class="main-controls">
-              <span ng-if="!item.hasLocation()"
-                tooltip="Location unavailable"
-                class="glyphicon glyphicon-exclamation-sign">
-              </span>
-              <span ng-if="item.hasLocation() && !item.isPreciseLocation()"
-                ng-click="$event.stopPropagation()"
-                tooltip="Location approximate"
-                class="glyphicon glyphicon-exclamation-sign">
-              </span>
-              <a href="javascript:void(0)" class="dropdown-toggle">
-                <span class="glyphicon glyphicon-cog"></span>
-              </a>
-              <ul class="dropdown-menu right-bottom-dropdown-menu">
-                {% if allow_editing %}
-                <li>
-                  <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-edit"></span> Edit this place
-                  </a>
-                </li>
-                {% endif %}
-                <li>
-                  <a ng-click="reclipEntity()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-paperclip"></span> Clip this place
-                  </a>
-                </li>
-                {% if allow_editing %}
-                <li>
-                  <a ng-click="deleteEntity()" href="javascript:void(0)">
-                    <span class="glyphicon glyphicon-trash"></span> Delete this place
-                  </a>
-                </li>
-                <li>
-                  <select class="form-control day-select-pill"
-                    ng-options="option.createNew ? 'Add a new day' : 'Day ' + option.dayNumber for option in getDaySelectOptions()"
-                    {# HACK: Stupid ng/bootstrap widget closes the dropdown on all clicks,
-                       so as soon as you try to click on the Select elem the whole dropdown
-                       closes.  Here we stop the click event to prevent this.  But then
-                       we need a corresponding hack to trigger a fake click event when
-                       we need the menu to actually close.  It seems a future version
-                       of the dropdown widget will support angular bindings to control
-                       the open/close state. #}
-                    ng-click="$event.stopPropagation(); $event.preventDefault()"
-                    ng-change="organizeIntoDay()"
-                    ng-model="selectedDay">
-                    <option value="" ng-if="!item.day()">--Add to day--</option>
-                  </select>
-                </li>
-                {% endif %}
-              </ul>
-            </div>
-          </div>
+        <div class="details">
+          <span ng-show="item.hasCategory()"
+            ng-class="'text-' + ed['category']['name']">
+            [[item.categoryDisplayText()]]
+          </span>
+          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
+          </span>
         </div>
-      </div>
-      <div class="row expanded-row" ng-show="detailsExpanded">
-        <div class="description-section" >
-          <div ng-show="!editing" class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
-          {% if allow_editing %}
-          <div class="add-description-link" ng-show="!editing">
-            <a ng-click="openEditEntity(); $event.stopPropagation()" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-pencil"></span>
-              <span ng-show="hasDescription()">Add a comment</span>
-              <span ng-show="!hasDescription()">Edit comment</span>
-            </a>
-          </div>
-          {% endif %}
-        </div>
-        {% if allow_editing %}
-        <div ng-show="editing">
-          <textarea ng-model="ed['description']" class="form-control description-input"
-            tc-focus-on="editing">
-          </textarea>
-          <button ng-show="editing" class="btn btn-primary" ng-click="saveEntityEdit()">Save</button>
-        </div>
-        {% endif %}
-      </div>
+      </span>
     </div>
   </script>
 
@@ -834,108 +726,23 @@
 
   <script type="text/ng-template" id="trip-plan-header-template">
     <div id="trip-plan-header">
-      <div class="cover-section" ng-class="{
-        'has-cover-image': planModel.hasCoverImage(),
-        'has-overview': planModel.hasOverview()
-        }"
-        ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}"
-        ng-click="coverImageClicked()"
-        tc-cover-scroll start-threshold="0.4" easing-exponent="1.5"
-        scroll-parent-selector="#entity-container"
-        animate-inverse-on=".header-background-strip"
-        recompute-threshold-on="planModel.hasCoverImage()">
-      </div>
-      <div class="header-background-strip"
-        ng-style="{'background-image': planModel.hasCoverImage() ? 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)' : null}">
-      </div>
-      <div class="header-strip">
+      <div class="trip-plan-info">
         <div class="title" ng-show="!editingTripPlanSettings">
           [[planModel.tripPlanName()]]
         </div>
-        <div ng-show="editingTripPlanSettings" class="trip-plan-name-input-container ng-hide">
-          <form ng-submit="saveTripPlanSettings()">
-            <input type="text" class="form-control"
-              ng-model="editableTripPlanSettings.name" tc-focus-on="editingTripPlanSettings"
-              ng-blur="saveTripPlanSettings()"
-              ng-keyup="onTripPlanNameKeyup($event)"/>
-          </form>
-        </div>
-
-        <div class="settings-control" ng-show="!editingTripPlanSettings"
-          ng-click="$event.stopPropagation()">
-          {% if allow_editing %}
-          <span class="settings-item">
-            <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
-              Add Place
-            </button>
+        <div class="creator-info">
+          <span ng-if="planModel.hasSource()">
+            Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
           </span>
-          <span class="settings-item">
-            <a class="dropdown-toggle" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-cog"></span>
-            </a>
-            <ul class="dropdown-menu right-top-dropdown-menu">
-              <li>
-                <a ng-click="editTripPlanSettings()" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-pencil"></span> Edit trip plan name
-                </a>
-              </li>
-              <li>
-                <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-time"></span> Plan itinerary
-                </a>
-              </li>
-              <hr class="dropdown-separator"/>
-              <li>
-                <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-trash"></span> Delete trip plan
-                </a>
-              </li>
-              <hr class="dropdown-separator"/>
-              <li>
-                <a ng-click="startGmapsImport()" href="javascript:void(0)">
-                  <img src="/static/img/gmaps-icon.png"/> Import Google custom map
-                </a>
-              </li>
-            </ul>
-          </span>
-          {% else %}
-          <span class="alignment-spacer">
-          </span>
-          {% endif %}
-          <span class="settings-item">
-            <a class="dropdown-toggle" href="javascript:void(0)">
-              <span class="glyphicon glyphicon-sort"></span>
-            </a>
-            <ul class="dropdown-menu sorting-dropdown right-top-dropdown-menu">
-              <li>
-                <a ng-click="groupByCategory()" href="javascript:void(0)">
-                  Sort by Type
-                  <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
-                </a>
-              </li>
-              <li>
-                <a ng-click="groupByDay()" href="javascript:void(0)">
-                  Sort by Day
-                  <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
-                </a>
-              </li>
-            </ul>
+          <span ng-if="!planModel.hasSource() && planModel.creatorIsUser()">
+            Created by: [[planModel.tripPlanData['creator'] | emailPrefix ]]
           </span>
         </div>
       </div>
-      <div class="creator-info">
-        <span ng-if="planModel.hasSource()">
-          Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
-        </span>
-        <span ng-if="!planModel.hasSource() && planModel.creatorIsUser()">
-          Created by: [[planModel.tripPlanData['creator'] | emailPrefix ]]
-        </span>
-        <div class="clone-control">
-          <a ng-click="cloneCurrentTripPlan()" href="javascript:void(0)"
-            tooltip="Clone this trip plan" tooltip-placement="left" tooltip-append-to-body="true">
-            <span class="glyphicon glyphicon-new-window"></span>
-          </a>
-        </div>
+      <div class="controls">
+        <a href="javascript:void(0)">
+          Organize <span class="caret"></span>
+        </a>
       </div>
     </div>
   </script>

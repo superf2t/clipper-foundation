@@ -1,7 +1,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  font-family: 'Nunito';
+  font-family: 'Raleway';
   background-color: #EAEAEA;
   color: #666666;
 }
@@ -21,6 +21,42 @@ a:hover {
 
 .btn-primary {
   background-color: #4a90e2;
+}
+
+.text-lodging {
+  color: #456BE8;
+}
+
+.text-food_and_drink {
+  color: #D91848;
+}
+
+.text-attractions {
+  color: #50B0B2;
+}
+
+.text-activities {
+  color: #92BBFF;
+}
+
+.text-shopping {
+  color: #FEC569;
+}
+
+.text-entertainment {
+  color: #A957B2; 
+}
+
+.favorite-star {
+  color: #FF9F00;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.full-height {
+  height: 100%;
 }
 
 /* Navigation */
@@ -105,110 +141,17 @@ hr.dropdown-separator {
   position: relative;
 }
 
-#trip-plan-header .cover-section {
-  min-height: 44px;
-}
-
-#trip-plan-header .cover-section.has-overview {
-  cursor: pointer;
-}
-
-#trip-plan-header .cover-section.has-cover-image {
-  height: 150px;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: 50% 50%;
-  padding: 0;
+#trip-plan-header .trip-plan-info {
+  margin: 10px;
 }
 
 #trip-plan-header .title {
-  padding: 10px;
   font-size: 1.2em;
-  background-color: rgba(0, 0, 0, 0.25);
-  color: #FFFFFF;
 }
 
-#trip-plan-header .header-background-strip {
-  position: fixed;
-  top: 41px;
-  height: 44px;
-  z-index: 2;
-  width: 30%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: 50% 50%;
-  opacity: 0;
-}
-
-#trip-plan-header .header-strip {
-  position: fixed;
-  top: 41px;
-  width: 30%;
-  z-index: 2;  
-}
-
-#trip-plan-header .trip-plan-name-input-container {
-  padding: 5px;
-}
-
-#trip-plan-header .trip-plan-name-input-container input {
-  height: 30px;
-}
-
-#trip-plan-header .trip-plan-edit-controls {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-}
-
-#trip-plan-header .settings-control {
-  font-size: 1.1em;
-  position: absolute;
-  top: 8px;
-  right: 5px;
-}
-
-#trip-plan-header .settings-control .settings-item {
-  display: inline-block;
-  vertical-align: middle;
-  margin: 0 5px;
-}
-
-#trip-plan-header .settings-control .btn-add-place {
-  background-color: #fff;
-  color: #000;
-  padding: 4px 6px;
-}
-
-#trip-plan-header .settings-control .btn-add-place:hover {
-  background-color: #ddd;
-}
-
-#trip-plan-header .settings-control .settings-item a:hover {
-  color: #ddd;
-}
-
-#trip-plan-header .settings-control a.dropdown-toggle {
-  color: #fff;
-}
-
-#trip-plan-header .settings-control .alignment-spacer {
-  display: inline-block;
-  width: 0;
-  height: 34px;
-  vertical-align: middle;
-}
-
-#trip-plan-header .creator-info {
-  margin: 0 10px;
-  position: relative;
-  color: #000;
-}
-
-#trip-plan-header .clone-control {
-  position: absolute;
-  top: 2px;
-  right: 0;
+#trip-plan-header .controls {
+  padding: 5px 10px;
+  background-color: #222;
 }
 
 /* Map View */
@@ -217,6 +160,14 @@ hr.dropdown-separator {
   width: 100%;
   height: 100%;
   overflow-y: auto;
+  background-color: #4A4A4A;
+}
+
+#entity-container,
+#entity-container h3,
+#entity-container h4,
+#entity-container a {
+  color: #fff;
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -244,119 +195,36 @@ hr.dropdown-separator {
   bottom: 6px;
 }
 
-.one-entity-mapview {
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  background-color: #777;
-  margin: 15px;
-  position: relative;
+.one-entity-leftnav {
+  padding: 5px 10px;
   cursor: pointer;
 }
 
-.one-entity-mapview .main-row {
-  height: 120px;
+.one-entity-leftnav:hover {
+  background-color: #ccc;
 }
 
-.one-entity-mapview.selected {
-  box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
+.one-entity-leftnav .entity-circle-img {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  vertical-align: top;
 }
 
-.one-entity-mapview .img-container {
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: 50% 50%;
-  padding: 0;
-  margin: 0;
-}
-
-.one-entity-mapview .img-container img {
-  height: 100%;
-}
-
-.one-entity-mapview .details-container {
-  height: 100%;
-  padding: 0;
-}
-
-.one-entity-mapview .main-details {
-  height: 100%;
-  padding: 8px;
-  background-color: #fff;
-}
-
-.one-entity-mapview .title {
-  font-size: 1em;
-  color: #666666;
-}
-
-.one-entity-mapview .category-info {
-  position: absolute;
-  left: 3px;
-  top: 3px;
-}
-
-.one-entity-mapview .day-info {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  font-size: 0.9em;
-}
-
-/* Temporary until we figure out how to style this better */
-.one-entity-mapview .expand-controls {
-  position: absolute;
-  left: calc(50% - 8px);
-  bottom: 4px;
-  font-size: 0.8em;
-}
-
-.one-entity-mapview .main-controls {
-  position: absolute;
-  bottom: 8px;
-  right: 8px;
-  font-size: 1.1em;
-}
-
-.one-entity-mapview select.day-select-pill {
-  width: calc(100% - 10px);
-  height: 28px;
-  margin: auto;
-}
-
-.one-entity-mapview .expanded-row {
-  background-color: #f3f4f4;
-  border-top: 1px solid #cdcdcd;
-  padding: 5px;
-  font-size: 1.0em;
-  color: #000;
-}
-
-.one-entity-mapview .description {
-  white-space: pre-wrap;
-}
-
-.one-entity-mapview .description-input {
-  height: 60px;
-  margin: 5px 0;
-}
-
-.one-entity-mapview .add-description-link a {
-  color: #666;
-}
-
-.one-entity-mapview .source-icon {
-  max-width: 16px;
-  max-height: 16px;
-}
-
-.full-width {
+.one-entity-leftnav .entity-circle-img img {
   width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
-.full-height {
-  height: 100%;
+.one-entity-leftnav .entity-info {
+  display: inline-block;
+  max-width: calc(100% - 44px);
+}
+
+.one-entity-leftnav .entity-info .details {
+  font-size: 12px;
 }
 
 .guide-panel {
@@ -641,16 +509,36 @@ hr.dropdown-separator {
   position: fixed;
   height: calc(100% - 41px);
   top: 41px;
-  width: 30%;
+  width: 20%;
+
+  z-index: 1;
+  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
-#right-panel {
+#mid-panel {
   position: fixed;
   height: calc(100% - 41px);
   top: 41px;
-  width: 70%;
-  left: 30%;
-  border-left: 1px solid #ccc;
+  width: 30%;
+  left: 20%;
+
+  background-color: #FAFAFA;
+  border-right: 1px solid #979797;  
+}
+
+#map-panel {
+  position: fixed;
+  height: calc(100% - 41px);
+  top: 41px;
+  width: 80%;
+  left: 20%;
+}
+
+.mid-panel-expanded #map-panel {
+  width: 50%;
+  left: 50%;
 }
 
 #map-container {
@@ -661,25 +549,6 @@ hr.dropdown-separator {
  #map {
   width: 100%;
   height: 100%;
-}
-
-#right-panel .right-panel-disabler {
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  opacity: 0.4;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-#source-iframe,
-#offsite-iframe {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  border: none;
 }
 
 #page-mode-toggle-control {
@@ -740,10 +609,6 @@ hr.dropdown-separator {
 
 .marker-tools a {
   padding: 0 3px;
-}
-
-.marker-tools .entity-star {
-  color: #FF9F00;
 }
 
 .marker-tools.editable {

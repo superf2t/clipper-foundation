@@ -515,6 +515,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
 
   $scope.$on('clearallmarkers', function() {
     entityModel.clearMarker();
+    toolsOverlay && toolsOverlay.setMap(null);
   });
 
   $scope.$on('togglemarkers', function(event, show) {
@@ -682,6 +683,7 @@ var SidePanelMode = {
 function PageStateModel(view, grouping) {
   this.view = view;
   this.sidePanelMode = SidePanelMode.ENTITIES;
+  this.midPanelExpanded = true;
   this.grouping = grouping;
   this.selectedEntity = null;
   this.offsiteUrl = null;
@@ -895,13 +897,13 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     opt_callback && opt_callback();
   });
 
-  $scope.trustSource = function(src) {
-    return $sce.trustAsResourceUrl(src);
+  $scope.toggleMidPanel = function() {
+    $pageStateModel.midPanelExpanded = !$pageStateModel.midPanelExpanded;
+    $timeout(function() {
+      google.maps.event.trigger($map, 'resize');
+    });
   };
 
-  $scope.toggleOmnibox = function() {
-    $scope.omniboxState.visible = !$scope.omniboxState.visible;
-  };
 
   this.mapViewInitialized = $pageStateModel.inMapView();
   $scope.showMapView = function() {
@@ -1987,7 +1989,7 @@ function ItemModel(data) {
   };
 
   this.staticMiniMapUrl = function(opt_referenceLatlng) {
-    var parts = ['//maps.googleapis.com/maps/api/staticmap?sensor=false&size=180x120',
+    var parts = ['//maps.googleapis.com/maps/api/staticmap?sensor=false&size=100x100',
       '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ',
       '&center=', this.latlngString(),
       '&markers=color:red%7C', this.latlngString()];
