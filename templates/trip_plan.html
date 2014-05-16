@@ -159,7 +159,7 @@
         <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
-        <a href="javascript:void(0)">
+        <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
           <span class="glyphicon glyphicon-calendar"></span>
         </a>
         <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)">
@@ -744,7 +744,7 @@
           <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
             Edit <span class="glyphicon glyphicon-pencil"><span>
           </a>
-          <a href="javascript:void(0)">
+          <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">
             Plan <span class="glyphicon glyphicon-calendar"><span>
           </a>
         </span>
