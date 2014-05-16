@@ -451,6 +451,8 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
 
   // Map and Marker Controls
 
+  var toolsOverlay = null;
+
   this.initializeMarker = function() {
     var marker = entityModel.marker;
     if (!marker) {
@@ -458,12 +460,13 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     }
     marker.setMap($map);
     $mapBounds.extend(marker.getPosition())
-    var toolsOverlay = null;
     google.maps.event.addListener(marker, 'click', function() {
       $pageStateModel.selectedEntity = entityModel.data;
       $pagePositionManager.scrollToEntity(entityModel.entityId());
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow(entityModel, marker, true);
+      toolsOverlay = new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
+        $templateToStringRenderer.render('map-marker-tools-template', $scope, true));
     });
   };
 
@@ -485,9 +488,10 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   };
 
   this.createInfowindow = function(entityModel, marker, opt_nonAngularOrigin) {
-    var infowindowContent = $templateToStringRenderer.render('infowindow-template', {
-      entity: entityModel
-    }, opt_nonAngularOrigin);
+    var scope = $scope.$new(true);
+    scope.entity = entityModel;
+    var infowindowContent = $templateToStringRenderer.render(
+      'infowindow-template', scope, opt_nonAngularOrigin);
     entityModel.makeInfowindow(infowindowContent[0]).open($map, marker);
   };
 
@@ -495,6 +499,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     if (entityModel.infowindow) {
       entityModel.infowindow.close();
     }
+    toolsOverlay && toolsOverlay.setMap(null);
   });
 
   $scope.$on('clearallmarkers', function() {
@@ -504,6 +509,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   $scope.$on('togglemarkers', function(event, show) {
     if (entityModel.marker) {
       entityModel.marker.setMap(show ? $map : null);
+      toolsOverlay && toolsOverlay.setMap(null);
     }
   });
 }
@@ -528,6 +534,35 @@ function NoteCtrl($scope, $noteService, $tripPlanModel) {
     $scope.editing = false;
   };
 }
+
+function MarkerToolsCtrl($scope) {
+  $scope.suppressEvent = function($event) {
+    $event.stopPropagation();
+    $event.preventDefault();
+  };
+}
+
+MapMarkerToolsOverlay.prototype = new google.maps.OverlayView();
+
+function MapMarkerToolsOverlay(map, position, contentDiv) {
+  this.position = position;
+  this.div = contentDiv;
+  this.setMap(map);
+}
+
+MapMarkerToolsOverlay.prototype.onAdd = function() {
+  this.getPanes().floatPane.appendChild(this.div[0]);
+};
+
+MapMarkerToolsOverlay.prototype.draw = function() {
+  var overlayProjection = this.getProjection();
+  var point = overlayProjection.fromLatLngToDivPixel(this.position);
+  this.div.css({'position': 'absolute', 'left': point.x, 'top': point.y});
+};
+
+MapMarkerToolsOverlay.prototype.onRemove = function() {
+  this.div.remove();
+};
 
 function GuideviewItemGroupCtrl($scope) {
 }
@@ -594,7 +629,7 @@ function ReclipConfirmationCtrl($scope, $timeout, $entityService) {
   };
 }
 
-function TemplateToStringRenderer($rootScope, $templateCache, $compile) {
+function TemplateToStringRenderer($templateCache, $compile) {
 
   // nonAngularOrigin means that this template is being rendered in response
   // to an event that originated outside of Angular, for example a click
@@ -603,14 +638,10 @@ function TemplateToStringRenderer($rootScope, $templateCache, $compile) {
   // $apply the scope of the template to complete rendering.  We cannot
   // do this in all cases though because if the event originated within
   // Angular than we are already in the midst of a $digest cycle.
-  this.render = function(templateName, scopeVariables, nonAngularOrigin) {
+  this.render = function(templateName, scope, nonAngularOrigin) {
     var template = $templateCache.get(templateName);
     if (!template) {
       throw 'No template with name ' + templateName;
-    }
-    var scope = $rootScope.$new(true);
-    if (scopeVariables) {
-      $.extend(scope, scopeVariables);
     }
     var node = $compile(template)(scope);
     if (nonAngularOrigin) {
@@ -877,6 +908,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       });
     }
   };
+
+  google.maps.event.addListener($map, 'click', function() {
+    $scope.$broadcast('closeallinfowindows');
+  });
 
   $scope.groupByCategory = function() {
     if (!$scope.pageStateModel.isGroupByCategory()) {
@@ -3348,6 +3383,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
       '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
+    .controller('GuideviewEntityCtrl', ['$scope', GuideviewEntityCtrl])
+    .controller('MarkerToolsCtrl', ['$scope', MarkerToolsCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])

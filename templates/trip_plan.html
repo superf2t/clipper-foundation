@@ -159,6 +159,29 @@
     </div>
   </script>
 
+  <script type="text/ng-template" id="map-marker-tools-template">
+    <div class="marker-tools" ng-controller="MarkerToolsCtrl"
+      ng-class="{'editable': {{allow_editing|jsbool}} }"
+      ng-click="suppressEvent($event)">
+      <a ng-click="reclipEntity()" href="javascript:void(0)">
+        <span class="glyphicon glyphicon-paperclip"></span>
+      </a>
+      {% if allow_editing %}
+      <span class="editor-controls">
+        <a href="javascript:void(0)">
+          <span class="glyphicon glyphicon-pencil"></span>
+        </a>
+        <a href="javascript:void(0)">
+          <span class="glyphicon glyphicon-calendar"></span>
+        </a>
+        <a href="javascript:void(0)">
+          <span class="glyphicon glyphicon-star-empty"></span>
+        </a>
+      </span>
+      {% endif %}
+    </div>
+  </script>
+
   <script type="text/ng-template" id="reclip-confirmation-template">
     <div ng-controller="ReclipConfirmationCtrl" class="reclip-confirmation-modal">
       <div ng-show="!reclipSucceeded">
