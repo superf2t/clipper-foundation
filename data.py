@@ -76,13 +76,14 @@ class Entity(serializable.Serializable):
         serializable.objf('sub_category', values.SubCategory),
         'address',
         serializable.objf('latlng', LatLng), 'address_precision',
-        'rating', 'description', 'primary_photo_url', serializable.listf('photo_urls'),
+        'rating', 'description', 'starred',
+        'primary_photo_url', serializable.listf('photo_urls'),
         'source_url', 'icon_url', 'google_reference', 'day', 'day_position')
 
     def __init__(self, entity_id=None, name=None,
             category=None, sub_category=None,
-            address=None, latlng=None,
-            address_precision=None, rating=None, description=None,
+            address=None, latlng=None, address_precision=None,
+            rating=None, description=None, starred=None,
             primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
             google_reference=None, day=None, day_position=None):
         self.entity_id = entity_id
@@ -94,6 +95,7 @@ class Entity(serializable.Serializable):
         self.address_precision = address_precision
         self.rating = rating
         self.description = description
+        self.starred = starred
         self.primary_photo_url = primary_photo_url
         self.photo_urls = photo_urls or []
         self.source_url = source_url

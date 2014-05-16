@@ -174,8 +174,11 @@
         <a href="javascript:void(0)">
           <span class="glyphicon glyphicon-calendar"></span>
         </a>
-        <a href="javascript:void(0)">
+        <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)">
           <span class="glyphicon glyphicon-star-empty"></span>
+        </a>
+        <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-star entity-star"></span>
         </a>
       </span>
       {% endif %}

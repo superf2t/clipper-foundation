@@ -742,6 +742,10 @@ hr.dropdown-separator {
   padding: 0 3px;
 }
 
+.marker-tools .entity-star {
+  color: #FF9F00;
+}
+
 .marker-tools.editable {
   width: 110px;
   margin-left: -55px;

@@ -449,6 +449,17 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
       });
   };
 
+  $scope.saveStarState = function(starred) {
+    $scope.ed['starred'] = starred;
+    $entityService.editEntity({
+      'entity_id': $scope.ed['entity_id'],
+      'starred': starred
+    }, $tripPlanModel.tripPlanId())
+    .success(function(response) {
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    });
+  };
+
   // Map and Marker Controls
 
   var toolsOverlay = null;
