@@ -156,7 +156,7 @@
       </a>
       {% if allow_editing %}
       <span class="editor-controls">
-        <a href="javascript:void(0)">
+        <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
         <a href="javascript:void(0)">
@@ -738,11 +738,23 @@
         </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
-      <div class="clip-cta">
-        <a ng-click="reclipEntity()" href="javascript:void(0)">
-          Clip to My Trip
-          <span class="glyphicon glyphicon-paperclip"></span>
-        </a>
+      <div class="controls">
+        {% if allow_editing %}
+        <span class="editor-controls">
+          <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+            Edit <span class="glyphicon glyphicon-pencil"><span>
+          </a>
+          <a href="javascript:void(0)">
+            Plan <span class="glyphicon glyphicon-calendar"><span>
+          </a>
+        </span>
+        {% endif %}
+        <span class="clip-cta">
+          <a ng-click="reclipEntity()" href="javascript:void(0)">
+            Clip to My Trip
+            <span class="glyphicon glyphicon-paperclip"></span>
+          </a>
+        </span>
       </div>
     </div>
   </script>

@@ -343,9 +343,17 @@ hr.dropdown-separator {
   text-align: justify;
 }
 
-.one-entity-guideview .clip-cta {
+.one-entity-guideview .controls {
   margin-top: 10px;
-  text-align: right;
+  position: relative;
+  min-height: 20px;
+}
+
+.one-entity-guideview .clip-cta {
+  display: inline-block;
+  position: absolute;
+  top: 0px;
+  right: 0px;
 }
 
 .one-entity-guideview .clip-cta a {

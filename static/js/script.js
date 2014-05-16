@@ -550,6 +550,18 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
       scope: scope
     });
   };
+
+  $scope.openEditPlaceModal = function() {
+    var scope = $scope.$new(true);
+    scope.isEditOfExistingEntity = true;
+    var entityData = angular.copy($scope.item.data);
+    scope.entityModel = new EntityModel(entityData);
+    scope.ed = scope.entityModel.data;
+    $modal.open({
+      templateUrl: 'add-place-confirmation-template',
+      scope: scope
+    });    
+  };
 }
 
 function NoteCtrl($scope, $noteService, $tripPlanModel) {
