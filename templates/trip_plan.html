@@ -123,13 +123,39 @@
   </ul>
 
   <script type="text/ng-template" id="page-mode-controls-template">
-    <div id="page-mode-toggle-control" ng-show="!pageStateModel.inOffsiteView()">
-      <button ng-click="toggleMidPanel()" class="btn">
-        <span class="glyphicon glyphicon-minus"></span>
-      </button>
-      <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
-        Add Place
-      </button>
+    <div id="main-control-buttons">
+      <div class="left-buttons">
+        <button ng-click="toggleMidPanel()" class="btn">
+          <span class="glyphicon glyphicon-minus"></span>
+        </button>
+        <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
+          Add Place
+        </button>
+      </div>
+      {% if allow_editing %}
+      <div class="right-buttons">
+        <button class="btn settings-btn dropdown-toggle">
+          <span class="glyphicon glyphicon-cog"></span>
+        </button>
+        <ul class="dropdown-menu right-top-dropdown-menu">
+          <li>
+            <a href="javascript:void(0)">Edit trip name and cover</a>
+          </li>
+          <li>
+            <a href="javascript:void(0)">Advanced Places Editor</a>
+          </li>
+          <li>
+            <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
+          </li>
+          <li>
+            <a ng-click="startGmapsImport()" href="javascript:void(0)">Import Google Custom Map</a>
+          </li>
+          <li>
+            <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">Delete Trip</a>
+          </li>
+        </ul>
+      </div>
+      {% endif %}
     </div>
   </script>
 
