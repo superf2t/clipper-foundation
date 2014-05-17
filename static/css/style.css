@@ -154,6 +154,12 @@ hr.dropdown-separator {
   background-color: #222;
 }
 
+#trip-plan-header .controls.fixed {
+  position: fixed;
+  top: 41px;
+  width: 20%;
+}
+
 #trip-plan-header .organize-dropdown {
   background-color: #222;
 }

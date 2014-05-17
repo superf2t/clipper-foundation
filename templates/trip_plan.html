@@ -130,9 +130,11 @@
         <button ng-click="toggleMidPanel()" class="btn">
           <span class="glyphicon glyphicon-minus"></span>
         </button>
+        {% if allow_editing %}
         <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
           Add Place
         </button>
+        {% endif %}
       </div>
       {% if allow_editing %}
       <div class="right-buttons">
@@ -802,7 +804,8 @@
           </span>
         </div>
       </div>
-      <div class="controls">
+      <div class="controls" tc-lock-after-scroll scroll-parent="#entity-container"
+        class-when-fixed="fixed" recompute-spread-on="planModel.tripPlanName()">
         <a class="dropdown-toggle" href="javascript:void(0)">
           Organize <span class="caret"></span>
         </a>

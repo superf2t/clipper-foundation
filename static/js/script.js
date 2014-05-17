@@ -2013,8 +2013,10 @@ function ItemModel(data) {
   this.categoryDisplayText = function() {
     if (this.data['sub_category']) {
       return this.data['sub_category']['display_name'];
+    } else if (this.data['category']) {
+      return this.data['category']['display_name'];
     }
-    return this.data['category']['display_name'];
+    return '';
   };
 
   this.hasPhotos = function() {
@@ -2723,20 +2725,24 @@ function tcDraggableEntity() {
   };
 }
 
-function tcLockAfterScroll() {
+function tcLockAfterScroll($timeout) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
-      var scrollParent = $('#' + attrs.scrollParentId);
+      var scrollParent = $(attrs.scrollParent);
       var elem = $(element);
       var spread = elem.offset().top - scrollParent.offset().top;
       var classWhenFixed = attrs.classWhenFixed;
       var parentClassWhenFixed = attrs.parentClassWhenFixed;
       if (attrs.recomputeSpreadOn) {
         scope.$watch(attrs.recomputeSpreadOn, function() {
-          spread = elem.offset().top - scrollParent.offset().top;
+          $timeout(function() {
+            spread = elem.offset().top - scrollParent.offset().top;
+          });
         });
       }
+      var elemHeight = elem.outerHeight();
+      var spacer = $('<div>').height(elemHeight);
       scrollParent.on('scroll', function() {
         if (scrollParent.scrollTop() >= spread) {
           if (classWhenFixed) {
@@ -2745,6 +2751,7 @@ function tcLockAfterScroll() {
           if (parentClassWhenFixed) {
             scrollParent.addClass(parentClassWhenFixed);
           }
+          elem.after(spacer);
         } else {
           if (classWhenFixed) {
             elem.removeClass(classWhenFixed);          
@@ -2752,6 +2759,7 @@ function tcLockAfterScroll() {
           if (parentClassWhenFixed) {
             scrollParent.removeClass(parentClassWhenFixed);
           }
+          spacer.remove();
         }
       });
     }
@@ -2968,7 +2976,6 @@ function tcImageGallery() {
       };
 
       $scope.selectImg = function(index) {
-        console.log(index);
         $scope.selectedImgIndex = index;
       };
 
