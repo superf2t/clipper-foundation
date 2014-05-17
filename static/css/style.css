@@ -535,19 +535,28 @@ hr.dropdown-separator {
 
   background-color: #FAFAFA;
   border-right: 1px solid #979797;  
+
+  transition: left 0.3s;
+}
+
+#mid-panel.closed {
+  left: -10%;
+  transition: left 0.3s;
 }
 
 #map-panel {
   position: fixed;
   height: calc(100% - 41px);
   top: 41px;
-  width: 80%;
-  left: 20%;
-}
-
-.mid-panel-expanded #map-panel {
   width: 50%;
   left: 50%;
+  transition: all 0.3s;
+}
+
+#map-panel.mid-panel-closed {
+  width: 80%;
+  left: 20%;
+  transition: all 0.3s;
 }
 
 #map-container {

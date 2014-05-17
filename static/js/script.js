@@ -947,13 +947,16 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
         var oldCenter = $map.getCenter();
         google.maps.event.trigger($map, 'resize');
         $map.setCenter(oldCenter);
-        console.log(me.mapViewInitialized);
         if (!me.mapViewInitialized) {
           $map.fitBounds($mapBounds);
         }
         me.mapViewInitialized = true;
       });
     }
+  };
+
+  $scope.updateMap = function() {
+    google.maps.event.trigger($map, 'resize');
   };
 
   google.maps.event.addListener($map, 'click', function() {
@@ -2872,6 +2875,28 @@ function tcSaveScrollPosition($timeout) {
   };
 }
 
+function tcAnimateOnBool($animate) {
+  return {
+    restrict: 'A',
+    scope: {
+      tcAnimateOnBool: '=',
+      afterComplete: '&'
+    },
+    link: function(scope, element, attrs) {
+      scope.$watch('tcAnimateOnBool', function(condition, oldCondition) {
+        if (condition === oldCondition) {
+          return;
+        }
+        if (condition) {
+          $animate.addClass(element, attrs.classWhenTrue, scope.afterComplete);
+        } else {
+          $animate.removeClass(element, attrs.classWhenTrue, scope.afterComplete);
+        }
+      });
+    }
+  };
+}
+
 function tcWatchForOverflow($window, $timeout) {
   return {
     restrict: 'A',
@@ -3387,6 +3412,7 @@ angular.module('directivesModule', [])
   .directive('tcImageGallery', tcImageGallery)
   .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcScrollSignal', tcScrollSignal)
+  .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 function makeFilter(fn) {
@@ -3418,7 +3444,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$mapBounds', new google.maps.LatLngBounds());
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'entityResultModule',
-      'servicesModule', 'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize'],
+      'servicesModule', 'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',

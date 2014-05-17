@@ -7,6 +7,7 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-animate.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
   <script src="/static/js/sprintf.js"></script>
   <script src="/static/js/services.js"></script>
@@ -17,7 +18,7 @@
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
-<body ng-controller="RootCtrl" ng-class="{'mid-panel-expanded': pageStateModel.midPanelExpanded}">
+<body ng-controller="RootCtrl">
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="travel-clip-navbar">
     <div class="container-fluid">
       <div class="navbar-header">
@@ -68,12 +69,13 @@
     </div>
   </div>
 
-  <div id="mid-panel">
+  <div id="mid-panel" ng-class="{'closed': !pageStateModel.midPanelExpanded}">
     <div ng-include="'guide-panel-template'" class="full-width full-height">
     </div>
   </div>
 
-  <div id="map-panel">
+  <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
+    class-when-true="mid-panel-closed" after-complete="updateMap()">
     <div id="map-container" ng-show="pageStateModel.inMapView()">
       <div id="map">
       </div>
