@@ -276,7 +276,16 @@ hr.dropdown-separator {
   background-repeat: no-repeat;
   background-size: cover;
   background-position: 50% 50%;
-  text-align: center;
+  margin-bottom: 15px;
+}
+
+.guide-panel .default-hero-img {
+  width: 100%;
+  height: 124px;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-image: url('/static/img/default-cover.jpg');
+  margin-bottom: 15px;
 }
 
 .guide-panel .title-floater {
@@ -285,13 +294,14 @@ hr.dropdown-separator {
   font-size: 20pt;
   text-align: center;
   position: relative;
-  top: 50%;
+  top: calc(50% - 19px);
+  text-shadow: 2px 2px 3px #000
 }
 
 .guide-panel .overview .description {
   white-space: pre-line;
   text-align: justify;
-  margin: 15px;
+  margin: 0 15px 15px 15px;
 }
 
 
