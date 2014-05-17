@@ -297,12 +297,34 @@ function TaxonomyTree(categories, subCategories) {
   };
 }
 
-function ItemGroupCtrl($scope) {
+function ItemGroupCtrl($scope, $tripPlanModel, $map) {
   $scope.show = true;
+
+  $scope.$on('filtersupdated', function($event, filterModel) {
+    var selected = true;
+    if ($scope.itemGroupModel.grouping == Grouping.CATEGORY) {
+      selected = filterModel.isCategoryNameSelected($scope.itemGroupModel.groupKey);
+    } else if ($scope.itemGroupModel.grouping == Grouping.DAY) {
+      selected = filterModel.isDaySelected($scope.itemGroupModel.groupKey);
+    }
+    $scope.show = selected;
+  });
 
   $scope.toggleSection = function() {
     $scope.show = !$scope.show;
     $scope.$broadcast('togglemarkers', $scope.show);
+  };
+
+  $scope.centerMapOnGroup = function() {
+    var bounds = new google.maps.LatLngBounds()
+    $.each($scope.itemGroupModel.getEntityItems(), function(i, item) {
+      if (item.hasLocation()) {
+        bounds.extend(gmapsLatLngFromJson(item.data['latlng']));
+      }
+    });
+    if (!bounds.isEmpty()) {
+      $map.fitBounds(bounds);
+    }
   };
 }
 
@@ -460,6 +482,16 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     });
   };
 
+  $scope.$on('filtersupdated', function($event, filterModel) {
+    if (!entityModel.marker) {
+      return;
+    }
+    var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
+    var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
+    var selected = categorySelected && daySelected;
+    entityModel.marker.setMap(selected ? $map : null);
+  });
+
   // Map and Marker Controls
 
   var toolsOverlay = null;
@@ -528,6 +560,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
 
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
   $scope.ed = $scope.item.data;
+  $scope.show = true;
 
   $scope.saveStarState = function(starred) {
     $scope.ed['starred'] = starred;
@@ -562,6 +595,12 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
       scope: scope
     });    
   };
+
+  $scope.$on('filtersupdated', function($event, filterModel) {
+    var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
+    var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
+    $scope.show = categorySelected && daySelected;
+  });
 }
 
 function NoteCtrl($scope, $noteService, $tripPlanModel) {
@@ -892,6 +931,39 @@ function processIntoGroups(grouping, items) {
   return _.sortBy(_.values(groupsByKey), 'groupRank');
 }
 
+function FilterModel() {
+  this.selectedCategoryNames = {};
+  this.selectedDayNumbers = {};
+
+  this.isCategorySelected = function(category) {
+    return this.selectedCategoryNames[category['name']] != false;
+  };
+
+  this.isCategoryNameSelected = function(name) {
+    return this.selectedCategoryNames[name] != false;
+  };
+
+  this.isDaySelected = function(dayNumber) {
+    return this.selectedDayNumbers[dayNumber] != false;
+  };
+
+  this.toggleCategory = function(category) {
+    if (this.selectedCategoryNames[category['name']] == false) {
+      this.selectedCategoryNames[category['name']] = true;
+    } else {
+      this.selectedCategoryNames[category['name']] = false;
+    }
+  };
+
+  this.toggleDay = function(dayNumber) {
+    if (this.selectedDayNumbers[dayNumber] == false) {
+      this.selectedDayNumbers[dayNumber] = true;
+    } else {
+      this.selectedDayNumbers[dayNumber] = false;
+    }
+  };
+}
+
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
     $map, $mapBounds, $pageStateModel, $entityService, $allowEditing, $sce) {
   var me = this;
@@ -930,6 +1002,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     me.processItemsIntoGroups();
     opt_callback && opt_callback();
   });
+
+  $scope.broadcastFilters = function(filterModel) {
+    $scope.$broadcast('filtersupdated', filterModel);
+  };
 
   $scope.toggleMidPanel = function() {
     $pageStateModel.midPanelExpanded = !$pageStateModel.midPanelExpanded;
@@ -1313,6 +1389,20 @@ function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
       }
     }
     return tripPlanDetails;
+  };
+}
+
+function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy) {
+  $scope.typesExpanded = false;
+  $scope.daysExpanded = false;
+
+  $scope.categories = $taxonomy.allCategories();
+  $scope.dayNumbers = _.range(1, $tripPlanModel.dayPlannerModel.numDays() + 1);
+  $scope.filterModel = new FilterModel();
+
+  $scope.suppress = function($event) {
+    $event.stopPropagation();
+    $event.preventDefault();
   };
 }
 
@@ -2178,6 +2268,9 @@ function DayPlannerModel(entityItems, noteItems) {
   // Initialization
   this.reset(entityItems, noteItems);
 
+  this.numDays = function() {
+    return this.dayModels[this.dayModels.length - 1].dayNumber;
+  };
 
   this.addNewDay = function() {
     return this.dayModelForDay(this.dayModels.length + 1);
@@ -3456,9 +3549,10 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',
       '$entityService', '$allowEditing', '$sce', RootCtrl])
+    .controller('OrganizeMenuCtrl', ['$scope', '$tripPlanModel', '$taxonomy', OrganizeMenuCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
-    .controller('ItemGroupCtrl', ['$scope', ItemGroupCtrl])
+    .controller('ItemGroupCtrl', ['$scope', '$tripPlanModel', '$map', ItemGroupCtrl])
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',

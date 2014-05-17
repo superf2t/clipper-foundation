@@ -41,7 +41,7 @@
   </nav>
 
   <div id="left-panel">
-    <div id="entity-container"
+    <div id="entity-container" class="entity-container"
       ng-show="pageStateModel.inEntityPanel()"
       tc-entity-scroll scroll-state="scrollState"
       tc-save-scroll-position scroll-position-watch="itemGroups">
@@ -558,13 +558,16 @@
   </script>
 
   <script type="text/ng-template" id="item-group-header-template">
-    <h4 class="item-group-header" ng-click="toggleSection()">
-      <span ng-include="'item-group-header-text-template'"></span>
-      <a href="javascript:void(0)">
-        <span ng-show="show" class="glyphicon glyphicon-chevron-down toggle-chevron"></span>
-        <span ng-show="!show" class="glyphicon glyphicon-chevron-up toggle-chevron"></span>
-      </a>
-    </h4>
+    <div class="item-group-header">
+      <h4>
+        <span ng-include="'item-group-header-text-template'"></span>
+      </h4>
+      <div class="item-group-controls">
+        <a ng-click="centerMapOnGroup()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-screenshot"></span>
+        </a>
+      </div>
+    </div>
   </script>
 
   <script type="text/ng-template" id="item-group-header-text-template">
@@ -737,6 +740,7 @@
   <script type="text/ng-template" id="guideview-one-entity-template">
     <div ng-controller="GuideviewEntityCtrl"
       class="one-entity-guideview"
+      ng-show="show"
       tc-entity-id="[[ed['entity_id'] ]]">
       <hr class="entity-separator"/>
       <div class="name">
@@ -809,18 +813,53 @@
         <a class="dropdown-toggle" href="javascript:void(0)">
           Organize <span class="caret"></span>
         </a>
-        <ul class="dropdown-menu organize-dropdown">
+        <ul class="dropdown-menu organize-dropdown" ng-controller="OrganizeMenuCtrl">
+          Sort
           <li>
             <a ng-click="groupByCategory()" href="javascript:void(0)">
-              Sort by Type
+              by Type
               <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
             </a>
           </li>
           <li>
             <a ng-click="groupByDay()" href="javascript:void(0)">
-              Sort by Day
+              by Day
               <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
             </a>
+          </li>
+          <hr class="dropdown-separator"/>
+          Filter
+          <li ng-click="suppress($event)">
+            <a ng-click="typesExpanded = !typesExpanded" href="javascript:void(0)">
+              by Type
+              <span class="glyphicon"
+                ng-class="{'glyphicon-collapse-down': !typesExpanded, 'glyphicon-collapse-up': typesExpanded}">
+              </span>
+            </a>
+            <ul ng-show="typesExpanded">
+              <li ng-repeat="category in categories">
+                <a ng-click="filterModel.toggleCategory(category); broadcastFilters(filterModel)" href="javascript:void(0)">
+                  [[category['display_name'] ]]
+                  <span ng-show="filterModel.isCategorySelected(category)" class="glyphicon glyphicon-ok"></span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li ng-click="suppress($event)">
+            <a ng-click="daysExpanded = !daysExpanded" href="javascript:void(0)">
+              by Day
+              <span class="glyphicon"
+                ng-class="{'glyphicon-collapse-down': !daysExpanded, 'glyphicon-collapse-up': daysExpanded}">
+              </span>
+            </a>
+            <ul ng-show="daysExpanded">
+              <li ng-repeat="dayNumber in dayNumbers">
+                <a ng-click="filterModel.toggleDay(dayNumber); broadcastFilters(filterModel)" href="javascript:void(0)">
+                  Day [[dayNumber]]
+                  <span ng-show="filterModel.isDaySelected(dayNumber)" class="glyphicon glyphicon-ok"></span>
+                </a>
+              </li>
+            </ul>
           </li>
         </ul>
       </div>

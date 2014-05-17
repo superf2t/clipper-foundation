@@ -158,10 +158,18 @@ hr.dropdown-separator {
   position: fixed;
   top: 41px;
   width: 20%;
+  z-index: 1;
 }
 
 #trip-plan-header .organize-dropdown {
   background-color: #222;
+  font-size: 12px;
+  padding: 10px;
+  margin: -1px 0 0 0;
+}
+
+#trip-plan-header .organize-dropdown a {
+  color: #fff;
 }
 
 #trip-plan-header .organize-dropdown a:hover {
@@ -177,10 +185,10 @@ hr.dropdown-separator {
   background-color: #4A4A4A;
 }
 
-#entity-container,
-#entity-container h3,
-#entity-container h4,
-#entity-container a {
+.entity-container,
+.entity-container h3,
+.entity-container h4,
+.entity-container a {
   color: #fff;
 }
 
@@ -191,22 +199,27 @@ hr.dropdown-separator {
 }
 
 .item-group-header {
-  cursor: pointer;
+  position: relative;
+}
+
+.item-group-header h4 {
   margin: 0px;
   padding: 10px;
-  display: inline-block;
-  color: #000000;
 }
 
-.item-group-header a:hover {
-  text-decoration: none;
+.item-group-header .item-group-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: none;
 }
 
-.toggle-chevron {
-  position: relative;
-  font-size: 0.6em;
-  left: 10px;
-  bottom: 6px;
+.item-group-header:hover .item-group-controls {
+  display: block;
+}
+
+.item-group-header .item-group-controls a:hover {
+  color: #2D73A0;;
 }
 
 .one-entity-leftnav {
