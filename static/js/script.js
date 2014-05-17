@@ -3088,6 +3088,42 @@ function tcImageGallery() {
   };
 }
 
+function tcImageCarousel() {
+  return {
+    restrict: 'AEC',
+    templateUrl: 'image-carousel-template',
+    scope: {
+      urls: '='
+    },
+    controller: function($scope) {
+      var me = this;
+      this.currentIndex = 0;
+
+      $scope.currentImgUrl = function() {
+        return $scope.urls[me.currentIndex];
+      };
+
+      $scope.hasPrevImg = function() {
+        return me.currentIndex > 0;
+      };
+
+      $scope.hasNextImg = function() {
+        return me.currentIndex < ($scope.urls.length - 1);
+      };
+
+      $scope.nextImg = function() {
+        if ($scope.hasNextImg()) {
+          me.currentIndex++;
+        }
+      };
+
+      $scope.prevImg = function() {
+        me.currentIndex--;
+      };
+    }
+  };
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -3510,6 +3546,7 @@ angular.module('directivesModule', [])
   .directive('tcSaveScrollPosition', tcSaveScrollPosition)
   .directive('tcWatchForOverflow', tcWatchForOverflow)
   .directive('tcImageGallery', tcImageGallery)
+  .directive('tcImageCarousel', tcImageCarousel)
   .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)

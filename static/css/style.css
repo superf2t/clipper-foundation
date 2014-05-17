@@ -59,6 +59,10 @@ a:hover {
   height: 100%;
 }
 
+.modal-content {
+  border-radius: 2px;
+}
+
 /* Navigation */
 
 .navbar {

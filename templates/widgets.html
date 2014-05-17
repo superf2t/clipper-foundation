@@ -62,14 +62,41 @@
     display: inline-block;
     width: 20px;
   }
+
+  .image-carousel {
+    position: relative;
+  }
+
+  .image-carousel img {
+    cursor: pointer;
+  }
+
+  .image-carousel .carousel-control.left,
+  .image-carousel .carousel-control.right {
+    background-image: none;
+    cursor: pointer;
+  }
 </style>
 
+{# TODO: Replace uses of this with tc-image-carousel directive #}
 <script type="text/ng-template" id="carousel-template">
   <div ng-controller="CarouselCtrl" class="carousel">
     <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
       <span class="icon-prev"></span>
     </a>
     <img ng-src="[[currentImgUrl]]" class="entity-img"/>
+    <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+      <span class="icon-next"></span>
+    </a>
+  </div>
+</script>
+
+<script type="text/ng-template" id="image-carousel-template">
+  <div class="image-carousel">
+    <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+      <span class="icon-prev"></span>
+    </a>
+    <img ng-src="[[currentImgUrl()]]" ng-click="nextImg()"/>
     <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
       <span class="icon-next"></span>
     </a>
