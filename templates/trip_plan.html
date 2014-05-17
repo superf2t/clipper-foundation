@@ -757,7 +757,10 @@
           {% endif %}
         </div>
       </div>
-      <div ng-if="item.hasPhotos()" class="photo-carousel" tc-image-carousel urls="ed['photo_urls']">
+      <div ng-if="item.hasPhotos()" class="photo-carousel">
+        <span class="vertical-spacer"></span><!--
+        --><span tc-image-carousel urls="ed['photo_urls']" class="carousel-content">
+        </span>
       </div>
        <div class="metadata">
         <div class="address">
