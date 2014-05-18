@@ -295,7 +295,7 @@ hr.dropdown-separator {
   text-align: center;
   position: relative;
   top: calc(50% - 19px);
-  text-shadow: 2px 2px 3px #000
+  text-shadow: 2px 2px 3px #000;
 }
 
 .guide-panel .overview .description {
@@ -367,11 +367,6 @@ hr.dropdown-separator {
 
 .one-entity-guideview .photo-carousel .carousel-content {
   display: inline-block;
-}
-
-.one-entity-guideview .photo-carousel img {
-  max-width: 100%;
-  max-height: 100%;
 }
 
 .one-entity-guideview .metadata {
@@ -883,19 +878,6 @@ hr.dropdown-separator {
   width: 782px;
 }
 
-.add-place-confirmation {
-  margin: 20px;
-}
-
-.add-place-confirmation .container-fluid {
-  padding: 0;
-}
-
-.add-place-confirmation .row {
-  margin-left: 0;
-  margin-right: 0;
-}
-
 .flush-left {
   padding-left: 0px;
   padding-right: 10px;
@@ -906,96 +888,99 @@ hr.dropdown-separator {
   padding-left: 10px;
 }
 
-.apc-place-name {
-  font-weight: bold;
-  font-size: 16pt;
-  padding-bottom: 10px;
+.edit-place-modal .modal-dialog {
+  width: 80%;
 }
 
-.apc-address {
-  padding-bottom: 10px;
+.edit-place {
+  padding: 20px;
 }
 
-.apc-place-details {
-  padding-top: 10px;
+.edit-place .edit-header {
+  margin-bottom: 20px;
+  position: relative;
 }
 
-.apc-rating-edit, .apc-category-edit, .apc-sub-category-edit {
-  padding-top: 10px;
+.edit-place .button-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
-.apc-controls {
-  padding-top: 20px;
-  text-align: right;
+.edit-place .editor-title {
+  font-size: 18pt;
+  margin-right: 30px;
+  vertical-align: middle;
 }
 
-.apc-control-edit-link {
-  float: left;
-  padding-top: 18px;
+.edit-place .map-container {
+  width: 100%;
+  height: 250px;
 }
 
-.apc-edit-input {
-  margin-bottom: 10px;
-}
-
-#apc-edit-name-input, #apc-edit-address-input {
-  width: 360px;
-}
-
-.apc-image-drop-target {
-  display: block;
-  width: 360px;
-  height: 100px;
-  resize: none;
-  padding: 20px 10px;
-  font-size: 14px;
-  background-color: #EAEAEA;
-  color: #000000;
-  background-image: none;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-  box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
-  -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-  transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-}
-
-.apc-image-edit-container {
-  padding-top: 20px;
-}
-
-.apc-static-map-header {
-  margin-top: 10px;
-}
-
-#apc-static-map-container, #apc-editable-map-container {
-  margin: 0px auto 0px auto;
-  width: 360px;
-  height: 270px;
-}
-
-#apc-static-map, #apc-editable-map {
+.edit-place .map {
   width: 100%;
   height: 100%;
 }
 
-.apc-map-precision-edit {
-  margin-top: 10px;
+.edit-place .editor-body input[type='text'],
+.edit-place .editor-body select,
+.edit-place .editor-body textarea,
+.edit-place .editor-body .map-container {
+  margin-bottom: 15px;
 }
 
-.apc-img-drag-active {
-  border-color: red;
+.edit-place .editor-body input[type='radio'] {
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  border: none;
+  margin: 0;
 }
 
-.apc-img-trash-control {
-  position: absolute;
-  top: 10px;
-  /* Temporary CSS hack */
-  left: calc(50% - 50px);
-  padding: 2px;
+.edit-place .description-input {
+  height: 250px;
+}
+
+.edit-place .editable-carousel {
+  max-height: 300px;
   text-align: center;
+  position: relative;
+}
+
+.edit-place .editable-carousel .photo-top-control,
+.edit-place .editable-carousel .photo-bottom-control {
+  position: absolute;
+  width: 100%;
+}
+
+.edit-place .editable-carousel .photo-top-control a,
+.edit-place .editable-carousel .photo-bottom-control a {
   color: #fff;
-  background-color: rgba(0, 0, 0, 0.2);
+  text-shadow: 2px 2px 3px #000;
+}
+
+.edit-place .editable-carousel .photo-top-control a:hover,
+.edit-place .editable-carousel .photo-bottom-control a:hover {
+  color: #428bca;
+}
+
+.edit-place .editable-carousel .photo-top-control {
+  top: 10px;
+}
+
+.edit-place .editable-carousel .photo-bottom-control {
+  bottom: 10px;
+}
+
+.edit-place .precision-and-star-strip {
+  position: relative;
+}
+
+.edit-place .precision-and-star-strip .star-control {
+  position: absolute;
+  right: 0;
+  top: 6px;
 }
 
 .reclip-confirmation-modal {

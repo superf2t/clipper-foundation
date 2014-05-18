@@ -185,7 +185,7 @@
       </a>
       {% if allow_editing %}
       <span class="editor-controls">
-        <a ng-click="openEditPlaceModal()" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
+        <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
         <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
@@ -235,168 +235,72 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="add-place-confirmation-template">
-    <div ng-controller="AddPlaceConfirmationCtrl" class="add-place-confirmation">
-      <div ng-show="!editingFields">
-        <div class="apc-place-name">
-          [[ed['name'] ]]
-        </div>
-        <div class="apc-address">
-          [[ed['address'] ]]
-        </div>
-
-        <div class="container-fluid">
-          <div class="row-fluid">
-            <div class="col-md-6 flush-left">
-              <div class="apc-photo-container">
-                <div ng-include="'carousel-template'">
-                </div>
-              </div>
-              <div class="apc-place-details">
-                <div class="apc-rating">
-                  <tc-star-rating value="[[ed['rating'] ]]">
-                  </tc-star-rating>
-                </div>
-                <div class="apc-category">
-                  Category: [[ed['category']['display_name'] ]]
-                </div>
-                <div class="apc-sub-category">
-                  SubCategory: [[ed['sub_category']['display_name'] ]]
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 flush-right">
-              <div ng-show="entityModel.hasLocation()">
-                <div id="apc-static-map-container">
-                  <div id="apc-static-map"></div>
-                </div>
-                <div ng-if="!entityModel.isPreciseLocation()" class="text-warning">
-                  Location is approximate
-                </div>
-              </div>
-              <div ng-if="!entityModel.hasLocation()" class="text-warning">
-                Location unknown
-              </div>                
-            </div>            
-          </div>
-        </div>
-      </div>
-
-      <div ng-show="editingFields" class="apc-edit-mode">
-        <div class="apc-place-name-edit">
-          <label>Name</label>
-          <input id="apc-edit-name-input" type="text" ng-model="ed['name']" class="form-control apc-edit-input"/>
-        </div>
-        <div class="apc-address-edit">
-          <label>Address</label>
-          <input id="apc-edit-address-input" type="text" ng-model="ed['address']" class="form-control apc-edit-input"/>
-        </div>
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-md-6 flush-left">
-              <div class="apc-photo-container-edit" ng-controller="EditImagesCtrl">
-                <label>Images</label>
-                <div class="carousel">
-                  <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
-                    <span class="icon-prev"></span>
-                  </a>
-                  <a class="apc-img-trash-control" ng-click="removeActiveImg()" href="javascript:void(0)">
-                    Delete Image<span class="glyphicon glyphicon-trash"></span>
-                  </a>
-                  <img ng-src="[[currentImgUrl]]" class="entity-img"/>
-                  <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
-                    <span class="icon-next"></span>
-                  </a>
-                </div>
-                <div class="apc-image-edit-container">
-                  <textarea type="text" placeholder="Drag images or paste image Urls to add"
-                    class="apc-image-drop-target apc-edit-input"
-                    ng-model="photoUrlInputText"
-                    ng-paste="photoUrlPasted()"
-                    ng-change="photoUrlChanged()"
-                    ng-class="{'apc-img-drag-active': imgDragActive}"
-                    tc-dragenter="photoUrlDragEnter($event)"
-                    tc-drop="photoUrlDropped($event)"
-                    />
-                  </textarea>
-                </div>                
-              </div>
-              <div class="apc-place-details-edit">
-                <div class="apc-description-edit">
-                  <label>Description</label>
-                  <textarea class="form-control apc-edit-input" ng-model="ed['description']">
-                  </textarea>
-                </div>
-                <div class="apc-rating-edit">
-                  <form class="form-inline" role="form">
-                    <label>Rating</label>
-                    <input type="number" ng-model="ed['rating']" class="form-control apc-edit-input"/>
-                  </form>
-                </div>
-                <div class="apc-category-edit">
-                  <form class="form-inline" role="form">
-                    <label>Category</label>
-                    <select class="form-control" ng-model="ed['category']"
-                      ng-options="c['display_name'] for c in categories track by c['category_id']"
-                      ng-change="categoryChanged()">
-                    </select>
-                  </form>
-                </div>
-                <div class="apc-sub-category-edit">
-                  <form class="form-inline" role="form">
-                    <label>SubCategory</label>
-                    <select class="form-control" ng-model="entityModel.data['sub_category']"
-                      ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']"
-                      ng-change="updateMarkerIcon()">
-                    </select>
-                  </form>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6 flush-right">
-              <div class="apc-editable-map">
-                <label>Map</label>
-                <div id="apc-editable-map-container">
-                  <div id="apc-editable-map"></div>
-                </div>
-                <div class="apc-editable-map-header" ng-show="entityModel.hasLocation()">
-                  Drag the marker to change the location
-                </div>
-                <div ng-if="!entityModel.hasLocation()">
-                  <button class="btn btn-info">Add a marker to the map</button>
-                </div>
-              </div>
-              <div class="apc-map-precision-edit">
-                <label>Location precision</label>
-                <form class="form-inline" role="form">
-                  <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="precise-radio"/>
-                  <label for="precise-radio" class="light-label">Exact location</label>
-                  <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="imprecise-radio"/>
-                  <label for="imprecise-radio" class="light-label">Approximate location</label>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="apc-controls">
-        <div class="apc-control-edit-link">
-          <a ng-click="openEditFields()" ng-show="!editingFields" href="javascript:void(0)">Edit</a>
-        </div>
-        <div class="apc-control-buttons">
-          <button class="btn btn-primary" ng-click="saveNewEntity()" ng-show="!isEditOfExistingEntity">
-            Add to Trip Plan
+  <script type="text/ng-template" id="edit-place-modal-template">
+    <div class="edit-place" ng-controller="EditPlaceCtrl">
+      <div class="edit-header">
+        <span class="editor-title">Editor</span>
+        <select ng-options="e['name'] for e in allEntities track by e['entity_id']"
+          ng-model="selectedEntity" ng-change="selectedEntityChanged()">
+        </select>
+        <div class="button-panel">
+          <button class="btn btn-primary" ng-click="saveEntity()">
+            Save
           </button>
-          <button class="btn btn-primary" ng-click="saveChangesToExistingEntity()" ng-show="isEditOfExistingEntity">
-            Save Changes
-          </button>          
-          <button class="btn btn-default" ng-click="cancelConfirmation()">
+          <button class="btn btn-default" ng-click="$close()">
             Cancel
           </button>
         </div>
       </div>
-
+      <div class="container-fluid editor-body">
+        <div class="row">
+          <div class="col-sm-6">
+            <input type="text" class="form-control" ng-model="ed['name']"/>
+            <textarea class="form-control description-input" ng-model="ed['description']"></textarea>
+            <div class="editable-carousel" ng-if="ed['photo_urls'] && ed['photo_urls'].length">
+              <div tc-image-carousel urls="ed['photo_urls']" current-index="selectedPhoto.index">
+              </div>
+              <div class="photo-top-control">
+                <a ng-click="setPhotoAsPrimary()" href="javascript:void(0)">
+                  Set as Primary <span class="glyphicon glyphicon-picture"></span>
+                </a>
+              </div>
+              <div class="photo-bottom-control">
+                <a ng-click="deletePhoto()" href="javascript:void(0)">
+                  Delete Photo <span class="glyphicon glyphicon-trash"></span>
+                </a>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <input type="text" class="form-control" ng-model="ed['address']" placeholder="Search for an address"
+              tc-google-place-autocomplete search-bounds-json="locationBounds"
+              location-types="geocode" on-place-change="addressChanged($newPlace)"/>
+            <div class="map-container">
+              <div tc-google-map class="map" map="map" map-options="mapOptions" after-creation="setupMap($map)">
+              </div>
+            </div>
+            <form class="form-inline precision-and-star-strip" role="form">
+              <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="precise-radio"/>
+              <label for="precise-radio">Exact location</label>
+              <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="imprecise-radio"/>
+              <label for="imprecise-radio">Approximate location</label>
+              <a ng-click="ed['starred'] = !ed['starred']" href="javascript:void(0)" class="star-control">
+                <span class="glyphicon glyphicon-star"
+                  ng-class="{'glyphicon-star': ed['starred'], 'glyphicon-star-empty': !ed['starred'], 'favorite-star': ed['starred']}">
+                </span>
+              </a>
+            </form>
+            <select class="form-control" ng-model="ed['category']"
+              ng-options="c['display_name'] for c in categories track by c['category_id']"
+              ng-change="categoryChanged()">
+            </select>
+            <select class="form-control" ng-model="ed['sub_category']"
+              ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']"
+              ng-change="updateMarkerIcon()">
+            </select>
+          </div>
+        </div>
+      </div>
     </div>
   </script>
 
@@ -781,7 +685,7 @@
       <div class="controls">
         {% if allow_editing %}
         <span class="editor-controls">
-          <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+          <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)">
             Edit <span class="glyphicon glyphicon-pencil"><span>
           </a>
           <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">

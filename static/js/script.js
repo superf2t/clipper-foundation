@@ -159,6 +159,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     });
   };
 
+  this.entities = function() {
+    return this.entityDatas;
+  };
+
   this.noteItems = function() {
     return _.map(this.notes, function(note) {
       return new ItemModel(note);
@@ -369,16 +373,14 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     return !$scope.ed['description'] || isWhitespace($scope.ed['description']);
   };
 
-  $scope.openEditPlaceModal = function() {
+  $scope.openEditPlaceModal = function(windowClass) {
     var scope = $scope.$new(true);
-    scope.isEditOfExistingEntity = true;
-    var entityData = angular.copy($scope.item.data);
-    scope.entityModel = new EntityModel(entityData);
-    scope.ed = scope.entityModel.data;
+    scope.ed = angular.copy($scope.ed);
     $modal.open({
-      templateUrl: 'add-place-confirmation-template',
+      templateUrl: 'edit-place-modal-template',
+      windowClass: windowClass,
       scope: scope
-    });    
+    });
   };
 
   // Note that this does not refresh the page state, so is only
@@ -588,16 +590,14 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
     });
   };
 
-  $scope.openEditPlaceModal = function() {
+  $scope.openEditPlaceModal = function(windowClass) {
     var scope = $scope.$new(true);
-    scope.isEditOfExistingEntity = true;
-    var entityData = angular.copy($scope.item.data);
-    scope.entityModel = new EntityModel(entityData);
-    scope.ed = scope.entityModel.data;
+    scope.ed = angular.copy($scope.ed);
     $modal.open({
-      templateUrl: 'add-place-confirmation-template',
+      templateUrl: 'edit-place-modal-template',
+      windowClass: windowClass,
       scope: scope
-    });    
+    });   
   };
 
   $scope.$on('filtersupdated', function($event, filterModel) {
@@ -1865,66 +1865,84 @@ angular.module('entityResultModule', [])
 //
 
 
-function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
-    $dataRefreshManager, $tripPlan, $taxonomy) {
+function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
+    $entityService, $dataRefreshManager) {
   var me = this;
-  $scope.editingFields = $scope.isEditOfExistingEntity;
+  $scope.allEntities = $tripPlanModel.entities();
+  $scope.selectedEntity = $scope.ed;
+  $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
+  $scope.selectedPhoto = {index: null};
+  $scope.map = null;
 
   $scope.categories = $taxonomy.allCategories();
   $scope.getSubCategories = function(categoryId) {
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
 
-  this.makeMarker = function(entityData, map, draggable) {
-    var latlngJson = entityData['latlng'] || {};
-    var latlng = new google.maps.LatLng(
-      latlngJson['lat'] || 0.0, latlngJson['lng'] || 0.0);
-    return new google.maps.Marker({
-      draggable: draggable,
+  this.createMarker = function(latlng, opt_map) {
+    var marker = new google.maps.Marker({
+      draggable: true,
       position: latlng,
-      icon: '/static/img/map-icons/' + entityData['icon_url'],
-      map: map
+      icon: '/static/img/map-icons/' + $scope.ed['icon_url'],
+      map: opt_map
     });
+    google.maps.event.addListener(marker, 'dragend', function() {
+      var entityData = $scope.ed;
+      if (_.isEmpty(entityData['latlng'])) {
+        entityData['latlng'] = {};
+      }
+      entityData['latlng']['lat'] = marker.getPosition().lat();
+      entityData['latlng']['lng'] = marker.getPosition().lng();
+      entityData['address_precision'] = 'Precise';
+      $scope.updateMarkerIcon();
+    });
+    return marker;
   };
 
-  var mapOptions = {
-    center: new google.maps.LatLng(0, 0),
-    zoom: 15,
+  this.findMapCenter = function() {
+    return !_.isEmpty($scope.ed['latlng'])
+      ? gmapsLatLngFromJson($scope.ed['latlng'])
+      : new google.maps.LatLng(0, 0);
+  }
+
+  var mapCenter = this.findMapCenter();
+  var marker = this.createMarker(mapCenter);
+  $scope.mapOptions = {
+    center: mapCenter,
+    zoom: !_.isEmpty($scope.ed['latlng']) ? 15 : 2,
     panControl: false,
     scaleControl: false,
+    scrollwheel: false,
     streetViewControl: false,
     mapTypeControl: false
   };
-  var staticMap = new google.maps.Map($('#apc-static-map')[0], mapOptions);
-  var editableMap = new google.maps.Map($('#apc-editable-map')[0], mapOptions);
-  var staticMarker = this.makeMarker($scope.entityModel.data, staticMap, false);
-  var editableMarker = this.makeMarker($scope.entityModel.data, editableMap, true);
-  google.maps.event.addListener(editableMarker, 'dragend', function() {
-    var entityData = $scope.entityModel.data;
-    if (!entityData['latlng']) {
-      entityData['latlng'] = {};
+
+  $scope.setupMap = function($map) {
+    marker.setMap($map);
+  };
+
+  $scope.addressChanged = function(place) {
+    if (place['formatted_address']) {
+      // ng-model is set to ed['address'] but the place
+      // change event fires before the model gets updated
+      $scope.ed['address'] = place['formatted_address'];
     }
-    entityData['latlng']['lat'] = editableMarker.getPosition().lat();
-    entityData['latlng']['lng'] = editableMarker.getPosition().lng();
-  });
-  $timeout(function() {
-    google.maps.event.trigger(staticMap, 'resize');
-    google.maps.event.trigger(editableMap, 'resize');
-    staticMap.setCenter(staticMarker.getPosition());
-    editableMap.setCenter(editableMarker.getPosition());    
-  });
-
-  $scope.openEditFields = function() {
-    $scope.editingFields = true;
-    $timeout(function(){
-      google.maps.event.trigger(editableMap, 'resize');
-      editableMap.setCenter(editableMarker.getPosition());      
-    });
-  };
-
-  $scope.cancelConfirmation = function() {
-    $scope.$close();
-  };
+    if (place['geometry']) {
+      if (_.isEmpty($scope.ed['latlng'])) {
+        $scope.ed['latlng'] = {};
+      }
+      var location = place['geometry']['location'];
+      $scope.ed['latlng']['lat'] = location.lat();
+      $scope.ed['latlng']['lng'] = location.lng();
+      $scope.ed['address_precision'] = 'Precise';
+      $scope.map.setCenter(location);
+      marker.setPosition(location);
+      $scope.updateMarkerIcon();
+      if (place['geometry']['viewport']) {
+        $scope.map.fitBounds(place['geometry']['viewport']);
+      }
+    }
+  }
 
   $scope.categoryChanged = function() {
     $scope.ed['sub_category'] = $taxonomy.getSubCategoriesForCategory(
@@ -1933,38 +1951,50 @@ function AddPlaceConfirmationCtrl($scope, $timeout, $entityService,
   };
 
   $scope.updateMarkerIcon = function() {
-    var data =  $scope.entityModel.data;
+    var data =  $scope.ed;
     var iconUrl = categoryToIconUrl(
       data['category'] && data['category']['name'],
       data['sub_category'] && data['sub_category']['name'],
       data['address_precision']);
-    $scope.entityModel.data['icon_url'] = iconUrl;
-    editableMarker.setIcon('/static/img/map-icons/' + iconUrl)
+    data['icon_url'] = iconUrl;
+    marker.setIcon('/static/img/map-icons/' + iconUrl)
   };
 
-  $scope.saveNewEntity = function() {
-    $entityService.saveNewEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
-      .success(me.handleSaveResponse)
+  $scope.setPhotoAsPrimary = function() {
+    var urls = $scope.ed['photo_urls'];
+    var url = urls.splice($scope.selectedPhoto.index, 1)[0];
+    urls.splice(0, 0, url);
+    $scope.selectedPhoto.index = 0;
+  };
+
+  $scope.deletePhoto = function() {
+    $scope.ed['photo_urls'].splice($scope.selectedPhoto.index, 1);
+    if ($scope.selectedPhoto.index > 0
+      && $scope.selectedPhoto.index > ($scope.ed['photo_urls'].length - 1)) {
+      $scope.selectedPhoto.index--;
+    }
+  };
+
+  $scope.selectedEntityChanged = function() {
+    $scope.ed = angular.copy($scope.selectedEntity);
+    var mapCenter = me.findMapCenter();
+    $scope.map.setCenter(mapCenter);
+    marker && marker.setMap(null);
+    marker = me.createMarker(mapCenter, $scope.map);
+    $scope.selectedPhotoIndex = null;
+  };
+
+  $scope.saveEntity = function() {
+    $entityService.editEntity($scope.ed, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $dataRefreshManager.forceRefresh();
+          $scope.$close();
+        }
+      })
       .error(function() {
-        alert('Failed to save entity'); 
+        alert('Failed to save, please try again.');
       });
-  };
-
-  $scope.saveChangesToExistingEntity = function() {
-    $entityService.editEntity($scope.entityModel.data, $tripPlan['trip_plan_id'])
-      .success(me.handleSaveResponse)
-      .error(function() {
-        alert('Failed to save entity');
-      });
-  };
-
-  this.handleSaveResponse = function(response) {
-    if (response['response_code'] != ResponseCode.SUCCESS) {
-      alert('Failed to save entity');
-    } else {
-      $scope.$close();
-      $dataRefreshManager.askToRefresh();
-    }   
   };
 }
 
@@ -3097,32 +3127,59 @@ function tcImageCarousel() {
     restrict: 'AEC',
     templateUrl: 'image-carousel-template',
     scope: {
-      urls: '='
+      urls: '=',
+      onChange: '&',
+      currentIndex: '='
     },
     controller: function($scope) {
       var me = this;
-      this.currentIndex = 0;
+      // We do a hacky manual data-binding thing here because we want
+      // the current-index parameter to be optional, as most carousel
+      // uses don't need it.
+      $scope.currentIndex_ = 0;
+
+      $scope.$watch('urls', function() {
+        $scope.currentIndex_ = 0;
+        me.notifyChange();
+      });
+
+      $scope.$watch('currentIndex', function(index) {
+        if (index !== undefined) {
+          $scope.currentIndex_ = index;
+        }
+      });
 
       $scope.currentImgUrl = function() {
-        return $scope.urls[me.currentIndex];
+        return $scope.urls[$scope.currentIndex_];
       };
 
       $scope.hasPrevImg = function() {
-        return me.currentIndex > 0;
+        return $scope.currentIndex_ > 0;
       };
 
       $scope.hasNextImg = function() {
-        return me.currentIndex < ($scope.urls.length - 1);
+        return $scope.currentIndex_ < ($scope.urls.length - 1);
       };
 
       $scope.nextImg = function() {
         if ($scope.hasNextImg()) {
-          me.currentIndex++;
+          $scope.currentIndex_++;
+          me.notifyChange();
         }
       };
 
       $scope.prevImg = function() {
-        me.currentIndex--;
+        if ($scope.hasPrevImg()) {
+          $scope.currentIndex_--;
+          me.notifyChange();
+        }
+      };
+
+      this.notifyChange = function() {
+        if ($scope.currentIndex !== undefined) {
+          $scope.currentIndex = $scope.currentIndex_;
+        }
+        $scope.onChange && $scope.onChange({$index: $scope.currentIndex_, $url: $scope.currentImgUrl()});
       };
     }
   };
@@ -3480,7 +3537,7 @@ function tcGooglePlaceAutocomplete($parse) {
   };
 }
 
-function tcGoogleMap() {
+function tcGoogleMap($timeout) {
   return {
     restrict: 'AE',
     scope: {
@@ -3499,7 +3556,12 @@ function tcGoogleMap() {
           map.setCenter(oldCenter);
         }
       });
-      scope.afterCreation({$map: map});
+      $timeout(function() {
+        var oldCenter = map.getCenter();
+        google.maps.event.trigger(map, 'resize');
+        map.setCenter(oldCenter);
+        scope.afterCreation({$map: map});
+      });
     }
   };
 }
@@ -3606,8 +3668,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
      '$sampleSites', '$entityService', '$dataRefreshManager', AddPlacePanelCtrl])
-    .controller('AddPlaceConfirmationCtrl', ['$scope','$timeout', '$entityService',
-      '$dataRefreshManager', '$tripPlan', '$taxonomy', AddPlaceConfirmationCtrl])
+    .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
+      '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
       '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
