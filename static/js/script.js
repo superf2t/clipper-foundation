@@ -331,16 +331,6 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   var entityModel = new EntityModel($scope.item.data);
   $scope.editing = false;
   $scope.detailsExpanded = false;
-  $scope.selectedDayState = {dayModel: null};
-  if ($scope.item.day()) {
-    $scope.selectedDayState.dayModel = $tripPlanModel.dayPlannerModel.dayModelForDay($scope.item.day());
-  }
-
-  $scope.getDaySelectOptions = function() {
-    var daySelectOptions = $tripPlanModel.dayPlannerModel.dayModels.slice(0);
-    daySelectOptions.push({createNew: true});
-    return daySelectOptions;
-  };
 
   $scope.toggleDetails = function($event) {
     $scope.detailsExpanded = !$scope.detailsExpanded;
@@ -421,45 +411,6 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
       windowClass: 'modal-carousel',
       scope: scope
     });
-  };
-
-  $scope.organizeIntoDay = function(opt_callback) {
-    var dayPlannerModel = $scope.planModel.dayPlannerModel;
-    var item = dayPlannerModel.findItemByEntityId($scope.ed['entity_id']);
-    var dayModel = $scope.selectedDayState.dayModel =
-      $scope.selectedDayState.dayModel.createNew
-      ? dayPlannerModel.addNewDay() : $scope.selectedDayState.dayModel;
-    var affectedItems = dayPlannerModel.organizeItem(
-      item, dayModel.dayNumber, dayModel.getItems().length);
-    var modifiedEntities = _.map(affectedItems, function(item) {
-      return {
-        'entity_id': item.data['entity_id'],
-        'day': item.day(),
-        'day_position': item.position()
-      }
-    });
-    $dataRefreshManager.freeze();
-    $entityService.editEntities(modifiedEntities, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.updateEntities(response['entities']);
-          // This is kind of hacky.  Need to make it so that updateEntities()
-          // somehow updates the data in this scope.
-          $scope.ed['day'] = dayModel.dayNumber;
-          if ($pageStateModel.isGroupByDay()) {
-            $dataRefreshManager.redrawGroupings(function() {
-              $timeout(function() {
-                $pagePositionManager.scrollToEntity($scope.ed['entity_id']);
-              });
-            });
-          }
-        }
-        $dataRefreshManager.unfreeze();
-        opt_callback && opt_callback();
-      }).error(function() {
-        $dataRefreshManager.unfreeze();
-      });
   };
 
   $scope.saveStarState = function(starred) {
@@ -576,6 +527,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
+  $scope.dayPlannerActive = false;
 
   $scope.saveStarState = function(starred) {
     $scope.ed['starred'] = starred;
@@ -609,6 +561,14 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
     });   
   };
 
+  $scope.openDayPlanner = function() {
+    $scope.dayPlannerActive = true;
+  };
+
+  $scope.closeDayPlanner = function() {
+    $scope.dayPlannerActive = false;
+  };
+
   $scope.$on('filtersupdated', function($event, filterModel) {
     var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
     var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
@@ -630,6 +590,72 @@ function NoteCtrl($scope, $noteService, $tripPlanModel) {
         $tripPlanModel.updateLastModified(response['last_modified']);
       });
     $scope.editing = false;
+  };
+}
+
+function DaySelectDropdownCtrl($scope, $tripPlanModel, $entityService,
+    $dataRefreshManager, $pageStateModel, $pagePositionManager, $timeout) {
+  $scope.selectedDayState = {dayModel: null};
+  if ($scope.ed['day']) {
+    $scope.selectedDayState.dayModel =
+      $tripPlanModel.dayPlannerModel.dayModelForDay($scope.ed['day']);
+  }
+
+  $scope.getDaySelectOptions = function() {
+    var daySelectOptions = $tripPlanModel.dayPlannerModel.dayModels.slice(0);
+    daySelectOptions.push({createNew: true});
+    return daySelectOptions;
+  };
+
+  $scope.organizeIntoDay = function(opt_callback) {
+    var dayPlannerModel = $tripPlanModel.dayPlannerModel;
+    var item = dayPlannerModel.findItemByEntityId($scope.ed['entity_id']);
+    var dayModel = $scope.selectedDayState.dayModel =
+      $scope.selectedDayState.dayModel.createNew
+      ? dayPlannerModel.addNewDay() : $scope.selectedDayState.dayModel;
+    var affectedItems = dayPlannerModel.organizeItem(
+      item, dayModel.dayNumber, dayModel.getItems().length);
+    var modifiedEntities = _.map(affectedItems, function(item) {
+      return {
+        'entity_id': item.data['entity_id'],
+        'day': item.day(),
+        'day_position': item.position()
+      }
+    });
+    $dataRefreshManager.freeze();
+    $entityService.editEntities(modifiedEntities, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.updateEntities(response['entities']);
+          // This is kind of hacky.  Need to make it so that updateEntities()
+          // somehow updates the data in this scope.
+          $scope.ed['day'] = dayModel.dayNumber;
+          if ($pageStateModel.isGroupByDay()) {
+            $dataRefreshManager.redrawGroupings(function() {
+              $timeout(function() {
+                $pagePositionManager.scrollToEntity($scope.ed['entity_id']);
+              });
+            });
+          }
+        }
+        $dataRefreshManager.unfreeze();
+        $scope.onSelect && $scope.onSelect();
+      }).error(function() {
+        $dataRefreshManager.unfreeze();
+      });
+  };
+}
+
+function tcDaySelectDropdown() {
+  return {
+    restrict: 'AE',
+    scope: {
+      'ed': '=entityData',
+      'onSelect': '&'
+    },
+    templateUrl: 'day-select-dropdown-template',
+    controller: DaySelectDropdownCtrl
   };
 }
 
@@ -3869,6 +3895,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntityScroll', tcEntityScroll)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
+    .directive('tcDaySelectDropdown', tcDaySelectDropdown)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);
