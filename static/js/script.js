@@ -663,6 +663,10 @@ function InfowindowCtrl($scope) {
   $scope.dayPlannerActive = false;
   $scope.directionsPlannerActive = false;
 
+  $scope.showInfoSection = function() {
+    return ed['day'] || ed['starred'] || ed['address_precision'] == 'Imprecise';
+  };
+
   $scope.workspaceActive = function() {
     return $scope.dayPlannerActive || $scope.directionsPlannerActive;
   };

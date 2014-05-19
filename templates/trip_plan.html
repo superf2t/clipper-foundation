@@ -169,9 +169,11 @@
           <div class="name">
             [[ed['name'] ]]
           </div>
-          <div class="day-and-star" ng-show="ed['day'] || ed['starred']">
+          <div class="day-and-star" ng-show="showInfoSection()">
             <span ng-show="ed['day']" class="day">Day [[ed['day'] ]]</span>
             <span ng-show="ed['starred']" class="glyphicon glyphicon-star favorite-star"></span>
+            <span ng-show="ed['address_precision'] == 'Imprecise'" class="glyphicon glyphicon-exclamation-sign"
+              tooltip="Location is approximate"><span>
           </div>
         </div>
         <div class="workspace-section" ng-if="workspaceActive()">
