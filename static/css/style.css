@@ -63,6 +63,11 @@ a:hover {
   border-radius: 2px;
 }
 
+.caret.caret-up {
+  border-top-width: 0;
+  border-bottom: 4px solid;
+}
+
 /* Navigation */
 
 .navbar {
@@ -400,6 +405,19 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview .clip-cta a:hover {
+  color: #2D73A0;
+}
+
+.one-entity-guideview .inline-day-planner select {
+  max-width: 200px;
+  margin: 5px 0;
+}
+
+.one-entity-guideview .inline-day-planner a {
+  color: #428bca;
+}
+
+.one-entity-guideview .inline-day-planner a:hover {
   color: #2D73A0;
 }
 
