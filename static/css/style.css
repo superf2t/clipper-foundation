@@ -722,6 +722,23 @@ hr.dropdown-separator {
   background-color: #fff;
   padding: 5px 10px;
   border-bottom: 1px solid #777;
+  font-size: 12px;
+}
+
+.infowindow .workspace-section a {
+  color: #428bca;;
+}
+
+.infowindow .workspace-section a:hover {
+  color: #2D73A0;
+}
+
+.infowindow .workspace-section .directions-planner select {
+  margin: 5px 0;
+}
+
+.infowindow .workspace-section .directions-planner .go-button {
+  padding: 3px 6px;
 }
 
 .marker-tools {
@@ -732,6 +749,17 @@ hr.dropdown-separator {
 
 .marker-tools a {
   padding: 0 3px;
+}
+
+.marker-tools .compass-icon {
+  width: 15px;
+  height: 15px;
+  display: inline-block;
+}
+
+.marker-tools .compass-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 .marker-tools .editor-controls {

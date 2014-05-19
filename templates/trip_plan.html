@@ -181,6 +181,21 @@
             <tc-day-select-dropdown entity-data="ed" on-select="closeDayPlanner()">
             </tc-day-select-dropdown>
           </div>
+          <div ng-if="directionsPlannerActive" class="directions-planner">
+            Get directions
+            <a ng-click="toggleDirectionsDirection()" href="javascript:void(0)">
+              [[directionsState.direction == 'to' ? 'to' : 'from' ]]
+            </a>
+            <select class="form-control"
+              ng-options="e['name'] for e in allEntities"
+              ng-model="directionsState.destination">
+              <option value="">Select destination</option>
+            </select>
+            <button class="btn btn-primary go-button" ng-click="getDirections()"
+              ng-disabled="!directionsState.destination">
+              Go
+            </button>
+          </div>
         </div>
         <div class="tool-section" ng-include="'map-marker-tools-template'">
         </div>
@@ -193,12 +208,16 @@
       <a ng-click="reclipEntity()" href="javascript:void(0)" tooltip="Clip this place" tooltip-placement="bottom">
         <span class="glyphicon glyphicon-paperclip"></span>
       </a>
+      <a ng-click="toggleDirections()" href="javascript:void(0)" tooltip="Get directions"
+        tooltip-placement="bottom">
+        <span ng-include="'compass-icon-template'" class="compass-icon"></span>
+      </a>
       {% if allow_editing %}
       <span class="editor-controls">
         <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
-        <a ng-click="openDayPlanner()" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
+        <a ng-click="toggleDayPlanner()" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-calendar"></span>
         </a>
         <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
@@ -1027,6 +1046,23 @@
     </div>
   </script>
   {% endif %}
+
+  <script type="text/ng-template" id="compass-icon-template">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="100.5px" height="93.846px" viewBox="0 0 100.5 93.846" enable-background="new 0 0 100.5 93.846" xml:space="preserve">
+      <g id="BLOCK_x5F_RECORD">
+        <g id="ARC_3_">
+          <g id="XMLID_1_">
+            <g>
+              <path d="M63.67,39.313c2.28,3.92,2.28,10.29,0,14.209L49.75,80.793L35.83,53.523c-2.28-3.92-2.28-10.29,0-14.209l13.92-27.27      L63.67,39.313z M56,46.423c0-3.45-2.8-6.25-6.25-6.25s-6.25,2.8-6.25,6.25s2.8,6.25,6.25,6.25S56,49.873,56,46.423z"/>
+              <path d="M49.75-3.577c27.61,0,50,22.38,50,50c0,27.61-22.39,50-50,50c-27.62,0-50-22.39-50-50      C-0.25,18.803,22.13-3.577,49.75-3.577z M93.5,46.423c0-24.16-19.59-43.75-43.75-43.75S6,22.263,6,46.423      s19.59,43.75,43.75,43.75S93.5,70.583,93.5,46.423z"/>
+            </g>
+            <g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </svg>
+  </script>
 
   {% if allow_editing %}
   {% include 'entity-result.html' %}

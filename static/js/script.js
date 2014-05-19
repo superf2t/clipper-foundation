@@ -659,24 +659,63 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope) {
+function InfowindowCtrl($scope, $tripPlanModel, $window) {
   $scope.dayPlannerActive = false;
+
   $scope.directionsPlannerActive = false;
+  $scope.allEntities = $tripPlanModel.entities();
+  $scope.directionsState = {
+    direction: 'to',
+    destination: null
+  };
+
+  $scope.toggleDirectionsDirection = function() {
+    $scope.directionsState.direction = 
+      $scope.directionsState.direction == 'to' ? 'from' : 'to';
+  };
+
+  $scope.getDirections = function() {
+    if (!$scope.directionsState.destination) {
+      return;
+    }
+    var origin = $scope.directionsState.direction == 'to'
+      ? $scope.ed : $scope.directionsState.destination;
+    var destination = $scope.directionsState.direction == 'to'
+      ? $scope.directionsState.destination : $scope.ed;
+    var url = 'https://www.google.com/maps/dir/' + 
+      new ItemModel(origin).latlngString() + '/' +
+      new ItemModel(destination).latlngString();
+    $window.open(url, '_blank');
+  };
 
   $scope.showInfoSection = function() {
-    return ed['day'] || ed['starred'] || ed['address_precision'] == 'Imprecise';
+    return $scope.ed['day'] || $scope.ed['starred'] || $scope.ed['address_precision'] == 'Imprecise';
   };
 
   $scope.workspaceActive = function() {
     return $scope.dayPlannerActive || $scope.directionsPlannerActive;
   };
 
-  $scope.openDayPlanner = function() {
-    $scope.dayPlannerActive = true;
+  $scope.toggleDayPlanner = function() {
+    $scope.dayPlannerActive = !$scope.dayPlannerActive;
+    if ($scope.dayPlannerActive) {
+      $scope.directionsPlannerActive = false;
+    }
   };
 
   $scope.closeDayPlanner = function() {
     $scope.dayPlannerActive = false;
+  };
+
+  $scope.toggleDirections = function() {
+    $scope.directionsPlannerActive = !$scope.directionsPlannerActive;
+    if ($scope.directionsPlannerActive) {
+      $scope.dayPlannerActive = false;      
+    }
+  };
+
+  $scope.closeDirections = function() {
+    $scope.directionsPlannerActive = false;
   };
 
   $scope.suppressEvent = function($event) {
@@ -3878,7 +3917,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
       '$tripPlanModel', '$modal', GuideviewEntityCtrl])
-    .controller('InfowindowCtrl', ['$scope', InfowindowCtrl])
+    .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', InfowindowCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
