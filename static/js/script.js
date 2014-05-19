@@ -449,9 +449,16 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   };
 
   this.createToolsOverlay = function(marker) {
-    var toolsDiv = $templateToStringRenderer.render('infowindow-template', $scope);
-    return new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
+    var scope = $scope.$new();
+    var toolsDiv = $templateToStringRenderer.render('infowindow-template', scope);
+    var overlay = new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
       toolsDiv, toolsDiv.find('.infowindow-internal'));
+    scope.onSizeChange = function() {
+      console.log("resizing");
+      overlay.reposition();
+      overlay.panMap();
+    };
+    return overlay;
   };
 
   this.destroyToolsOverlay = function() {
@@ -659,7 +666,7 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope, $tripPlanModel, $window) {
+function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
   $scope.dayPlannerActive = false;
 
   $scope.directionsPlannerActive = false;
@@ -701,6 +708,7 @@ function InfowindowCtrl($scope, $tripPlanModel, $window) {
     if ($scope.dayPlannerActive) {
       $scope.directionsPlannerActive = false;
     }
+    $timeout($scope.onSizeChange);
   };
 
   $scope.closeDayPlanner = function() {
@@ -712,6 +720,7 @@ function InfowindowCtrl($scope, $tripPlanModel, $window) {
     if ($scope.directionsPlannerActive) {
       $scope.dayPlannerActive = false;      
     }
+    $timeout($scope.onSizeChange);
   };
 
   $scope.closeDirections = function() {
@@ -748,10 +757,12 @@ function MapMarkerOverlay(map, position, contentDiv, opt_sizingElem) {
   this.setMap(map);
 }
 
+// Override
 MapMarkerOverlay.prototype.onAdd = function() {
   this.getPanes().floatPane.appendChild(this.div[0]);
 };
 
+// Override
 MapMarkerOverlay.prototype.draw = function() {
   var overlayProjection = this.getProjection();
   var point = overlayProjection.fromLatLngToDivPixel(this.position);
@@ -760,14 +771,19 @@ MapMarkerOverlay.prototype.draw = function() {
     'left': point.x,
     'top': point.y
   });
-  if (this.sizingElem) {
-    this.sizingElem.css('left', -this.sizingElem.width() / 2);
-  }
+  this.reposition();
   this.panMap();
 };
 
+// Override
 MapMarkerOverlay.prototype.onRemove = function() {
   this.div.remove();
+};
+
+MapMarkerOverlay.prototype.reposition = function() {
+  if (this.sizingElem) {
+    this.sizingElem.css('left', -this.sizingElem.width() / 2);
+  }
 };
 
 MapMarkerOverlay.prototype.panMap = function() {
@@ -3917,7 +3933,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
       '$tripPlanModel', '$modal', GuideviewEntityCtrl])
-    .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', InfowindowCtrl])
+    .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
