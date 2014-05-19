@@ -674,37 +674,46 @@ hr.dropdown-separator {
   white-space: pre-wrap;
 }
 
-.infowindow-warning-text {
-  padding-top: 5px;
+.infowindow {
+  width: 100%;
 }
 
-.infowindow-address {
-  padding-top: 5px;
-}
+.infowindow-internal {
+  position: absolute;
+  bottom: 38px;
 
-.marker-tools {
-  width: 50px;
-  margin-left: -25px;
-  height: 25px;
-  margin-top: 5px;
-  padding-top: 3px;
-  background-color: #fff;
-  font-size: 11pt;
   text-align: center;
-
   border-radius: 1px;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
-.marker-tools a {
-  padding: 0 3px;
+.infowindow .info-section {
+  background-color: #4A4A4A;
+  color: #fff;
+  padding: 5px 10px;
+  font-size: 11pt;
 }
 
-.marker-tools.editable {
-  width: 110px;
-  margin-left: -55px;
+.infowindow .day-and-star {
+  font-size: 9pt;
+}
+
+.infowindow .workspace-section {
+  background-color: #fff;
+  padding: 5px 0;
+  border-bottom: 1px solid #777;
+}
+
+.marker-tools {
+  background-color: #fff;
+  font-size: 11pt;
+  padding-top: 3px;
+}
+
+.marker-tools a {
+  padding: 0 3px;
 }
 
 .marker-tools .editor-controls {

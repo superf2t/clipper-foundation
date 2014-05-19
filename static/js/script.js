@@ -74,22 +74,10 @@ function EntityModel(entityData, editable) {
     return this.data['description'] && this.data['description'].length;
   };
 
-  this.makeInfowindow = function(infowindowContent) {
-    if (this.infowindow) {
-      this.infowindow.close();
-    }
-    this.infowindow = new google.maps.InfoWindow({content: infowindowContent});
-    return this.infowindow;
-  };
-
   this.clearMarker = function() {
     if (this.marker) {
       this.marker.setMap(null);
       this.marker = null;
-    }
-    if (this.infowindow) {
-      this.infowindow.close();
-      this.infowindow = null;
     }
   };
 
@@ -123,7 +111,6 @@ function EntityModel(entityData, editable) {
   };
 
   this.marker = this.makeMarker();
-  this.infowindow = null;
 }
 
 function TripPlanModel(tripPlanData, entityDatas, notes) {
@@ -488,16 +475,6 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     });
   };
 
-  $scope.$on('filtersupdated', function($event, filterModel) {
-    if (!entityModel.marker) {
-      return;
-    }
-    var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
-    var selected = categorySelected && daySelected;
-    entityModel.marker.setMap(selected ? $map : null);
-  });
-
   // Map and Marker Controls
 
   var toolsOverlay = null;
@@ -516,10 +493,23 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
       $pageStateModel.selectedEntity = entityModel.data;
       $pagePositionManager.scrollToEntity(entityModel.entityId());
       $scope.$emit('asktocloseallinfowindows');
-      me.createInfowindow(entityModel, marker, true);
-      toolsOverlay = new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
-        $templateToStringRenderer.render('map-marker-tools-template', $scope, true));
+      toolsOverlay = me.createToolsOverlay(marker);
+      $scope.infowindowOpen = true;
+      $scope.$apply();
     });
+  };
+
+  this.createToolsOverlay = function(marker) {
+    var toolsDiv = $templateToStringRenderer.render('infowindow-template', $scope);
+    return new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
+      toolsDiv, toolsDiv.find('.infowindow-internal'));
+  };
+
+  this.destroyToolsOverlay = function() {
+    if (toolsOverlay) {
+      toolsOverlay.setMap(null);
+      toolsOverlay = null;
+    }
   };
 
   this.createAnnotationsOverlay = function(entityModel, marker) {
@@ -534,44 +524,51 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     $map.fitBounds($mapBounds);
   }
 
+  $scope.$on('filtersupdated', function($event, filterModel) {
+    if (!entityModel.marker) {
+      return;
+    }
+    var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
+    var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
+    var selected = categorySelected && daySelected;
+    entityModel.marker.setMap(selected ? $map : null);
+    annotationsOverlay && annotationsOverlay.setMap(selected ? $map : null);
+    if (!selected) {
+      me.destroyToolsOverlay();
+      if ($pageStateModel.entityIsSelected($scope.ed['entity_id'])) {
+        $pageStateModel.selectedEntity = null;
+        $scope.infowindowOpen = false;
+      }
+    }
+  });
+
   $scope.openInfowindow = function() {
     if (!$pageStateModel.inMapView()) {
       return;
     }
     $scope.$emit('asktocloseallinfowindows');
     if (entityModel.marker) {
-      me.createInfowindow(entityModel, entityModel.marker);
+      toolsOverlay = me.createToolsOverlay(entityModel.marker);
+      $scope.infowindowOpen = true;
     }
-  };
-
-  this.createInfowindow = function(entityModel, marker, opt_nonAngularOrigin) {
-    var scope = $scope.$new(true);
-    scope.entity = entityModel;
-    var infowindowContent = $templateToStringRenderer.render(
-      'infowindow-template', scope, opt_nonAngularOrigin);
-    entityModel.makeInfowindow(infowindowContent[0]).open($map, marker);
-    $scope.infowindowOpen = true;
   };
 
   $scope.$on('closeallinfowindows', function() {
-    if (entityModel.infowindow) {
-      entityModel.infowindow.close();
-      $scope.infowindowOpen = false;
-    }
-    toolsOverlay && toolsOverlay.setMap(null);
+    $scope.infowindowOpen = false;
+    me.destroyToolsOverlay();
   });
 
   $scope.$on('clearallmarkers', function() {
     entityModel.clearMarker();
-    toolsOverlay && toolsOverlay.setMap(null);
-    annotationsOverlay && annotationsOverlay.setMap(null);
+    me.destroyToolsOverlay();
     $scope.infowindowOpen = false;
+    annotationsOverlay && annotationsOverlay.setMap(null);
   });
 
   $scope.$on('togglemarkers', function(event, show) {
     if (entityModel.marker) {
       entityModel.marker.setMap(show ? $map : null);
-      toolsOverlay && toolsOverlay.setMap(null);
+      me.destroyToolsOverlay();
       annotationsOverlay && annotationsOverlay.setMap(show ? $map : null);
       $scope.infowindowOpen = false;
     }
@@ -638,7 +635,18 @@ function NoteCtrl($scope, $noteService, $tripPlanModel) {
   };
 }
 
-function MarkerToolsCtrl($scope) {
+function InfowindowCtrl($scope) {
+  $scope.dayPlannerActive = false;
+  $scope.directionsPlannerActive = false;
+
+  $scope.workspaceActive = function() {
+    return $scope.dayPlannerActive || $scope.directionsPlannerActive;
+  };
+
+  $scope.openDayPlanner = function() {
+    $scope.dayPlannerActive = true;
+  };
+
   $scope.suppressEvent = function($event) {
     $event.stopPropagation();
     $event.preventDefault();
@@ -647,9 +655,10 @@ function MarkerToolsCtrl($scope) {
 
 MapMarkerToolsOverlay.prototype = new google.maps.OverlayView();
 
-function MapMarkerToolsOverlay(map, position, contentDiv) {
+function MapMarkerToolsOverlay(map, position, contentDiv, opt_sizingElem) {
   this.position = position;
   this.div = contentDiv;
+  this.sizingElem = opt_sizingElem;
   this.setMap(map);
 }
 
@@ -660,11 +669,83 @@ MapMarkerToolsOverlay.prototype.onAdd = function() {
 MapMarkerToolsOverlay.prototype.draw = function() {
   var overlayProjection = this.getProjection();
   var point = overlayProjection.fromLatLngToDivPixel(this.position);
-  this.div.css({'position': 'absolute', 'left': point.x, 'top': point.y});
+  this.div.css({
+    'position': 'absolute',
+    'left': point.x,
+    'top': point.y
+  });
+  if (this.sizingElem) {
+    this.sizingElem.css('left', -this.sizingElem.width() / 2);
+  }
+  this.panMap();
 };
 
 MapMarkerToolsOverlay.prototype.onRemove = function() {
   this.div.remove();
+};
+
+MapMarkerToolsOverlay.prototype.panMap = function() {
+  if (!this.sizingElem) return;
+
+  // if we go beyond map, pan map
+  var map = this.getMap();
+  var bounds = map.getBounds();
+  if (!bounds) return;
+
+  // The position of the infowindow
+  var position = this.position;
+
+  // The dimension of the infowindow
+  var iwWidth = this.sizingElem.width();
+  var iwHeight = this.sizingElem.height();
+
+  // The offset position of the infowindow
+  var iwOffsetX = this.sizingElem.position().left;
+  var iwOffsetY = this.sizingElem.position().top;
+
+  // Padding on the infowindow
+  var padX = 40;
+  var padY = 40;
+
+  // The degrees per pixel
+  var mapDiv = map.getDiv();
+  var mapWidth = mapDiv.offsetWidth;
+  var mapHeight = mapDiv.offsetHeight;
+  var boundsSpan = bounds.toSpan();
+  var longSpan = boundsSpan.lng();
+  var latSpan = boundsSpan.lat();
+  var degPixelX = longSpan / mapWidth;
+  var degPixelY = latSpan / mapHeight;
+
+  // The bounds of the map
+  var mapWestLng = bounds.getSouthWest().lng();
+  var mapEastLng = bounds.getNorthEast().lng();
+  var mapNorthLat = bounds.getNorthEast().lat();
+  var mapSouthLat = bounds.getSouthWest().lat();
+
+  // The bounds of the infowindow
+  var iwWestLng = position.lng() + (iwOffsetX - padX) * degPixelX;
+  var iwEastLng = position.lng() + (iwOffsetX + iwWidth + padX) * degPixelX;
+  var iwNorthLat = position.lat() - (iwOffsetY - padY) * degPixelY;
+  var iwSouthLat = position.lat() - (iwOffsetY + iwHeight + padY) * degPixelY;
+
+  // calculate center shift
+  var shiftLng =
+      (iwWestLng < mapWestLng ? mapWestLng - iwWestLng : 0) +
+      (iwEastLng > mapEastLng ? mapEastLng - iwEastLng : 0);
+  var shiftLat =
+      (iwNorthLat > mapNorthLat ? mapNorthLat - iwNorthLat : 0) +
+      (iwSouthLat < mapSouthLat ? mapSouthLat - iwSouthLat : 0);
+
+  // The center of the map
+  var center = map.getCenter();
+
+  // The new map center
+  var centerX = center.lng() - shiftLng;
+  var centerY = center.lat() - shiftLat;
+
+  // center the map to the new shifted center
+  map.panTo(new google.maps.LatLng(centerY, centerX));
 };
 
 function GuideviewItemGroupCtrl($scope) {
@@ -3750,7 +3831,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
       '$tripPlanModel', '$modal', GuideviewEntityCtrl])
-    .controller('MarkerToolsCtrl', ['$scope', MarkerToolsCtrl])
+    .controller('InfowindowCtrl', ['$scope', InfowindowCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
