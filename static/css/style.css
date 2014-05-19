@@ -983,6 +983,84 @@ hr.dropdown-separator {
   top: 6px;
 }
 
+.trip-plan-settings-editor-modal .modal-dialog {
+  width: 80%;
+}
+
+.trip-plan-settings-editor {
+  margin: 20px;
+}
+
+.trip-plan-settings-editor .header {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.trip-plan-settings-editor .header .title {
+  font-size: 18pt;
+}
+
+.trip-plan-settings-editor .header .button-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.trip-plan-settings-editor .editor-body .description-input {
+  height: 250px;
+}
+
+.trip-plan-settings-editor .editor-body .cover-img-container {
+  position: absolute;
+  text-align: center;
+  max-width: 100%;
+  max-height: 300px;
+}
+
+.trip-plan-settings-editor .editor-body .cover-img-container img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.trip-plan-settings-editor .cover-img-container .img-control {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+}
+
+.trip-plan-settings-editor .cover-img-container .img-control.top-control {
+  top: 10px;
+}
+
+.trip-plan-settings-editor .cover-img-container .img-control.bottom-control {
+  bottom: 10px;
+}
+
+.trip-plan-settings-editor .cover-img-container .img-control a {
+  color: #fff;
+  text-shadow: 2px 2px 3px #000;
+}
+
+.trip-plan-settings-editor .cover-img-container .img-control a:hover {
+  color: #428bca;
+}
+
+.trip-plan-settings-editor .cover-img-editor .cover-img-drop-target {
+  width: 100%;
+  height: 300px;
+  padding-top: 150px;
+  border: 1px dashed #ccc;
+  border-radius: 3px;
+  resize: none;
+  text-align: center;
+  cursor: default;
+}
+
+.trip-plan-settings-editor .cover-img-editor .cover-img-drop-target.dragactive {
+  background-color: blue;
+  border: 1px solid red;
+}
+
 .reclip-confirmation-modal {
   min-height: 150px; 
   margin: 20px;

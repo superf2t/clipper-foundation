@@ -1179,6 +1179,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     });
   };
 
+  $scope.openTripPlanEditor = function(windowClass) {
+    $modal.open({
+      templateUrl: 'trip-plan-settings-editor-template',
+      scope: $scope.$new(true),
+      windowClass: windowClass
+    });
+  };
+
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
   });
@@ -2079,6 +2087,71 @@ function EditImagesCtrl($scope, $timeout) {
   };
 }
 
+function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
+    $timeout, $document) {
+  $scope.tpd = angular.copy($tripPlanModel.tripPlanData);
+  $scope.editingImage = !$scope.tpd['cover_image_url'];
+  $scope.coverImgDragActive = false;
+  $scope.coverImgUrlInput = {text:''};
+
+  $scope.changeImage = function() {
+    $scope.editingImage = true;
+  };
+
+  $scope.removeImage = function() {
+    $scope.tpd['cover_image_url'] = '';
+    $scope.editingImage = true;
+  };
+
+  $scope.coverImgDragenter = function($event) {
+    $scope.coverImgDragActive = true;
+  };
+
+  $scope.coverImgUrlDropped = function($event) {
+    var imgUrl = $event.originalEvent.dataTransfer.getData('text/uri-list');
+    if (imgUrl) {
+      $scope.tpd['cover_image_url'] = imgUrl;
+    } else {
+      alert("Couldn't recognize this image.")
+    }
+    $event.stopPropagation();
+    $event.preventDefault();
+    $scope.coverImgDragActive = false;
+    $scope.editingImage = false;
+  };
+
+  var pasteActive = false;
+
+  $scope.coverImgUrlPasted = function() {
+    pasteActive = true;
+    $timeout(function() {
+      $scope.tpd['cover_image_url'] = $scope.coverImgUrlInput.text;
+      $scope.coverImgUrlInput.text = '';
+      pasteActive = false;
+      $scope.editingImage = false;
+    });
+  };
+
+  $scope.coverImgUrlChanged = function() {
+    if (!pasteActive) {
+      $scope.coverImgUrlInput.text = '';
+    }
+  };
+
+  $scope.saveSettings = function() {
+    $tripPlanService.editTripPlan($scope.tpd)
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
+          $document[0].title = response['trip_plans'][0]['name'];
+          $scope.$close();
+        }
+      })
+      .error(function() {
+        alert('Error saving trip plan, please try again.');
+      });
+  };
+}
 
 function ItemModel(data) {
   this.data = data;
@@ -3671,6 +3744,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
+    .controller('TripPlanSettingsEditorCtrl', ['$scope', '$tripPlanModel',
+      '$tripPlanService', '$timeout', '$document', TripPlanSettingsEditorCtrl])
     .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
       '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])

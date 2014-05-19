@@ -142,7 +142,7 @@
         </button>
         <ul class="dropdown-menu right-top-dropdown-menu">
           <li>
-            <a href="javascript:void(0)">Edit trip name and cover</a>
+            <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
           </li>
           <li>
             <a href="javascript:void(0)">Advanced Places Editor</a>
@@ -536,14 +536,6 @@
         </a>
       </div>
     </div>
-  </script>
-
-  <script type="text/ng-template" id="modal-carousel-template">
-    <carousel interval="-1">
-      <slide ng-repeat="slide in slides" active="slide.active">
-        <img ng-src="[[slide.imgUrl]]"/>
-      </script>
-    </carousel>
   </script>
  
   <script type="text/ng-template" id="mapview-getting-started-template">
@@ -939,6 +931,59 @@
           <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
             Save Places
           </button>
+        </div>
+      </div>
+    </div>
+  </script>
+  {% endif %}
+
+  {% if allow_editing %}
+  <script type="text/ng-template" id="trip-plan-settings-editor-template">
+    <div class="trip-plan-settings-editor" ng-controller="TripPlanSettingsEditorCtrl">
+      <div class="header">
+        <div class="title">Trip Plan Settings</div>
+        <div class="button-panel">
+          <button class="btn btn-primary" ng-click="saveSettings()">
+            Save
+          </button>
+          <button class="btn btn-default" ng-click="$close()">
+            Cancel
+          </button>
+        </div>
+      </div>
+      <div class="editor-body container-fluid">
+        <div class="row">
+          <div class="col-sm-6">
+            <h4>Name</h4>
+            <input type="text" class="form-control" ng-model="tpd['name']"/>
+            <h4>Description</h4>
+            <textarea class="form-control description-input" ng-model="tpd['description']"></textarea>
+          </div>
+          <div class="col-sm-6">
+            <h4>Cover Image</h4>
+            <div class="cover-img-container" ng-if="tpd['cover_image_url'] && !editingImage">
+              <img ng-src="[[tpd['cover_image_url'] ]]"/>
+              <div class="img-control top-control">
+                <a ng-click="changeImage()" href="javascript:void(0)">
+                  Change image
+                  <span class="glyphicon glyphicon-picture"></span>
+                </a>
+              </div>
+              <div class="img-control bottom-control">
+                <a ng-click="removeImage()" href="javascript:void(0)">
+                  Remove image
+                  <span class="glyphicon glyphicon-trash"></span>
+                </a>
+              </div>
+            </div>
+            <div class="cover-img-editor" ng-if="editingImage">
+              <textarea class="cover-img-drop-target" placeholder="Drag and drop an image or paste an image url"
+                ng-model="coverImgUrlInput.text" ng-change="coverImgUrlChanged()" ng-paste="coverImgUrlPasted()"
+                tc-dragenter="coverImgDragenter()" tc-dragover="$event.preventDefault()" tc-drop="coverImgUrlDropped($event)"
+                ng-class="{'dragactive': coverImgDragActive}">
+              </textarea>
+            </div>
+          </div>
         </div>
       </div>
     </div>
