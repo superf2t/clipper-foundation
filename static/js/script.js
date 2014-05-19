@@ -331,9 +331,9 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   var entityModel = new EntityModel($scope.item.data);
   $scope.editing = false;
   $scope.detailsExpanded = false;
-  $scope.selectedDay = null;
+  $scope.selectedDayState = {dayModel: null};
   if ($scope.item.day()) {
-    $scope.selectedDay = $tripPlanModel.dayPlannerModel.dayModelForDay($scope.item.day());
+    $scope.selectedDayState.dayModel = $tripPlanModel.dayPlannerModel.dayModelForDay($scope.item.day());
   }
 
   $scope.getDaySelectOptions = function() {
@@ -423,10 +423,12 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     });
   };
 
-  $scope.organizeIntoDay = function() {
+  $scope.organizeIntoDay = function(opt_callback) {
     var dayPlannerModel = $scope.planModel.dayPlannerModel;
     var item = dayPlannerModel.findItemByEntityId($scope.ed['entity_id']);
-    var dayModel = $scope.selectedDay = $scope.selectedDay.createNew ? dayPlannerModel.addNewDay() : $scope.selectedDay;
+    var dayModel = $scope.selectedDayState.dayModel =
+      $scope.selectedDayState.dayModel.createNew
+      ? dayPlannerModel.addNewDay() : $scope.selectedDayState.dayModel;
     var affectedItems = dayPlannerModel.organizeItem(
       item, dayModel.dayNumber, dayModel.getItems().length);
     var modifiedEntities = _.map(affectedItems, function(item) {
@@ -454,11 +456,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
           }
         }
         $dataRefreshManager.unfreeze();
-        // HACK: Trigger a click here so that the dropdown menu contain
-        // the day-select pill will close.  The click event had previously
-        // been suppressed to prevent the dropdown from closing when
-        // clicking on the pill.
-        $(document.body).trigger('click');
+        opt_callback && opt_callback();
       }).error(function() {
         $dataRefreshManager.unfreeze();
       });
@@ -645,6 +643,10 @@ function InfowindowCtrl($scope) {
 
   $scope.openDayPlanner = function() {
     $scope.dayPlannerActive = true;
+  };
+
+  $scope.closeDayPlanner = function() {
+    $scope.dayPlannerActive = false;
   };
 
   $scope.suppressEvent = function($event) {

@@ -176,9 +176,11 @@
         </div>
         <div class="workspace-section" ng-if="workspaceActive()">
           <div ng-if="dayPlannerActive">
-            Add to
-            <select>
-              <option>Day 1</option>
+            <select class="form-control"
+              ng-options="option.createNew ? 'Add a new day' : 'Day ' + option.dayNumber for option in getDaySelectOptions()"
+              ng-model="selectedDayState.dayModel"
+              ng-change="organizeIntoDay(closeDayPlanner)">
+              <option value="" ng-if="!item.day()">--Add to day--</option>
             </select>
           </div>
         </div>
