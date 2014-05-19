@@ -501,6 +501,8 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   // Map and Marker Controls
 
   var toolsOverlay = null;
+  var annotationsOverlay = null;
+  $scope.infowindowOpen = false;
 
   this.initializeMarker = function() {
     var marker = entityModel.marker;
@@ -508,7 +510,8 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
       return;
     }
     marker.setMap($map);
-    $mapBounds.extend(marker.getPosition())
+    $mapBounds.extend(marker.getPosition());
+    annotationsOverlay = this.createAnnotationsOverlay(entityModel, marker);
     google.maps.event.addListener(marker, 'click', function() {
       $pageStateModel.selectedEntity = entityModel.data;
       $pagePositionManager.scrollToEntity(entityModel.entityId());
@@ -517,6 +520,11 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
       toolsOverlay = new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
         $templateToStringRenderer.render('map-marker-tools-template', $scope, true));
     });
+  };
+
+  this.createAnnotationsOverlay = function(entityModel, marker) {
+    return new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
+      $templateToStringRenderer.render('map-marker-annotations-template', $scope));
   };
 
   this.initializeMarker();
@@ -542,11 +550,13 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     var infowindowContent = $templateToStringRenderer.render(
       'infowindow-template', scope, opt_nonAngularOrigin);
     entityModel.makeInfowindow(infowindowContent[0]).open($map, marker);
+    $scope.infowindowOpen = true;
   };
 
   $scope.$on('closeallinfowindows', function() {
     if (entityModel.infowindow) {
       entityModel.infowindow.close();
+      $scope.infowindowOpen = false;
     }
     toolsOverlay && toolsOverlay.setMap(null);
   });
@@ -554,12 +564,16 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   $scope.$on('clearallmarkers', function() {
     entityModel.clearMarker();
     toolsOverlay && toolsOverlay.setMap(null);
+    annotationsOverlay && annotationsOverlay.setMap(null);
+    $scope.infowindowOpen = false;
   });
 
   $scope.$on('togglemarkers', function(event, show) {
     if (entityModel.marker) {
       entityModel.marker.setMap(show ? $map : null);
       toolsOverlay && toolsOverlay.setMap(null);
+      annotationsOverlay && annotationsOverlay.setMap(show ? $map : null);
+      $scope.infowindowOpen = false;
     }
   });
 }
@@ -1041,6 +1055,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   google.maps.event.addListener($map, 'click', function() {
     $scope.$broadcast('closeallinfowindows');
+    $scope.$apply();
   });
 
   $scope.groupByCategory = function() {

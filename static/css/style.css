@@ -712,6 +712,30 @@ hr.dropdown-separator {
   padding-left: 3px;
 }
 
+.marker-annotations .star-annotation {
+  position: absolute;
+  top: -40px;
+  left: 4px;
+  background-color: #fff;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  padding-left: 1px;
+  border-radius: 8px;  
+}
+
+.marker-annotations .day-annotation {
+  position: absolute;
+  top: -40px;
+  right: 4px;
+  background-color: #fff;
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  padding-left: 1px;
+  border-radius: 8px;  
+}
+
 .clipping-iframe {
   width: 500px;
   height: 400px;

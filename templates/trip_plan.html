@@ -202,6 +202,17 @@
     </div>
   </script>
 
+  <script type="text/ng-template" id="map-marker-annotations-template">
+    <div class="marker-annotations" ng-show="!infowindowOpen">
+      <div class="day-annotation" ng-show="ed['day']">
+        [[ed['day'] ]]
+      </div>
+      <div class="star-annotation" ng-show="ed['starred']">
+        <span class="glyphicon glyphicon-star favorite-star"></span>
+      </div>
+    </div>
+  </script>
+
   <script type="text/ng-template" id="reclip-confirmation-template">
     <div ng-controller="ReclipConfirmationCtrl" class="reclip-confirmation-modal">
       <div ng-show="!reclipSucceeded">
@@ -499,6 +510,7 @@
 
   <script type="text/ng-template" id="one-entity-leftnav-template">
     <div ng-controller="EntityCtrl" class="one-entity-leftnav"
+      tc-entity-id="[[ed['entity_id'] ]]"
       ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
       ng-click="selectEntity(ed); openInfowindow()">
       <span class="entity-circle-img">
