@@ -501,7 +501,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
 
   this.createToolsOverlay = function(marker) {
     var toolsDiv = $templateToStringRenderer.render('infowindow-template', $scope);
-    return new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
+    return new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
       toolsDiv, toolsDiv.find('.infowindow-internal'));
   };
 
@@ -513,7 +513,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   };
 
   this.createAnnotationsOverlay = function(entityModel, marker) {
-    return new MapMarkerToolsOverlay(marker.getMap(), marker.getPosition(),
+    return new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
       $templateToStringRenderer.render('map-marker-annotations-template', $scope));
   };
 
@@ -653,20 +653,35 @@ function InfowindowCtrl($scope) {
   };
 }
 
-MapMarkerToolsOverlay.prototype = new google.maps.OverlayView();
+/**
+ * A somewhat generic overlay that is related to the position
+ * of a marker on the map.  Pass in the marker's latlng position
+ * and arbitrary content and the content will be rendered at the
+ * marker's position on the map div and will scroll with the map.
+ * Css on the content div can be used to provide an offset relative
+ * to the marker's anchor point.
+ *
+ * The optional sizingElem is a child of the contentDiv which may
+ * contain the actual content of the overlay, whose size can be measured
+ * to center the content around the marker's anchor point.  This is
+ * probably hacky and it would be best to use the contentDiv for sizing
+ * and positioning, but so far I haven't been able to get this to work
+ * on the parent div.
+ */
+MapMarkerOverlay.prototype = new google.maps.OverlayView();
 
-function MapMarkerToolsOverlay(map, position, contentDiv, opt_sizingElem) {
+function MapMarkerOverlay(map, position, contentDiv, opt_sizingElem) {
   this.position = position;
   this.div = contentDiv;
   this.sizingElem = opt_sizingElem;
   this.setMap(map);
 }
 
-MapMarkerToolsOverlay.prototype.onAdd = function() {
+MapMarkerOverlay.prototype.onAdd = function() {
   this.getPanes().floatPane.appendChild(this.div[0]);
 };
 
-MapMarkerToolsOverlay.prototype.draw = function() {
+MapMarkerOverlay.prototype.draw = function() {
   var overlayProjection = this.getProjection();
   var point = overlayProjection.fromLatLngToDivPixel(this.position);
   this.div.css({
@@ -680,11 +695,11 @@ MapMarkerToolsOverlay.prototype.draw = function() {
   this.panMap();
 };
 
-MapMarkerToolsOverlay.prototype.onRemove = function() {
+MapMarkerOverlay.prototype.onRemove = function() {
   this.div.remove();
 };
 
-MapMarkerToolsOverlay.prototype.panMap = function() {
+MapMarkerOverlay.prototype.panMap = function() {
   if (!this.sizingElem) return;
 
   // if we go beyond map, pan map
