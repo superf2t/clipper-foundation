@@ -307,8 +307,9 @@
       <div class="container-fluid editor-body">
         <div class="row">
           <div class="col-sm-6">
-            <input type="text" class="form-control" ng-model="ed['name']"/>
-            <textarea class="form-control description-input" ng-model="ed['description']"></textarea>
+            <input type="text" class="form-control" ng-model="ed['name']" placeholder="Place name"/>
+            <textarea class="form-control description-input" ng-model="ed['description']"
+              placeholder="Description"></textarea>
             <div class="editable-carousel" ng-if="ed['photo_urls'] && ed['photo_urls'].length">
               <div tc-image-carousel urls="ed['photo_urls']" current-index="selectedPhoto.index">
               </div>
