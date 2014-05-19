@@ -325,7 +325,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
 
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $timeout,
-    $map, $mapBounds, $templateToStringRenderer) {
+    $map, $mapBounds, $templateToStringRenderer, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -389,6 +389,10 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   };
 
   $scope.deleteEntity = function() {
+    var ok = $window.confirm('Are you sure you want to delete this place?');
+    if (!ok) {
+      return;
+    }
     $entityService.deleteEntity($scope.item.data, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
@@ -531,7 +535,8 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   });
 }
 
-function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
+function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
+    $modal, $window, $dataRefreshManager) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
   $scope.dayPlannerActive = false;
@@ -556,6 +561,23 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel, $modal) {
       templateUrl: 'reclip-confirmation-template',
       scope: scope
     });
+  };
+
+  $scope.deleteEntity = function() {
+    var ok = $window.confirm('Are you sure you want to delete this place?');
+    if (!ok) {
+      return;
+    }
+    $entityService.deleteEntity($scope.ed, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $dataRefreshManager.askToRefresh();
+        } else {
+          alert('Failed to delete entity');
+        }
+      }).error(function() {
+        alert('Failed to delete entity')
+      });
   };
 
   $scope.openEditPlaceModal = function(windowClass) {
@@ -3930,9 +3952,9 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
-      '$map', '$mapBounds', '$templateToStringRenderer', EntityCtrl])
+      '$map', '$mapBounds', '$templateToStringRenderer', '$window', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
-      '$tripPlanModel', '$modal', GuideviewEntityCtrl])
+      '$tripPlanModel', '$modal', '$window', '$dataRefreshManager', GuideviewEntityCtrl])
     .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
