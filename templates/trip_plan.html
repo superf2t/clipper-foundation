@@ -65,13 +65,13 @@
       </div>
     </div>
 
-    <div ng-if="pageStateModel.inAddPlacePanel()" class="add-place-panel-container"
-      ng-include="'add-place-panel-template'">
+    <div ng-include="'add-place-panel-template'" class="full-width full-height">
     </div>
   </div>
 
   <div id="mid-panel" ng-class="{'closed': !pageStateModel.midPanelExpanded}">
-    <div ng-include="'guide-panel-template'" class="full-width full-height">
+    <div ng-include="'guide-panel-template'" class="full-width full-height"
+      ng-show="pageStateModel.inEntityPanel()">
     </div>
     <div class="toggle-handle" ng-click="toggleMidPanel()">
     </div>
@@ -79,7 +79,7 @@
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
     class-when-true="mid-panel-closed" after-complete="updateMap()">
-    <div id="map-container" ng-show="pageStateModel.inMapView()">
+    <div id="map-container">
       <div id="map">
       </div>
     </div>
@@ -133,7 +133,9 @@
   <script type="text/ng-template" id="editor-controls-template">
     <div id="main-control-buttons">
       <div class="left-buttons">
-        <button class="btn btn-add-place" ng-click="showAddPlacePanel()">
+        <button class="btn btn-add-place"
+          ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
+          ng-show="!pageStateModel.omniboxOpen && !pageStateModel.inAddPlacePanel()">
           Add Place
         </button>
       </div>
@@ -909,95 +911,67 @@
   {% endif %}
 
   {% if allow_editing %}
-  <script type="text/ng-template" id="add-place-panel-template">
-    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
-      <div class="upper-panel" ng-class="{'has-search-results': searchResults}">
-        <div class="header">
-          Search for a place to add to your trip
-          <button class="btn btn-default close-panel-button" ng-click="showEntityPanel()">
-            Close
-          </button>
-        </div>
-        <div class="search-omnibox">
+  <script type="text/ng-template" id="omnibox-template">
+    <div class="omnibox-container">
+      <div class="omnibox-content">
           <input type="text" class="form-control"
-            placeholder="Search for a place, business, or address"
+            placeholder="Search for a place or address"
             tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+            tc-focus-on="omniboxFocus"
             on-place-change="googlePlaceSelected($newPlace)"
-            tc-focus-on="sampleSites"
             ng-model="query"
             ng-disabled="loadingData"
             ng-paste="textPasted()"/>
-        </div>
-        <div ng-show="loadingData" class="search-spinner">
-          <img src="/static/img/spinner-small.gif"/>
-        </div>
-
-        <div class="search-others" style="display:none">
-          <p>
-            You can also explore places in [[planModel.tripPlanData['location_name'] ]] on other top websites:
-          </p>
-          <div class="site-select" ng-show="searchResults">
-            <button class="btn dropdown-toggle dropdown-button">
-              <img ng-src="[[selectedSite['icon_url'] ]]" class="site-icon"/>
-              [[selectedSite['display_name'] ]]
-              <span class="caret"></span>
-            </button>
-            <ul class="dropdown-menu">
-              <li ng-repeat="site in sampleSites">
-                <a ng-click="loadSite(site)"
-                  href="javascript:void(0)">
-                  <img ng-src="[[site['icon_url'] ]]" class="site-icon"/>
-                  [[site['display_name'] ]]
-                  <span ng-if="site == selectedSite"
-                    class="glyphicon glyphicon-ok">
-                  </span>
-                </a>
-              </li>
-            </ul>
+          <div ng-show="loadingData" class="search-spinner">
+            <img src="/static/img/spinner-small.gif"/>
           </div>
-          <div class="sample-sites" ng-show="!searchResults" style="display: none">
-              <p ng-repeat="site in sampleSites">
-                <a ng-click="loadSite(site)"
-                  href="javascript:void(0)">
-                  <img ng-src="[[site['icon_url'] ]]" class="site-icon"/>
-                  [[site['display_name'] ]]
-                </a>
-              </p>
-          </div>
-        </div>
-
-        <div class="search-results-panel" ng-show="searchComplete">
-          <div class="search-results" ng-show="searchResults && searchResults.length">
-            <hr style="width: 100%"/>
-            <h4 ng-show="resultsAreFromSearch">Results from Google Places</h4>
-            <h4 ng-show="!resultsAreFromSearch">Results</h4>
-            <div ng-show="searchResults.length > 1">
-              Select one or more places to save to your trip
-            </div>
-            <div ng-repeat="result in searchResults" tc-entity-result
-              show-checkboxes="false" entity-data="result"
-              click-to-select="true" editable="false" in-iframe="false"
-              active-trip-plan="planModel.tripPlanData" display-state="{}">
-            </div>
-          </div>
-          <div ng-show="!searchResults || !searchResults.length">
-            <h4>No places found</h4>
-          </div>
-        </div>
       </div>
-      <div class="lower-panel" ng-show="searchComplete">
-        <div class="save-panel" ng-show="searchResults">
-          <div class="save-confirmation" ng-show="searchResults">
-            <span ng-show="selectedResults().length > 1">
-              Save [[selectedResults().length]] places to trip
-            </span>
-            <span ng-show="selectedResults().length == 1">
-              Save [[selectedResults()[0]['name'] ]] to trip
-            </span>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="add-place-panel-template">
+    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
+      <div ng-if="pageStateModel.inAddPlacePanel()" class="full-width full-height">
+        <div class="upper-panel" ng-class="{'has-search-results': searchResults}">
+          <div class="button-panel">
+            <a ng-click="openOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
+              href="javascript:void(0)">
+              <span class="search-again">
+                <span class="glyphicon glyphicon-search"></span> Search again
+              </span>
+            </a>
+            <button class="btn btn-default close-button" ng-click="closePanel()">
+              Close
+            </button>
           </div>
-          <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
-            Save Places
-          </button>
+          <div class="search-results-panel">
+            <div class="search-results" ng-show="searchResults && searchResults.length">
+              <h4 ng-show="resultsAreFromSearch">Results from Google Places</h4>
+              <h4 ng-show="!resultsAreFromSearch">Results</h4>
+              <div ng-repeat="result in searchResults" tc-entity-result-new
+                entity-data="result" index="$index"
+                result-selection-state="resultSelectionState">
+              </div>
+            </div>
+            <div ng-show="!searchResults || !searchResults.length">
+              <h4>No places found</h4>
+            </div>
+          </div>
+        </div>
+        <div class="lower-panel" ng-show="searchComplete">
+          <div class="save-panel" ng-show="searchResults">
+            <div class="save-confirmation" ng-show="searchResults">
+              <span ng-show="selectedResults().length > 1">
+                Save [[selectedResults().length]] places to trip
+              </span>
+              <span ng-show="selectedResults().length == 1">
+                Save [[selectedResults()[0]['name'] ]] to trip
+              </span>
+            </div>
+            <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
+              Save Places
+            </button>
+          </div>
         </div>
       </div>
     </div>

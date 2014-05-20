@@ -1,3 +1,25 @@
+<script type="text/ng-template" id="one-entity-result-new-template">
+  <div class="one-entity-result-new"
+    tc-entity-result-id="[[index]]"
+    ng-class="{'selected': resultSelectionState.selectedIndex == index}"
+    ng-click="resultSelectionState.selectdIndex = $index; openInfowindow()">
+    <span class="entity-circle-img">
+      <img ng-src="[[im.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
+    </span>
+    <span class="entity-info">
+      <div class="name">
+        [[ed['name'] ]]
+      </div>
+      <div class="details">
+        <span ng-show="im.hasCategory()"
+          ng-class="'text-' + ed['category']['name']">
+          [[im.categoryDisplayText()]]
+        </span>
+      </div>
+    </span>
+  </div>
+</script>
+
 <script type="text/ng-template" id="one-entity-result-template">
   <div ng-controller="EntityResultCtrl" class="one-entity-result-row">
     <div ng-if="showCheckboxes" class="checkbox-container">
