@@ -391,6 +391,11 @@ hr.dropdown-separator {
   margin-top: 10px;
   position: relative;
   min-height: 20px;
+  visibility: hidden;
+}
+
+.one-entity-guideview:hover .controls {
+  visibility: visible;
 }
 
 .one-entity-guideview .clip-cta {
@@ -744,7 +749,7 @@ hr.dropdown-separator {
 .marker-tools {
   background-color: #fff;
   font-size: 11pt;
-  padding-top: 3px;
+  padding: 3px 5px 0 5px;
 }
 
 .marker-tools a {
@@ -763,8 +768,8 @@ hr.dropdown-separator {
 }
 
 .marker-tools .editor-controls {
-  border-left: 1px solid #777;
-  padding-left: 3px;
+  border-right: 1px solid #777;
+  margin-right: 3px;
 }
 
 .marker-annotations .star-annotation {

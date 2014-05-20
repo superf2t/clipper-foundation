@@ -205,13 +205,6 @@
 
   <script type="text/ng-template" id="map-marker-tools-template">
     <div class="marker-tools">
-      <a ng-click="reclipEntity()" href="javascript:void(0)" tooltip="Clip this place" tooltip-placement="bottom">
-        <span class="glyphicon glyphicon-paperclip"></span>
-      </a>
-      <a ng-click="toggleDirections()" href="javascript:void(0)" tooltip="Get directions"
-        tooltip-placement="bottom">
-        <span ng-include="'compass-icon-template'" class="compass-icon"></span>
-      </a>
       {% if allow_editing %}
       <span class="editor-controls">
         <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
@@ -224,14 +217,21 @@
           tooltip="Delete" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-trash"></span>
         </a>
-        <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
+        <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-star-empty"></span>
         </a>
-        <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
+        <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-star favorite-star"></span>
         </a>
       </span>
       {% endif %}
+      <a ng-click="reclipEntity()" href="javascript:void(0)" tooltip="Clip this place" tooltip-placement="bottom">
+        <span class="glyphicon glyphicon-paperclip"></span>
+      </a>
+      <a ng-click="toggleDirections()" href="javascript:void(0)" tooltip="Get directions"
+        tooltip-placement="bottom">
+        <span ng-include="'compass-icon-template'" class="compass-icon"></span>
+      </a>
     </div>
   </script>
 
