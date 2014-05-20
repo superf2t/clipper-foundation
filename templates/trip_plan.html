@@ -163,7 +163,8 @@
   {% endif %}
 
   <script type="text/ng-template" id="infowindow-template">
-    <div class="infowindow" ng-controller="InfowindowCtrl" ng-click="suppressEvent($event)">
+    <div class="infowindow" ng-controller="InfowindowCtrl"
+      ng-click="suppressEvent($event)" ng-dblclick="suppressEvent($event)">
       <div class="infowindow-internal">
         <div class="info-section">
           <div class="name">
