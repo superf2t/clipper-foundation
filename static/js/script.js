@@ -221,6 +221,19 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.tripPlanData['location_latlng'];
   };
 
+  this.getMapBounds = function() {
+    if (this.numEntities() < 2) {
+      return gmapsBoundsFromJson(this.tripPlanData['location_bounds'])
+    }
+    var bounds = new google.maps.LatLngBounds();
+    $.each(this.entityDatas, function(i, entityData) {
+      if (!_.isEmpty(entityData['latlng'])) {
+        bounds.extend(gmapsLatLngFromJson(entityData['latlng']));
+      }
+    });
+    return bounds;
+  };
+
   this.updateEntities = function(entityDatas) {
     var newEntitiesById = dictByAttr(entityDatas, 'entity_id');
     $.each(this.entityDatas, function(i, entityData) {
@@ -231,6 +244,14 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
       }
     });
     this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
+  };
+
+  this.addNewEntities = function(entityDatas) {
+    this.entityDatas.push.apply(this.entityDatas, entityDatas);
+    $.each(entityDatas, function(i, entityData) {
+      me.entitiesById[entityData['entity_id']] = entityData;
+      me.dayPlannerModel.insertNewItem(new ItemModel(entityData));
+    });
   };
 
   this.updateNotes = function(noteDatas) {
@@ -325,7 +346,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
 
 function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $timeout,
-    $map, $mapBounds, $templateToStringRenderer, $window) {
+    $map, $templateToStringRenderer, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -440,7 +461,6 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
       return;
     }
     marker.setMap($map);
-    $mapBounds.extend(marker.getPosition());
     annotationsOverlay = this.createAnnotationsOverlay(entityModel, marker);
     google.maps.event.addListener(marker, 'click', function() {
       $pageStateModel.selectedEntity = entityModel.data;
@@ -477,10 +497,6 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
   };
 
   this.initializeMarker();
-  // TODO: Move this after all have initialized.
-  if (!$mapBounds.isEmpty() && $tripPlanModel.numEntities() > 1) {
-    $map.fitBounds($mapBounds);
-  }
 
   $scope.$on('filtersupdated', function($event, filterModel) {
     if (!entityModel.marker) {
@@ -1142,17 +1158,13 @@ function FilterModel() {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $mapBounds, $pageStateModel, $searchResultState, $entityService, $allowEditing, $sce) {
+    $map, $pageStateModel, $searchResultState, $entityService, $allowEditing, $sce) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
   $scope.planModel = $tripPlanModel;
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
-  $scope.editingTripPlanSettings = false;
-  $scope.editableTripPlanSettings = {
-    name: $tripPlan['name']
-  };
   $scope.refreshState = {
     paused: false
   };
@@ -1244,21 +1256,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.toggleAccountDropdown = function() {
     $scope.accountDropdownOpen = !$scope.accountDropdownOpen;
-  };
-
-  $scope.editTripPlanSettings = function() {
-    $scope.editingTripPlanSettings = true;
-  };
-
-  $scope.cancelEditTripPlanSettings = function() {
-    $scope.editingTripPlanSettings = false;
-    $scope.editableTripPlanSettings.name = $tripPlan['name'];
-  };
-
-  $scope.onTripPlanNameKeyup = function($event) {
-    if ($event.which == 27) {
-      $scope.cancelEditTripPlanSettings();
-    }
   };
 
   $scope.saveTripPlanSettings = function() {
@@ -1364,6 +1361,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       keyboard: false
     });
   }
+
+  $map.fitBounds($tripPlanModel.getMapBounds());
 
   this.refresh = function(opt_force, opt_callback) {
     // TODO: Don't even register the refresh loop if editing is not allowed.
@@ -1886,8 +1885,10 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.forceRefresh();
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.addNewEntities(response['entities']);
           $scope.searchResultState.savedResultIndices[$scope.index] = true;
+          $scope.$emit('redrawgroupings');
         }
       });
   };
@@ -1912,8 +1913,10 @@ function EntitySearchResultDetailsCtrl($scope, $entityService,
     $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.forceRefresh();
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.addNewEntities(response['entities']);
           $scope.searchResultState.savedResultIndices[$scope.index] = true;
+          $scope.$emit('redrawgroupings');
         }
       });
   };
@@ -2657,6 +2660,15 @@ function DayPlannerModel(entityItems, noteItems) {
     });
     if (_.isEmpty(this.dayModels)) {
       this.dayModelForDay(1);
+    }
+  };
+
+  this.insertNewItem = function(item) {
+    if (item.day()) {
+      var position = item.position() || this.dayModelForDay(item.day()).getItems().length;
+      this.organizeItem(item);
+    } else {
+      this.unorderedItems.push(item);
     }
   };
 
@@ -4005,14 +4017,13 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$sampleSites', sampleSites);
 
   angular.module('mapModule', [])
-    .value('$map', createMap(tripPlan))
-    .value('$mapBounds', new google.maps.LatLngBounds());
+    .value('$map', createMap(tripPlan));
 
   angular.module('appModule', ['mapModule', 'initialDataModule', 'entityResultModule',
       'servicesModule', 'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',
+      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
       '$searchResultState', '$entityService', '$allowEditing', '$sce', RootCtrl])
     .controller('OrganizeMenuCtrl', ['$scope', '$tripPlanModel', '$taxonomy', OrganizeMenuCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
@@ -4021,7 +4032,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
-      '$map', '$mapBounds', '$templateToStringRenderer', '$window', EntityCtrl])
+      '$map', '$templateToStringRenderer', '$window', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
       '$tripPlanModel', '$modal', '$window', '$dataRefreshManager', GuideviewEntityCtrl])
     .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
