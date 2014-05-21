@@ -1883,6 +1883,10 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
 
   this.createMarker();
 
+  $scope.resultLetter = function() {
+    return String.fromCharCode(65 + $scope.index);
+  };
+
   $scope.suppressEvent = function($event) {
     $event.stopPropagation();
     $event.preventDefault();
