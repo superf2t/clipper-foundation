@@ -214,7 +214,7 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   };
 
   this.creatorIsUser = function() {
-    return this.tripPlanData['creator'] && this.tripPlanData['creator'].indexOf('@') > -1;
+    return this.tripPlanData['creator'] && _.isString(this.tripPlanData['creator']);
   };
 
   this.locationLatlng = function() {
@@ -223,7 +223,11 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 
   this.getMapBounds = function() {
     if (this.numEntities() < 2) {
-      return gmapsBoundsFromJson(this.tripPlanData['location_bounds'])
+      if (this.tripPlanData['location_bounds']) {
+        return gmapsBoundsFromJson(this.tripPlanData['location_bounds']);
+      } else {
+        return null;
+      }
     }
     var bounds = new google.maps.LatLngBounds();
     $.each(this.entityDatas, function(i, entityData) {
@@ -1362,7 +1366,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     });
   }
 
-  $map.fitBounds($tripPlanModel.getMapBounds());
+  var initialBounds = $tripPlanModel.getMapBounds();
+  if (initialBounds) {
+    $map.fitBounds(initialBounds);
+  }
 
   this.refresh = function(opt_force, opt_callback) {
     // TODO: Don't even register the refresh loop if editing is not allowed.
