@@ -1242,7 +1242,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     if (_.some($scope.searchResultState.savedResultIndices)
       && $scope.searchResultState.results
       && $scope.searchResultState.results.length == 1) {
-      $scope.closeAddPlacePanel();
+      $timeout($scope.closeAddPlacePanel, 1000);
     }
   }, true);
 
@@ -1745,6 +1745,8 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
   });
 
   $scope.openOmnibox = function(windowClass) {
+    $scope.$emit('asktocloseallinfowindows');
+    $pageStateModel.selectedEntity = null;
     $pageStateModel.omniboxOpen = true;
     omniboxModal = $modal.open({
       templateUrl: 'omnibox-template',
