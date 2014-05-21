@@ -552,7 +552,7 @@
       <h4>
         <span ng-include="'item-group-header-text-template'"></span>
       </h4>
-      <div class="item-group-controls">
+      <div class="item-group-controls" ng-show="pageStateModel.isGroupByDay()">
         <a ng-click="centerMapOnGroup()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-screenshot"></span>
         </a>
