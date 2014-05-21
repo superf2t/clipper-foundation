@@ -226,10 +226,11 @@
           </div>
         </div>
         <div class="tools-section">
-          <a ng-click="saveResult()" href="javascript:void(0)">
+          <a ng-click="saveResult()" href="javascript:void(0)"
+            ng-show="!searchResultState.savedResultIndices[index]">
             <span class="glyphicon glyphicon-plus"></span> Add to trip
           </a>
-          <div class="save-confirmation" ng-show="resultSelectionState.savedResultIndices[index]">
+          <div class="save-confirmation" ng-show="searchResultState.savedResultIndices[index]">
             saved
           </div>
         </div>
@@ -972,7 +973,7 @@
             </div>
             <div ng-repeat="result in searchResults" tc-entity-search-result
               entity-data="result" index="$index"
-              result-selection-state="resultSelectionState">
+              search-result-state="searchResultState">
             </div>
           </div>
           <div ng-show="!searchResults || !searchResults.length">
@@ -986,7 +987,7 @@
   <script type="text/ng-template" id="one-entity-search-result-template">
     <div class="one-entity-search-result"
       tc-entity-result-id="[[index]]"
-      ng-class="{'selected': resultSelectionState.selectedIndex == index}"
+      ng-class="{'selected': searchResultState.selectedIndex == index}"
       ng-click="selectResult()">
       <span class="entity-circle-img">
         <img ng-src="[[im.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
@@ -1003,7 +1004,7 @@
             ng-class="'text-' + ed['category']['name']">
             [[im.categoryDisplayText()]]
           </span>
-          <span ng-show="resultSelectionState.savedResultIndices[index]" class="save-confirmation">
+          <span ng-show="searchResultState.savedResultIndices[index]" class="save-confirmation">
             saved
           </span>
         </div>
@@ -1014,8 +1015,46 @@
   <script type="text/ng-template" id="results-details-panel-template">
     <div class="results-details-panel"
       tc-scroll-to-selector scroll-on-changes-to="resultsState.selectedIndex"
-      scroll-dest-selector=".one-entity-results-details[tc-entity-result-id='[[resultsState.selectedIndex]]']">
-      <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
+      scroll-dest-selector=".one-entity-search-result-details[tc-entity-result-id='[[resultsState.selectedIndex]]']">
+      <div ng-repeat="result in searchResultState.results"
+        tc-entity-search-result-details index="$index" entity-data="result"
+        search-result-state="searchResultState">
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="one-entity-search-result-details-template">
+    <div class="one-entity-search-result-details" tc-entity-result-id="[[index]]">
+      <hr class="entity-separator" ng-show="index > 0"/>
+      <div class="name">
+        <h4>[[ed['name'] ]]</h4>
+      </div>
+      <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
+        <span class="vertical-spacer"></span><!--
+        --><span tc-image-carousel urls="ed['photo_urls']" class="carousel-content">
+        </span>
+      </div>
+       <div class="metadata">
+        <div class="address">
+          [[ed['address'] ]]
+        </div>
+        <div class="source-info" ng-show="ed['source_url']">
+          <a ng-href="[[ed['source_url'] ]]" target="_blank">
+            From <span class="source-text">[[ed['source_url'] | hostname ]]</span>
+          </a>
+        </div>
+      </div>
+      <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+      <div class="controls">
+        <span class="save-cta" ng-show="!searchResultState.savedResultIndices[index]">
+          <a ng-click="saveResult()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add to trip
+          </a>
+        </span>
+        <span class="save-confirmation" ng-show="searchResultState.savedResultIndices[index]">
+          saved
+        </span>
       </div>
     </div>
   </script>

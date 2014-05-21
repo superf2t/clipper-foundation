@@ -1142,9 +1142,10 @@ function FilterModel() {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $mapBounds, $pageStateModel, $entityService, $allowEditing, $sce) {
+    $map, $mapBounds, $pageStateModel, $searchResultState, $entityService, $allowEditing, $sce) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
+  $scope.searchResultState = $searchResultState;
   $scope.planModel = $tripPlanModel;
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
@@ -1709,17 +1710,26 @@ function PagePositionManager($rootScope) {
 }
 
 
+function SearchResultState() {
+  this.selectedIndex = null;
+  this.savedResultIndices = [];
+  this.results = [];
+
+  this.clear = function() {
+    this.selectedIndex = null;
+    this.savedResultIndices = [];
+    this.results = [];
+  };
+}
+
 function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
-    $entityService, $dataRefreshManager, $modal, $pageStateModel, $map) {
+    $entityService, $dataRefreshManager, $modal, $pageStateModel,
+    $searchResultState, $map) {
   var me = this;
   $scope.query = null;
   $scope.loadingData = false;
   $scope.searchResults = null;
   $scope.resultsAreFromSearch = true;
-  $scope.resultSelectionState = {
-    selectedIndex: null,
-    savedResultIndices: []
-  };
 
   var omniboxModal = null;
 
@@ -1778,6 +1788,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     } else {
       $scope.searchResults = response['entities'] || [];
     }
+    $scope.searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
     $pageStateModel.showAddPlacePanel();
     me.setMapBounds($scope.searchResults);
@@ -1804,7 +1815,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $scope.query = null;
     $scope.loadingData = false;
     $scope.searchResults = null;
-    $scope.resultSelectionState.selectedIndex = null;
+    $searchResultState.clear();
     $scope.$broadcast('clearresults');
   };
 
@@ -1863,7 +1874,7 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   });
 
   $scope.selectResult = function() {
-    $scope.resultSelectionState.selectedIndex = $scope.index;
+    $scope.searchResultState.selectedIndex = $scope.index;
     if (!infowindow) {
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow();
@@ -1875,7 +1886,7 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $dataRefreshManager.forceRefresh();
-          $scope.resultSelectionState.savedResultIndices[$scope.index] = true;
+          $scope.searchResultState.savedResultIndices[$scope.index] = true;
           $scope.$emit('resultsaved');
         }
       });
@@ -1890,6 +1901,22 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   $scope.suppressEvent = function($event) {
     $event.stopPropagation();
     $event.preventDefault();
+  };
+}
+
+function EntitySearchResultDetailsCtrl($scope, $entityService,
+    $tripPlanModel, $dataRefreshManager) {
+  $scope.ed = $scope.entityData;
+
+  $scope.saveResult = function() {
+    $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $dataRefreshManager.forceRefresh();
+          $scope.searchResultState.savedResultIndices[$scope.index] = true;
+          $scope.$emit('resultsaved');
+        }
+      });
   };
 }
 
@@ -2039,11 +2066,24 @@ function tcEntitySearchResult() {
     restrict: 'AE',
     scope: {
       entityData: '=',
-      resultSelectionState: '=',
+      searchResultState: '=',
       index: '='
     },
     templateUrl: 'one-entity-search-result-template',
     controller: EntitySearchResultCtrl
+  };
+}
+
+function tcEntitySearchResultDetails() {
+  return {
+    restrict: 'AE',
+    scope: {
+      entityData: '=',
+      searchResultState: '=',
+      index: '='
+    },
+    templateUrl: 'one-entity-search-result-details-template',
+    controller: EntitySearchResultDetailsCtrl
   };
 }
 
@@ -3959,6 +3999,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
     .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
+    .value('$searchResultState', new SearchResultState())
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
@@ -3973,7 +4014,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$mapBounds', '$pageStateModel',
-      '$entityService', '$allowEditing', '$sce', RootCtrl])
+      '$searchResultState', '$entityService', '$allowEditing', '$sce', RootCtrl])
     .controller('OrganizeMenuCtrl', ['$scope', '$tripPlanModel', '$taxonomy', OrganizeMenuCtrl])
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
@@ -3990,7 +4031,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
      '$entityService', '$dataRefreshManager', '$modal',
-     '$pageStateModel', '$map', AddPlacePanelCtrl])
+     '$pageStateModel', '$searchResultState', '$map', AddPlacePanelCtrl])
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
@@ -4008,6 +4049,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
     .directive('tcEntitySearchResult', tcEntitySearchResult)
+    .directive('tcEntitySearchResultDetails', tcEntitySearchResultDetails)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);
