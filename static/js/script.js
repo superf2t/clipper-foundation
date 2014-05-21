@@ -2502,9 +2502,9 @@ function ItemModel(data) {
   };
 
   this.categoryDisplayText = function() {
-    if (this.data['sub_category']) {
+    if (this.data['sub_category'] && this.data['sub_category']['name'] != 'none') {
       return this.data['sub_category']['display_name'];
-    } else if (this.data['category']) {
+    } else if (this.data['category'] && this.data['category']['name'] != 'none') {
       return this.data['category']['display_name'];
     }
     return '';
