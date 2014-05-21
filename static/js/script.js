@@ -1191,7 +1191,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     });
   };
 
-
   $scope.updateMap = function() {
     google.maps.event.trigger($map, 'resize');
   };
@@ -1226,6 +1225,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.closeAddPlacePanel = function() {
     $scope.$broadcast('closeaddplacepanel');
   };
+
+  $scope.$watch('searchResultState.savedResultIndices', function() {
+    if (_.some($scope.searchResultState.savedResultIndices)
+      && $scope.searchResultState.results
+      && $scope.searchResultState.results.length == 1) {
+      $scope.closeAddPlacePanel();
+    }
+  }, true);
 
   $scope.coverImageClicked = function() {
     $scope.pageStateModel.selectedEntity = null;
@@ -1726,7 +1733,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $entityService, $dataRefreshManager, $modal, $pageStateModel,
     $searchResultState, $map) {
   var me = this;
-  $scope.query = null;
+  $scope.queryState = {rawQuery: null};
   $scope.loadingData = false;
   $scope.searchResults = null;
   $scope.resultsAreFromSearch = true;
@@ -1771,12 +1778,12 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     // Ugly hack to wrap this in a timeout; without it, the paste event
     // fires before the input has been populated with the pasted data.
     $timeout(function() {
-      if (!$scope.query || !looksLikeUrl($scope.query)) {
+      if (!$scope.queryState.rawQuery || !looksLikeUrl($scope.queryState.rawQuery)) {
         return;
       }
       $scope.loadingData = true;
       $scope.resultsAreFromSearch = false;
-      $entityService.urltoentities($scope.query)
+      $entityService.urltoentities($scope.queryState.rawQuery)
         .success(me.processResponse);
     });
   };
@@ -1790,6 +1797,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     }
     $scope.searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
+    $scope.queryState.rawQuery = null;
     $pageStateModel.showAddPlacePanel();
     me.setMapBounds($scope.searchResults);
     omniboxModal.close();
@@ -1812,7 +1820,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
 
   $scope.closePanel = function() {
     $pageStateModel.showEntityPanel();
-    $scope.query = null;
+    $scope.queryState.rawQuery = null;
     $scope.loadingData = false;
     $scope.searchResults = null;
     $searchResultState.clear();
@@ -1820,12 +1828,6 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
   };
 
   $scope.$on('closeaddplacepanel', $scope.closePanel);
-
-  $scope.$on('resultsaved', function() {
-    if ($scope.searchResults.length == 1) {
-      $scope.closePanel();
-    }
-  });
 }
 
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
@@ -1886,7 +1888,6 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $dataRefreshManager.forceRefresh();
           $scope.searchResultState.savedResultIndices[$scope.index] = true;
-          $scope.$emit('resultsaved');
         }
       });
   };
@@ -1913,7 +1914,6 @@ function EntitySearchResultDetailsCtrl($scope, $entityService,
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $dataRefreshManager.forceRefresh();
           $scope.searchResultState.savedResultIndices[$scope.index] = true;
-          $scope.$emit('resultsaved');
         }
       });
   };

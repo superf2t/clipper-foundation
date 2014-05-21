@@ -948,7 +948,7 @@
             tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
             tc-focus-on="omniboxFocus"
             on-place-change="googlePlaceSelected($newPlace)"
-            ng-model="query"
+            ng-model="queryState.rawQuery"
             ng-disabled="loadingData"
             ng-paste="textPasted()"/>
           <div ng-show="loadingData" class="search-spinner">
