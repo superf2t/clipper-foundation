@@ -458,7 +458,6 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     var overlay = new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
       toolsDiv, toolsDiv.find('.infowindow-internal'));
     scope.onSizeChange = function() {
-      console.log("resizing");
       overlay.reposition();
       overlay.panMap();
     };
@@ -1223,6 +1222,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('openomnibox', windowClass);
   };
 
+  $scope.closeAddPlacePanel = function() {
+    $scope.$broadcast('closeaddplacepanel');
+  };
+
   $scope.coverImageClicked = function() {
     $scope.pageStateModel.selectedEntity = null;
   };
@@ -1707,13 +1710,16 @@ function PagePositionManager($rootScope) {
 
 
 function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
-    $entityService, $dataRefreshManager, $modal, $pageStateModel) {
+    $entityService, $dataRefreshManager, $modal, $pageStateModel, $map) {
   var me = this;
   $scope.query = null;
   $scope.loadingData = false;
   $scope.searchResults = null;
   $scope.resultsAreFromSearch = true;
-  $scope.resultSelectionState = {selectedIndex: null};
+  $scope.resultSelectionState = {
+    selectedIndex: null,
+    savedResultIndices: []
+  };
 
   var omniboxModal = null;
 
@@ -1766,6 +1772,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
   };
 
   this.processResponse = function(response) {
+    $scope.$broadcast('clearresults');
     if (response['entity']) {
       $scope.searchResults = [response['entity']]
     } else {
@@ -1773,7 +1780,23 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     }
     $scope.loadingData = false;
     $pageStateModel.showAddPlacePanel();
+    me.setMapBounds($scope.searchResults);
     omniboxModal.close();
+  };
+
+  this.setMapBounds = function(entities) {
+    if (_.isEmpty(entities)) {
+      return;
+    }
+    if (entities.length == 1) {
+      $map.setCenter(gmapsLatLngFromJson(entities[0]['latlng']));
+      return
+    }
+    var bounds = new google.maps.LatLngBounds();
+    $.each(entities, function(i, entity) {
+      bounds.extend(gmapsLatLngFromJson(entity['latlng']));
+    });
+    $map.fitBounds(bounds);
   };
 
   $scope.closePanel = function() {
@@ -1781,29 +1804,94 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $scope.query = null;
     $scope.loadingData = false;
     $scope.searchResults = null;
+    $scope.resultSelectionState.selectedIndex = null;
+    $scope.$broadcast('clearresults');
   };
 
-  $scope.saveResults = function() {
-    $entityService.saveNewEntities($scope.selectedResults(), $tripPlanModel.tripPlanId())
+  $scope.$on('closeaddplacepanel', $scope.closePanel);
+
+  $scope.$on('resultsaved', function() {
+    if ($scope.searchResults.length == 1) {
+      $scope.closePanel();
+    }
+  });
+}
+
+function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
+    $tripPlanModel, $entityService, $dataRefreshManager) {
+  var me = this;
+  $scope.ed = $scope.entityData;
+  $scope.em = new EntityModel($scope.entityData);
+  $scope.im = new ItemModel($scope.entityData);
+
+  var marker = null;
+  var infowindow = null;
+
+  this.createMarker = function() {
+    marker = $scope.em.makeMarker();
+    marker.setIcon('/static/img/map-icons/letter_' +
+      String.fromCharCode(97 + $scope.index) + '.png');
+    marker.setMap($map);
+    google.maps.event.addListener(marker, 'click', function() {
+      $scope.$emit('asktocloseallinfowindows');
+      me.createInfowindow();
+      $scope.$apply();
+    });
+  };
+
+  this.createInfowindow = function() {
+    var scope = $scope.$new();
+    var contentDiv = $templateToStringRenderer.render(
+      'results-infowindow-template', scope);
+    infowindow = new MapMarkerOverlay(marker.getMap(),
+      marker.getPosition(), contentDiv, contentDiv.find('.infowindow-internal'));
+  };
+
+  this.destroyInfowindow = function() {
+    infowindow && infowindow.setMap(null);
+    infowindow = null;
+  };
+
+  $scope.$on('closeallinfowindows', function() {
+    me.destroyInfowindow();
+  });
+
+  $scope.$on('clearresults', function() {
+    me.destroyInfowindow();
+    marker.setMap(null);
+    marker = null;
+  });
+
+  $scope.selectResult = function() {
+    $scope.resultSelectionState.selectedIndex = $scope.index;
+    if (!infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
+      me.createInfowindow();
+    }
+  };
+
+  $scope.saveResult = function() {
+    $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.askToRefresh();
-          $scope.showEntityPanel();
+          $dataRefreshManager.forceRefresh();
+          $scope.resultSelectionState.savedResultIndices[$scope.index] = true;
+          $scope.$emit('resultsaved');
         }
-      }).error(function() {
-        alert('Failed to save places');
       });
+  };
+
+  this.createMarker();
+
+  $scope.suppressEvent = function($event) {
+    $event.stopPropagation();
+    $event.preventDefault();
   };
 }
 
 //
 // Shared entity result handling 
 //
-
-function EntityResultNewCtrl($scope) {
-  $scope.ed = $scope.entityData;
-  $scope.im = new ItemModel($scope.entityData);
-}
 
 var EntityResultState = {
   NOT_EDITING: 1,
@@ -1942,7 +2030,7 @@ function tcEntityResult() {
   };
 }
 
-function tcEntityResultNew() {
+function tcEntitySearchResult() {
   return {
     restrict: 'AE',
     scope: {
@@ -1950,8 +2038,8 @@ function tcEntityResultNew() {
       resultSelectionState: '=',
       index: '='
     },
-    templateUrl: 'one-entity-result-new-template',
-    controller: EntityResultNewCtrl
+    templateUrl: 'one-entity-search-result-template',
+    controller: EntitySearchResultCtrl
   };
 }
 
@@ -2023,8 +2111,7 @@ function EntityResultPhotoCtrl($scope, $window) {
 
 angular.module('entityResultModule', [])
   .controller('EntityResultPhotoCtrl'['$scope', '$window', EntityResultPhotoCtrl])
-  .directive('tcEntityResult', tcEntityResult)
-  .directive('tcEntityResultNew', tcEntityResultNew);
+  .directive('tcEntityResult', tcEntityResult);
 
 //
 // End shared entity result handling
@@ -3899,7 +3986,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
      '$entityService', '$dataRefreshManager', '$modal',
-     '$pageStateModel', AddPlacePanelCtrl])
+     '$pageStateModel', '$map', AddPlacePanelCtrl])
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
@@ -3916,6 +4003,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
+    .directive('tcEntitySearchResult', tcEntitySearchResult)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);

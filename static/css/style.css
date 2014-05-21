@@ -275,6 +275,49 @@ hr.dropdown-separator {
   font-size: 0.9em;
 }
 
+.one-entity-search-result {
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.one-entity-search-result.selected {
+  background-color: #666666 !important;
+}
+
+.one-entity-search-result:hover {
+  background-color: #444444;
+}
+
+.one-entity-search-result .entity-circle-img {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.one-entity-search-result .entity-circle-img img {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+}
+
+.one-entity-search-result .entity-info {
+  display: inline-block;
+  max-width: calc(100% - 44px);
+}
+
+.one-entity-search-result .entity-info .name {
+  line-height: 1.2;
+}
+
+.one-entity-search-result .entity-info .details {
+  font-size: 0.9em;
+}
+
+.one-entity-search-result .save-confirmation {
+  color: rgb(39, 172, 113);  
+}
+
 .guide-panel {
   color: #000;
   width: 100%;
@@ -408,11 +451,6 @@ hr.dropdown-separator {
   margin-top: 10px;
   position: relative;
   min-height: 20px;
-  visibility: hidden;
-}
-
-.one-entity-guideview:hover .controls {
-  visibility: visible;
 }
 
 .one-entity-guideview .clip-cta {
@@ -677,7 +715,7 @@ hr.dropdown-separator {
   left: 10px;
 }
 
-#main-control-buttons .left-buttons .btn-add-place {
+#main-control-buttons .left-buttons button {
   font-size: 1.1em;
 }
 
@@ -809,16 +847,22 @@ hr.dropdown-separator {
   border-radius: 9px;  
 }
 
-.marker-annotations .day-annotation {
-  position: absolute;
-  top: -40px;
-  right: 4px;
-  background-color: #FFFFFF;
-  border: 1px solid #AAAAAA;
-  width: 18px;
-  height: 18px;
-  text-align: center;
-  border-radius: 9px;  
+.results-infowindow .tools-section {
+  background-color: #fff;
+  font-size: 10pt;
+  padding: 5px;
+}
+
+.results-infowindow .tools-section a {
+  color: #428bca;
+}
+
+.results-infowindow .tools-section a:hover {
+  color: #2D73A0;
+}
+
+.results-infowindow .tools-section .save-confirmation {
+  color: rgb(39, 172, 113);
 }
 
 .clipping-iframe {
@@ -918,109 +962,27 @@ temporary hack that lines up the arrows a bit better for most pictures */
   height: 100%;
 }
 
-.add-place-panel .button-panel {
-  position: relative;
-  margin: 10px 10px 15px 10px;
+.add-place-panel .search-again {
+  margin: -5px 10px 5px 10px;
 }
 
-.add-place-panel .button-panel .search-again {
-  display: inline-block;
-  margin-top: 5px;
-}
-
-.add-place-panel .button-panel a {
+.add-place-panel .search-again a {
   color: #428bca;
 }
 
-.add-place-panel .button-panel a:hover {
+.add-place-panel .search-again a:hover {
   color: #2D73A0;
 }
 
-.add-place-panel .button-panel .close-button {
-  position: absolute;
-  right: 0;
-  margin: 0;
-  padding: 3px 6px;
-}
-
-.add-place-panel .upper-panel {
+.add-place-panel .panel-content {
   background-color: #4A4A4A;
   color: #fff;
   overflow-y: auto;
   height: 100%;
 }
 
-.add-place-panel .upper-panel.has-search-results {
-  height: calc(100% - 100px);
-}
-
-.add-place-panel .lower-panel {
-  position: relative;
-  height: 100px;
-  -webkit-box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px -3px 3px 0px rgba(0, 0, 0, 0.15);
-}
-
-.add-place-panel .header {
-  margin: 10px 0 20px 0;
-}
-
-.add-place-panel .header .close-panel-button {
-  position: absolute;
-  top: 10px;
-  right: 20px;
-  z-index: 1;
-}
-
-.add-place-panel .site-select {
-  margin: auto;
-  margin-bottom: 20px;
-  position: relative;
-  width: 300px;
-}
-
-.add-place-panel .site-select .dropdown-button {
-  background-color: #fff;
-  text-align: center;
-  width: 100%;
-  border: 1px solid rgba(0,0,0,.15);
-}
-
-.add-place-panel .site-select .dropdown-menu {
-  width: 100%;
-  margin: 0;
-}
-
-.add-place-panel .search-others {
-  margin-top: 20px;
-}
-
-.add-place-panel .search-others .sample-sites {
-  width: 80%;
-  margin: auto;
-}
-
-.add-place-panel .site-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.add-place-panel .search-results {
-  margin-bottom: 40px;
-}
-
-.add-place-panel .search-results h4 {
-  margin: 0 10px 10px 10px;
-}
-
-.add-place-panel .save-panel {
-  text-align: center;
-  padding: 10px;
-}
-
-.add-place-panel .save-confirmation {
-  padding: 5px 0px 10px 0px;
+.add-place-panel h4 {
+  margin: 10px;
 }
 
 /* Custom calculation to support 360px image/map */

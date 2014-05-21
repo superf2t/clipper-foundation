@@ -73,6 +73,9 @@
     <div ng-include="'guide-panel-template'" class="full-width full-height"
       ng-show="pageStateModel.inEntityPanel()">
     </div>
+    <div ng-include="'results-details-panel-template'" class="full-width full-height"
+      ng-if="pageStateModel.inAddPlacePanel()">
+    </div>
     <div class="toggle-handle" ng-click="toggleMidPanel()">
     </div>
   </div>
@@ -133,10 +136,14 @@
   <script type="text/ng-template" id="editor-controls-template">
     <div id="main-control-buttons">
       <div class="left-buttons">
-        <button class="btn btn-add-place"
+        <button class="btn"
           ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
           ng-show="!pageStateModel.omniboxOpen && !pageStateModel.inAddPlacePanel()">
           Add Place
+        </button>
+        <button class="btn" ng-show="pageStateModel.inAddPlacePanel()"
+          ng-click="closeAddPlacePanel()">
+          Close
         </button>
       </div>
       <div class="right-buttons">
@@ -201,11 +208,35 @@
             </button>
           </div>
         </div>
-        <div class="tool-section" ng-include="'map-marker-tools-template'">
+        <div class="tool-section" ng-include="'map-marker-tools-template'"
+          ng-show="!pageStateModel.inAddPlacePanel()">
         </div>
       </div>
     </div>
   </script>
+
+  {% if allow_editing %}
+  <script type="text/ng-template" id="results-infowindow-template">
+    <div class="infowindow results-infowindow"
+      ng-click="suppressEvent($event)" ng-dblclick="suppressEvent($event)">
+      <div class="infowindow-internal">
+        <div class="info-section">
+          <div class="name">
+            [[ed['name'] ]]
+          </div>
+        </div>
+        <div class="tools-section">
+          <a ng-click="saveResult()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-plus"></span> Add to trip
+          </a>
+          <div class="save-confirmation" ng-show="resultSelectionState.savedResultIndices[index]">
+            saved
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+  {% endif %}
 
   <script type="text/ng-template" id="map-marker-tools-template">
     <div class="marker-tools">
@@ -241,9 +272,6 @@
 
   <script type="text/ng-template" id="map-marker-annotations-template">
     <div class="marker-annotations" ng-show="!infowindowOpen">
-      <div class="day-annotation" ng-show="ed['day']">
-        [[ed['day'] ]]
-      </div>
       <div class="star-annotation" ng-show="ed['starred']">
         <span class="glyphicon glyphicon-star favorite-star"></span>
       </div>
@@ -931,48 +959,60 @@
 
   <script type="text/ng-template" id="add-place-panel-template">
     <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
-      <div ng-if="pageStateModel.inAddPlacePanel()" class="full-width full-height">
-        <div class="upper-panel" ng-class="{'has-search-results': searchResults}">
-          <div class="button-panel">
-            <a ng-click="openOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
-              href="javascript:void(0)">
-              <span class="search-again">
+      <div ng-if="pageStateModel.inAddPlacePanel()" class="panel-content">
+        <div class="search-results-panel">
+          <div class="search-results" ng-show="searchResults && searchResults.length">
+            <h4 ng-show="resultsAreFromSearch">Results from Google Places</h4>
+            <h4 ng-show="!resultsAreFromSearch">Results</h4>
+            <div class="search-again">
+              <a ng-click="openOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
+                href="javascript:void(0)">
                 <span class="glyphicon glyphicon-search"></span> Search again
-              </span>
-            </a>
-            <button class="btn btn-default close-button" ng-click="closePanel()">
-              Close
-            </button>
+              </a>
+            </div>
+            <div ng-repeat="result in searchResults" tc-entity-search-result
+              entity-data="result" index="$index"
+              result-selection-state="resultSelectionState">
+            </div>
           </div>
-          <div class="search-results-panel">
-            <div class="search-results" ng-show="searchResults && searchResults.length">
-              <h4 ng-show="resultsAreFromSearch">Results from Google Places</h4>
-              <h4 ng-show="!resultsAreFromSearch">Results</h4>
-              <div ng-repeat="result in searchResults" tc-entity-result-new
-                entity-data="result" index="$index"
-                result-selection-state="resultSelectionState">
-              </div>
-            </div>
-            <div ng-show="!searchResults || !searchResults.length">
-              <h4>No places found</h4>
-            </div>
+          <div ng-show="!searchResults || !searchResults.length">
+            <h4>No places found</h4>
           </div>
         </div>
-        <div class="lower-panel" ng-show="searchComplete">
-          <div class="save-panel" ng-show="searchResults">
-            <div class="save-confirmation" ng-show="searchResults">
-              <span ng-show="selectedResults().length > 1">
-                Save [[selectedResults().length]] places to trip
-              </span>
-              <span ng-show="selectedResults().length == 1">
-                Save [[selectedResults()[0]['name'] ]] to trip
-              </span>
-            </div>
-            <button ng-click="saveResults()" class="btn btn-primary" ng-disabled="!saveButtonEnabled()">
-              Save Places
-            </button>
-          </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="one-entity-search-result-template">
+    <div class="one-entity-search-result"
+      tc-entity-result-id="[[index]]"
+      ng-class="{'selected': resultSelectionState.selectedIndex == index}"
+      ng-click="selectResult()">
+      <span class="entity-circle-img">
+        <img ng-src="[[im.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
+      </span>
+      <span class="entity-info">
+        <div class="name">
+          [[ed['name'] ]]
         </div>
+        <div class="details">
+          <span ng-show="im.hasCategory()"
+            ng-class="'text-' + ed['category']['name']">
+            [[im.categoryDisplayText()]]
+          </span>
+          <span ng-show="resultSelectionState.savedResultIndices[index]" class="save-confirmation">
+            saved
+          </span>
+        </div>
+      </span>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="results-details-panel-template">
+    <div class="results-details-panel"
+      tc-scroll-to-selector scroll-on-changes-to="resultsState.selectedIndex"
+      scroll-dest-selector=".one-entity-results-details[tc-entity-result-id='[[resultsState.selectedIndex]]']">
+      <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
       </div>
     </div>
   </script>
