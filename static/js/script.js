@@ -1393,6 +1393,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
           planModel.resetEntities(newEntities);
           $scope.planModel = planModel;
           me.processItemsIntoGroups();
+          $map.fitBounds($tripPlanModel.getMapBounds());
           opt_callback && opt_callback;
         });
       });
