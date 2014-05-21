@@ -275,6 +275,10 @@ hr.dropdown-separator {
   font-size: 0.9em;
 }
 
+.one-entity-leftnav .entity-info .day {
+  color: #ccc;
+}
+
 .one-entity-search-result {
   position: relative;
   padding: 7px 10px;

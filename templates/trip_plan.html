@@ -601,6 +601,9 @@
             ng-class="'text-' + ed['category']['name']">
             [[item.categoryDisplayText()]]
           </span>
+          <span ng-show="item.day() && pageStateModel.isGroupByCategory()" ng-class="day">
+            Day [[item.day()]]
+          </span>
           <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
           </span>
         </div>
