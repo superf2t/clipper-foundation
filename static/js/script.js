@@ -1844,8 +1844,7 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
       String.fromCharCode(97 + $scope.index) + '.png');
     marker.setMap($map);
     google.maps.event.addListener(marker, 'click', function() {
-      $scope.$emit('asktocloseallinfowindows');
-      me.createInfowindow();
+      $scope.selectResult();
       $scope.$apply();
     });
   };

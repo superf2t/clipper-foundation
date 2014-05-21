@@ -102,7 +102,7 @@ function EntityService($http) {
     var request = {
       'query': query,
       'latlng': latlng,
-      'max_results': 5
+      'max_results': 10
     };
     return $http.post('/entityservice/googletextsearchtoentities', request);
   };

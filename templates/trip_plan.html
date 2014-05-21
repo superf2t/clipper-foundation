@@ -959,7 +959,9 @@
   </script>
 
   <script type="text/ng-template" id="add-place-panel-template">
-    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
+    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl"
+      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
+      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <div ng-if="pageStateModel.inAddPlacePanel()" class="panel-content">
         <div class="search-results-panel">
           <div class="search-results" ng-show="searchResults && searchResults.length">
@@ -1014,8 +1016,8 @@
 
   <script type="text/ng-template" id="results-details-panel-template">
     <div class="results-details-panel"
-      tc-scroll-to-selector scroll-on-changes-to="resultsState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result-details[tc-entity-result-id='[[resultsState.selectedIndex]]']">
+      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
+      scroll-dest-selector=".one-entity-search-result-details[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <div ng-repeat="result in searchResultState.results"
         tc-entity-search-result-details index="$index" entity-data="result"
         search-result-state="searchResultState">

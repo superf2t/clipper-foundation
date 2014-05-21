@@ -998,6 +998,9 @@ temporary hack that lines up the arrows a bit better for most pictures */
   position: relative;
   background-color: inherit;
   height: 100%;
+  overflow-y: auto;
+  background-color: #4A4A4A;
+  color: #fff;
 }
 
 .add-place-panel .search-again {
@@ -1010,13 +1013,6 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .add-place-panel .search-again a:hover {
   color: #2D73A0;
-}
-
-.add-place-panel .panel-content {
-  background-color: #4A4A4A;
-  color: #fff;
-  overflow-y: auto;
-  height: 100%;
 }
 
 .add-place-panel h4 {
