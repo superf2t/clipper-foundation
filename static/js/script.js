@@ -258,6 +258,19 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     });
   };
 
+  this.removeEntities = function(entityDatas) {
+    $.each(entityDatas, function(i, entityData) {
+      for (var j = 0; j < me.entityDatas.length; j++) {
+        if (me.entityDatas[j]['entity_id'] == entityData['entity_id']) {
+          me.entityDatas.splice(j, 1);
+          break;
+        }
+      }
+      delete me.entitiesById[entityData['entity_id']];
+      me.dayPlannerModel.removeItem(new ItemModel(entityData));
+    });
+  };
+
   this.updateNotes = function(noteDatas) {
     var newNotesById = dictByAttr(noteDatas, 'note_id');
     for (var i = this.notes.length - 1; i >= 0; i--) {
@@ -348,9 +361,9 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
   };
 }
 
-function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
-    $pagePositionManager, $tripPlanModel, $pageStateModel, $timeout,
-    $map, $templateToStringRenderer, $window) {
+function EntityCtrl($scope, $entityService, $modal,
+    $pagePositionManager, $tripPlanModel, $pageStateModel,
+    $timeout, $map, $templateToStringRenderer, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -421,7 +434,9 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
     $entityService.deleteEntity($scope.item.data, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.askToRefresh();
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.removeEntities(response['entities']);
+          $scope.$emit('redrawgroupings');
         } else {
           alert('Failed to delete entity');
         }
@@ -551,7 +566,7 @@ function EntityCtrl($scope, $entityService, $modal, $dataRefreshManager,
 }
 
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $modal, $window, $dataRefreshManager) {
+    $modal, $window) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
   $scope.dayPlannerActive = false;
@@ -586,7 +601,9 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     $entityService.deleteEntity($scope.ed, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.askToRefresh();
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.removeEntities(response['entities']);
+          $scope.$emit('redrawgroupings');
         } else {
           alert('Failed to delete entity');
         }
@@ -2711,6 +2728,20 @@ function DayPlannerModel(entityItems, noteItems) {
     }
   };
 
+  // Doesn't work for notes yet.
+  this.removeItem = function(item) {
+    if (item.day()) {
+      this.dayModelForDay(item.day()).removeItem(item);
+    } else {
+      for (var i = 0; i < this.unorderedItems.length; i++) {
+        if (this.unorderedItems[i]['entity_id'] == item.data['entity_id']) {
+          this.unorderedItems.splice(i, 1);
+          break;
+        }
+      }
+    }
+  };
+
   // Initialization
   this.reset(entityItems, noteItems);
 
@@ -4070,10 +4101,10 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('ItemGroupCtrl', ['$scope', '$tripPlanModel', '$map', ItemGroupCtrl])
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$dataRefreshManager', '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
+      '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
       '$map', '$templateToStringRenderer', '$window', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
-      '$tripPlanModel', '$modal', '$window', '$dataRefreshManager', GuideviewEntityCtrl])
+      '$tripPlanModel', '$modal', '$window', GuideviewEntityCtrl])
     .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
