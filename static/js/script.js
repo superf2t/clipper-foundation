@@ -984,10 +984,10 @@ var SidePanelMode = {
   ADD_PLACE: 2
 };
 
-function PageStateModel(grouping) {
+function PageStateModel(grouping, midPanelExpanded) {
   this.sidePanelMode = SidePanelMode.ENTITIES;
   this.omniboxOpen = false;
-  this.midPanelExpanded = true;
+  this.midPanelExpanded = midPanelExpanded;
   this.grouping = grouping;
   this.selectedEntity = null;
 
@@ -1030,7 +1030,8 @@ function PageStateModel(grouping) {
 
 PageStateModel.fromInitialState = function(initialState) {
   var grouping = initialState['sort'] == 'day' ? Grouping.DAY : Grouping.CATEGORY;
-  return new PageStateModel(grouping);
+  var midPanelExpanded = initialState['mid_panel_expanded'];
+  return new PageStateModel(grouping, midPanelExpanded);
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -1810,6 +1811,9 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $pageStateModel.showAddPlacePanel();
     me.setMapBounds($scope.searchResults);
     omniboxModal.close();
+    if ($tripPlanModel.isEmpty()) {
+      $pageStateModel.midPanelExpanded = true;
+    }
   };
 
   this.setMapBounds = function(entities) {

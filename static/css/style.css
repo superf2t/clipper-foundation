@@ -556,22 +556,34 @@ hr.dropdown-separator {
   right: 0;
 }
 
-.clipped-pages-header {
-  padding: 10px;
-}
-
-.clipped-pages {
-  padding: 0px 10px;
-}
-
 .getting-started-directions {
-  color: #000;
-  padding: 20px 40px;
+  padding: 20px 10px;
   font-size: 1.1em;
 }
 
-.getting-started-directions .bookmarklet {
+.getting-started-directions .section {
+  margin-bottom: 30px;
+}
+
+.getting-started-directions .bookmarklet-section {
   text-align: center;
+  margin-bottom: 30px;
+}
+
+.getting-started-directions .bookmarklet {
+  border: 1px solid #fff;
+  border-radius: 2px;
+  padding: 10px;
+  cursor: move;
+}
+
+.getting-started-directions .bookmarklet:hover {
+  background-color: #ccc;
+}
+
+.getting-started-directions .sample-sites {
+  width: 101px;
+  margin: auto;
 }
 
 .getting-started-directions .favicon {

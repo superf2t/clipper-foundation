@@ -99,7 +99,8 @@ def trip_plan_by_id(trip_plan_id):
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
-    initial_state = data.InitialPageState(request.values.get('view'), request.values.get('sort'))
+    initial_state = data.InitialPageState(request.values.get('sort'),
+        mid_panel_expanded=bool(entities))
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
