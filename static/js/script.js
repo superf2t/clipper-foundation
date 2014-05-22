@@ -1942,6 +1942,11 @@ function EntitySearchResultDetailsCtrl($scope, $entityService,
   };
 }
 
+function EntityListingCtrl($scope) {
+  $scope.ed = $scope.entityData;
+  $scope.im = new ItemModel($scope.ed);
+}
+
 //
 // Shared entity result handling 
 //
@@ -2106,6 +2111,20 @@ function tcEntitySearchResultDetails() {
     },
     templateUrl: 'one-entity-search-result-details-template',
     controller: EntitySearchResultDetailsCtrl
+  };
+}
+
+function tcEntityListing() {
+  return {
+    restrict: 'AE',
+    scope: {
+      entityData: '=',
+      isSelected: '&',
+      onSelect: '&',
+      shouldShowDay: '@'
+    },
+    templateUrl: 'one-entity-listing-template',
+    controller: EntityListingCtrl
   };
 }
 
@@ -4080,6 +4099,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
     .directive('tcEntitySearchResult', tcEntitySearchResult)
     .directive('tcEntitySearchResultDetails', tcEntitySearchResultDetails)
+    .directive('tcEntityListing', tcEntityListing)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);

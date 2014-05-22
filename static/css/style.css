@@ -240,7 +240,12 @@ hr.dropdown-separator {
   cursor: pointer;
 }
 
-.one-entity-leftnav.selected {
+.one-entity-listing {
+  padding: 7px 10px;
+}
+
+.one-entity-leftnav.selected,
+.one-entity-listing.selected {
   background-color: #666666 !important;
 }
 
@@ -248,34 +253,39 @@ hr.dropdown-separator {
   background-color: #444444;
 }
 
-.one-entity-leftnav .entity-circle-img {
+.one-entity-leftnav .entity-circle-img,
+.one-entity-listing .entity-circle-img {
   width: 40px;
   height: 40px;
   display: inline-block;
   vertical-align: top;
 }
 
-.one-entity-leftnav .entity-circle-img img {
+.one-entity-leftnav .entity-circle-img img,
+.one-entity-listing .entity-circle-img img  {
   width: 100%;
   height: 100%;
   border-radius: 20px;
-  /*border: 1px solid rgba(255, 255, 255, 0.5);*/
 }
 
-.one-entity-leftnav .entity-info {
+.one-entity-leftnav .entity-info,
+.one-entity-listing .entity-info {
   display: inline-block;
   max-width: calc(100% - 44px);
 }
 
-.one-entity-leftnav .entity-info .name {
+.one-entity-leftnav .entity-info .name,
+.one-entity-listing .entity-info .name  {
   line-height: 1.2;
 }
 
-.one-entity-leftnav .entity-info .details {
+.one-entity-leftnav .entity-info .details,
+.one-entity-listing .entity-info .details {
   font-size: 0.9em;
 }
 
-.one-entity-leftnav .entity-info .day {
+.one-entity-leftnav .entity-info .day,
+.one-entity-listing .entity-info .day {
   color: #ccc;
 }
 
@@ -1295,8 +1305,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .day-planner-left-panel {
   height: calc(100% - 20px);
-  padding: 10px;
   overflow-y: auto;
+  padding-top: 10px;
+}
+
+.day-planner-left-panel .left-panel-inner {
+  padding: 10px;
 }
 
 .day-planner-right-panel {
@@ -1308,6 +1322,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .day-planner-left-panel-drag-area {
   width: 100%;
   height: 100%;
+  background-color: #fff;
 }
 
 .day-planner-left-panel-drag-area.dragactive {
@@ -1329,7 +1344,6 @@ temporary hack that lines up the arrows a bit better for most pictures */
   height: 50%;
   position: relative;
   top: 5px;
-  background-color: #f3f4f4;
   border-radius: 10px;
 }
 
@@ -1343,13 +1357,13 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .day-planner-draggable-entity {
   width: 80%;
-  height: 80px;
   margin: 0 auto;
-  background-color: #fff;
   cursor: move;
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.day-planner-draggable-entity .one-entity-listing:hover {
+  background-color: #bbb;
 }
 
 .day-planner-draggable-entity.existing-item-dragactive {
@@ -1371,13 +1385,14 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .day-planner-panel-header {
   text-align: center;
-  margin-top: 10px;
+  margin: 0;
+  padding-top: 10px;
 }
 
 .day-planner-one-day {
   margin-bottom: 10px;
   padding: 5px 10px 10px 10px;
-  background-color: #f3f4f4;
+  background-color: #fff;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
@@ -1403,37 +1418,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
   margin: 0px 10px;
 }
 
-.day-planner-entity-image-container {
-  display: inline-block;
-  height: 100%;
-  width: 80px;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: 50% 50%;
-  padding: 0;
-  margin: 0;
-  background-color: #666666;
-}
-
-.day-planner-entity-image-container img {
-  height: 100%;
-  position: relative;
-  left: 100%;
-  margin-left: -200%;
-}
-
-.day-planner-entity-info {
-  display: inline-block;
-  vertical-align: top;
-  width: calc(100% - 90px);
-  margin-left: 5px;
-}
-
 .draggable-entity-controls {
-  float: right;
-  position: relative;
-  top: -20px;
-  right: 2px;
+  position: absolute;
+  top: 5px;
+  right: 5px;
   display: none;
 }
 
