@@ -1305,7 +1305,6 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .day-planner-left-panel {
   height: calc(100% - 20px);
-  overflow-y: auto;
   padding-top: 10px;
 }
 
@@ -1323,6 +1322,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 100%;
   height: 100%;
   background-color: #fff;
+  overflow-y: auto;
 }
 
 .day-planner-left-panel-drag-area.dragactive {
