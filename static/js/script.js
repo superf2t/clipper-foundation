@@ -1359,12 +1359,18 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
 
   if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
+    $scope.inNewTripPlanModal = true;
     startTripPlanModal = $modal.open({
       templateUrl: 'start-new-trip-modal-template',
       scope: $.extend($scope.$new(true), {selectTripLocation: this.selectTripLocation}),
       backdrop: 'static',
+      windowClass: 'start-new-trip-modal-window',
       keyboard: false
     });
+    startTripPlanModal.result.finally(function() {
+      $scope.inNewTripPlanModal = false;
+    });
+    $timeout($scope.updateMap, 200);  // HACK
   }
 
   var initialBounds = $tripPlanModel.getMapBounds();

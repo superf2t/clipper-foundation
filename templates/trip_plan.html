@@ -41,7 +41,7 @@
     </div>
   </nav>
 
-  <div id="left-panel">
+  <div id="left-panel" ng-show="!inNewTripPlanModal">
     <div id="entity-container" class="entity-container"
       ng-show="pageStateModel.inEntityPanel()"
       tc-entity-scroll scroll-state="scrollState"
@@ -69,7 +69,8 @@
     </div>
   </div>
 
-  <div id="mid-panel" ng-class="{'closed': !pageStateModel.midPanelExpanded}"
+  <div id="mid-panel" ng-show="!inNewTripPlanModal"
+    ng-class="{'closed': !pageStateModel.midPanelExpanded}"
     {% if not initial_state.mid_panel_expanded %}class="closed"{% endif %}>
     <div ng-include="'guide-panel-template'" class="full-width full-height"
       ng-show="pageStateModel.inEntityPanel()">
@@ -83,6 +84,7 @@
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
     class-when-true="mid-panel-closed" after-complete="updateMap()"
+    ng-class="{'full-screen': inNewTripPlanModal}"
     {% if not initial_state.mid_panel_expanded %}class="mid-panel-closed"{% endif %}>
     <div id="map-container">
       <div id="map">
@@ -140,7 +142,8 @@
       <div class="left-buttons">
         <button class="btn"
           ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
-          ng-show="!pageStateModel.omniboxOpen && !pageStateModel.inAddPlacePanel()">
+          ng-show="!pageStateModel.omniboxOpen && !pageStateModel.inAddPlacePanel()
+            && !inNewTripPlanModal">
           Add Place
         </button>
         <button class="btn" ng-show="pageStateModel.inAddPlacePanel()"
