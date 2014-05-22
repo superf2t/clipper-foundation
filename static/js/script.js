@@ -1320,6 +1320,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       });
   };
 
+  $scope.openBulkClipModal = function(windowClass) {
+    $modal.open({
+      templateUrl: 'bulk-clip-modal-template',
+      scope: $scope.$new(true),
+      windowClass: windowClass
+    });
+  };
+
   $scope.deleteCurrentTripPlan = function() {
     var ok = confirm('Are you sure you want to delete this trip plan?');
     if (!ok) {
@@ -1595,6 +1603,49 @@ function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy) {
   $scope.suppress = function($event) {
     $event.stopPropagation();
     $event.preventDefault();
+  };
+}
+
+function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
+  $scope.allEntities = angular.copy($tripPlanModel.entities());
+  $scope.selectionState = {
+    selectedTripPlan: $allTripPlans.length ? $allTripPlans[0] : null
+  };
+
+  $scope.selectAll = function() {
+    $.each($scope.allEntities, function(i, entity) {
+      entity.selected = true;
+    });
+  };
+
+  $scope.selectNone = function() {
+    $.each($scope.allEntities, function(i, entity) {
+      entity.selected = false;
+    });
+  };
+
+  $scope.selectedEntities = function() {
+    return _.filter($scope.allEntities, function(entity) {
+      return entity.selected;
+    });
+  };
+
+  $scope.save = function() {
+    var entities = $scope.selectedEntities();
+    $.each(entities, function(i, entity) {
+      entity['day'] = null;
+      entity['day_position'] = null;
+      entity['entity_id'] = null;
+    });
+    $scope.saving = true;
+    $entityService.saveNewEntities(entities,
+      $scope.selectionState.selectedTripPlan['trip_plan_id'])
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $scope.saving = false;
+          $scope.saved = true;
+        }
+      });
   };
 }
 
@@ -4096,6 +4147,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
       '$searchResultState', '$entityService', '$allowEditing', '$sce', RootCtrl])
     .controller('OrganizeMenuCtrl', ['$scope', '$tripPlanModel', '$taxonomy', OrganizeMenuCtrl])
+    .controller('BulkClipCtrl', BulkClipCtrl)
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
     .controller('ItemGroupCtrl', ['$scope', '$tripPlanModel', '$map', ItemGroupCtrl])
