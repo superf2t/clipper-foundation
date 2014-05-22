@@ -618,7 +618,7 @@
       ng-class="{'selected': isSelected({$entityData: ed})}"
       ng-click="onSelect({$entityData: ed})">
       <span class="entity-circle-img">
-        <img ng-src="[[im.getBackgroundImageUrl()]]"/>
+        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
       </span>
       <span class="entity-info">
         <div class="name">
