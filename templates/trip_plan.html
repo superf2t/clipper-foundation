@@ -41,7 +41,7 @@
     </div>
   </nav>
 
-  <div id="left-panel" ng-show="!inNewTripPlanModal">
+  <div id="left-panel" ng-show="pageStateModel.shouldShowLeftPanel()">
     <div id="entity-container" class="entity-container"
       ng-show="pageStateModel.inEntityPanel()"
       tc-entity-scroll scroll-state="scrollState"
@@ -55,14 +55,10 @@
         </div>
       </div>
 
-      <div ng-if="planModel.isEmpty()">
-        <div ng-include="'getting-started-template'">
-        </div>
+      {% if needs_tutorial %}
+      <div ng-include="'tutorial-left-panel-template'" ng-if="pageStateModel.inTutorial()">
       </div>
-
-      <div class="mapview-footer">
-        Copyright 2014 Unicycle Labs
-      </div>
+      {% endif %}
     </div>
 
     {% if allow_editing %}
@@ -71,7 +67,7 @@
     {% endif %}
   </div>
 
-  <div id="mid-panel" ng-show="!inNewTripPlanModal"
+  <div id="mid-panel" ng-show="pageStateModel.shouldShowMidPanel()"
     ng-class="{'closed': !pageStateModel.midPanelExpanded}"
     {% if not initial_state.mid_panel_expanded %}class="closed"{% endif %}>
     <div ng-include="'guide-panel-template'" class="full-width full-height"
@@ -86,14 +82,21 @@
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
     class-when-true="mid-panel-closed" after-complete="updateMap()"
-    ng-class="{'full-screen': inNewTripPlanModal}"
-    {% if not initial_state.mid_panel_expanded %}class="mid-panel-closed"{% endif %}>
+    ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
+    class="
+      {% if not initial_state.mid_panel_expanded %}mid-panel-closed{% endif %}
+      {% if needs_tutorial %}full-screen{% endif %}
+      ">
     <div id="map-container">
       <div id="map">
       </div>
     </div>
     {% if allow_editing %}
     <div ng-include="'editor-controls-template'">
+    </div>
+    {% endif %}
+    {% if needs_tutorial %}
+    <div ng-include="'tutorial-map-panel-template'">
     </div>
     {% endif %}
   </div>
@@ -144,8 +147,7 @@
       <div class="left-buttons">
         <button class="btn"
           ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
-          ng-show="!pageStateModel.omniboxOpen && !pageStateModel.inAddPlacePanel()
-            && !inNewTripPlanModal">
+          ng-show="shouldShowAddPlaceButton()">
           Add Place
         </button>
         <button class="btn" ng-show="pageStateModel.inAddPlacePanel()"
@@ -658,52 +660,6 @@
       </div>
     </div>
   </script>
- 
-  <script type="text/ng-template" id="getting-started-template">
-    <div class="getting-started-directions">
-      <div class="welcome">
-        Welcome to your new trip plan
-      </div>
-      <div class="section">
-        Click the <b>Add Place</b> button to start adding places to your trip.
-      </div>
-      <div class="section">
-        You can also also add places while browsing other websites.
-      </div>
-      <div class="bookmarklet-section">
-        <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
-          ng-click="$event.stopPropagation(); $event.preventDefault()">
-          <span class="bookmarklet">
-            <span class="glyphicon glyphicon-paperclip"></span> Travel Clipper
-          </span>
-        </a>
-      </div>
-      <div class="section">
-        Drag the clipper to your bookmarks bar and then try searching these supported sites for places in
-        [[planModel.tripPlanData['location_name'] ]].
-      </div>
-      <div class="section sample-sites">
-        <a ng-href="http://www.hotels.com/search.do?destination=[[planModel.demoQueryString()]]"
-          target="_blank" class="site-link">
-          <img src="http://www.hotels.com/favicon.ico" class="favicon"/> Hotels.com
-        </a>
-        <br/>
-        <a ng-href="https://www.airbnb.com/s/[[planModel.demoQueryString()]]" target="_blank" class="site-link">
-          <img src="http://www.airbnb.com/favicon.ico" class="favicon"/> Airbnb
-        </a>
-        <br/>
-        <a ng-href="http://www.tripadvisor.com/Search?q=[[planModel.demoQueryString()]]"
-          target="_blank" class="site-link">
-          <img src="http://www.tripadvisor.com/favicon.ico" class="favicon"/> TripAdvisor
-        </a>
-        <br/>
-        <a ng-href="http://www.yelp.com/search?find_loc=[[planModel.demoQueryString()]]"
-          target="_blank" class="site-link">
-          <img src="http://www.yelp.com/favicon.ico" class="favicon"/> Yelp
-        </a>
-      </div>
-    </div>
-  </script>
 
   <script type="text/ng-template" id="guide-panel-template">
     <div class="guide-panel"
@@ -824,9 +780,9 @@
   </script>
 
   <script type="text/ng-template" id="trip-plan-header-template">
-    <div id="trip-plan-header" ng-show="!planModel.isEmpty()">
+    <div id="trip-plan-header">
       <div class="trip-plan-info">
-        <div class="title" ng-show="!editingTripPlanSettings">
+        <div class="title">
           [[planModel.tripPlanName()]]
         </div>
         <div class="creator-info">
@@ -1217,6 +1173,71 @@
       </div>
     </div>
   </script>
+
+  {% if needs_tutorial %}
+  <script type="text/ng-template" id="tutorial-left-panel-template">
+    <div class="tutorial-left-panel">
+      <div ng-repeat="ignored in [1, 2, 3]" class="entity-placeholder">
+        <span class="img-placeholder">
+        </span>
+        <span class="details-placeholder">
+        </span>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="tutorial-map-panel-template">
+    <div class="tutorial-map-panel" ng-controller="TutorialCtrl">
+      <div class="backdrop">
+      </div>
+      <div class="content">
+        <div ng-if="pageStateModel.tutorialState == TutorialState.START">
+          <div class="awesome">Awesome! You're planning your first trip.</div>
+          <div class="where-are-you-going">Where do you want to go?</div>
+          <div class="just-exploring">Just exploring? Try these popular locations - Paris, Chiang Mai, or Sydney.</div>
+          <div tc-start-new-trip-input
+            on-select-place="placeSelected($tripPlanDetails)"
+            hide-prompt="true" placeholder="''">
+          </div>
+        </div>
+        <div ng-if="pageStateModel.tutorialState == TutorialState.ADD_INITIAL_PLACES">
+          <div class="text-lg">
+            Great! Let's add a few places to your trip.
+          </div>
+          <div class="text-md">
+            TravelClipper is good at making sense of the research you do on other websites.  Try selecting some results from top travel websites.
+          </div>
+          <div class="site-select">
+            <span class="site-select-inner">
+              <button class="btn btn-default dropdown-toggle">
+                Top restaurants from
+                <img class="site-logo-img" ng-src="//s3-media1.ak.yelpcdn.com/assets/2/www/img/e0bcd848f6ae/structural/header_logo.png"/>
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu">
+                <li>
+                  <a href="javascript:void(0)">
+                    Top attractions from
+                    <img class="site-logo-img" ng-src="http://www.logodesignlove.com/images/bad/trip-advisor-logo.jpg"/>
+                  </a>
+                </li>
+                <li>
+                  <a href="javascript:void(0)">
+                    Top rentals from
+                    <img class="site-logo-img" ng-src="http://insteading.com/wp-content/uploads/2011/08/airbnb.png"/>
+                  </a>
+                </li>
+              </ul>
+              <button class="btn">
+                Go
+              </button>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+  {% endif %}
 
   <script type="text/ng-template" id="compass-icon-template">
     <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="100.5px" height="93.846px" viewBox="0 0 100.5 93.846" enable-background="new 0 0 100.5 93.846" xml:space="preserve">

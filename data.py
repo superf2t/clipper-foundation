@@ -246,11 +246,12 @@ def generate_sessionid():
 
 
 class InitialPageState(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('sort', 'mid_panel_expanded')
+    PUBLIC_FIELDS = serializable.fields('sort', 'mid_panel_expanded', 'needs_tutorial')
 
-    def __init__(self, sort=None, mid_panel_expanded=None):
+    def __init__(self, sort=None, mid_panel_expanded=None, needs_tutorial=None):
         self.sort = sort
         self.mid_panel_expanded = mid_panel_expanded
+        self.needs_tutorial = needs_tutorial
 
 class AccountInfo(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('email')

@@ -50,6 +50,7 @@ def intro():
 def intro2():
     return process_response(render_template('intro2.html'))
 
+# FIXME
 @app.route('/get_clipper')
 def get_clipper():
     session_info = decode_session(request.cookies)
@@ -107,14 +108,17 @@ def trip_plan_by_id(trip_plan_id):
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    allow_editing = current_trip_plan and current_trip_plan.editable_by(session_info)
+    needs_tutorial = allow_editing and len(all_trip_plans) == 1
     initial_state = data.InitialPageState(request.values.get('sort'),
-        mid_panel_expanded=bool(entities))
+        mid_panel_expanded=bool(entities), needs_tutorial=needs_tutorial)
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
         notes_json=serializable.to_json_str(notes),
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
-        allow_editing=current_trip_plan and current_trip_plan.editable_by(session_info),
+        allow_editing=allow_editing,
+        needs_tutorial=needs_tutorial,
         account_info=account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,

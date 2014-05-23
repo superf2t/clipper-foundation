@@ -1001,12 +1001,40 @@ var SidePanelMode = {
   ADD_PLACE: 2
 };
 
-function PageStateModel(grouping, midPanelExpanded) {
+var TutorialState = {
+  START: 1,
+  ADD_INITIAL_PLACES: 2
+}
+
+function PageStateModel(grouping, midPanelExpanded, needsTutorial) {
   this.sidePanelMode = SidePanelMode.ENTITIES;
   this.omniboxOpen = false;
   this.midPanelExpanded = midPanelExpanded;
+  this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
+  this.tutorialState = needsTutorial && TutorialState.START;
+
+  this.inTutorial = function() {
+    return !!this.tutorialState;
+  };
+
+  this.shouldShowLeftPanel = function() {
+    return !(this.inNewTripPlanModal || this.tutorialState == TutorialState.START);
+  };
+
+  this.shouldShowMidPanel = function() {
+    return !(this.inNewTripPlanModal || this.inTutorial());
+  };
+
+  this.isMapFullScreen = function() {
+    return this.inNewTripPlanModal || this.tutorialState == TutorialState.START;
+  };
+
+  this.shouldShowAddPlaceButton = function() {
+    return !(this.omniboxOpen || this.inAddPlacePanel() || this.inNewTripPlanModal
+      || this.inTutorial())
+  };
 
   this.inEntityPanel = function() {
     return this.sidePanelMode == SidePanelMode.ENTITIES;
@@ -1048,7 +1076,8 @@ function PageStateModel(grouping, midPanelExpanded) {
 PageStateModel.fromInitialState = function(initialState) {
   var grouping = initialState['sort'] == 'day' ? Grouping.DAY : Grouping.CATEGORY;
   var midPanelExpanded = initialState['mid_panel_expanded'];
-  return new PageStateModel(grouping, midPanelExpanded);
+  var needsTutorial = initialState['needs_tutorial'];
+  return new PageStateModel(grouping, midPanelExpanded, needsTutorial);
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -1383,8 +1412,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       });
   };
 
-  if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
-    $scope.inNewTripPlanModal = true;
+  if ($pageStateModel.inTutorial()) {
+
+  } else if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
+    $pageStateModel.inNewTripPlanModal = true;
     startTripPlanModal = $modal.open({
       templateUrl: 'start-new-trip-modal-template',
       scope: $.extend($scope.$new(true), {selectTripLocation: this.selectTripLocation}),
@@ -1393,9 +1424,9 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       keyboard: false
     });
     startTripPlanModal.result.finally(function() {
-      $scope.inNewTripPlanModal = false;
+      $pageStateModel.inNewTripPlanModal = false;
     });
-    $timeout($scope.updateMap, 200);  // HACK
+    $timeout($scope.updateMap, 300);  // HACK
   }
 
   var initialBounds = $tripPlanModel.getMapBounds();
@@ -3214,6 +3245,32 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
   };
 }
 
+function TutorialCtrl($scope, $tripPlanService, $map,
+    $tripPlanModel, $pageStateModel, $document) {
+  $scope.state = $pageStateModel.tutorialState;
+  $scope.TutorialState = TutorialState;
+
+  $scope.placeSelected = function(tripPlanDetails) {
+    $scope.saveSettings(tripPlanDetails, function() {
+      $pageStateModel.tutorialState = TutorialState.ADD_INITIAL_PLACES;
+    });
+  };
+
+  $scope.saveSettings = function(tripPlanDetails, opt_callback) {
+    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
+    $tripPlanService.editTripPlan(tripPlanDetails)
+      .success(function(response) {
+        $map.setCenter(gmapsLatLngFromJson(tripPlanDetails['location_latlng']));
+        if (tripPlanDetails['location_bounds']) {
+          $map.fitBounds(gmapsBoundsFromJson(tripPlanDetails['location_bounds']));
+        }
+        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
+        $document[0].title = response['trip_plans'][0]['name'];
+        opt_callback && opt_callback()
+      });
+  };
+}
+
 // Directives
 
 function tcEntityScroll() {
@@ -3312,7 +3369,9 @@ function tcStartNewTripInput() {
     templateUrl: 'start-new-trip-input-template',
     controller: StartNewTripInputCtrl,
     scope: {
-      onSelectPlace: '&'
+      onSelectPlace: '&',
+      hidePrompt: '=',
+      placeholder: '='
     }
   };
 }
@@ -4174,6 +4233,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .controller('GmapsImporterCtrl', ['$scope', '$timeout', '$tripPlanService',
       '$entityService', '$dataRefreshManager', '$tripPlanModel', GmapsImporterCtrl])
+    .controller('TutorialCtrl', TutorialCtrl)
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)

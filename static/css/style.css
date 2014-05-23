@@ -1575,3 +1575,99 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .gmaps-importer-modal a:hover {
   color: #2D73A0;
 }
+
+.tutorial-map-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tutorial-map-panel .backdrop {
+  background-color: #000;
+  opacity: 0.5;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.tutorial-map-panel .content {
+  width: calc(100% - 300px);
+  max-width: 700px;
+  min-height: 230px;
+  max-height: calc(100% - 200px);
+  overflow-y: auto;
+  position: relative;
+  top: 150px;
+  margin: auto;
+  background-color: #fff;
+  border-radius: 2px;
+  padding: 20px;
+  color: #000;
+  box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.5);
+}
+
+.tutorial-map-panel .awesome {
+  margin-bottom: 30px;
+  font-size: 12pt;
+  text-align: center;
+}
+
+.tutorial-map-panel .where-are-you-going {
+  font-size: 24pt;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.tutorial-map-panel .just-exploring {
+  margin-bottom: 15px;
+  font-size: 12pt;
+  text-align: center;
+}
+
+.tutorial-map-panel .text-lg {
+  font-size: 14pt;
+}
+
+.tutorial-map-panel .tex-md {
+  font-size: 12pt;
+}
+
+.tutorial-map-panel .site-select {
+  text-align: center;
+  margin: 10px 0;
+  position: relative;
+}
+
+.tutorial-map-panel .site-select .site-select-inner {
+  position: relative;
+}
+
+.tutorial-map-panel .site-logo-img {
+  max-height: 16px;
+}
+
+.tutorial-left-panel .entity-placeholder {
+  padding: 7px 10px;
+}
+
+.tutorial-left-panel .entity-placeholder .img-placeholder {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  vertical-align: top;
+  background-color: #fff;
+  border-radius: 20px;
+}
+
+.tutorial-left-panel .entity-placeholder .details-placeholder {
+  display: inline-block;
+  width: 100%;
+  max-width: calc(100% - 50px);
+  height: 40px;
+  margin-left: 5px;
+  border: 1px dashed #fff;
+}

@@ -156,12 +156,12 @@
 
 <script type="text/ng-template" id="start-new-trip-input-template">
   <div class="start-new-trip-form">
-    <div class="prompt">
+    <div class="prompt" ng-show="!hidePrompt">
       Where are you traveling?
     </div>
     <div>
       <input type="text" class="form-control"
-        placeholder="e.g. Paris, Thailand, New England"
+        placeholder="[[placeholder != undefined ? placeholder : 'e.g. Paris, Thailand, New England']]"
         ng-model="locationText"
         tc-google-place-autocomplete
         location-types="(regions)"
