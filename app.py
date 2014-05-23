@@ -40,7 +40,7 @@ app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
 @app.route('/')
 def index():
-    return redirect('/trip_plan')
+    return process_response(render_template('index.html'))
 
 @app.route('/intro')
 def splash():
