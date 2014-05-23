@@ -1,5 +1,5 @@
 <!doctype html>
-<html ng-app="splashApp">
+<html ng-app="introApp">
 <head>
   <title>TravelClipper</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -203,7 +203,7 @@
     }
   </style>
   <script>
-    function SplashCtrl($scope) {
+    function IntroCtrl($scope) {
       $scope.selectionState = {
         itemNum: 1,
         needsAutoScroll: 0
@@ -234,9 +234,7 @@
         restict: 'A',
         link: function(scope, element, attrs) {
           var elem = $(element);
-          console.log("linking");
           elem.on('scroll', function() {
-            console.log("scrolling");
             var itemNum = Math.round(elem.scrollTop() / elem.height()) + 1;
             scope.selectionState.itemNum = itemNum;
             scope.$apply();
@@ -245,13 +243,13 @@
       };
     }
 
-    angular.module('splashApp', [])
-      .controller('SplashCtrl', SplashCtrl)
+    angular.module('introApp', [])
+      .controller('IntroCtrl', IntroCtrl)
       .directive('tcScrollToItemOn', tcScrollToItemOn)
       .directive('tcWatchItemScrollState', tcWatchItemScrollState);
   </script>
 </head>
-<body ng-controller="SplashCtrl">
+<body ng-controller="IntroCtrl">
   <div class="items" tc-scroll-to-item-on="selectionState.needsAutoScroll"
     tc-watch-item-scroll-state>
     <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-TNneqoa8xgA/UspGreXteDI/AAAAAAAAmKQ/fxQ-eEBIlDc/w1282-h848-no/IMG_8197_8_9.jpg')">
