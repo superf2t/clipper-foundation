@@ -43,8 +43,12 @@ def index():
     return process_response(render_template('index.html'))
 
 @app.route('/intro')
-def splash():
+def intro():
     return process_response(render_template('intro.html'))
+
+@app.route('/intro2')
+def intro2():
+    return process_response(render_template('intro2.html'))
 
 @app.route('/get_clipper')
 def get_clipper():
