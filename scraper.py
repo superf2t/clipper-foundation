@@ -203,6 +203,9 @@ class TripAdvisorScraper(ScrapedPage):
         '^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$',
         ('^http(s)?://www\.tripadvisor\.com/Guide-.*\.html$', 
             ScrapedPage.result_page_expander('.//div[@id="GUIDE_DETAIL"]//div[@class="guideItemInfo"]//a[@class="titleLink"]'),
+            REQUIRES_SERVER_PAGE_SOURCE),
+        ('^http(s)?://www\.tripadvisor\.com/Attractions-.*\.html$',
+            ScrapedPage.result_page_expander('.//div[@id="ATTRACTION_OVERVIEW"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
             REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = 'body//h1'
@@ -1054,6 +1057,7 @@ if __name__ == '__main__':
         'http://www.tripadvisor.com/Hotel_Review-g298570-d301416-Reviews-Mandarin_Oriental_Kuala_Lumpur-Kuala_Lumpur_Wilayah_Persekutuan.html',
         'http://www.tripadvisor.com/Hotel_Review-g60713-d224953-Reviews-Four_Seasons_Hotel_San_Francisco-San_Francisco_California.html',
         'http://www.tripadvisor.com/Restaurant_Review-g60616-d1390699-Reviews-Hukilau_Lanai-Kapaa_Kauai_Hawaii.html',
+        'http://www.tripadvisor.com/Attractions-g255060-Activities-Sydney_New_South_Wales.html',
         'http://www.yelp.com/biz/mandarin-oriental-san-francisco-san-francisco-4',
         'http://www.yelp.com/biz/ikes-place-san-francisco',
         'http://www.hotels.com/hotel/details.html?tab=description&hotelId=336749',

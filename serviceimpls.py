@@ -322,7 +322,7 @@ class EntityService(service.Service):
             self.validation_errors.append(service.ServiceError.from_enum(
                 EntityServiceError.UNKNOWN_SITE, 'site_host'))
         self.raise_if_errors()
-        url = site.format_search_url(request.location_name,
+        url = site.resolve_search_url(request.location_name,
             request.location_latlng, request.query)
         default_max_results = 10
         entities = clip_logic.scrape_entities_from_url(url, force_fetch_page=True,
