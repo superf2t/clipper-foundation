@@ -46,10 +46,6 @@ def index():
 def intro():
     return process_response(render_template('intro.html'))
 
-@app.route('/intro2')
-def intro2():
-    return process_response(render_template('intro2.html'))
-
 # FIXME
 @app.route('/get_clipper')
 def get_clipper():
