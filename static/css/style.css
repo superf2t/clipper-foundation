@@ -1597,7 +1597,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content {
   width: calc(100% - 300px);
   max-width: 700px;
-  min-height: 250px;
+  min-height: 260px;
   max-height: calc(100% - 200px);
   overflow-y: auto;
   position: relative;
@@ -1613,7 +1613,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content-scroll-container {
   overflow-y: auto;
   position: relative;
-  min-height: 210px;
+  min-height: 220px;
 }
 
 .tutorial-map-panel .awesome {

@@ -81,6 +81,7 @@
   </div>
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
+    tc-transitionend="updateMap()"
     class-when-true="mid-panel-closed" after-complete="updateMap()"
     ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
     class="
@@ -96,7 +97,7 @@
     </div>
     {% endif %}
     {% if needs_tutorial %}
-    <div ng-include="'tutorial-map-panel-template'" ng-if="pageStateModel.inTutorial()">
+    <div ng-include="'tutorial-map-panel-template'" ng-show="pageStateModel.inTutorial()">
     </div>
     {% endif %}
   </div>
@@ -1284,13 +1285,13 @@
               Last thing and you're done!  There are 3 ways you can add places to your trip.
             </div>
             <div class="button-panel">
-              <button class="btn btn-primary" ng-click="skipTutorial()">
+              <button class="btn btn-primary" ng-click="closeTutorial()">
                 Finish
               </button>
             </div>
           </div>
           <div class="skip-link" ng-show="pageStateModel.tutorialState != TutorialState.START && pageStateModel.tutorialState != TutorialState.CONCLUSION">
-            <a ng-click="skipTutorial()" href="javascript:void(0)">
+            <a ng-click="closeTutorial()" href="javascript:void(0)">
               Skip tutorial
             </a>
           </div>

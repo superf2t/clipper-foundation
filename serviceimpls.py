@@ -136,13 +136,15 @@ class GoogleTextSearchToEntitiesRequest(service.ServiceRequest):
 
 class SiteSearchToEntitiesRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('site_host', 'location_name',
-        serializable.objf('location_latlng', data.LatLng), 'query')
+        serializable.objf('location_latlng', data.LatLng), 'query', 'max_results')
 
-    def __init__(self, site_host=None, location_name=None, location_latlng=None, query=None):
+    def __init__(self, site_host=None, location_name=None, location_latlng=None,
+            query=None, max_results=None):
         self.site_host = site_host
         self.location_name = location_name
         self.location_latlng = location_latlng
         self.query = query
+        self.max_results = max_results
 
 class GenericEntityResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
@@ -322,7 +324,9 @@ class EntityService(service.Service):
         self.raise_if_errors()
         url = site.format_search_url(request.location_name,
             request.location_latlng, request.query)
-        entities = clip_logic.scrape_entities_from_url(url, force_fetch_page=True)
+        default_max_results = 10
+        entities = clip_logic.scrape_entities_from_url(url, force_fetch_page=True,
+            max_results=request.max_results or default_max_results)
         return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)

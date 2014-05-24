@@ -1257,13 +1257,11 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.toggleMidPanel = function() {
     $pageStateModel.midPanelExpanded = !$pageStateModel.midPanelExpanded;
-    $timeout(function() {
-      google.maps.event.trigger($map, 'resize');
-    });
   };
 
   $scope.updateMap = function() {
     google.maps.event.trigger($map, 'resize');
+    $scope.$broadcast('mapresized');
   };
 
   google.maps.event.addListener($map, 'click', function() {
@@ -1434,7 +1432,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     startTripPlanModal.result.finally(function() {
       $pageStateModel.inNewTripPlanModal = false;
     });
-    $timeout($scope.updateMap, 300);  // HACK
   }
 
   var initialBounds = $tripPlanModel.getMapBounds();
@@ -3286,6 +3283,7 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
   };
 
   $scope.searchSite = function() {
+    $scope.searchResults = null;
     $scope.searching = true;
     $entityService.sitesearchtoentities($scope.selectedSiteState.site['host'],
       $tripPlanModel.tripPlanData)
@@ -3351,8 +3349,24 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
     $pageStateModel.tutorialState = TutorialState.CONCLUSION;
   };
 
-  $scope.skipTutorial = function() {
+  $scope.closeTutorial = function() {
     $pageStateModel.tutorialState = null;
+    if (!$tripPlanModel.isEmpty()) {
+      $pageStateModel.midPanelExpanded = true;
+      var deregister = $scope.$on('mapresized', function() {
+        var bounds = $tripPlanModel.getMapBounds();
+        bounds && $map.fitBounds(bounds);
+        deregister();
+      });
+    }
+    // Fit bounds twice.  To truly fit the bounds, we have to wait for
+    // the mid panel open and the map to resize to actually get all places
+    // in the viewport.  But if we wait to start that, the map visibly
+    // shifts to the left, then after 500ms starts adjusting to the bounds,
+    // which looks confusing.  So just for the sake of looking busy
+    // we start fitting bounds now only to do it again after the resize.    
+    var bounds = $tripPlanModel.getMapBounds();
+    bounds && $map.fitBounds(bounds);
   };
 }
 
@@ -4204,6 +4218,20 @@ function tcGoogleMap($timeout) {
   };
 }
 
+function tcTransitionend($parse) {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      var onEventFn = $parse(attrs.tcTransitionend);
+      element.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function(event) {
+        scope.$apply(function() {
+          onEventFn(scope, {$event: event});
+        });
+      });
+    }
+  };
+}
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -4254,6 +4282,7 @@ angular.module('directivesModule', [])
   .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
+  .directive('tcTransitionend', tcTransitionend)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 function makeFilter(fn) {
