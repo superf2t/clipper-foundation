@@ -8,6 +8,7 @@ import enums
 import geocode
 import google_places
 import kml_import
+import sample_sites
 from scrapers import trip_plan_creator
 import serializable
 import service
@@ -49,7 +50,7 @@ class OperationData(object):
         return [OperationData(op, field_path_prefix=field_path_prefix, index=i) for i, op in enumerate(operations)]
 
 
-EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS')
+EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS', 'UNKNOWN_SITE')
 
 class EntityGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
@@ -133,6 +134,16 @@ class GoogleTextSearchToEntitiesRequest(service.ServiceRequest):
         self.latlng = latlng
         self.max_results = max_results
 
+class SiteSearchToEntitiesRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('site_host', 'location_name',
+        serializable.objf('location_latlng', data.LatLng), 'query')
+
+    def __init__(self, site_host=None, location_name=None, location_latlng=None, query=None):
+        self.site_host = site_host
+        self.location_name = location_name
+        self.location_latlng = location_latlng
+        self.query = query
+
 class GenericEntityResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
         service.ServiceResponse.PUBLIC_FIELDS,
@@ -158,7 +169,8 @@ class EntityService(service.Service):
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
         ('urltoentities', UrlToEntitiesRequest, GenericMultiEntityResponse),
         ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
-        ('googletextsearchtoentities', GoogleTextSearchToEntitiesRequest, GenericMultiEntityResponse))
+        ('googletextsearchtoentities', GoogleTextSearchToEntitiesRequest, GenericMultiEntityResponse),
+        ('sitesearchtoentities', SiteSearchToEntitiesRequest, GenericMultiEntityResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -302,6 +314,18 @@ class EntityService(service.Service):
             response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)
 
+    def sitesearchtoentities(self, request):
+        site = sample_sites.find_site_by_host(request.site_host)
+        if not site:
+            self.validation_errors.append(service.ServiceError.from_enum(
+                EntityServiceError.UNKNOWN_SITE, 'site_host'))
+        self.raise_if_errors()
+        url = site.format_search_url(request.location_name,
+            request.location_latlng, request.query)
+        entities = clip_logic.scrape_entities_from_url(url, force_fetch_page=True)
+        return GenericMultiEntityResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=entities)
 
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 

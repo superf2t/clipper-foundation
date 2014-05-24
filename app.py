@@ -109,7 +109,7 @@ def trip_plan_by_id(trip_plan_id):
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     allow_editing = current_trip_plan and current_trip_plan.editable_by(session_info)
-    needs_tutorial = allow_editing and len(all_trip_plans) == 1
+    needs_tutorial = allow_editing and len(all_trip_plans) == 1 and not entities
     initial_state = data.InitialPageState(request.values.get('sort'),
         mid_panel_expanded=bool(entities), needs_tutorial=needs_tutorial)
     response = render_template('trip_plan.html',

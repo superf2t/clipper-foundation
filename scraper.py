@@ -1011,9 +1011,9 @@ def parse_tree_from_string(page_source_string):
 
 ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, ScrapedPage))
 
-def build_scrapers(url, client_page_source=None):
+def build_scrapers(url, client_page_source=None, force_fetch_page=False):
     page_source_tree = parse_tree_from_string(client_page_source) if client_page_source else None
-    if not page_source_tree and url_requires_server_page_source(url):
+    if not page_source_tree and (url_requires_server_page_source(url) or force_fetch_page):
         page_source_tree = parse_tree(url)
 
     scraped_pages = []

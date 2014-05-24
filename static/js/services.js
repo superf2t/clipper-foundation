@@ -106,6 +106,16 @@ function EntityService($http) {
     };
     return $http.post('/entityservice/googletextsearchtoentities', request);
   };
+
+  this.sitesearchtoentities = function(siteHost, tripPlanData, opt_query) {
+    var request = {
+      'site_host': siteHost,
+      'location_name': tripPlanData['location_name'],
+      'location_latlng': tripPlanData['location_latlng'],
+      'query': opt_query
+    };
+    return $http.post('/entityservice/sitesearchtoentities', request);
+  };
 }
 
 

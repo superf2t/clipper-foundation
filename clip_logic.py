@@ -13,8 +13,8 @@ def entity_from_scraper(scr, url):
         primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
         source_url=scr.get_url())
 
-def scrape_entities_from_url(url, page_source=None):
-    scrapers = scraper.build_scrapers(url, page_source)
+def scrape_entities_from_url(url, page_source=None, force_fetch_page=False):
+    scrapers = scraper.build_scrapers(url, page_source, force_fetch_page)
     return utils.parallelize(entity_from_scraper, [(scr, url) for scr in scrapers])
 
 def needs_client_page_source_to_scrape(url):

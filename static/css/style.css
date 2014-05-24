@@ -1646,8 +1646,85 @@ temporary hack that lines up the arrows a bit better for most pictures */
   position: relative;
 }
 
+.tutorial-map-panel .site-select .site-select-dropdown {
+  text-align: left;
+}
+
+.tutorial-map-panel .site-select .selected-site-button {
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+}
+
 .tutorial-map-panel .site-logo-img {
   max-height: 16px;
+}
+
+.tutorial-map-panel .searching-msg {
+  text-align: center;
+  font-size: 12pt;
+  margin-top: 20px;
+}
+
+.tutorial-map-panel .search-results {
+  text-align: center;
+}
+
+.tutorial-map-panel .search-result {
+  display: inline-block;
+  width: 50%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tutorial-map-panel .search-result .one-entity-listing:hover {
+  background-color: #bbb;
+}
+
+.tutorial-map-panel .search-result.saved {
+  background-color: rgb(39, 172, 113);
+}
+
+.tutorial-map-panel .skip-link {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+}
+
+.tutorial-map-panel .skip-link a,
+.tutorial-map-panel .email-skip-link a {
+  color: #428bca;
+}
+
+.tutorial-map-panel .skip-link a:hover,
+.tutorial-map-panel .email-skip-link a:hover {
+  color: #2D73A0;
+}
+
+.tutorial-map-panel .email-form {
+  width: 80%;
+  margin: 40px auto 10px auto;
+}
+
+.tutorial-map-panel .email-input {
+  width: calc(100% - 80px);
+}
+
+.tutorial-map-panel .email-skip-link {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.tutorial-map-panel .button-panel {
+  margin-top: 10px;
+  text-align: right;
+}
+
+.tutorial-map-panel button {
+  border-radius: 1px;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3)
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 .tutorial-left-panel .entity-placeholder {

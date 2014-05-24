@@ -1003,7 +1003,10 @@ var SidePanelMode = {
 
 var TutorialState = {
   START: 1,
-  ADD_INITIAL_PLACES: 2
+  ADD_INITIAL_PLACES: 2,
+  ADD_MORE_PLACES: 3,
+  ENTER_EMAIL: 4,
+  CONCLUSION: 5
 }
 
 function PageStateModel(grouping, midPanelExpanded, needsTutorial) {
@@ -1023,6 +1026,11 @@ function PageStateModel(grouping, midPanelExpanded, needsTutorial) {
     return !(this.inNewTripPlanModal || this.tutorialState == TutorialState.START);
   };
 
+  this.shouldShowTutorialLeftPanel = function() {
+    return this.tutorialState == TutorialState.START
+    || this.tutorialState == TutorialState.ADD_INITIAL_PLACES;
+  };
+
   this.shouldShowMidPanel = function() {
     return !(this.inNewTripPlanModal || this.inTutorial());
   };
@@ -1033,7 +1041,7 @@ function PageStateModel(grouping, midPanelExpanded, needsTutorial) {
 
   this.shouldShowAddPlaceButton = function() {
     return !(this.omniboxOpen || this.inAddPlacePanel() || this.inNewTripPlanModal
-      || this.inTutorial())
+      || this.inTutorial());
   };
 
   this.inEntityPanel = function() {
@@ -3245,10 +3253,17 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
   };
 }
 
-function TutorialCtrl($scope, $tripPlanService, $map,
-    $tripPlanModel, $pageStateModel, $document) {
+function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
+    $tripPlanModel, $pageStateModel, $sampleSites,
+    $accountInfo, $accountService, $document) {
   $scope.state = $pageStateModel.tutorialState;
+  $scope.tripPlanModel = $tripPlanModel;
   $scope.TutorialState = TutorialState;
+  $scope.sampleSites = $sampleSites
+  $scope.selectedSiteState = {site: $sampleSites[0]};
+  $scope.searchResults = null;
+  $scope.searching = false;
+  $scope.emailState = {email: null};
 
   $scope.placeSelected = function(tripPlanDetails) {
     $scope.saveSettings(tripPlanDetails, function() {
@@ -3268,6 +3283,74 @@ function TutorialCtrl($scope, $tripPlanService, $map,
         $document[0].title = response['trip_plans'][0]['name'];
         opt_callback && opt_callback()
       });
+  };
+
+  $scope.searchSite = function() {
+    $scope.searching = true;
+    $entityService.sitesearchtoentities($scope.selectedSiteState.site['host'],
+      $tripPlanModel.tripPlanData)
+      .success(function(response) {
+        $scope.searchResults = response['entities'];
+        $scope.searching = false;
+      });
+  };
+
+  $scope.selectResult = function(entity) {
+    if (entity.saved) {
+      return;
+    }
+    $entityService.saveNewEntity(entity, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.addNewEntities(response['entities']);
+          $scope.$emit('redrawgroupings');
+          $pageStateModel.tutorialState = TutorialState.ADD_MORE_PLACES;
+          entity.saved = true;
+        }
+      });
+  };
+
+  $scope.savedEntities = function() {
+    return _.filter($scope.searchResults, function(entity) {
+      return entity.saved;
+    });
+  };
+
+  $scope.doneAddingPlaces = function() {
+    if ($accountInfo['email']) {
+      $pageStateModel.tutorialState = TutorialState.CONCLUSION;
+    } else {
+      $pageStateModel.tutorialState = TutorialState.ENTER_EMAIL;      
+    }
+  };
+
+  $scope.submitEmail = function() {
+    $accountService.loginAndMigrate($scope.emailState.email)
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $accountInfo['email'] = $scope.emailState.email;
+          $tripPlanModel.tripPlanData['creator'] = $scope.emailState.email;
+          $pageStateModel.tutorialState = TutorialState.CONCLUSION;
+        } else {
+          var error = extractError(response, AccountServiceError.INVALID_EMAIL);
+          if (error) {
+            alert(error['message']);
+          } else {
+            alert('Login failed');
+          }
+        }
+      }).error(function() {
+        alert('Login failed');
+      });
+  };
+
+  $scope.skipEmail = function() {
+    $pageStateModel.tutorialState = TutorialState.CONCLUSION;
+  };
+
+  $scope.skipTutorial = function() {
+    $pageStateModel.tutorialState = null;
   };
 }
 

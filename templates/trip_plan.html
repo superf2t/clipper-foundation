@@ -56,7 +56,7 @@
       </div>
 
       {% if needs_tutorial %}
-      <div ng-include="'tutorial-left-panel-template'" ng-if="pageStateModel.inTutorial()">
+      <div ng-include="'tutorial-left-panel-template'" ng-if="pageStateModel.shouldShowTutorialLeftPanel()">
       </div>
       {% endif %}
     </div>
@@ -96,7 +96,7 @@
     </div>
     {% endif %}
     {% if needs_tutorial %}
-    <div ng-include="'tutorial-map-panel-template'">
+    <div ng-include="'tutorial-map-panel-template'" ng-if="pageStateModel.inTutorial()">
     </div>
     {% endif %}
   </div>
@@ -147,7 +147,7 @@
       <div class="left-buttons">
         <button class="btn"
           ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
-          ng-show="shouldShowAddPlaceButton()">
+          ng-show="pageStateModel.shouldShowAddPlaceButton()">
           Add Place
         </button>
         <button class="btn" ng-show="pageStateModel.inAddPlacePanel()"
@@ -1200,7 +1200,8 @@
             hide-prompt="true" placeholder="''">
           </div>
         </div>
-        <div ng-if="pageStateModel.tutorialState == TutorialState.ADD_INITIAL_PLACES">
+        <div ng-if="pageStateModel.tutorialState == TutorialState.ADD_INITIAL_PLACES
+          || pageStateModel.tutorialState == TutorialState.ADD_MORE_PLACES">
           <div class="text-lg">
             Great! Let's add a few places to your trip.
           </div>
@@ -1209,30 +1210,87 @@
           </div>
           <div class="site-select">
             <span class="site-select-inner">
-              <button class="btn btn-default dropdown-toggle">
-                Top restaurants from
-                <img class="site-logo-img" ng-src="//s3-media1.ak.yelpcdn.com/assets/2/www/img/e0bcd848f6ae/structural/header_logo.png"/>
+              <button class="btn btn-default dropdown-toggle selected-site-button">
+                [[selectedSiteState.site['prompt_text'] ]]
+                <img class="site-logo-img" ng-src="[[selectedSiteState.site['icon_url'] ]]"/>
                 <span class="caret"></span>
               </button>
-              <ul class="dropdown-menu">
-                <li>
-                  <a href="javascript:void(0)">
-                    Top attractions from
-                    <img class="site-logo-img" ng-src="http://www.logodesignlove.com/images/bad/trip-advisor-logo.jpg"/>
-                  </a>
-                </li>
-                <li>
-                  <a href="javascript:void(0)">
-                    Top rentals from
-                    <img class="site-logo-img" ng-src="http://insteading.com/wp-content/uploads/2011/08/airbnb.png"/>
+              <ul class="dropdown-menu site-select-dropdown">
+                <li ng-repeat="site in sampleSites">
+                  <a ng-click="selectedSiteState.site = site" href="javascript:void(0)">
+                    [[site['prompt_text'] ]]
+                    <img class="site-logo-img" ng-src="[[site['icon_url'] ]]"/>
+                    <span class="glyphicon glyphicon-ok" ng-show="selectedSiteState.site == site"></span>
                   </a>
                 </li>
               </ul>
-              <button class="btn">
+              <button ng-click="searchSite()" class="btn">
                 Go
               </button>
             </span>
           </div>
+          <div class="searching-msg" ng-show="searching">
+            <img ng-src="[[selectedSiteState.site['icon_url'] ]]" class="site-logo-img"/>
+            Searching [[selectedSiteState.site['display_name'] ]] for results in
+            [[tripPlanModel.tripPlanData['location_name'] ]]
+            <img ng-src="/static/img/spinner2.gif"/>
+          </div>
+          <div class="search-results" ng-if="searchResults">
+            <div>
+              Click on results to add them to your trip.
+            </div>
+            <div>
+              <span ng-repeat="entity in searchResults" class="search-result"
+                ng-class="{'saved': entity.saved}">
+                <tc-entity-listing entity-data="entity" on-select="selectResult($entityData)">
+                </tc-entity-listing>
+              </span>
+            </div>
+            <div class="button-panel">
+              <button class="btn btn-primary" ng-click="doneAddingPlaces()"
+                ng-disabled="!savedEntities().length">
+                Done adding places
+              </button>
+            </div>
+          </div>
+        </div>
+        <div ng-if="pageStateModel.tutorialState == TutorialState.ENTER_EMAIL">
+          <div class="text-lg">
+            Your trip is starting to look good!
+          </div>
+          <div class="text-md">
+            Now might be a good time to save this trip.  Enter you email so that you can
+            easily come back to this trip any time you want.
+          </div>
+          <form class="email-form form-inline" role="form" ng-submit="submitEmail()">
+            <input type="text" class="form-control email-input"
+              ng-model="emailState.email" tc-focus-on="pageStateModel.tutorialState"
+              placeholder="Enter your email address"/>
+            <button class="btn btn-primary" ng-disabled="!emailState.email">
+              Submit
+            </button>
+          </form>
+          <div class="email-skip-link">
+            I'll sign up later.
+            <a ng-click="skipEmail()" href="javascript:void">
+              Skip this step.
+            </a>
+          </div>
+        </div>
+        <div ng-if="pageStateModel.tutorialState == TutorialState.CONCLUSION">
+          <div class="text-lg">
+            Last thing and you're done!  There are 3 ways you can add places to your trip.
+          </div>
+          <div class="button-panel">
+            <button class="btn btn-primary" ng-click="skipTutorial()">
+              Finish
+            </button>
+          </div>
+        </div>
+        <div class="skip-link" ng-show="pageStateModel.tutorialState != TutorialState.START && pageStateModel.tutorialState != TutorialState.CONCLUSION">
+          <a ng-click="skipTutorial()" href="javascript:void(0)">
+            Skip tutorial
+          </a>
         </div>
       </div>
     </div>
