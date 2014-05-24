@@ -1237,7 +1237,7 @@
               [[tripPlanModel.tripPlanData['location_name'] ]]
               <img ng-src="/static/img/spinner2.gif"/>
             </div>
-            <div class="search-results" ng-if="searchResults">
+            <div class="search-results" ng-if="searchResults && searchResults.length">
               <div>
                 Click on results to add them to your trip.
               </div>
@@ -1254,6 +1254,14 @@
                   ng-disabled="!savedEntities().length">
                   Done adding places
                 </button>
+              </div>
+            </div>
+            <div ng-if="searchComplete && (!searchResults || !searchResults.length)">
+              <div class="no-results-msg">
+                No results found
+              </div>
+              <div class="no-results-expl">
+                Coverage of sites varies widely by country.  Please try another site.
               </div>
             </div>
           </div>

@@ -3260,6 +3260,7 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
   $scope.selectedSiteState = {site: $sampleSites[0]};
   $scope.searchResults = null;
   $scope.searching = false;
+  $scope.searchComplete = false;
   $scope.emailState = {email: null};
 
   $scope.placeSelected = function(tripPlanDetails) {
@@ -3284,12 +3285,14 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
 
   $scope.searchSite = function() {
     $scope.searchResults = null;
+    $scope.searchComplete = false;
     $scope.searching = true;
     $entityService.sitesearchtoentities($scope.selectedSiteState.site['host'],
       $tripPlanModel.tripPlanData)
       .success(function(response) {
         $scope.searchResults = response['entities'];
         $scope.searching = false;
+        $scope.searchComplete = true;
       });
   };
 

@@ -1696,6 +1696,16 @@ temporary hack that lines up the arrows a bit better for most pictures */
   right: 5px;
 }
 
+.tutorial-map-panel .no-results-msg {
+  text-align: center;
+  margin: 20px 0 10px 0;
+  font-size: 14pt
+}
+
+.tutorial-map-panel .no-results-expl {
+  text-align: center;
+}
+
 .tutorial-map-panel .skip-link {
   position: absolute;
   left: 0;
