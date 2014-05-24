@@ -1638,8 +1638,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
   font-size: 14pt;
 }
 
-.tutorial-map-panel .tex-md {
-  font-size: 12pt;
+.tutorial-map-panel .text-md {
+  font-size: 13pt;
+}
+
+.tutorial-map-panel .text-section {
+  margin: 20px 0;
 }
 
 .tutorial-map-panel .site-select {
