@@ -3299,6 +3299,7 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
     if (entity.saved) {
       return;
     }
+    entity.saving = true;
     $entityService.saveNewEntity(entity, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
@@ -3306,6 +3307,7 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
           $tripPlanModel.addNewEntities(response['entities']);
           $scope.$emit('redrawgroupings');
           $pageStateModel.tutorialState = TutorialState.ADD_MORE_PLACES;
+          entity.saving = false;
           entity.saved = true;
         }
       });

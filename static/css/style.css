@@ -1597,7 +1597,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content {
   width: calc(100% - 300px);
   max-width: 700px;
-  min-height: 230px;
+  min-height: 250px;
   max-height: calc(100% - 200px);
   overflow-y: auto;
   position: relative;
@@ -1608,6 +1608,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
   padding: 20px;
   color: #000;
   box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.5);
+}
+
+.tutorial-map-panel .content-scroll-container {
+  overflow-y: auto;
+  position: relative;
+  min-height: 210px;
 }
 
 .tutorial-map-panel .awesome {
@@ -1675,20 +1681,25 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 50%;
   text-align: left;
   cursor: pointer;
+  position: relative;
 }
 
 .tutorial-map-panel .search-result .one-entity-listing:hover {
   background-color: #bbb;
 }
 
-.tutorial-map-panel .search-result.saved {
-  background-color: rgb(39, 172, 113);
+.tutorial-map-panel .search-result .saving,
+.tutorial-map-panel .search-result .saved  {
+  color: rgb(39, 172, 113);
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
 }
 
 .tutorial-map-panel .skip-link {
   position: absolute;
-  left: 20px;
-  bottom: 20px;
+  left: 0;
+  bottom: 0;
 }
 
 .tutorial-map-panel .skip-link a,
