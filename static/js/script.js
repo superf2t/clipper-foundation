@@ -363,7 +363,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
 
 function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel,
-    $timeout, $map, $templateToStringRenderer, $window) {
+    $timeout, $map, $templateToStringRenderer, $markerMaker, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -475,20 +475,21 @@ function EntityCtrl($scope, $entityService, $modal,
   $scope.infowindowOpen = false;
 
   this.initializeMarker = function() {
-    var marker = entityModel.marker;
-    if (!marker) {
-      return;
-    }
-    marker.setMap($map);
-    annotationsOverlay = this.createAnnotationsOverlay(entityModel, marker);
-    google.maps.event.addListener(marker, 'click', function() {
-      $pageStateModel.selectedEntity = entityModel.data;
-      $pagePositionManager.scrollToEntity(entityModel.entityId());
-      $scope.$emit('asktocloseallinfowindows');
-      toolsOverlay = me.createToolsOverlay(marker);
-      $scope.infowindowOpen = true;
-      $scope.$apply();
-    });
+    // var marker = entityModel.marker;
+    // if (!marker) {
+    //   return;
+    // }
+    // marker.setMap($map);
+    // annotationsOverlay = this.createAnnotationsOverlay(entityModel, marker);
+    // google.maps.event.addListener(marker, 'click', function() {
+    //   $pageStateModel.selectedEntity = entityModel.data;
+    //   $pagePositionManager.scrollToEntity(entityModel.entityId());
+    //   $scope.$emit('asktocloseallinfowindows');
+    //   toolsOverlay = me.createToolsOverlay(marker);
+    //   $scope.infowindowOpen = true;
+    //   $scope.$apply();
+    // });
+    var htmlMarker = $markerMaker.newMarker(entityModel.gmapsLatLng(), $map);
   };
 
   this.createToolsOverlay = function(marker) {
@@ -784,6 +785,53 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
   $scope.suppressEvent = function($event) {
     $event.stopPropagation();
     $event.preventDefault();
+  };
+}
+
+HtmlMarker.prototype = new google.maps.OverlayView();
+
+function HtmlMarker(position, map, contentDiv) {
+  this.position = position;
+  this.map = map;
+  this.div = $('<div>').css('position', 'absolute').append(
+    $('<div>').css({
+      'position': 'absolute',
+      'bottom': 0
+    }).append(
+      $('<div>').css({
+        'position': 'relative',
+        'left': '-50%'
+      }).append(contentDiv)));
+  map && this.setMap(map);
+}
+
+// Override
+HtmlMarker.prototype.onAdd = function() {
+  this.getPanes().overlayMouseTarget.appendChild(this.div[0]);
+  this.div.click(function() {
+    console.log("clicked");
+  });
+};
+
+// Override
+HtmlMarker.prototype.draw = function() {
+  var overlayProjection = this.getProjection();
+  var point = overlayProjection.fromLatLngToDivPixel(this.position);
+  this.div.css({
+    'left': point.x,
+    'top': point.y
+  });
+};
+
+// Override
+HtmlMarker.prototype.onRemove = function() {
+  this.div.remove();
+};
+
+function MarkerMaker($templateToStringRenderer, $rootScope) {
+  this.newMarker = function(position, map) {
+    var contentDiv = $templateToStringRenderer.render('marker-base-template', $rootScope.$new(true))  ;
+    return new HtmlMarker(position, map, contentDiv);
   };
 }
 
@@ -4330,7 +4378,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
-      '$map', '$templateToStringRenderer', '$window', EntityCtrl])
+      '$map', '$templateToStringRenderer', '$markerMaker', '$window', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
       '$tripPlanModel', '$modal', '$window', GuideviewEntityCtrl])
     .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
@@ -4362,7 +4410,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntityListing', tcEntityListing)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
-    .service('$pagePositionManager', PagePositionManager);
+    .service('$pagePositionManager', PagePositionManager)
+    .service('$markerMaker', MarkerMaker);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);

@@ -1,0 +1,56 @@
+<style type="text/css">
+  .map-marker {
+    position: relative;
+  }
+
+  .map-marker .marker-shape {
+    width: 35px;
+    height: 55px;
+    transition: width 0.5s, height 0.5s;
+  }
+
+  .map-marker.lg .marker-shape {
+    width: 50px;
+    height: 79px;
+  }
+
+  .map-marker .marker-shape svg {
+    width: 100%;
+    height: 100%;
+    fill: #000;
+    cursor: pointer;
+  }
+
+  .map-marker.lg .marker-shape svg {
+    stroke: red;
+    stroke-width: 10px;
+    transition: stroke 0.5s, stroke-width 0.5s;
+  }
+
+  .map-marker .marker-icon {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    bottom: 48px;
+    color: #fff;
+    display: none;
+  }
+</style>
+
+<script type="text/ng-template" id="marker-base-template">
+  <div class="map-marker">
+    <div ng-include="'marker-shape-template'" class="marker-shape">
+    </div>
+    <div class="marker-icon">
+      <span class="glyphicon glyphicon-pencil"></span>
+    </div>
+  </div>
+</script>
+
+<script type="text/ng-template" id="marker-shape-template">
+  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+     viewBox="125.5 85 261 412" enable-background="new 125.5 85 261 412" xml:space="preserve">
+  <path d="M256,85c-72.1,0-130.5,58.4-130.5,130.5S182.6,371.3,256,497c73.4-125.7,130.5-209.4,130.5-281.5
+    S328.1,85,256,85z"/>
+  </svg>
+</script>
