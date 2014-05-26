@@ -614,6 +614,11 @@
           </span>
         </div>
       </span>
+      <tc-entity-marker map="map" marker="markerState.marker" position="position"
+        category-name="ed['category'] && ed['category']['name']"
+        selected="pageStateModel.entityIsSelected(ed['entity_id'])"
+        on-click="selectEntity(ed); openInfowindow()">
+      </tc-entity-marker>
     </div>
   </script>
 

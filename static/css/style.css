@@ -828,13 +828,11 @@ hr.dropdown-separator {
 }
 
 .infowindow {
-  width: 100%;
+  position: relative;
+  top: -79px;
 }
 
 .infowindow-internal {
-  position: absolute;
-  bottom: 38px;
-
   text-align: center;
   border-radius: 1px;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);

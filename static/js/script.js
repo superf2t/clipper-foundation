@@ -370,6 +370,10 @@ function EntityCtrl($scope, $entityService, $modal,
   $scope.editing = false;
   $scope.detailsExpanded = false;
 
+  $scope.map = $map;
+  $scope.position = entityModel.gmapsLatLng();
+  $scope.markerState = {marker: null};
+
   $scope.toggleDetails = function($event) {
     $scope.detailsExpanded = !$scope.detailsExpanded;
     $event.stopPropagation();
@@ -489,16 +493,14 @@ function EntityCtrl($scope, $entityService, $modal,
     //   $scope.infowindowOpen = true;
     //   $scope.$apply();
     // });
-    var htmlMarker = $markerMaker.newMarker(entityModel.gmapsLatLng(), $map);
+    //var htmlMarker = $markerMaker.newMarker(entityModel.gmapsLatLng(), $map);
   };
 
-  this.createToolsOverlay = function(marker) {
+  this.createToolsOverlay = function() {
     var scope = $scope.$new();
     var toolsDiv = $templateToStringRenderer.render('infowindow-template', scope);
-    var overlay = new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
-      toolsDiv, toolsDiv.find('.infowindow-internal'));
+    var overlay = new HtmlInfowindow($scope.markerState.marker, toolsDiv);
     scope.onSizeChange = function() {
-      overlay.reposition();
       overlay.panMap();
     };
     return overlay;
@@ -538,7 +540,7 @@ function EntityCtrl($scope, $entityService, $modal,
 
   $scope.openInfowindow = function() {
     $scope.$emit('asktocloseallinfowindows');
-    if (entityModel.marker) {
+    if (entityModel.hasLocation()) {
       toolsOverlay = me.createToolsOverlay(entityModel.marker);
       $scope.infowindowOpen = true;
     }
@@ -796,21 +798,22 @@ function HtmlMarker(position, map, contentDiv) {
   this.div = $('<div>').css('position', 'absolute').append(
     $('<div>').css({
       'position': 'absolute',
-      'bottom': 0
+      'bottom': 0,
+      'pointer-events': 'none'
     }).append(
       $('<div>').css({
         'position': 'relative',
-        'left': '-50%'
+        'left': '-50%',
+        'pointer-events': 'auto'
       }).append(contentDiv)));
+  var elem = $(contentDiv);
+  this.sizeDiv = elem.height() ? elem : $(elem.children()[0])
   map && this.setMap(map);
 }
 
 // Override
 HtmlMarker.prototype.onAdd = function() {
   this.getPanes().overlayMouseTarget.appendChild(this.div[0]);
-  this.div.click(function() {
-    console.log("clicked");
-  });
 };
 
 // Override
@@ -819,7 +822,8 @@ HtmlMarker.prototype.draw = function() {
   var point = overlayProjection.fromLatLngToDivPixel(this.position);
   this.div.css({
     'left': point.x,
-    'top': point.y
+    'top': point.y,
+    'z-index': point.y
   });
 };
 
@@ -828,12 +832,147 @@ HtmlMarker.prototype.onRemove = function() {
   this.div.remove();
 };
 
+HtmlMarker.prototype.getHeight = function() {
+  return this.sizeDiv.height();
+};
+
 function MarkerMaker($templateToStringRenderer, $rootScope) {
   this.newMarker = function(position, map) {
     var contentDiv = $templateToStringRenderer.render('marker-base-template', $rootScope.$new(true))  ;
     return new HtmlMarker(position, map, contentDiv);
   };
 }
+
+function tcEntityMarker() {
+  return {
+    restrict: 'AE',
+    scope: {
+      size: '=',
+      map: '=',
+      marker: '=',
+      position: '=',
+      categoryName: '=',
+      selected: '&',
+      onClick: '&'
+    },
+    templateUrl: 'marker-base-template',
+    controller: function($scope) {
+      $scope.getClasses = function() {
+        var classes = [];
+        if ($scope.categoryName) {
+          classes.push($scope.categoryName);
+        }
+        if ($scope.selected()) {
+          classes.push('selected');
+        }
+        return classes;
+      };
+    },
+    link: function(scope, element, attrs) {
+      scope.marker = new HtmlMarker(scope.position, scope.map, element[0]);
+    }
+  };
+}
+
+HtmlInfowindow.prototype = new google.maps.OverlayView();
+
+function HtmlInfowindow(marker, contentDiv) {
+  this.marker = marker;
+  this.sizeDiv = $('<div>').css({
+        'position': 'relative',
+        'left': '-50%',
+        'pointer-events': 'auto'
+      }).append(contentDiv);
+  this.div = $('<div>').css({
+      'position': 'absolute',
+      'pointer-events': 'none'
+    }).append(this.sizeDiv);
+  map && this.setMap(marker.map);
+}
+
+// Override
+HtmlInfowindow.prototype.onAdd = function() {
+  this.getPanes().floatPane.appendChild(this.div[0]);
+};
+
+// Override
+HtmlInfowindow.prototype.draw = function() {
+  var overlayProjection = this.getProjection();
+  var point = overlayProjection.fromLatLngToDivPixel(this.marker.position);
+  this.div.css({
+    'left': point.x,
+    'top': point.y - this.sizeDiv.height(),
+    'z-index': point.y
+  });
+  this.panMap();
+};
+
+// Override
+HtmlInfowindow.prototype.onRemove = function() {
+  this.div.remove();
+};
+
+HtmlInfowindow.prototype.panMap = function() {
+  // if we go beyond map, pan map
+  var map = this.getMap();
+  var bounds = map.getBounds();
+  if (!bounds) return;
+
+  // The position of the infowindow
+  var position = this.marker.position;
+
+  // The dimension of the infowindow
+  var iwWidth = this.sizeDiv.width();
+  var iwHeight = this.sizeDiv.height();
+
+  // The offset position of the infowindow
+  var iwOffsetX = this.sizeDiv.position().left;
+  var iwOffsetY = this.sizeDiv.position().top;
+
+  // Padding on the infowindow
+  var padX = 40;
+  var padY = 40;
+
+  // The degrees per pixel
+  var mapDiv = map.getDiv();
+  var mapWidth = mapDiv.offsetWidth;
+  var mapHeight = mapDiv.offsetHeight;
+  var boundsSpan = bounds.toSpan();
+  var longSpan = boundsSpan.lng();
+  var latSpan = boundsSpan.lat();
+  var degPixelX = longSpan / mapWidth;
+  var degPixelY = latSpan / mapHeight;
+
+  // The bounds of the map
+  var mapWestLng = bounds.getSouthWest().lng();
+  var mapEastLng = bounds.getNorthEast().lng();
+  var mapNorthLat = bounds.getNorthEast().lat();
+  var mapSouthLat = bounds.getSouthWest().lat();
+
+  // The bounds of the infowindow
+  var iwWestLng = position.lng() + (iwOffsetX - padX) * degPixelX;
+  var iwEastLng = position.lng() + (iwOffsetX + iwWidth + padX) * degPixelX;
+  var iwNorthLat = position.lat() - (iwOffsetY - padY) * degPixelY;
+  var iwSouthLat = position.lat() - (iwOffsetY + iwHeight + padY) * degPixelY;
+
+  // calculate center shift
+  var shiftLng =
+      (iwWestLng < mapWestLng ? mapWestLng - iwWestLng : 0) +
+      (iwEastLng > mapEastLng ? mapEastLng - iwEastLng : 0);
+  var shiftLat =
+      (iwNorthLat > mapNorthLat ? mapNorthLat - iwNorthLat : 0) +
+      (iwSouthLat < mapSouthLat ? mapSouthLat - iwSouthLat : 0);
+
+  // The center of the map
+  var center = map.getCenter();
+
+  // The new map center
+  var centerX = center.lng() - shiftLng;
+  var centerY = center.lat() - shiftLat;
+
+  // center the map to the new shifted center
+  map.panTo(new google.maps.LatLng(centerY, centerX));
+};
 
 /**
  * A somewhat generic overlay that is related to the position
@@ -4408,6 +4547,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntitySearchResult', tcEntitySearchResult)
     .directive('tcEntitySearchResultDetails', tcEntitySearchResultDetails)
     .directive('tcEntityListing', tcEntityListing)
+    .directive('tcEntityMarker', tcEntityMarker)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)

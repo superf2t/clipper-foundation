@@ -1,6 +1,7 @@
 <style type="text/css">
   .map-marker {
     position: relative;
+    cursor: pointer;
   }
 
   .map-marker .marker-shape {
@@ -8,22 +9,10 @@
     height: 55px;
     transition: width 0.5s, height 0.5s;
   }
-
-  .map-marker.lg .marker-shape {
-    width: 50px;
-    height: 79px;
-  }
-
   .map-marker .marker-shape svg {
     width: 100%;
     height: 100%;
-    fill: #000;
-    cursor: pointer;
-  }
-
-  .map-marker.lg .marker-shape svg {
-    stroke: red;
-    stroke-width: 10px;
+    padding-left: 3px;
     transition: stroke 0.5s, stroke-width 0.5s;
   }
 
@@ -31,18 +20,58 @@
     position: absolute;
     width: 100%;
     text-align: center;
-    bottom: 48px;
+    top: 18%;
+    left: -1px;
     color: #fff;
-    display: none;
+    font-size: 12pt;
+    transition: font-size 0.5s;
+  }
+
+  .map-marker.lodging svg {
+    fill: #456BE8;
+  }
+
+  .map-marker.food_and_drink svg {
+    fill: #D91848;
+  }
+
+  .map-marker.attractions svg {
+    fill: #50B0B2;
+  }
+
+  .map-marker.activities svg {
+    fill: #92BBFF;
+  }
+
+  .map-marker.shopping svg {
+    fill: #FEC569;
+  }
+
+  .map-marker.entertainment svg {
+    fill: #A957B2; 
+  }
+
+  .map-marker.selected svg {
+    stroke: #fff;
+    stroke-width: 20px;
+  }
+
+  .map-marker.selected .marker-shape {
+    width: 50px;
+    height: 79px;
+  }
+
+  .map-marker.selected .marker-icon {
+    font-size: 14pt;
   }
 </style>
 
 <script type="text/ng-template" id="marker-base-template">
-  <div class="map-marker">
+  <div class="map-marker" ng-class="getClasses()" ng-click="onClick()">
     <div ng-include="'marker-shape-template'" class="marker-shape">
     </div>
     <div class="marker-icon">
-      <span class="glyphicon glyphicon-pencil"></span>
+      <span class="glyphicon glyphicon-globe"></span>
     </div>
   </div>
 </script>
@@ -50,7 +79,14 @@
 <script type="text/ng-template" id="marker-shape-template">
   <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
      viewBox="125.5 85 261 412" enable-background="new 125.5 85 261 412" xml:space="preserve">
-  <path d="M256,85c-72.1,0-130.5,58.4-130.5,130.5S182.6,371.3,256,497c73.4-125.7,130.5-209.4,130.5-281.5
-    S328.1,85,256,85z"/>
+  <defs>
+    <filter id="f3" x="0" y="0" width="200%" height="200%">
+      <feOffset result="offOut" in="SourceAlpha" dx="20" dy="20" />
+      <feGaussianBlur result="blurOut" in="offOut" stdDeviation="10" />
+      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+    </filter>
+  </defs>
+    <path d="M256,85c-72.1,0-130.5,58.4-130.5,130.5S182.6,371.3,256,497c73.4-125.7,130.5-209.4,130.5-281.5
+    S328.1,85,256,85z" filter="url(#f3)"/>
   </svg>
 </script>
