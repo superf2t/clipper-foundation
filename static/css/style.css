@@ -15,6 +15,14 @@ a:hover {
   color: #2D73A0;
 }
 
+a.color-link {
+  color: #428bca;
+}
+
+a.color-link:hover {
+  color: #2D73A0;
+}
+
 .light-label {
   font-weight: 400;
 }
@@ -1663,6 +1671,8 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .tutorial-map-panel .site-logo-img {
   max-height: 16px;
+  position: relative;
+  top: -2px;
 }
 
 .tutorial-map-panel .searching-msg {
@@ -1734,6 +1744,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .email-skip-link {
   text-align: center;
   margin-bottom: 30px;
+}
+
+.tutorial-map-panel .last-thing {
+  margin-bottom: 15px;
 }
 
 .tutorial-map-panel .button-panel {

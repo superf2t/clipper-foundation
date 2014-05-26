@@ -1289,25 +1289,48 @@
             </div>
           </div>
           <div ng-if="pageStateModel.tutorialState == TutorialState.CONCLUSION">
-            <div class="text-lg">
+            <div class="text-md last-thing">
               Last thing and you're done!
-              <br/>
+            </div>
+            <div class="text-lg">
               There are 3 ways you can add places to your trip.
             </div>
             <div class="text-section">
               <div class="text-md">
-                Add places by searching for great places
+                Add places by searching
               </div>
               <div>
                 Click the 'Add Places' button to search Google Places or browse recommendations from popular travel websites.
+                <a ng-click="showSearchHelpDetails = !showSearchHelpDetails" href="javascript:void(0)" class="color-link">
+                  <span ng-show="!showSearchHelpDetails">
+                    Learn&nbsp;more&nbsp;&raquo;
+                  </span>
+                  <span ng-show="showSearchHelpDetails">
+                    Learn&nbsp;more&nbsp;&laquo;
+                  </span>
+                </a>
+              </div>
+              <div class="expanded-details" ng-show="showSearchHelpDetails">
+                More about searching
               </div>
             </div>
             <div class="text-section">
               <div class="text-md">
-                Add places by clipping from other users' trips
+                Add places by clipping from other trips
               </div>
               <div>
-                You can view other users’ trips to [[tripPlanModel.tripPlanData['location_name'] ]]. When you see a cafe, museum, or any other attraction that you like, look for the Clip button. You can instantly add that place to your trip too.
+                Browse trips from friends and travel experts.  When you see a place that looks interesting, look for the Clip button to instantly add it to your trip.
+                <a ng-click="showClippingHelpDetails = !showClippingHelpDetails" href="javascript:void(0)" class="color-link">
+                  <span ng-show="!showSearchHelpDetails">
+                    Learn&nbsp;more&nbsp;&raquo;
+                  </span>
+                  <span ng-show="showSearchHelpDetails">
+                    Learn&nbsp;more&nbsp;&laquo;
+                  </span>
+                </a>
+              </div>
+              <div class="expanded-details" ng-show="showClippingHelpDetails">
+                More about clipping
               </div>
             </div>
             <div class="text-section">
@@ -1315,7 +1338,18 @@
                 Add places while browsing the web
               </div>
               <div>
-                Want to add places from other websites like Yelp, TripAdvisor, and Airbnb? Use our bookmark to quickly add places to this trip even when visiting travel websites and travel blogs. Or you can copy and paste links and we’ll do our best to grab photos, descriptions, and location so you don’t have to.
+                While exploring other websites, use TravelClipper to import places of interest with a single click.
+                <a ng-click="showThirdPartyHelpDetails = !showThirdPartyHelpDetails" href="javascript:void(0)" class="color-link">
+                  <span ng-show="!showSearchHelpDetails">
+                    Learn&nbsp;more&nbsp;&raquo;
+                  </span>
+                  <span ng-show="showSearchHelpDetails">
+                    Learn&nbsp;more&nbsp;&laquo;
+                  </span>
+                </a>
+              </div>
+              <div class="expanded-details" ng-show="showThirdPartyHelpDetails">
+                More about working with third-party sites
               </div>
             </div>
             <div class="button-panel">
