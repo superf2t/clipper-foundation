@@ -1192,7 +1192,8 @@
       <div class="backdrop">
       </div>
       <div class="content">
-        <div class="content-scroll-container">
+        <div class="content-scroll-container"
+          ng-class="{'needs-min-height': pageStateModel.tutorialState != TutorialState.START}">
           <div ng-if="pageStateModel.tutorialState == TutorialState.START">
             <div class="awesome">Awesome! You're planning your first trip.</div>
             <div class="where-are-you-going">Where do you want to go?</div>
@@ -1238,7 +1239,7 @@
               <img ng-src="/static/img/spinner2.gif"/>
             </div>
             <div class="search-results" ng-if="searchResults && searchResults.length">
-              <div>
+              <div class="search-add-prompt">
                 Click on results to add them to your trip.
               </div>
               <div>

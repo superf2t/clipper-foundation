@@ -1600,7 +1600,6 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content {
   width: calc(100% - 300px);
   max-width: 700px;
-  min-height: 300px;
   max-height: calc(100% - 200px);
   overflow-y: auto;
   position: relative;
@@ -1616,7 +1615,14 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content-scroll-container {
   overflow-y: auto;
   position: relative;
+}
+
+.tutorial-map-panel .content-scroll-container.needs-min-height {
   min-height: 260px;
+}
+
+.tutorial-map-panel .start-new-trip-form .search-results {
+  text-align: left;
 }
 
 .tutorial-map-panel .awesome {
@@ -1683,6 +1689,11 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .tutorial-map-panel .search-results {
   text-align: center;
+}
+
+.tutorial-map-panel .search-results .search-add-prompt {
+  color: #777;
+  margin-bottom: 10px;
 }
 
 .tutorial-map-panel .search-result {
