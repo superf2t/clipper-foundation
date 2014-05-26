@@ -46,11 +46,10 @@ def index():
 def intro():
     return process_response(render_template('intro.html'))
 
-# FIXME
 @app.route('/get_clipper')
 def get_clipper():
     session_info = decode_session(request.cookies)
-    response = render_template('index.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
+    response = render_template('get_clipper.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
     return process_response(response, request, session_info)
 
 @app.route('/clipper_iframe')

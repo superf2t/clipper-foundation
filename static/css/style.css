@@ -15,6 +15,14 @@ a:hover {
   color: #2D73A0;
 }
 
+a.color-link {
+  color: #428bca;
+}
+
+a.color-link:hover {
+  color: #2D73A0;
+}
+
 .light-label {
   font-weight: 400;
 }
@@ -898,11 +906,6 @@ hr.dropdown-separator {
   height: 100%;
 }
 
-.marker-tools .editor-controls {
-  border-right: 1px solid #777;
-  margin-right: 3px;
-}
-
 .marker-annotations .star-annotation {
   position: absolute;
   top: -40px;
@@ -1597,7 +1600,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content {
   width: calc(100% - 300px);
   max-width: 700px;
-  min-height: 260px;
+  min-height: 300px;
   max-height: calc(100% - 200px);
   overflow-y: auto;
   position: relative;
@@ -1613,7 +1616,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content-scroll-container {
   overflow-y: auto;
   position: relative;
-  min-height: 220px;
+  min-height: 260px;
 }
 
 .tutorial-map-panel .awesome {
@@ -1668,6 +1671,8 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .tutorial-map-panel .site-logo-img {
   max-height: 16px;
+  position: relative;
+  top: -2px;
 }
 
 .tutorial-map-panel .searching-msg {
@@ -1686,6 +1691,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   text-align: left;
   cursor: pointer;
   position: relative;
+  vertical-align: top;
 }
 
 .tutorial-map-panel .search-result .one-entity-listing:hover {
@@ -1738,6 +1744,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .email-skip-link {
   text-align: center;
   margin-bottom: 30px;
+}
+
+.tutorial-map-panel .last-thing {
+  margin-bottom: 15px;
 }
 
 .tutorial-map-panel .button-panel {

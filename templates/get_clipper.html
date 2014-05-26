@@ -58,37 +58,19 @@
       top: 40px;
     }
 
-    .intro-text {
-      width: 70%;
-      text-align: center;
-      color: #fff;
-      position: absolute;
-      top: 20%;
-      -webkit-font-smoothing:antialiased;
-
-    }
-
-    .intro-text .intro-large {
-      font-size: 26pt;
-      margin-bottom: 15px;
-    }
-
-    .intro-text .intro-small {
-      font-size: 18pt;
-    }
-
     .cta-box {
       width: 360px;
-      height: 200px;
-      position: absolute;
-      left: 68%;
-      top: 32%;
+      height: 220px;
+      margin: auto;
       text-align: center;
+      position: relative;
+      top: 25%;
     }
 
     .cta-backdrop {
       background-color: #fff;
-      box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.5);
+      border-radius: 1px;
+      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.5);
       opacity: 0.8;
       width: 100%;
       height: 100%;
@@ -103,31 +85,22 @@
       color: #000;
     }
 
-    .build {
+    .text-main {
       font-size: 16pt;
     }
 
-    .start-button {
+    .bookmark-section {
       margin: 20px 0;
     }
 
-    .start-button .btn-primary {
+    .bookmarklet-link {
+      display: inline-block;
+      padding: 6px 12px;
+      border: 1px solid #357ebd;
       border-radius: 2px;
-      border: none;
-      font-size: 14pt;
-      padding: 10px 20px;
-      background-color: #4A90E2;
-    }
-
-    .start-button .btn-primary:hover {
-      background-color: #4569FF;
-    }
-
-    .login-prompt {
-      position: absolute;
-      bottom: 20px;
-      left: 0;
-      width: 100%;
+      background-color: #428bca;
+      color: #fff;
+      cursor: move;
     }
   </style>
 </head>
@@ -147,30 +120,26 @@
     </div>
   </nav>
   <div class="content">
-    <div class="intro-text">
-      <div class="intro-large">
-        Take the pain out of building your trip plan
-      </div>
-      <div class="intro-small">
-        Quickly add, organize, and map places of interest
-      </div>
-    </div>
     <div class="cta-box">
       <div class="cta-backdrop">
       </div>
       <div class="cta-content">
-        <div class="build">
-          Build your personal trip plan
+        <div class="text-main">
+          TravelClipper Bookmark
         </div>
-        <div class="start-button">
-          <a href="/intro">
-            <button class="btn btn-primary">
-              Start Planning
-            </button>
+        <div>
+          Drag this to your bookmarks bar
+        </div>
+        <div class="bookmark-section">
+          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
+          onclick="event.stopPropagation(); event.preventDefault()">
+            <span class="bookmarklet-link">
+              <span class="glyphicon glyphicon-paperclip"></span> Travel Clipper
+            </span>
           </a>
         </div>
-        <div class="login-prompt">
-          Already a member? <a href="/trip_plan">Login</a>
+        <div>
+          Click on the bookmark as you browse travel sites around the web to automatically import places to your trip plan.
         </div>
       </div>
     </div>
