@@ -40,7 +40,7 @@
       width: 40%;
       height: 50%;
       position: fixed;
-      top: 35%;
+      top: 25%;
       left: 30%;
       pointer-events: none;
     }
@@ -72,10 +72,12 @@
       position: absolute;
       width: 100%;
       margin: auto;
-      top: 20%;
+      top: 15%;
       color: #fff;
-      font-size: 24pt;
-      text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.75);
+      font-size: 2.4em;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
+      -webkit-font-smoothing:antialiased;
+
     }
 
     .skip-prompt {
@@ -83,10 +85,10 @@
       width: 100%;
       text-align: center;
       margin: auto;
-      top: 85%;
+      top: 75%;
       margin-top: 15px;
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.75);
-      font-size: 12pt;
+      font-size: 1.2em;
     }
 
     .skip-prompt a {
@@ -94,12 +96,12 @@
     }
 
     .skip-prompt a:hover {
-      color: #2D73A0;
+      text-decoration: underline;
     }
 
     .nav-controls {
       position: fixed;
-      top: 50%;
+      top: calc(50% - 53px);
       right: 30px;
     }
 
@@ -114,7 +116,7 @@
       width: 14px;
       border-radius: 7px;
       display: block;
-      box-shadow: 1px 1px 3px 1px #000;
+      box-shadow: 1px 1px 2px 0px #000;
     }
 
     .nav-controls .nav-circle:hover {
@@ -122,16 +124,18 @@
     }
 
     .nav-controls .nav-circle.selected {
-      background-color: #428bca !important;
+      background-color: #4A90E2 !important;
       transition: all 0.5s;
     }
 
     .text-lg {
-      font-size: 14pt;
+      font-size: 1.6em;
     }
 
     .text-md {
-      font-size: 13pt;
+      font-size: 1.2em;
+      color: #444444;
+
     }
 
     .center {
@@ -140,6 +144,7 @@
 
     .text-with-icon-row {
       width: 100%;
+      height: 40%;
       position: relative;
     }
 
@@ -166,7 +171,7 @@
     }
 
     .row-spacer {
-      height: 60px;
+      height: 10%;
     }
 
     .button-panel {
@@ -180,33 +185,37 @@
     .btn-primary {
       border-radius: 2px;
       border: none;
-      box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.7);
       font-size: 14pt;
+      padding: 10px 20px;
+      background-color: #4A90E2;
+    }
+
+    .btn-primary:hover {
+      background-color: #4569FF;
     }
 
     .item-1-header {
-      margin-bottom: 30px;
+      margin-bottom: 10px;
     }
 
     .item-1-list {
-      margin-left: 30px;
+      margin-left: 10px;
     }
 
-    .item-1-list p {
-      margin-bottom: 30px;
+    .item-1-list .list-step {
+      margin-bottom: 10px;
     }
 
-    .item-1-list .list-num {
-      display: inline-block;
-      padding-right: 15px;
-      color: #777;
+    #item-1-icon {
+      margin: 50% 0;
     }
 
     .plan-cta {
       position: absolute;
       left: 0;
       bottom: 0;
-      margin: 0 0 20px 20px;
+      margin: 0 0 20px 30px;
+      -webkit-font-smoothing:antialiased;
     }
   </style>
   <script>
@@ -277,13 +286,13 @@
 <body ng-controller="IntroCtrl">
   <div class="items" tc-scroll-to-item-on="selectionState.needsAutoScroll"
     tc-watch-item-scroll-state>
-    <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-TNneqoa8xgA/UspGreXteDI/AAAAAAAAmKQ/fxQ-eEBIlDc/w1282-h848-no/IMG_8197_8_9.jpg')">
+    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-hh0EGY0S1xU/UspIKgaSxkI/AAAAAAAAmKQ/eXE_TqbSc5s/w1276-h848-no/IMG_0883_4_5.jpg')">
     </div>
     <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg')">
     </div>
-    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-hh0EGY0S1xU/UspIKgaSxkI/AAAAAAAAmKQ/eXE_TqbSc5s/w1276-h848-no/IMG_0883_4_5.jpg')">
+    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-TG_39EmMvtQ/UspLX3y_4PI/AAAAAAAAmKQ/7Qt8GMIfKik/w1531-h1148-no/Aya+Sofia_tonemapped.jpg')">
     </div>
-    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-9zcI1HcYu4A/UspKjyx5zUI/AAAAAAAAmKQ/hsTDOubhydc/w1272-h848-no/IMG_8298_tonemapped.jpg')">
+    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-dUvax-DFq18/UspLNjkIPqI/AAAAAAAAmKQ/GiJIc25L_ac/w1531-h1148-no/IMG_5810_tonemapped.jpg')">
     </div>
   </div>
 
@@ -299,10 +308,38 @@
           <div class="text-lg center item-1-header">
             Use your trip plan to
           </div>
-          <div class="text-lg item-1-list">
-            <p><span class="list-num">1</span> Add points of interest</p>
-            <p><span class="list-num">2</span> Decide where to go</p>
-            <p><span class="list-num">3</span> Travel</p>
+          <div class="item-1-list">
+            <div class="text-with-icon-row">
+              <div class="text-section">
+                <div class="list-step">
+                  <div class="text-lg">
+                    <span class="list-num">1. Collect</span> 
+                  </div>
+                  <div class="text-md">
+                    Get ideas by quickly adding places from top travel sites and blogs to your trip
+                  </div>
+                </div>
+                <div class="list-step">
+                  <div class="text-lg">
+                    <span class="list-num">2. Decide</span>
+                  </div>
+                  <div class="text-md">
+                    Browse photos, view locations, and build an itinerary to decide where you really want to go
+                  </div>
+                </div>
+                <div class="list-step">
+                  <div class="text-lg">
+                    <span class="list-num">3. Travel</span>
+                  </div>
+                  <div class="text-md">
+                    Bring your finished plan with you on your iPhone or Android mobile phone or tablet
+                  </div>
+                </div>
+              </div>
+              <div class="icon-section">
+                <div ng-include="'plan-icon'" class="icon" id="item-1-icon"></div>
+              </div>
+            </div>
           </div>
           <div class="button-panel">
             <button class="btn btn-primary" ng-click="goToItem(2)">
@@ -340,7 +377,7 @@
           <div class="text-with-icon-row">
             <div class="text-section">
               <div class="text-lg">
-                View photos and learn about your places
+                View photos and read about your places
               </div>
               <div class="text-md">
                 We grab photos and descriptions from trusted sources so you don't have to
@@ -469,6 +506,23 @@
       </a>
     </div>
   </div>
+
+  <script type="text/ng-template" id="plan-icon">
+    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100px" height="100px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+    <g id="Captions" display="none">
+    </g>
+    <g id="Your_Icon">
+      <path d="M77.109,57.44c-7.671,0-13.89,6.22-13.89,13.89c0,7.672,13.89,26.67,13.89,26.67S91,79.002,91,71.33   C91,63.66,84.78,57.44,77.109,57.44z M77.109,79.109c-4.296,0-7.778-3.482-7.778-7.779c0-4.296,3.482-7.777,7.778-7.777   c4.297,0,7.778,3.481,7.778,7.777C84.888,75.627,81.406,79.109,77.109,79.109z"/>
+      <polygon points="37,54 18,34 18,71  "/>
+      <polygon points="44,48 62,33 62,11 18,11 18,21  "/>
+      <g>
+        <path d="M16.228,93c0,0-2.228,0-2.228-2.23s0-79.309,0-81.541C14,7,16.228,7,16.228,7h45.312C64.002,7,66,8.996,66,11.461V29    h13.307C83.77,29,86,32.539,86,37v17.123c1.868,0.974,3.553,2.242,5,3.746c0-12.176,0-16.168,0-19.826    c0-8.922-5.592-12.824-5.592-12.824L67.811,5.843c0,0-3.059-3.843-9.844-3.843c-5.76,0-41.422,0-41.422,0C12.863,2,9,5.089,9,8.77    v81.618C9,94.067,12.863,98,16.545,98h53.594c-1.011-1.574-2.064-3.261-3.11-5H16.228z"/>
+        <path d="M18,82v7h46.694c-3.737-6.643-6.868-13.485-6.868-17.776c0-3.557,0.98-6.877,2.66-9.737L52,52L18,82z"/>
+        <path d="M72,34L57,48l8.13,8.13c3.292-2.616,7.449-4.189,11.979-4.189c1.333,0,2.634,0.136,3.891,0.393V34H72z"/>
+      </g>
+    </g>
+    </svg>
+  </script>
 
   <script type="text/ng-template" id="map-icon">
     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"

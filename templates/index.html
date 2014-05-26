@@ -66,6 +66,8 @@
       color: #fff;
       position: absolute;
       top: 20%;
+      -webkit-font-smoothing:antialiased;
+
     }
 
     .intro-text .intro-large {
@@ -88,8 +90,7 @@
 
     .cta-backdrop {
       background-color: #fff;
-      border-radius: 1px;
-      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.5);
+      box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.5);
       opacity: 0.8;
       width: 100%;
       height: 100%;
@@ -115,9 +116,13 @@
     .start-button .btn-primary {
       border-radius: 2px;
       border: none;
-      box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.7);
       font-size: 14pt;
       padding: 10px 20px;
+      background-color: #4A90E2;
+    }
+
+    .start-button .btn-primary:hover {
+      background-color: #4569FF;
     }
 
     .login-prompt {
