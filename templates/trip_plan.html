@@ -1207,8 +1207,8 @@
             <div class="text-lg">
               Great! Let's add a few places to your trip.
             </div>
-            <div>
-              TravelClipper is good at making sense of the research you do on other websites.  Try selecting some results from top travel websites.
+            <div class="directions">
+              TravelClipper can organize and map places from other websites. Try searching for restaurants, lodging, and attractions from these sample sites.
             </div>
             <div class="site-select">
               <span class="site-select-inner">
@@ -1226,7 +1226,7 @@
                     </a>
                   </li>
                 </ul>
-                <button ng-click="searchSite()" class="btn">
+                <button ng-click="searchSite()" class="btn btn-primary">
                   Go
                 </button>
               </span>
@@ -1238,8 +1238,8 @@
               <img ng-src="/static/img/spinner2.gif"/>
             </div>
             <div class="search-results" ng-if="searchResults && searchResults.length">
-              <div>
-                Click on results to add them to your trip.
+              <div class="directions">
+                Click on places to add them to your trip. You can easily change your mind later.
               </div>
               <div>
                 <span ng-repeat="entity in searchResults" class="search-result">
@@ -1258,10 +1258,10 @@
             </div>
             <div ng-if="searchComplete && (!searchResults || !searchResults.length)">
               <div class="no-results-msg">
-                No results found
+                Uh oh. No results found.
               </div>
               <div class="no-results-expl">
-                Coverage of sites varies widely by country.  Please try another site.
+                This site doesn't have places for where you are going. Please try searching another site.
               </div>
             </div>
           </div>

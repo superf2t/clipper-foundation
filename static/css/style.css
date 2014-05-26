@@ -28,7 +28,13 @@ a.color-link:hover {
 }
 
 .btn-primary {
-  background-color: #4a90e2;
+  border-radius: 2px;
+  border: none;
+  background-color: #4A90E2;
+}
+
+.btn-primary:hover {
+  background-color: #288E8E;
 }
 
 .text-lodging {
@@ -1600,11 +1606,11 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content {
   width: calc(100% - 300px);
   max-width: 700px;
-  min-height: 300px;
-  max-height: calc(100% - 200px);
+  min-height: 340px;
+  max-height: calc(100% - 100px);
   overflow-y: auto;
   position: relative;
-  top: 150px;
+  top: 100px;
   margin: auto;
   background-color: #fff;
   border-radius: 2px;
@@ -1616,7 +1622,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .tutorial-map-panel .content-scroll-container {
   overflow-y: auto;
   position: relative;
-  min-height: 260px;
+  min-height: 300px;
 }
 
 .tutorial-map-panel .awesome {
@@ -1651,8 +1657,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .tutorial-map-panel .site-select {
   text-align: center;
-  margin: 10px 0;
+  margin: 20px 0;
   position: relative;
+}
+
+.tutorial-map-panel .directions {
+  font-size: 1.1em;
 }
 
 .tutorial-map-panel .site-select .site-select-inner {
@@ -1661,6 +1671,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .tutorial-map-panel .site-select .site-select-dropdown {
   text-align: left;
+  margin: 10px;
 }
 
 .tutorial-map-panel .site-select .selected-site-button {
