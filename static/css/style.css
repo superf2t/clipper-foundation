@@ -898,11 +898,6 @@ hr.dropdown-separator {
   height: 100%;
 }
 
-.marker-tools .editor-controls {
-  border-right: 1px solid #777;
-  margin-right: 3px;
-}
-
 .marker-annotations .star-annotation {
   position: absolute;
   top: -40px;
@@ -1686,6 +1681,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   text-align: left;
   cursor: pointer;
   position: relative;
+  vertical-align: top;
 }
 
 .tutorial-map-panel .search-result .one-entity-listing:hover {

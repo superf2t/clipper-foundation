@@ -1529,7 +1529,7 @@ function createMap(tripPlanData) {
   }
   var mapOptions = {
     center: center,
-    zoom: 2,
+    zoom: 3,
     panControl: false,
     scaleControl: true,
     streetViewControl: false,
@@ -3362,14 +3362,6 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
         deregister();
       });
     }
-    // Fit bounds twice.  To truly fit the bounds, we have to wait for
-    // the mid panel open and the map to resize to actually get all places
-    // in the viewport.  But if we wait to start that, the map visibly
-    // shifts to the left, then after 500ms starts adjusting to the bounds,
-    // which looks confusing.  So just for the sake of looking busy
-    // we start fitting bounds now only to do it again after the resize.    
-    var bounds = $tripPlanModel.getMapBounds();
-    bounds && $map.fitBounds(bounds);
   };
 }
 
