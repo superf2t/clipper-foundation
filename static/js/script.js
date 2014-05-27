@@ -3250,6 +3250,27 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
   };
 }
 
+var SAMPLE_SUPPORTED_SITES = _.map([
+  ['Yelp', 'http://www.yelp.com'],
+  ['TripAdvisor', 'http://www.tripadvisor.com'],
+  ['Foursquare', 'https://foursquare.com', 'https://foursquare.com/img/touch-icon-ipad-retina.png'],
+  ['Hotels.com', 'http://www.hotels.com'],
+  ['Airbnb', 'https://www.airbnb.com'],
+  ['Booking.com', 'http://www.booking.com'],
+  ['Hyatt', 'http://www.hyatt.com'],
+  ['Starwood Hotels', 'http://www.starwoodhotels.com'],
+  ['Hilton', 'http://www.hilton.com'],
+  ['Lonely Planet', 'http://www.lonelyplanet.com'],
+  ['Fodors', 'http://www.fodors.com'],
+  ['Wikipedia', 'http://en.wikipedia.org']
+], function(siteInfo) {
+  return {
+    name: siteInfo[0],
+    url: siteInfo[1],
+    iconUrl: siteInfo.length >= 3 ? siteInfo[2] : siteInfo[1] + '/favicon.ico'
+  };
+});
+
 function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
     $tripPlanModel, $pageStateModel, $sampleSites,
     $accountInfo, $accountService, $document) {
@@ -3262,6 +3283,8 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
   $scope.searching = false;
   $scope.searchComplete = false;
   $scope.emailState = {email: null};
+
+  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
 
   $scope.placeSelected = function(tripPlanDetails) {
     $scope.saveSettings(tripPlanDetails, function() {

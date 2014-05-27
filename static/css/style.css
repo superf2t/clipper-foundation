@@ -822,7 +822,7 @@ hr.dropdown-separator {
   border-radius: 1px;
   background-color: #fff;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3)
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
@@ -1664,6 +1664,25 @@ temporary hack that lines up the arrows a bit better for most pictures */
   margin: 20px 0;
 }
 
+.tutorial-map-panel .text-with-image-section {
+  margin: 20px 0;
+  position: relative;
+}
+
+.tutorial-map-panel .text-with-image-section .text-section {
+  width: 75%;
+  margin: 0;
+  display: inline-block;
+}
+
+.tutorial-map-panel .text-with-image-section .image-section {
+  width: calc(25% - 4px);
+  display: inline-block;
+  vertical-align: top;
+  text-align: center;
+  margin-top: 14px;
+}
+
 .tutorial-map-panel .site-select {
   text-align: center;
   margin: 20px 0;
@@ -1773,6 +1792,47 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .tutorial-map-panel .last-thing {
   margin-bottom: 15px;
+}
+
+.tutorial-map-panel .add-place-fake-button {
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3)
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+}
+
+.tutorial-map-panel .clip-icon {
+  font-size: 30pt;
+  padding: 0 3px;
+  opacity: 0.75;
+}
+
+.tutorial-map-panel .expanded-details {
+  margin-top: 10px;
+}
+
+.tutorial-map-panel .bookmarklet {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.tutorial-map-panel .bookmarklet-link {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid #357ebd;
+  border-radius: 2px;
+  background-color: #428bca;
+  color: #fff;
+  cursor: move;
+}
+
+.tutorial-map-panel .bookmarklet-help-text {
+  color: #777;
+}
+
+.tutorial-map-panel .sample-sites {
+  margin-bottom: 10px;
 }
 
 .tutorial-map-panel .button-panel {
