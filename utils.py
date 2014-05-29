@@ -2,6 +2,7 @@ import operator
 import Queue
 import re
 import threading
+import time
 
 def dict_from_attrs(objs, attr_name):
     attrgetter = operator.attrgetter(attr_name)
@@ -32,21 +33,53 @@ def coord_to_decimal(coord_str):
     sign = 1 if direction in ('N', 'E') else -1
     return sign * (degrees + minutes / 60.0 + seconds / 3600.0)
 
-def parallelize(fn, args_list):
+def parallelize(fn, args_list, max_threads=100, sleep_secs=None):
     queue = Queue.Queue()
     def target(args, index, queue):
         value = fn(*args)
         queue.put((value, index))
-    threads = [threading.Thread(target=target, args=(args, i, queue)) for i, args in enumerate(args_list)]
-    for thread in threads:
-        thread.start()
-    for thread in threads:
-        thread.join()
+
+    thread_pool = ThreadPool(max_threads, sleep_secs=sleep_secs)
+    for i, args in enumerate(args_list):
+        thread_pool.add_task(target, args, i, queue)
+    thread_pool.wait_for_completion();
+
     response = [None] * len(args_list)
     while not queue.empty():
         item = queue.get()
         response[item[1]] = item[0]
     return response
+
+class Worker(threading.Thread):
+    def __init__(self, tasks, sleep_secs=None):
+        threading.Thread.__init__(self)
+        self.tasks = tasks
+        self.daemon = True
+        self.sleep_secs = sleep_secs
+        self.start()
+
+    def run(self):
+        while True:
+            func, args, kwargs = self.tasks.get()
+            try:
+                func(*args, **kwargs)
+            except Exception as e:
+                print e
+            self.tasks.task_done()
+            if self.sleep_secs:
+                time.sleep(self.sleep_secs)
+
+class ThreadPool(object):
+    def __init__(self, num_threads, sleep_secs=None):
+        self.tasks = Queue.Queue(num_threads)
+        for _ in range(num_threads):
+            Worker(self.tasks, sleep_secs)
+
+    def add_task(self, func, *args, **kwargs):
+        self.tasks.put((func, args, kwargs))
+
+    def wait_for_completion(self):
+        self.tasks.join()
 
 def retryable(fn, retries, raise_on_fail=False):
     if retries < 1:
