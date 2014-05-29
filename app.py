@@ -79,11 +79,14 @@ def clipper_iframe():
 def trip_plan():
     session_info = decode_session(request.cookies)
     all_trip_plans = data.load_all_trip_plans(session_info)
-    if all_trip_plans:
+    if all_trip_plans and not request.values.get('tutorial'):
         trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
     else:
         trip_plan = create_and_save_default_trip_plan(session_info)
-    response = redirect('/trip_plan/%s' % trip_plan.trip_plan_id)
+    redirect_url = '/trip_plan/%s' % trip_plan.trip_plan_id
+    if request.values.get('tutorial'):
+        redirect_url += '?tutorial=1'
+    response = redirect(redirect_url)
     return process_response(response, request, session_info)
 
 @app.route('/trip_plan/<int:trip_plan_id>')
@@ -104,7 +107,8 @@ def trip_plan_by_id(trip_plan_id):
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     allow_editing = current_trip_plan and current_trip_plan.editable_by(session_info)
-    needs_tutorial = allow_editing and len(all_trip_plans) == 1 and not entities
+    needs_tutorial = (allow_editing and len(all_trip_plans) == 1 and not entities) or (
+        request.values.get('tutorial') and not entities)
     initial_state = data.InitialPageState(request.values.get('sort'),
         mid_panel_expanded=bool(entities), needs_tutorial=needs_tutorial)
     response = render_template('trip_plan.html',
