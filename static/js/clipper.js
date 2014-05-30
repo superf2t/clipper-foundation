@@ -75,7 +75,7 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
 
   $scope.startManualEntry = function() {
     var entityData = {
-      'icon_url': 'sight-2.png',
+      'icon_url': DEFAULT_ICON_URL,
       'source_url': getParameterByName('url')
     };
     $scope.addEntity(entityData);
@@ -202,42 +202,38 @@ function ClipperOmniboxCtrl($scope, $entityService) {
   };
 }
 
-var ClipperEntityEditState = {
-  NOT_EDITING: 0,
-  EDIT_NOTE: 1,
-  EDIT_PHOTOS: 2,
-  EDIT_LOCATION: 3
-};
-
 function ClipperEntityCtrl($scope, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.im = new ItemModel($scope.ed);
 
-  $scope.ClipperEntityEditState = ClipperEntityEditState;
-  $scope.editState = ClipperEntityEditState.NOT_EDITING;
+  $scope.editNotesState = {active: false};
+  $scope.editPhotosState = {active: false};
+  $scope.editLocationState = {active: !$scope.ed['name']};
+  var editorStates = [$scope.editNotesState, $scope.editPhotosState, $scope.editLocationState];
 
   $scope.isEditing = function() {
-    return $scope.editState != ClipperEntityEditState.NOT_EDITING;
+    return _.some(editorStates, function(state) {
+      return state.active;
+    });
   };
 
-  $scope.editNote = function() {
-    $scope.editState = ClipperEntityEditState.EDIT_NOTE;
-  };
-
-  $scope.editPhotos = function() {
+  $scope.startEditingPhotos = function() {
     $window.parent.postMessage('tc-photo-editing-active', '*');
-    $scope.editState = ClipperEntityEditState.EDIT_PHOTOS;
   };
 
-  $scope.editLocation = function() {
-    $scope.editState = ClipperEntityEditState.EDIT_LOCATION;
+  $scope.stopEditingPhotos = function() {
+    $window.parent.postMessage('tc-photo-editing-inactive', '*');
+  };
+
+  $scope.openEditor = function() {
+    $scope.editNotesState.active = true;
   };
 
   $scope.closeEditor = function() {
-    $window.parent.postMessage('tc-photo-editing-inactive', '*');
-    $scope.editState = ClipperEntityEditState.NOT_EDITING;
+    $scope.stopEditingPhotos();
+    _.each(editorStates, function(state) {state.active = false});
   };
 
   $scope.$on('closealleditors', function() {
@@ -327,9 +323,6 @@ function ClipperEntityPhotoCtrl($scope, $window) {
 
   $($window).on('message', function(event) {
     $scope.$apply(function() {
-      if ($scope.editState != ClipperEntityEditState.EDIT_PHOTOS) {
-        return;
-      }
       if (event.originalEvent.data['message'] == 'tc-image-dropped') {
         var imgUrl = event.originalEvent.data['data']['tc-drag-image-url'];
         if (imgUrl) {

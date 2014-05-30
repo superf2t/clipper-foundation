@@ -151,6 +151,10 @@ a:hover {
   color: #aaa;
 }
 
+.enter-manually-link {
+  margin-left: 10px;
+}
+
 .entity-results .select-all-link {
   text-align: right;
   margin-right: 10px;

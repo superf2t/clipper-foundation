@@ -46,11 +46,6 @@
         </div>
         <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
         </div>
-
-<!--         <div class="missing-add-place blue-links">
-          Missing a place?
-          <a ng-click="startManualEntry()" href="javascript:void(0)">Click to add</a>
-        </div> -->
       </div>
     </div>
 
@@ -103,7 +98,7 @@
       </div>
     </div>
     <div class="enter-manually-link">
-      <a ng-click="startManualEntry()" href="javascript:void(0)">
+      <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
         Or enter place manually
       </a>
     </div>
@@ -156,7 +151,7 @@
             </span>
           </div>
           <div class="edit-links">
-            <a ng-click="closeAllEditors(); editNote()" href="javascript:void(0)"
+            <a ng-click="closeAllEditors(); openEditor()" href="javascript:void(0)"
               class="color-link" ng-show="!isEditing()">
               <span class="glyphicon glyphicon-pencil"></span> Edit
             </a>
@@ -179,12 +174,12 @@
       </div>
       <div class="editor" ng-if="isEditing()">
         <tabset>
-          <tab heading="Notes" select="editNote()">
+          <tab heading="Notes" select="stopEditingPhotos()" active="editNotesState.active">
             <textarea ng-model="ed['description']" class="form-control description-input"
-              tc-focus-on="editState" placeholder="Add a note">
+              tc-focus-on="editNotesState.active" placeholder="Add a note">
             </textarea>
           </tab>
-          <tab heading="Photos" select="editPhotos()">
+          <tab heading="Photos" select="startEditingPhotos()" active="editPhotosState.active">
             <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor">
               <div ng-if="hasImgs()" class="photo-carousel">
                 <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
@@ -212,16 +207,16 @@
               </div>
             </div>
           </tab>
-          <tab heading="Name and Location" select="editLocation()">
+          <tab heading="Name and Location" select="stopEditingPhotos()" active="editLocationState.active">
             <div class="location-editor">
               <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
-                tc-focus-on="state"/>
+                tc-focus-on="editLocationState.active"/>
               <input class="form-control" ng-model="ed['address']" placeholder="Address"
                 tc-google-place-autocomplete search-bounds-json="activeTripPlan['location_bounds']"
                 location-types="geocode" on-place-change="addressSelected($newPlace)"/>
               <div class="map-container">
                 <div class="map" tc-google-map map="map" map-options="mapOptions" after-creation="setupMap($map)"
-                  resize-when="editState == ClipperEntityEditState.EDIT_LOCATION">
+                  resize-when="editLocationState.active">
                 </div>
               </div>
             </div>
