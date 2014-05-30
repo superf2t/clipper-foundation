@@ -46,8 +46,6 @@ def parallelize(fn, args_list, max_threads=50):
             value = fn(*args)
             out_queue.put((value, index))
 
-    print threading.enumerate()
-
     num_threads = min(len(args_list), max_threads) if max_threads else len(args_list)
     threads = []
     for _ in range(num_threads):
