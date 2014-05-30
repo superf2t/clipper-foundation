@@ -157,7 +157,7 @@ a:hover {
 }
 
 .one-entity-result {
-  padding: 7px 10px;
+  padding: 15px 10px;
   position: relative;
 }
 
@@ -167,6 +167,10 @@ a:hover {
 
 .one-entity-result.editing {
   background-color: #fff !important;
+}
+
+.one-entity-result.selected {
+  background-color: #dedede;
 }
 
 .one-entity-result .entity-circle-img {
@@ -199,17 +203,14 @@ a:hover {
   position: relative;
 }
 
-.one-entity-result .links {
+.one-entity-result .edit-links {
+  font-size: 10pt;
+}
+
+.one-entity-result .select-links {
   position: absolute;
   bottom: 3px;
   right: 10px;
-}
-
-.one-entity-result .links .select-link {
-  display: inline-block;
-  width: 80px;
-  margin-left: 10px;
-  text-align: right;
 }
 
 .one-entity-result .editor {
