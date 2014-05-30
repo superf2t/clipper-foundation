@@ -726,7 +726,7 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
   $scope.directionsPlannerActive = false;
   $scope.allEntities = $tripPlanModel.entities();
   $scope.directionsState = {
-    direction: 'to',
+    direction: 'from',
     destination: null
   };
 
