@@ -2232,80 +2232,6 @@ function tcEntityListing() {
   };
 }
 
-function EntityResultPhotoCtrl($scope, $window) {
-  if (_.isEmpty($scope.ed['photo_urls'])) {
-    $scope.ed['photo_urls'] = [];
-  }
-  var urls = $scope.ed['photo_urls'];
-  var selectedImgIndex = urls.length ? 0 : null;
-
-  if ($scope.inIframe) {
-    $($window).on('message', function(event) {
-      $scope.$apply(function() {
-        if ($scope.state != EntityResultState.EDITING_PHOTOS) {
-          return;
-        }
-        if (event.originalEvent.data['message'] == 'tc-image-dropped') {
-          var imgUrl = event.originalEvent.data['data']['tc-drag-image-url'];
-          if (imgUrl) {
-            urls.push(imgUrl);
-            selectedImgIndex = urls.length - 1;
-          } else {
-            alert("Sorry, we couldn't recognize that image!");
-          }
-        }
-      });
-    });
-  }
-
-  $scope.selectedImg = function() {
-    return urls[selectedImgIndex];
-  };
-
-  $scope.hasImgs = function() {
-    return urls.length > 0;
-  };
-
-  $scope.hasPrevImg = function() {
-    return selectedImgIndex > 0;
-  };
-
-  $scope.hasNextImg = function() {
-    return selectedImgIndex < (urls.length - 1);
-  };
-
-  $scope.prevImg = function() {
-    selectedImgIndex--;
-  };
-
-  $scope.nextImg = function() {
-    if ($scope.hasNextImg()) {
-      selectedImgIndex++;      
-    }
-  };
-
-  $scope.setAsPrimary = function() {
-    var url = urls.splice(selectedImgIndex, 1)[0];
-    urls.splice(0, 0, url);
-    selectedImgIndex = 0;
-  };
-
-  $scope.deletePhoto = function() {
-    urls.splice(selectedImgIndex, 1);
-    if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
-      selectedImgIndex--;
-    }
-  };
-}
-
-angular.module('entityResultModule', [])
-  .controller('EntityResultPhotoCtrl'['$scope', '$window', EntityResultPhotoCtrl])
-  .directive('tcEntityResult', tcEntityResult);
-
-//
-// End shared entity result handling
-//
-
 
 function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     $entityService, $dataRefreshManager) {
@@ -4331,8 +4257,9 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
 
-  angular.module('appModule', ['mapModule', 'initialDataModule', 'entityResultModule',
-      'servicesModule', 'directivesModule', 'filtersModule', 'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
+  angular.module('appModule', ['mapModule', 'initialDataModule', 
+      'servicesModule', 'directivesModule', 'filtersModule',
+      'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
       '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
