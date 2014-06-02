@@ -4,7 +4,6 @@
   <title>Travel Clipper</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
-  <!--<script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore-min.js"></script>-->
   <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
@@ -13,7 +12,7 @@
   <script src="/static/js/clipper.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/static/css/shared.css">
+  <link rel="stylesheet" href="/static/css/style.css">
   <link rel="stylesheet" href="/static/css/clipper.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
 </head>
@@ -25,38 +24,38 @@
     watch-expr="displayState.dirtyCounter">
     <div class="upper-panel">
       <div class="intro-text">
-        <span ng-if="entityModels.length > 1">
-          We found the following [[entityModels.length]] places:
+        <span ng-if="entities.length > 1">
+          We found the following [[entities.length]] places:
         </span>
-        <span ng-if="entityModels.length == 1">
+        <span ng-if="entities.length == 1">
           We found the following place:
         </span>
       </div>
 
       <div class="entity-results">
-        <div ng-if="entityModels.length > 1" ng-include="'select-all-checkbox-row-template'">
+        <div ng-show="entities.length > 1" class="select-all-link">
+          Select:
+          <a ng-click="selectAll()" href="javascript:void(0)"
+            class="color-link">
+            All
+          </a>
+          <a ng-click="deselectAll()" href="javascript:void(0)"
+            class="color-link">
+            None
+          </a>
         </div>
-        <div ng-repeat="entityModel in entityModels" tc-entity-result
-          show-checkboxes="entityModels.length > 1" entity-data="entityModel.data"
-          click-to-select="false" editable="true" in-iframe="true"
-          display-state="displayState"
-          active-trip-plan="selectedTripPlanState.tripPlan">
-        </div>
-
-        <div class="missing-add-place blue-links">
-          Missing a place?
-          <a ng-click="startManualEntry()" href="javascript:void(0)">Click to add</a>
+        <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
         </div>
       </div>
     </div>
 
     <div class="save-to-trip-plan-panel">
       <div class="save-prompt-text">
-        <span ng-if="entityModels.length > 1">
+        <span ng-if="entities.length > 1">
           Save [[selectedEntities().length]] selected places to a trip
         </span>
-        <span ng-if="entityModels.length == 1">
-          Save [[entityModels[0].data['name'] ]] to a trip
+        <span ng-if="entities.length == 1">
+          Save [[entities[0]['name'] ]] to a trip
         </span>
       </div>
       <div tc-trip-plan-select-dropdown
@@ -75,7 +74,7 @@
   <div ng-if="clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
     <div class="upper-panel">
       <div class="intro-text">
-        <span ng-if="entityModels.length == 0">
+        <span ng-if="entities.length == 0">
           Uh oh, we couldn't find the place(s) on this page.
           <br/>
           Help us help you by tagging this page with a place.
@@ -99,7 +98,7 @@
       </div>
     </div>
     <div class="enter-manually-link">
-      <a ng-click="startManualEntry()" href="javascript:void(0)">
+      <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
         Or enter place manually
       </a>
     </div>
@@ -134,18 +133,99 @@
     class="full-spinner">
   </div>
 
-  <script type="text/ng-template" id="select-all-checkbox-row-template">
-    <div class="select-all-checkbox-row">
-      <div class="checkbox-container">
-        <div ng-click="toggleSelectAll()" class="entity-checkbox">
-          <span class="glyphicon glyphicon-check" ng-show="allEntitiesSelected()"></span>
-          <span class="glyphicon glyphicon-unchecked" ng-show="!allEntitiesSelected()"></span>
-        </div>
+  <script type="text/ng-template" id="one-entity-result-template">
+    <div class="one-entity-result" ng-controller="ClipperEntityCtrl"
+      ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing()}">
+      <div class="summary">
+        <span class="entity-circle-img">
+          <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
+        </span>
+        <span class="entity-info">
+          <div class="name">
+            [[ed['name'] ]]
+          </div>
+          <div class="details">
+            <span ng-show="im.hasCategory()"
+              ng-class="'text-' + ed['category']['name']">
+              [[im.categoryDisplayText()]]
+            </span>
+          </div>
+          <div class="edit-links">
+            <a ng-click="closeAllEditors(); openEditor()" href="javascript:void(0)"
+              class="color-link" ng-show="!isEditing()">
+              <span class="glyphicon glyphicon-pencil"></span> Edit
+            </a>
+            <a ng-click="closeEditor()" href="javascript:void(0)"
+              class="color-link" ng-show="isEditing()">
+              <span class="glyphicon glyphicon-chevron-up"></span> Done
+            </a>
+          </div>
+          <div class="select-links" ng-show="entities.length > 1">
+            <a ng-click="ed.selected = true" href="javascript:void(0)"
+              class="color-link" ng-show="!ed.selected">
+              <span class="glyphicon glyphicon-plus"></span> Select
+            </a>
+            <a ng-click="ed.selected = false" href="javascript:void(0)"
+              class="color-link" ng-show="ed.selected">
+              <span class="glyphicon glyphicon-minus"></span> Deselect
+            </a>
+          </div>
+        </span>
+      </div>
+      <div class="editor" ng-if="isEditing()">
+        <tabset>
+          <tab heading="Notes" select="stopEditingPhotos()" active="editNotesState.active">
+            <textarea ng-model="ed['description']" class="form-control description-input"
+              tc-focus-on="editNotesState.active" placeholder="Add a note">
+            </textarea>
+          </tab>
+          <tab heading="Photos" select="startEditingPhotos()" active="editPhotosState.active">
+            <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor">
+              <div ng-if="hasImgs()" class="photo-carousel">
+                <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-chevron-left"></span>
+                </a>
+                <span class="carousel-img-container">
+                  <div class="img-overlay-control top">
+                    <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-picture"></span> Set as primary
+                    </a>
+                  </div>
+                  <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+                  <div class="img-overlay-control bottom">
+                    <a ng-click="deletePhoto()" href="javascript:void(0)">
+                      <span class="glyphicon glyphicon-trash"></span> Delete photo
+                    </a>
+                  </div>
+                </span>
+                <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+              </div>
+              <div class="imgs-prompt">
+                <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
+              </div>
+            </div>
+          </tab>
+          <tab heading="Name and Location" select="stopEditingPhotos()" active="editLocationState.active">
+            <div class="location-editor">
+              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
+                tc-focus-on="editLocationState.active"/>
+              <input class="form-control" ng-model="ed['address']" placeholder="Address"
+                tc-google-place-autocomplete search-bounds-json="activeTripPlan['location_bounds']"
+                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
+              <div class="map-container">
+                <div class="map" tc-google-map map="map" map-options="mapOptions" after-creation="setupMap($map)"
+                  resize-when="editLocationState.active">
+                </div>
+              </div>
+            </div>
+          </tab>
+        </tabset>
       </div>
     </div>
   </script>
 
-  {% include 'entity-result.html' %}
   {% include 'widgets.html' %}
 
   <script>

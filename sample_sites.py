@@ -36,6 +36,10 @@ SAMPLE_SITES = map(lambda vals: SampleSite(*vals), (
     ('www.tripadvisor.com', 'TripAdvisor', 'http://www.tripadvisor.com/favicon.ico',
         'http://www.tripadvisor.com/Search?q=%(location)s', 'Top attractions from TripAdvisor',
         lambda location_name, ll, query: crossreference.find_tripadvisor_attractions_url(location_name)),
+    ('www.foursquare.com', 'Foursquare' ,'https://foursquare.com/img/touch-icon-ipad-retina.png',
+        # Can also use ll= instead of near= to specify a latlng, but that form
+        # of the url seems to favor proximity more and returns lower quality results.
+        'https://foursquare.com/explore?near=%(location)s', 'Top places from Foursquare'),
     ('www.hotels.com', 'Hotels.com', 'http://www.hotels.com/favicon.ico',
         'http://www.hotels.com/search.do?resolvedLocation=GEO_LOCATION%%3A%(location)s%%7C%(lat).6f%%7C%(lng).6f%%3AGEOCODE%%3ALOW',
         'Top hotels from Hotels.com'),

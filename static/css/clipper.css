@@ -58,16 +58,6 @@ a:hover {
   font-size: 1.2em;
 }
 
-.select-all-checkbox-row {
-  position: relative;
-  top: 10px;
-}
-
-.clipper-body .one-entity-result-row,
-.clipper-body .select-all-checkbox-row {
-  margin: 10px;
-}
-
 .missing-add-place {
   margin: 20px 10px 0px 10px;
   font-size: 11pt;
@@ -162,17 +152,176 @@ a:hover {
 }
 
 .enter-manually-link {
-  position: absolute;
-  bottom: 20px;
-  text-align: center;
+  margin-left: 10px;
+}
+
+.entity-results .select-all-link {
+  text-align: right;
+  margin-right: 10px;
+}
+
+.one-entity-result {
+  padding: 15px 10px;
+  position: relative;
+}
+
+.one-entity-result:hover {
+  background-color: #ccc;
+}
+
+.one-entity-result.editing {
+  background-color: #fff !important;
+}
+
+.one-entity-result.selected {
+  background-color: #dedede;
+}
+
+.one-entity-result .entity-circle-img {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.one-entity-result .entity-circle-img img  {
   width: 100%;
-  font-size: 14pt;
+  height: 100%;
+  border-radius: 20px;
 }
 
-.enter-manually-link a {
-  color: #428bca;
+.one-entity-result .entity-info {
+  display: inline-block;
+  max-width: calc(100% - 44px);
 }
 
-.enter-manually-link a:hover {
+.one-entity-result .entity-info .name  {
+  line-height: 1.2;
+}
+
+.one-entity-result .entity-info .details {
+  font-size: 0.9em;
+}
+
+.one-entity-result .summary {
+  position: relative;
+}
+
+.one-entity-result .edit-links {
+  font-size: 10pt;
+}
+
+.one-entity-result .select-links {
+  position: absolute;
+  bottom: 3px;
+  right: 10px;
+}
+
+.one-entity-result .editor {
+  margin-top: 10px;
+  position: relative;
+}
+
+.one-entity-result .editor  .nav-tabs>li>a {
+  border-radius: 2px 2px 0 0;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.one-entity-result .editor .tab-content {
+  margin-top: 7px;
+}
+
+.one-entity-result .editor .description-input {
+  height: 150px;
+}
+
+.one-entity-result .photo-editor {
+  width: 100%;
+}
+
+.one-entity-result .photo-editor .imgs-prompt textarea {
+  margin: 10px;
+  width: calc(100% - 20px);
+  border: 1px dashed #ccc;
+  resize: none;
+  text-align: center;
+  padding: 10px;
+  background-color: #fff;
+  cursor: default;
+}
+
+.one-entity-result .photo-editor .photo-carousel {
+  width: 100%;
+  height: 150px;
+  text-align: center;
+  margin: 10px 0;
+  position: relative;
+}
+
+.one-entity-result .photo-carousel .carousel-img-container {
+  width: calc(100% - 30px);
+  height: 100%;
+  position: relative;
+  display: inline-block;
+}
+
+.one-entity-result .carousel-img-container .img-overlay-control {
+  position: absolute;
+  width: 100%;
+}
+
+.one-entity-result .carousel-img-container .img-overlay-control a {
+  color: #fff;
+}
+
+.one-entity-result .carousel-img-container .img-overlay-control a:hover {
   color: #2D73A0;
+}
+
+.one-entity-result .carousel-img-container .img-overlay-control.top {
+  top: 5px;
+}
+
+.one-entity-result .carousel-img-container .img-overlay-control.bottom {
+  bottom: 5px;
+}
+
+.one-entity-result .photo-carousel .carousel-img-container img {
+  max-width: 100%;
+  max-height: 100%;
+  cursor: pointer;
+  vertical-align: top;
+}
+
+.one-entity-result .photo-carousel .img-carousel-control {
+  position: absolute;
+  vertical-align: middle;
+  top: 50%;
+}
+
+.one-entity-result .photo-carousel .img-carousel-control.left {
+  left: 0;
+}
+
+.one-entity-result .photo-carousel .img-carousel-control.right {
+  right: 0;
+}
+
+.one-entity-result .location-editor {
+  width: 100%;
+}
+
+.one-entity-result .location-editor input {
+  margin-bottom: 10px;
+}
+
+.one-entity-result .map-container {
+  width: 100%;
+  height: 250px;
+}
+
+.one-entity-result .map {
+  width: 100%;
+  height: 100%;
 }

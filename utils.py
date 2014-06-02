@@ -2,6 +2,7 @@ import operator
 import Queue
 import re
 import threading
+import time
 
 def dict_from_attrs(objs, attr_name):
     attrgetter = operator.attrgetter(attr_name)
@@ -32,19 +33,31 @@ def coord_to_decimal(coord_str):
     sign = 1 if direction in ('N', 'E') else -1
     return sign * (degrees + minutes / 60.0 + seconds / 3600.0)
 
-def parallelize(fn, args_list):
-    queue = Queue.Queue()
-    def target(args, index, queue):
-        value = fn(*args)
-        queue.put((value, index))
-    threads = [threading.Thread(target=target, args=(args, i, queue)) for i, args in enumerate(args_list)]
-    for thread in threads:
+def parallelize(fn, args_list, max_threads=50):
+    in_queue = Queue.Queue()
+    out_queue = Queue.Queue()
+
+    for index, args in enumerate(args_list):
+        in_queue.put((args, index))
+
+    def target():
+        while not in_queue.empty():
+            args, index = in_queue.get()
+            value = fn(*args)
+            out_queue.put((value, index))
+
+    num_threads = min(len(args_list), max_threads) if max_threads else len(args_list)
+    threads = []
+    for _ in xrange(num_threads):
+        thread = threading.Thread(target=target)
+        threads.append(thread)
         thread.start()
     for thread in threads:
         thread.join()
+
     response = [None] * len(args_list)
-    while not queue.empty():
-        item = queue.get()
+    while not out_queue.empty():
+        item = out_queue.get()
         response[item[1]] = item[0]
     return response
 

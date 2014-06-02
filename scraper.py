@@ -380,6 +380,16 @@ class HotelsDotComScraper(ScrapedPage):
         carousel_thumbnails = self.root.findall('body//div[@id="hotel-photos"]//ol[@class="thumbnails"]//li//a')
         return [thumb.get('href') for thumb in carousel_thumbnails]
 
+    @fail_returns_none
+    def parse_latlng(self):
+        geo_meta = self.root.find('.//meta[@name="geo.position"]')
+        if geo_meta is not None:
+            lat, lng = map(float, geo_meta.get('content').split(','))
+            return {
+                'lat': lat,
+                'lng': lng
+                }
+
     @staticmethod
     def expand_using_hotel_id(url, ignored):
         hotel_id = urlparse.parse_qs(urlparse.urlparse(url.lower()).query)['hotelid'][0]
