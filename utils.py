@@ -48,7 +48,7 @@ def parallelize(fn, args_list, max_threads=50):
 
     num_threads = min(len(args_list), max_threads) if max_threads else len(args_list)
     threads = []
-    for _ in range(num_threads):
+    for _ in xrange(num_threads):
         thread = threading.Thread(target=target)
         threads.append(thread)
         thread.start()
