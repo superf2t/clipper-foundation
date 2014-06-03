@@ -809,6 +809,8 @@ function tcEntityMarker() {
     },
     templateUrl: 'marker-base-template',
     controller: function($scope) {
+      $scope.filterId = Math.floor(Math.random() * 1e9);
+
       $scope.getClasses = function() {
         var classes = [];
         if ($scope.categoryName) {
