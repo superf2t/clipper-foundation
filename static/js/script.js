@@ -804,6 +804,7 @@ function tcEntityMarker() {
       marker: '=',
       position: '=',
       categoryName: '=',
+      precise: '=',
       selected: '&',
       onClick: '&'
     },

@@ -53,7 +53,7 @@
 
   .map-marker.selected svg {
     stroke: #fff;
-    stroke-width: 20px;
+    stroke-width: 10px;
   }
 
   .map-marker.selected .marker-shape {
@@ -68,7 +68,8 @@
 
 <script type="text/ng-template" id="marker-base-template">
   <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
-    <div ng-include="'marker-shape-template'" class="marker-shape">
+    <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
+      class="marker-shape">
     </div>
     <div class="marker-icon">
       <span class="glyphicon glyphicon-globe"></span>
@@ -76,17 +77,31 @@
   </div>
 </script>
 
-<script type="text/ng-template" id="marker-shape-template">
-  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-     viewBox="125.5 85 261 412" enable-background="new 125.5 85 261 412" xml:space="preserve">
-  <defs>
-    <filter id="[[filterId]]" x="0" y="0" width="200%" height="200%">
-      <feOffset result="offOut" in="SourceAlpha" dx="20" dy="20" />
-      <feGaussianBlur result="blurOut" in="offOut" stdDeviation="10" />
-      <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
-    </filter>
-  </defs>
-    <path d="M256,85c-72.1,0-130.5,58.4-130.5,130.5S182.6,371.3,256,497c73.4-125.7,130.5-209.4,130.5-281.5
-    S328.1,85,256,85z" filter="url(#[[filterId]])"/>
+<script type="text/ng-template" id="marker-precise-shape-template">
+  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+     viewBox="197 74 175 251" enable-background="new 197 74 175 251" xml:space="preserve">
+    <defs>
+      <filter id="[[filterId]]" x="0" y="0" width="200%" height="200%">
+        <feOffset result="offOut" in="SourceAlpha" dx="10" dy="10" />
+        <feGaussianBlur result="blurOut" in="offOut" stdDeviation="10" />
+        <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+      </filter>
+    </defs>
+    <path d="M284.5,85c-42,0-76,34-76,76s33.3,90.8,76,164c42.8-73.2,76-122,76-164S326.5,85,284.5,85z" filter="url(#[[filterId]])"/>
   </svg>
 </script>
+
+<script type="text/ng-template" id="marker-imprecise-shape-template">
+  <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+     viewBox="197 74 175 251" enable-background="new 197 74 175 251" xml:space="preserve">
+    <defs>
+      <filter id="[[filterId]]" x="0" y="0" width="200%" height="200%">
+        <feOffset result="offOut" in="SourceAlpha" dx="10" dy="10" />
+        <feGaussianBlur result="blurOut" in="offOut" stdDeviation="10" />
+        <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
+      </filter>
+    </defs>
+    <circle cx="284.5" cy="159.5" r="76" filter="url(#[[filterId]])"/>
+  </svg>
+</script>
+
