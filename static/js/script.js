@@ -341,7 +341,11 @@ function EntityCtrl($scope, $entityService, $modal,
 
   $scope.map = $map;
   $scope.position = entityModel.gmapsLatLng();
-  $scope.markerState = {marker: null};
+  $scope.markerState = {
+    marker: null,
+    emphasized: false,
+    deemphasized: false
+  };
 
   $scope.toggleDetails = function($event) {
     $scope.detailsExpanded = !$scope.detailsExpanded;
@@ -482,6 +486,14 @@ function EntityCtrl($scope, $entityService, $modal,
     var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
     var selected = categorySelected && daySelected;
     $scope.markerState.marker.setMap(selected ? $map : null);
+    if (filterModel.emphasisActive()) {
+      var dayEmphasized = $scope.ed['day'] && ($scope.ed['day'] == filterModel.emphasizedDayNumber);
+      $scope.markerState.emphasized = dayEmphasized;
+      $scope.markerState.deemphasized = !dayEmphasized;
+    } else {
+      $scope.markerState.emphasized = false;
+      $scope.markerState.deemphasized = false;
+    }
     //annotationsOverlay && annotationsOverlay.setMap(selected ? $map : null);
     if (!selected) {
       me.destroyInfowindow();
@@ -509,6 +521,10 @@ function EntityCtrl($scope, $entityService, $modal,
   $scope.$on('closeallinfowindows', function() {
     $scope.infowindowOpen = false;
     me.destroyInfowindow();
+  });
+
+  $scope.$on('emphasizemarkers', function() {
+    $scope.markerState.emphasized = true;
   });
 }
 
@@ -714,6 +730,7 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
 
   $scope.closeDayPlanner = function() {
     $scope.dayPlannerActive = false;
+    $timeout($scope.onSizeChange);
   };
 
   $scope.toggleDirections = function() {
@@ -726,6 +743,7 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
 
   $scope.closeDirections = function() {
     $scope.directionsPlannerActive = false;
+    $timeout($scope.onSizeChange);
   };
 
   $scope.suppressEvent = function($event) {
@@ -805,6 +823,8 @@ function tcEntityMarker() {
       position: '=',
       categoryName: '=',
       precise: '=',
+      emphasized: '=',
+      deemphasized: '=',
       selected: '&',
       onClick: '&'
     },
@@ -819,6 +839,12 @@ function tcEntityMarker() {
         }
         if ($scope.selected()) {
           classes.push('selected');
+        }
+        if ($scope.emphasized) {
+          classes.push('emphasized');
+        }
+        if ($scope.deemphasized) {
+          classes.push('deemphasized');
         }
         return classes;
       };
@@ -1323,6 +1349,7 @@ function processIntoGroups(grouping, items) {
 function FilterModel() {
   this.selectedCategoryNames = {};
   this.selectedDayNumbers = {};
+  this.emphasizedDayNumber = null;
 
   this.isCategorySelected = function(category) {
     return this.selectedCategoryNames[category['name']] != false;
@@ -1351,14 +1378,19 @@ function FilterModel() {
       this.selectedDayNumbers[dayNumber] = false;
     }
   };
+
+  this.emphasisActive = function() {
+    return this.emphasizedDayNumber != null;
+  };
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $pageStateModel, $searchResultState, $entityService, $allowEditing, $sce) {
+    $map, $pageStateModel, $filterModel, $searchResultState, $entityService, $allowEditing, $sce) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
   $scope.planModel = $tripPlanModel;
+  $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
   $scope.accountDropdownOpen = false;
   $scope.refreshState = {
@@ -1387,8 +1419,19 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     opt_callback && opt_callback();
   });
 
-  $scope.broadcastFilters = function(filterModel) {
-    $scope.$broadcast('filtersupdated', filterModel);
+  $scope.broadcastFilters = function() {
+    $scope.$broadcast('filtersupdated', $filterModel);
+  };
+
+  $scope.emphasizeDay = function(dayNumber) {
+    $filterModel.emphasizedDayNumber = dayNumber;
+    $scope.$broadcast('filtersupdated', $filterModel);
+  };
+
+  $scope.resetMapState = function() {
+    $map.fitBounds($tripPlanModel.getMapBounds());
+    $filterModel.emphasizedDayNumber = null;
+    $scope.broadcastFilters();
   };
 
   $scope.toggleMidPanel = function() {
@@ -1763,13 +1806,12 @@ function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
   };
 }
 
-function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy) {
+function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy, $filterModel) {
   $scope.typesExpanded = false;
   $scope.daysExpanded = false;
 
   $scope.categories = $taxonomy.allCategories();
   $scope.dayNumbers = _.range(1, $tripPlanModel.dayPlannerModel.numDays() + 1);
-  $scope.filterModel = new FilterModel();
 
   $scope.suppress = function($event) {
     $event.stopPropagation();
@@ -4242,6 +4284,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
     .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
+    .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
@@ -4255,10 +4298,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       'servicesModule', 'directivesModule', 'filtersModule',
       'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
-    .controller('RootCtrl', ['$scope', '$http', '$timeout', '$modal',
-      '$tripPlanService', '$tripPlanModel', '$tripPlan', '$map', '$pageStateModel',
-      '$searchResultState', '$entityService', '$allowEditing', '$sce', RootCtrl])
-    .controller('OrganizeMenuCtrl', ['$scope', '$tripPlanModel', '$taxonomy', OrganizeMenuCtrl])
+    .controller('RootCtrl', RootCtrl)
+    .controller('OrganizeMenuCtrl', OrganizeMenuCtrl)
     .controller('BulkClipCtrl', BulkClipCtrl)
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])

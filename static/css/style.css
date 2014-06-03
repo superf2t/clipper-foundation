@@ -178,6 +178,7 @@ hr.dropdown-separator {
 #trip-plan-header .controls {
   padding: 5px 10px;
   background-color: #222;
+  position: relative;
 }
 
 #trip-plan-header .controls.fixed {
@@ -204,6 +205,21 @@ hr.dropdown-separator {
 
 #trip-plan-header .organize-dropdown a:hover {
   background-color: #ccc;
+}
+
+#trip-plan-header .controls .reset-control {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  display: none;
+}
+
+#trip-plan-header .controls:hover .reset-control {
+  display: block;
+}
+
+#trip-plan-header .controls:hover .reset-control a:hover {
+  color: #2D73A0;
 }
 
 /* Map View */
@@ -249,7 +265,7 @@ hr.dropdown-separator {
 }
 
 .item-group-header .item-group-controls a:hover {
-  color: #2D73A0;;
+  color: #2D73A0;
 }
 
 .one-entity-leftnav {

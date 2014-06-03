@@ -557,7 +557,7 @@
         <span ng-include="'item-group-header-text-template'"></span>
       </h4>
       <div class="item-group-controls" ng-show="pageStateModel.isGroupByDay()">
-        <a ng-click="centerMapOnGroup()" href="javascript:void(0)">
+        <a ng-click="emphasizeDay(itemGroupModel.groupKey); centerMapOnGroup()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-screenshot"></span>
         </a>
       </div>
@@ -616,6 +616,7 @@
         category-name="ed['category'] && ed['category']['name']"
         selected="pageStateModel.entityIsSelected(ed['entity_id'])"
         precise="ed['address_precision'] == 'Precise'"
+        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
         on-click="markerClicked($event)">
       </tc-entity-marker>
     </div>
@@ -829,7 +830,7 @@
             </a>
             <ul ng-show="typesExpanded">
               <li ng-repeat="category in categories">
-                <a ng-click="filterModel.toggleCategory(category); broadcastFilters(filterModel)" href="javascript:void(0)">
+                <a ng-click="filterModel.toggleCategory(category); broadcastFilters()" href="javascript:void(0)">
                   [[category['display_name'] ]]
                   <span ng-show="filterModel.isCategorySelected(category)" class="glyphicon glyphicon-ok"></span>
                 </a>
@@ -845,7 +846,7 @@
             </a>
             <ul ng-show="daysExpanded">
               <li ng-repeat="dayNumber in dayNumbers">
-                <a ng-click="filterModel.toggleDay(dayNumber); broadcastFilters(filterModel)" href="javascript:void(0)">
+                <a ng-click="filterModel.toggleDay(dayNumber); broadcastFilters()" href="javascript:void(0)">
                   Day [[dayNumber]]
                   <span ng-show="filterModel.isDaySelected(dayNumber)" class="glyphicon glyphicon-ok"></span>
                 </a>
@@ -853,6 +854,11 @@
             </ul>
           </li>
         </ul>
+        <div class="reset-control">
+          <a ng-click="resetMapState()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-screenshot"></span>
+          </a>
+        </div>
       </div>
     </div>
   </script>
