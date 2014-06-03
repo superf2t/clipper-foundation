@@ -74,30 +74,6 @@ function EntityModel(entityData, editable) {
     return this.data['description'] && this.data['description'].length;
   };
 
-  this.clearMarker = function() {
-    if (this.marker) {
-      this.marker.setMap(null);
-      this.marker = null;
-    }
-  };
-
-  this.makeMarker =  function() {
-    var entity = this.data;
-    if (!entity['latlng']) {
-      return null;
-    }
-    var latlng = this.gmapsLatLng();
-    var entityName = entity['name'];
-    var markerData = {
-      position: latlng,
-      map: null,
-      title: entityName,
-      icon: '/static/img/map-icons/' + entity['icon_url'],
-      draggable: editable
-    };
-    return new google.maps.Marker(markerData);
-  }
-
   this.isPreciseLocation = function() {
     return this.data['address_precision'] == 'Precise';
   };
@@ -109,8 +85,6 @@ function EntityModel(entityData, editable) {
   this.gmapsLatLng = function() {
     return new google.maps.LatLng(this.data['latlng']['lat'], this.data['latlng']['lng']);
   };
-
-  this.marker = this.makeMarker();
 }
 
 function TripPlanModel(tripPlanData, entityDatas, notes) {
