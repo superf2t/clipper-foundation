@@ -343,11 +343,6 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
     $scope.show = selected;
   });
 
-  $scope.toggleSection = function() {
-    $scope.show = !$scope.show;
-    $scope.$broadcast('togglemarkers', $scope.show);
-  };
-
   $scope.centerMapOnGroup = function() {
     var bounds = new google.maps.LatLngBounds()
     $.each($scope.itemGroupModel.getEntityItems(), function(i, item) {
@@ -474,42 +469,24 @@ function EntityCtrl($scope, $entityService, $modal,
 
   // Map and Marker Controls
 
-  var toolsOverlay = null;
+  var infowindow = null;
   var annotationsOverlay = null;
   $scope.infowindowOpen = false;
 
-  this.initializeMarker = function() {
-    // var marker = entityModel.marker;
-    // if (!marker) {
-    //   return;
-    // }
-    // marker.setMap($map);
-    // annotationsOverlay = this.createAnnotationsOverlay(entityModel, marker);
-    // google.maps.event.addListener(marker, 'click', function() {
-    //   $pageStateModel.selectedEntity = entityModel.data;
-    //   $pagePositionManager.scrollToEntity(entityModel.entityId());
-    //   $scope.$emit('asktocloseallinfowindows');
-    //   toolsOverlay = me.createToolsOverlay(marker);
-    //   $scope.infowindowOpen = true;
-    //   $scope.$apply();
-    // });
-    //var htmlMarker = $markerMaker.newMarker(entityModel.gmapsLatLng(), $map);
-  };
-
-  this.createToolsOverlay = function() {
+  this.createInfowindow = function() {
     var scope = $scope.$new();
     var toolsDiv = $templateToStringRenderer.render('infowindow-template', scope);
     var overlay = new HtmlInfowindow($scope.markerState.marker, toolsDiv);
     scope.onSizeChange = function() {
-      overlay.panMap();
+      overlay.draw();
     };
     return overlay;
   };
 
-  this.destroyToolsOverlay = function() {
-    if (toolsOverlay) {
-      toolsOverlay.setMap(null);
-      toolsOverlay = null;
+  this.destroyInfowindow = function() {
+    if (infowindow) {
+      infowindow.setMap(null);
+      infowindow = null;
     }
   };
 
@@ -518,19 +495,22 @@ function EntityCtrl($scope, $entityService, $modal,
       $templateToStringRenderer.render('map-marker-annotations-template', $scope));
   };
 
-  this.initializeMarker();
+  $scope.$on('$destroy', function() {
+    me.destroyInfowindow();
+    $scope.markerState.marker.setMap(null);
+  });
 
   $scope.$on('filtersupdated', function($event, filterModel) {
-    if (!entityModel.marker) {
+    if (!$scope.markerState.marker) {
       return;
     }
     var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
     var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
     var selected = categorySelected && daySelected;
-    entityModel.marker.setMap(selected ? $map : null);
-    annotationsOverlay && annotationsOverlay.setMap(selected ? $map : null);
+    $scope.markerState.marker.setMap(selected ? $map : null);
+    //annotationsOverlay && annotationsOverlay.setMap(selected ? $map : null);
     if (!selected) {
-      me.destroyToolsOverlay();
+      me.destroyInfowindow();
       if ($pageStateModel.entityIsSelected($scope.ed['entity_id'])) {
         $pageStateModel.selectedEntity = null;
         $scope.infowindowOpen = false;
@@ -547,30 +527,14 @@ function EntityCtrl($scope, $entityService, $modal,
   $scope.openInfowindow = function() {
     $scope.$emit('asktocloseallinfowindows');
     if (entityModel.hasLocation()) {
-      toolsOverlay = me.createToolsOverlay();
+      infowindow = me.createInfowindow();
       $scope.infowindowOpen = true;
     }
   };
 
   $scope.$on('closeallinfowindows', function() {
     $scope.infowindowOpen = false;
-    me.destroyToolsOverlay();
-  });
-
-  $scope.$on('clearallmarkers', function() {
-    entityModel.clearMarker();
-    me.destroyToolsOverlay();
-    $scope.infowindowOpen = false;
-    annotationsOverlay && annotationsOverlay.setMap(null);
-  });
-
-  $scope.$on('togglemarkers', function(event, show) {
-    if (entityModel.marker) {
-      entityModel.marker.setMap(show ? $map : null);
-      me.destroyToolsOverlay();
-      annotationsOverlay && annotationsOverlay.setMap(show ? $map : null);
-      $scope.infowindowOpen = false;
-    }
+    me.destroyInfowindow();
   });
 }
 
@@ -818,6 +782,14 @@ function HtmlMarker(position, map, contentDiv) {
 }
 
 // Override
+HtmlMarker.prototype.setMap = function(map) {
+  if (map === this.getMap()) {
+    return;
+  }
+  google.maps.OverlayView.prototype.setMap.call(this, map);
+};
+
+// Override
 HtmlMarker.prototype.onAdd = function() {
   this.getPanes().overlayMouseTarget.appendChild(this.div[0]);
 };
@@ -829,13 +801,13 @@ HtmlMarker.prototype.draw = function() {
   this.div.css({
     'left': point.x,
     'top': point.y,
-    'z-index': point.y
+    'z-index': Math.floor(point.y)
   });
 };
 
 // Override
 HtmlMarker.prototype.onRemove = function() {
-  this.div.remove();
+  this.div.detach();
 };
 
 HtmlMarker.prototype.getHeight = function() {
@@ -909,7 +881,8 @@ HtmlInfowindow.prototype.draw = function() {
   this.div.css({
     'left': point.x,
     'top': point.y - this.contentDiv.height(),
-    'z-index': point.y
+    'width': this.contentDiv.width(),
+    'z-index': Math.floor(point.y)
   });
   this.panMap();
 };
@@ -1420,7 +1393,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     statusCode: null
   };
   this.processItemsIntoGroups = function() {
-    $scope.$broadcast('clearallmarkers');
     $scope.itemGroups = processIntoGroups($scope.pageStateModel.grouping, $scope.planModel.allItems());
   };
   this.processItemsIntoGroups();
@@ -1644,7 +1616,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
         var planModel = $scope.planModel;
         var newEntities = response['entities'];
         $tripPlan['last_modified'] = response['last_modified'];
-        $scope.$broadcast('clearallmarkers');
         // Angular's dirty-checking does not seem to pick up that the
         // model has changed if we just assign to the new model...
         // TODO: This is probably a non-issue now.  Dirty-checking should
