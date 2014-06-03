@@ -538,10 +538,16 @@ function EntityCtrl($scope, $entityService, $modal,
     }
   });
 
+  $scope.markerClicked = function($event) {
+    $scope.selectEntity($scope.ed);  // parent scope method
+    $scope.openInfowindow();
+    $event.stopPropagation();
+  };
+
   $scope.openInfowindow = function() {
     $scope.$emit('asktocloseallinfowindows');
     if (entityModel.hasLocation()) {
-      toolsOverlay = me.createToolsOverlay(entityModel.marker);
+      toolsOverlay = me.createToolsOverlay();
       $scope.infowindowOpen = true;
     }
   };
@@ -878,7 +884,8 @@ HtmlInfowindow.prototype = new google.maps.OverlayView();
 
 function HtmlInfowindow(marker, contentDiv) {
   this.marker = marker;
-  this.sizeDiv = $('<div>').css({
+  this.contentDiv = contentDiv;
+  this.innerDiv = $('<div>').css({
         'position': 'relative',
         'left': '-50%',
         'pointer-events': 'auto'
@@ -886,8 +893,8 @@ function HtmlInfowindow(marker, contentDiv) {
   this.div = $('<div>').css({
       'position': 'absolute',
       'pointer-events': 'none'
-    }).append(this.sizeDiv);
-  map && this.setMap(marker.map);
+    }).append(this.innerDiv);
+  marker.map && this.setMap(marker.map);
 }
 
 // Override
@@ -901,7 +908,7 @@ HtmlInfowindow.prototype.draw = function() {
   var point = overlayProjection.fromLatLngToDivPixel(this.marker.position);
   this.div.css({
     'left': point.x,
-    'top': point.y - this.sizeDiv.height(),
+    'top': point.y - this.contentDiv.height(),
     'z-index': point.y
   });
   this.panMap();
@@ -918,30 +925,19 @@ HtmlInfowindow.prototype.panMap = function() {
   var bounds = map.getBounds();
   if (!bounds) return;
 
-  // The position of the infowindow
-  var position = this.marker.position;
-
   // The dimension of the infowindow
-  var iwWidth = this.sizeDiv.width();
-  var iwHeight = this.sizeDiv.height();
+  var iwWidth = this.contentDiv.width();
+  var iwHeight = this.contentDiv.height();
 
   // The offset position of the infowindow
-  var iwOffsetX = this.sizeDiv.position().left;
-  var iwOffsetY = this.sizeDiv.position().top;
+  var iwOffsetX = this.div.position().left
+    + this.innerDiv.position().left + this.contentDiv.position().left;
+  var iwOffsetY = this.div.position().top
+    + this.innerDiv.position().top + this.contentDiv.position().top;
 
   // Padding on the infowindow
   var padX = 40;
   var padY = 40;
-
-  // The degrees per pixel
-  var mapDiv = map.getDiv();
-  var mapWidth = mapDiv.offsetWidth;
-  var mapHeight = mapDiv.offsetHeight;
-  var boundsSpan = bounds.toSpan();
-  var longSpan = boundsSpan.lng();
-  var latSpan = boundsSpan.lat();
-  var degPixelX = longSpan / mapWidth;
-  var degPixelY = latSpan / mapHeight;
 
   // The bounds of the map
   var mapWestLng = bounds.getSouthWest().lng();
@@ -950,10 +946,14 @@ HtmlInfowindow.prototype.panMap = function() {
   var mapSouthLat = bounds.getSouthWest().lat();
 
   // The bounds of the infowindow
-  var iwWestLng = position.lng() + (iwOffsetX - padX) * degPixelX;
-  var iwEastLng = position.lng() + (iwOffsetX + iwWidth + padX) * degPixelX;
-  var iwNorthLat = position.lat() - (iwOffsetY - padY) * degPixelY;
-  var iwSouthLat = position.lat() - (iwOffsetY + iwHeight + padY) * degPixelY;
+  var iwNorthWestLatLng = this.getProjection().fromDivPixelToLatLng(new google.maps.Point(
+    iwOffsetX - padX, iwOffsetY - padY));
+  var iwSouthEastLatLng = this.getProjection().fromDivPixelToLatLng(new google.maps.Point(
+    iwOffsetX + iwWidth + padX, iwOffsetY + iwHeight + padY));
+  var iwWestLng = iwNorthWestLatLng.lng();
+  var iwEastLng = iwSouthEastLatLng.lng();
+  var iwNorthLat = iwNorthWestLatLng.lat();
+  var iwSouthLat = iwSouthEastLatLng.lat();
 
   // calculate center shift
   var shiftLng =

@@ -846,7 +846,7 @@ hr.dropdown-separator {
 
 .infowindow {
   position: relative;
-  top: -79px;
+  bottom: 79px;
 }
 
 .infowindow-internal {

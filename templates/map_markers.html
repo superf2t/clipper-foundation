@@ -67,7 +67,7 @@
 </style>
 
 <script type="text/ng-template" id="marker-base-template">
-  <div class="map-marker" ng-class="getClasses()" ng-click="onClick()">
+  <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
     <div ng-include="'marker-shape-template'" class="marker-shape">
     </div>
     <div class="marker-icon">
