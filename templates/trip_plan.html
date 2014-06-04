@@ -614,6 +614,7 @@
       </span>
       <tc-entity-marker map="map" marker="markerState.marker" position="position"
         category-name="ed['category'] && ed['category']['name']"
+        icon-template-name="markerState.iconTemplateName"
         selected="pageStateModel.entityIsSelected(ed['entity_id'])"
         precise="ed['address_precision'] == 'Precise'"
         emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
@@ -1008,6 +1009,11 @@
           </span>
         </div>
       </span>
+      <tc-search-result-marker marker="markerState.marker" position="position" map="map"
+        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
+        selected="isSelected()"
+        on-click="markerClicked($event)">
+      </tc-search-result-marker>
     </div>
   </script>
 

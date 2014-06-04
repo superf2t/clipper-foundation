@@ -339,10 +339,21 @@ function EntityCtrl($scope, $entityService, $modal,
   $scope.editing = false;
   $scope.detailsExpanded = false;
 
+  this.iconTemplateName = function() {
+    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
+      return $scope.ed['sub_category']['name'] + '-icon-template';
+    }
+    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
+      return $scope.ed['category']['name'] + '-icon-template';
+    }
+    return null;
+  };
+
   $scope.map = $map;
   $scope.position = entityModel.gmapsLatLng();
   $scope.markerState = {
     marker: null,
+    iconTemplateName: this.iconTemplateName(),
     emphasized: false,
     deemphasized: false
   };
@@ -453,8 +464,8 @@ function EntityCtrl($scope, $entityService, $modal,
 
   this.createInfowindow = function() {
     var scope = $scope.$new();
-    var toolsDiv = $templateToStringRenderer.render('infowindow-template', scope);
-    var overlay = new HtmlInfowindow($scope.markerState.marker, toolsDiv);
+    var contentDiv = $templateToStringRenderer.render('infowindow-template', scope);
+    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv);
     scope.onSizeChange = function() {
       overlay.draw();
     };
@@ -754,9 +765,10 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
 
 HtmlMarker.prototype = new google.maps.OverlayView();
 
-function HtmlMarker(position, map, contentDiv) {
+function HtmlMarker(position, map, contentDiv, opt_options) {
   this.position = position;
   this.map = map;
+  this.options = opt_options || {};
   this.div = $('<div>').css('position', 'absolute').append(
     $('<div>').css({
       'position': 'absolute',
@@ -790,10 +802,14 @@ HtmlMarker.prototype.onAdd = function() {
 HtmlMarker.prototype.draw = function() {
   var overlayProjection = this.getProjection();
   var point = overlayProjection.fromLatLngToDivPixel(this.position);
+  var zIndex = Math.floor(point.y);
+  if (this.options.zIndexPlane) {
+    zIndex += 1000 * this.options.zIndexPlane;
+  }
   this.div.css({
     'left': point.x,
     'top': point.y,
-    'z-index': Math.floor(point.y)
+    'z-index': zIndex
   });
 };
 
@@ -822,13 +838,14 @@ function tcEntityMarker() {
       marker: '=',
       position: '=',
       categoryName: '=',
+      iconTemplateName: '=',
       precise: '=',
       emphasized: '=',
       deemphasized: '=',
       selected: '&',
       onClick: '&'
     },
-    templateUrl: 'marker-base-template',
+    templateUrl: 'entity-marker-template',
     controller: function($scope) {
       $scope.filterId = Math.floor(Math.random() * 1e9);
 
@@ -851,6 +868,42 @@ function tcEntityMarker() {
     },
     link: function(scope, element, attrs) {
       scope.marker = new HtmlMarker(scope.position, scope.map, element[0]);
+    }
+  };
+}
+
+function tcSearchResultMarker() {
+  return {
+    restrict: 'AE',
+    scope: {
+      marker: '=',
+      position: '=',
+      map: '=',
+      precise: '=',
+      resultLetter: '=',
+      selected: '&',
+      onClick: '&'
+    },
+    templateUrl: 'search-result-marker-template',
+    controller: function($scope) {
+      $scope.filterId = Math.floor(Math.random() * 1e9);
+
+      $scope.getClasses = function() {
+        var classes = [];
+        if ($scope.selected()) {
+          classes.push('selected');
+        }
+        return classes;
+      };
+
+      $scope.$on('$destroy', function() {
+        $scope.marker.setMap(null);
+      });
+    },
+    link: function(scope, element, attrs) {
+      scope.marker = new HtmlMarker(scope.position, scope.map, element[0], {
+        zIndexPlane: 1
+      });
     }
   };
 }
@@ -1350,6 +1403,7 @@ function FilterModel() {
   this.selectedCategoryNames = {};
   this.selectedDayNumbers = {};
   this.emphasizedDayNumber = null;
+  this.searchResultsEmphasized = false;
 
   this.isCategorySelected = function(category) {
     return this.selectedCategoryNames[category['name']] != false;
@@ -1380,7 +1434,7 @@ function FilterModel() {
   };
 
   this.emphasisActive = function() {
-    return this.emphasizedDayNumber != null;
+    return this.emphasizedDayNumber != null || this.searchResultsEmphasized;
   };
 }
 
@@ -1423,6 +1477,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('filtersupdated', $filterModel);
   };
 
+  $scope.$on('asktobroadcastfilters', function() {
+    $scope.broadcastFilters();
+  });
+
   $scope.emphasizeDay = function(dayNumber) {
     $filterModel.emphasizedDayNumber = dayNumber;
     $scope.$broadcast('filtersupdated', $filterModel);
@@ -1445,6 +1503,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   google.maps.event.addListener($map, 'click', function() {
     $scope.$broadcast('closeallinfowindows');
+    $pageStateModel.selectedEntity = null;
     $scope.$apply();
   });
 
@@ -2026,7 +2085,7 @@ function SearchResultState() {
 
 function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $entityService, $dataRefreshManager, $modal, $pageStateModel,
-    $searchResultState, $map) {
+    $searchResultState, $filterModel, $map) {
   var me = this;
   $scope.queryState = {rawQuery: null};
   $scope.loadingData = false;
@@ -2097,6 +2156,9 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $scope.queryState.rawQuery = null;
     $pageStateModel.showAddPlacePanel();
     me.setMapBounds($scope.searchResults);
+    $filterModel.searchResultsEmphasized = true;
+    $filterModel.emphasizedDayNumber = null;
+    $scope.$emit('asktobroadcastfilters');
     omniboxModal.close();
     if ($tripPlanModel.isEmpty()) {
       $pageStateModel.midPanelExpanded = true;
@@ -2124,6 +2186,8 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $scope.loadingData = false;
     $scope.searchResults = null;
     $searchResultState.clear();
+    $filterModel.searchResultsEmphasized = false;
+    $scope.$emit('asktobroadcastfilters');
     $scope.$broadcast('clearresults');
   };
 
@@ -2137,26 +2201,18 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   $scope.em = new EntityModel($scope.entityData);
   $scope.im = new ItemModel($scope.entityData);
 
-  var marker = null;
-  var infowindow = null;
-
-  this.createMarker = function() {
-    marker = $scope.em.makeMarker();
-    marker.setIcon('/static/img/map-icons/letter_' +
-      String.fromCharCode(97 + $scope.index) + '.png');
-    marker.setMap($map);
-    google.maps.event.addListener(marker, 'click', function() {
-      $scope.selectResult();
-      $scope.$apply();
-    });
+  $scope.map = $map;
+  $scope.position = $scope.em.gmapsLatLng();
+  $scope.markerState = {
+    marker: null
   };
+  var infowindow = null;
 
   this.createInfowindow = function() {
     var scope = $scope.$new();
     var contentDiv = $templateToStringRenderer.render(
       'results-infowindow-template', scope);
-    infowindow = new MapMarkerOverlay(marker.getMap(),
-      marker.getPosition(), contentDiv, contentDiv.find('.infowindow-internal'));
+    infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv);
   };
 
   this.destroyInfowindow = function() {
@@ -2168,11 +2224,18 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     me.destroyInfowindow();
   });
 
-  $scope.$on('clearresults', function() {
+  $scope.$on('$destroy', function() {
     me.destroyInfowindow();
-    marker.setMap(null);
-    marker = null;
   });
+
+  $scope.markerClicked = function($event) {
+    $scope.selectResult();
+    $event.stopPropagation();
+  };
+
+  $scope.isSelected = function() {
+    return $scope.searchResultState.selectedIndex == $scope.index;
+  };
 
   $scope.selectResult = function() {
     $scope.searchResultState.selectedIndex = $scope.index;
@@ -2193,8 +2256,6 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
         }
       });
   };
-
-  this.createMarker();
 
   $scope.resultLetter = function() {
     return String.fromCharCode(65 + $scope.index);
@@ -3397,8 +3458,6 @@ function tcScrollToSelector($interpolate) {
           var dest = $(selector);
           var newScrollTop = elem.scrollTop() + dest.offset().top - elem.offset().top;
           elem.animate({scrollTop: newScrollTop}, 500);
-        } else {
-          elem.animate({scrollTop: 0});
         }
       });
     }
@@ -4314,9 +4373,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
-    .controller('AddPlacePanelCtrl', ['$scope', '$timeout', '$tripPlanModel',
-     '$entityService', '$dataRefreshManager', '$modal',
-     '$pageStateModel', '$searchResultState', '$map', AddPlacePanelCtrl])
+    .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
@@ -4338,6 +4395,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntitySearchResultDetails', tcEntitySearchResultDetails)
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
+    .directive('tcSearchResultMarker', tcSearchResultMarker)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)

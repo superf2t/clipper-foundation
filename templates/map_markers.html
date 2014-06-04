@@ -7,71 +7,98 @@
   .map-marker .marker-shape {
     width: 35px;
     height: 55px;
-    transition: width 0.5s, height 0.5s;
+    transition: width 0.3s, height 0.3s;
   }
-  .map-marker .marker-shape svg {
+
+  .map-marker .marker-shape svg,
+  .map-marker .marker-icon svg {
     width: 100%;
     height: 100%;
-    padding-left: 3px;
-    transition: stroke 0.5s, stroke-width 0.5s;
   }
 
   .map-marker .marker-icon {
     position: absolute;
-    width: 100%;
-    text-align: center;
-    top: 18%;
-    left: -1px;
-    color: #fff;
-    font-size: 12pt;
-    transition: font-size 0.5s;
+    width: 50%;
+    height: 50%;
+    top: 21%;
+    left: 25%;
   }
 
-  .map-marker.lodging svg {
+  .map-marker .marker-icon svg {
+    fill: #fff;
+  }
+
+  .map-marker.lodging .marker-shape svg {
     fill: #456BE8;
   }
 
-  .map-marker.food_and_drink svg {
+  .map-marker.food_and_drink .marker-shape svg {
     fill: #D91848;
   }
 
-  .map-marker.attractions svg {
+  .map-marker.attractions .marker-shape svg {
     fill: #50B0B2;
   }
 
-  .map-marker.activities svg {
+  .map-marker.activities .marker-shape svg {
     fill: #92BBFF;
   }
 
-  .map-marker.shopping svg {
+  .map-marker.shopping .marker-shape svg {
     fill: #FEC569;
   }
 
-  .map-marker.entertainment svg {
+  .map-marker.entertainment .marker-shape svg {
     fill: #A957B2; 
   }
 
-  .map-marker.selected .marker-shape {
+  .map-marker .marker-shape.selected {
     width: 50px;
-    height: 79px;
+    height: 79px; 
   }
 
   .map-marker.deemphasized {
-    opacity: 0.33;
+    opacity: 0.5;
   }
 
-  .map-marker.selected .marker-icon {
-    font-size: 14pt;
+  .search-result-marker .result-letter {
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    top: 21%;
+    color: #fff;
+    font-size: 1.2em;
+    transition: font-size 0.3s;
+  }
+
+  .search-result-marker .result-letter.selected {
+    font-size: 1.6em;
+  }
+
+  .map-marker.search-result-marker .marker-shape svg {
+    fill: #263452;
   }
 </style>
 
-<script type="text/ng-template" id="marker-base-template">
+<script type="text/ng-template" id="entity-marker-template">
   <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
     <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
-      class="marker-shape">
+      class="marker-shape" ng-class="{'selected': selected()}">
     </div>
     <div class="marker-icon">
-      <span class="glyphicon glyphicon-globe"></span>
+      <div ng-include="iconTemplateName" ng-if="iconTemplateName">
+      </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/ng-template" id="search-result-marker-template">
+  <div class="map-marker search-result-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
+    <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
+      class="marker-shape" ng-class="{'selected': selected()}">
+    </div>
+    <div class="result-letter" ng-class="{'selected': selected()}">
+      [[resultLetter]]
     </div>
   </div>
 </script>
@@ -104,3 +131,4 @@
   </svg>
 </script>
 
+{% include 'map-icons.html' %}
