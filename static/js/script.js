@@ -840,6 +840,7 @@ function tcEntityMarker() {
       categoryName: '=',
       iconTemplateName: '=',
       precise: '=',
+      starred: '=',
       emphasized: '=',
       deemphasized: '=',
       selected: '&',

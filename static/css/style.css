@@ -929,19 +929,6 @@ hr.dropdown-separator {
   height: 100%;
 }
 
-.marker-annotations .star-annotation {
-  position: absolute;
-  top: -40px;
-  left: 4px;
-  background-color: #FFFFFF;
-  width: 18px;
-  height: 18px;
-  text-align: center;
-  border: 1px solid #AAAAAA;
-  padding-left: 1px;
-  border-radius: 9px;  
-}
-
 .results-infowindow .tools-section {
   background-color: #fff;
   font-size: 10pt;

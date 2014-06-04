@@ -78,6 +78,19 @@
   .map-marker.search-result-marker .marker-shape svg {
     fill: #263452;
   }
+
+  .marker-annotations .star-annotation {
+    position: absolute;
+    top: 10%;
+    right: -10%;
+    background-color: #FFFFFF;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    border: 1px solid #AAAAAA;
+    padding-left: 1px;
+    border-radius: 9px;  
+  }
 </style>
 
 <script type="text/ng-template" id="entity-marker-template">
@@ -87,6 +100,11 @@
     </div>
     <div class="marker-icon">
       <div ng-include="iconTemplateName" ng-if="iconTemplateName">
+      </div>
+    </div>
+    <div class="marker-annotations">
+      <div ng-if="starred" class="star-annotation">
+        <span class="glyphicon glyphicon-star favorite-star"></span>
       </div>
     </div>
   </div>
