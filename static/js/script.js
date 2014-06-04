@@ -332,7 +332,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
 
 function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel,
-    $timeout, $map, $templateToStringRenderer, $markerMaker, $window) {
+    $timeout, $map, $templateToStringRenderer, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -459,7 +459,6 @@ function EntityCtrl($scope, $entityService, $modal,
   // Map and Marker Controls
 
   var infowindow = null;
-  var annotationsOverlay = null;
   $scope.infowindowOpen = false;
 
   this.createInfowindow = function() {
@@ -477,11 +476,6 @@ function EntityCtrl($scope, $entityService, $modal,
       infowindow.setMap(null);
       infowindow = null;
     }
-  };
-
-  this.createAnnotationsOverlay = function(entityModel, marker) {
-    return new MapMarkerOverlay(marker.getMap(), marker.getPosition(),
-      $templateToStringRenderer.render('map-marker-annotations-template', $scope));
   };
 
   $scope.$on('$destroy', function() {
@@ -505,7 +499,6 @@ function EntityCtrl($scope, $entityService, $modal,
       $scope.markerState.emphasized = false;
       $scope.markerState.deemphasized = false;
     }
-    //annotationsOverlay && annotationsOverlay.setMap(selected ? $map : null);
     if (!selected) {
       me.destroyInfowindow();
       if ($pageStateModel.entityIsSelected($scope.ed['entity_id'])) {
@@ -822,13 +815,6 @@ HtmlMarker.prototype.getHeight = function() {
   return this.sizeDiv.height();
 };
 
-function MarkerMaker($templateToStringRenderer, $rootScope) {
-  this.newMarker = function(position, map) {
-    var contentDiv = $templateToStringRenderer.render('marker-base-template', $rootScope.$new(true))  ;
-    return new HtmlMarker(position, map, contentDiv);
-  };
-}
-
 function tcEntityMarker() {
   return {
     restrict: 'AE',
@@ -984,123 +970,6 @@ HtmlInfowindow.prototype.panMap = function() {
   var iwEastLng = iwSouthEastLatLng.lng();
   var iwNorthLat = iwNorthWestLatLng.lat();
   var iwSouthLat = iwSouthEastLatLng.lat();
-
-  // calculate center shift
-  var shiftLng =
-      (iwWestLng < mapWestLng ? mapWestLng - iwWestLng : 0) +
-      (iwEastLng > mapEastLng ? mapEastLng - iwEastLng : 0);
-  var shiftLat =
-      (iwNorthLat > mapNorthLat ? mapNorthLat - iwNorthLat : 0) +
-      (iwSouthLat < mapSouthLat ? mapSouthLat - iwSouthLat : 0);
-
-  // The center of the map
-  var center = map.getCenter();
-
-  // The new map center
-  var centerX = center.lng() - shiftLng;
-  var centerY = center.lat() - shiftLat;
-
-  // center the map to the new shifted center
-  map.panTo(new google.maps.LatLng(centerY, centerX));
-};
-
-/**
- * A somewhat generic overlay that is related to the position
- * of a marker on the map.  Pass in the marker's latlng position
- * and arbitrary content and the content will be rendered at the
- * marker's position on the map div and will scroll with the map.
- * Css on the content div can be used to provide an offset relative
- * to the marker's anchor point.
- *
- * The optional sizingElem is a child of the contentDiv which may
- * contain the actual content of the overlay, whose size can be measured
- * to center the content around the marker's anchor point.  This is
- * probably hacky and it would be best to use the contentDiv for sizing
- * and positioning, but so far I haven't been able to get this to work
- * on the parent div.
- */
-MapMarkerOverlay.prototype = new google.maps.OverlayView();
-
-function MapMarkerOverlay(map, position, contentDiv, opt_sizingElem) {
-  this.position = position;
-  this.div = contentDiv;
-  this.sizingElem = opt_sizingElem;
-  this.setMap(map);
-}
-
-// Override
-MapMarkerOverlay.prototype.onAdd = function() {
-  this.getPanes().floatPane.appendChild(this.div[0]);
-};
-
-// Override
-MapMarkerOverlay.prototype.draw = function() {
-  var overlayProjection = this.getProjection();
-  var point = overlayProjection.fromLatLngToDivPixel(this.position);
-  this.div.css({
-    'position': 'absolute',
-    'left': point.x,
-    'top': point.y
-  });
-  this.reposition();
-  this.panMap();
-};
-
-// Override
-MapMarkerOverlay.prototype.onRemove = function() {
-  this.div.remove();
-};
-
-MapMarkerOverlay.prototype.reposition = function() {
-  if (this.sizingElem) {
-    this.sizingElem.css('left', -this.sizingElem.width() / 2);
-  }
-};
-
-MapMarkerOverlay.prototype.panMap = function() {
-  if (!this.sizingElem) return;
-
-  // if we go beyond map, pan map
-  var map = this.getMap();
-  var bounds = map.getBounds();
-  if (!bounds) return;
-
-  // The position of the infowindow
-  var position = this.position;
-
-  // The dimension of the infowindow
-  var iwWidth = this.sizingElem.width();
-  var iwHeight = this.sizingElem.height();
-
-  // The offset position of the infowindow
-  var iwOffsetX = this.sizingElem.position().left;
-  var iwOffsetY = this.sizingElem.position().top;
-
-  // Padding on the infowindow
-  var padX = 40;
-  var padY = 40;
-
-  // The degrees per pixel
-  var mapDiv = map.getDiv();
-  var mapWidth = mapDiv.offsetWidth;
-  var mapHeight = mapDiv.offsetHeight;
-  var boundsSpan = bounds.toSpan();
-  var longSpan = boundsSpan.lng();
-  var latSpan = boundsSpan.lat();
-  var degPixelX = longSpan / mapWidth;
-  var degPixelY = latSpan / mapHeight;
-
-  // The bounds of the map
-  var mapWestLng = bounds.getSouthWest().lng();
-  var mapEastLng = bounds.getNorthEast().lng();
-  var mapNorthLat = bounds.getNorthEast().lat();
-  var mapSouthLat = bounds.getSouthWest().lat();
-
-  // The bounds of the infowindow
-  var iwWestLng = position.lng() + (iwOffsetX - padX) * degPixelX;
-  var iwEastLng = position.lng() + (iwOffsetX + iwWidth + padX) * degPixelX;
-  var iwNorthLat = position.lat() - (iwOffsetY - padY) * degPixelY;
-  var iwSouthLat = position.lat() - (iwOffsetY + iwHeight + padY) * degPixelY;
 
   // calculate center shift
   var shiftLng =
@@ -4367,7 +4236,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
       '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
-      '$map', '$templateToStringRenderer', '$markerMaker', '$window', EntityCtrl])
+      '$map', '$templateToStringRenderer', '$window', EntityCtrl])
     .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
       '$tripPlanModel', '$modal', '$window', GuideviewEntityCtrl])
     .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
@@ -4399,8 +4268,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcSearchResultMarker', tcSearchResultMarker)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
-    .service('$pagePositionManager', PagePositionManager)
-    .service('$markerMaker', MarkerMaker);
+    .service('$pagePositionManager', PagePositionManager);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);
