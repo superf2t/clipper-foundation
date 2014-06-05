@@ -29,9 +29,12 @@ def look_for_skip_tag(line):
     return None
 
 STRIP_TAGS_RE = re.compile('''(id|class)=["'][^"']+["']''')
+STRIP_FILL_RE = re.compile('''fill=["']#[a-fA-F0-9]+["']''')
 
 def strip_tags(line):
-    return STRIP_TAGS_RE.sub('', line)
+    line = STRIP_TAGS_RE.sub('', line)
+    line = STRIP_FILL_RE.sub('', line)
+    return line
 
 def main(argv):
     for fname in argv[1:]:
