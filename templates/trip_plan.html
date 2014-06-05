@@ -41,7 +41,6 @@
 
   <div id="left-panel" ng-show="pageStateModel.shouldShowLeftPanel()">
     <div id="entity-container" class="entity-container"
-      ng-show="pageStateModel.inEntityPanel()"
       tc-entity-scroll scroll-state="scrollState"
       tc-save-scroll-position scroll-position-watch="itemGroups">
 
@@ -58,21 +57,26 @@
       </div>
       {% endif %}
     </div>
-
-    {% if allow_editing %}
-    <div ng-include="'add-place-panel-template'" class="full-width full-height">
-    </div>
-    {% endif %}
   </div>
 
   <div id="mid-panel" ng-show="pageStateModel.shouldShowMidPanel()"
     ng-class="{'closed': !pageStateModel.midPanelExpanded}"
     class="closed">
     <div ng-include="'guide-panel-template'" class="full-width full-height"
-      ng-show="pageStateModel.inEntityPanel()">
+      ng-show="!pageStateModel.inAddPlacePanel()">
     </div>
-    <div ng-include="'results-details-panel-template'" class="full-width full-height"
+<!--     <div ng-include="'results-details-panel-template'" class="full-width full-height"
       ng-if="pageStateModel.inAddPlacePanel()">
+    </div> -->
+    {% if allow_editing %}
+    <div ng-include="'add-place-panel-template'" class="full-width full-height"
+      ng-if="pageStateModel.inAddPlacePanel()">
+    </div>
+    {% endif %}
+    <div class="close-control">
+      <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+        <span class="glyphicon glyphicon-remove-circle"></span>
+      </a>
     </div>
   </div>
 
@@ -141,20 +145,30 @@
   <script type="text/ng-template" id="editor-controls-template">
     <div id="main-control-buttons">
       <div class="left-buttons">
-        <button class="btn btn-primary view-guide-btn" ng-click="openMidPanel()">
+        <button class="btn btn-primary view-guide-btn" ng-click="openGuide()">
           <span class="glyphicon glyphicon-picture"></span>
           View Guide
         </button>
-        <button class="btn btn-primary add-place-btn"
-          ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
-          ng-show="pageStateModel.shouldShowAddPlaceButton()">
-          <span class="glyphicon glyphicon-plus"></span>
-          Add Places
-        </button>
-        <button class="btn" ng-show="pageStateModel.inAddPlacePanel()"
-          ng-click="closeAddPlacePanel()">
-          Close
-        </button>
+        <span class="add-place-button-container">
+          <button class="btn btn-primary add-place-btn dropdown-toggle">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add Places
+          </button>
+          <ul class="dropdown-menu add-place-options-dropdown">
+            <li>
+              <a ng-click="openSearchPlaces()" href="javascript:void(0)">Search</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)">From the Web</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)">Travel Guides</a>
+            </li>
+            <li>
+              <a href="javascript:void(0)">Clip My Own</a>
+            </li>
+          </ul>
+        </span>
       </div>
       <div class="right-buttons">
         <button class="btn settings-btn dropdown-toggle">
@@ -698,11 +712,6 @@
           </a>
         </div>
         {% endif %}
-        <div class="close-control">
-          <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
-            <span class="glyphicon glyphicon-remove-circle"></span>
-          </a>
-        </div>
       </div>
       <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
       </div>
@@ -947,24 +956,23 @@
 
   {% if allow_editing %}
   <script type="text/ng-template" id="omnibox-template">
-    <div class="omnibox-container">
-      <div class="omnibox-content">
-          <input type="text" class="form-control"
-            placeholder="Search for a place or address"
-            tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
-            tc-focus-on="omniboxFocus"
-            on-place-change="googlePlaceSelected($newPlace)"
-            ng-model="queryState.rawQuery"
-            ng-disabled="loadingData"
-            ng-paste="textPasted()"/>
-          <div ng-show="loadingData" class="search-spinner">
-            <img src="/static/img/spinner-small.gif"/>
-          </div>
-      </div>
+    <div class="omnibox-content">
+        <input type="text" class="form-control"
+          placeholder="e.g. 'Eiffel Tower', '123 Main St', or 'Cafes'"
+          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+          tc-focus-on="pageStateModel.midPanelMode"
+          on-place-change="googlePlaceSelected($newPlace)"
+          ng-model="queryState.rawQuery"
+          ng-disabled="loadingData"
+          ng-paste="textPasted()"/>
+        <div ng-show="loadingData" class="search-spinner">
+          <img src="/static/img/spinner-small.gif"/>
+        </div>
     </div>
   </script>
 
-  <script type="text/ng-template" id="add-place-panel-template">
+  <!--REMOVE-->
+  <script type="text/ng-template" id="add-place-panel-template-OLD">
     <div class="add-place-panel" ng-controller="AddPlacePanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
@@ -987,6 +995,26 @@
           <div ng-show="!searchResults || !searchResults.length">
             <h4>No places found</h4>
           </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+
+  <script type="text/ng-template" id="add-place-panel-template">
+    <div class="add-place-panel">
+      <div class="header">
+        Add Places
+        <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
+        <span class="dropdown-toggle mode-dropdown-control">
+          Search
+          <span class="caret"></span>
+        </span>
+      </div>
+      <div class="add-place-body">
+        <span class="glyphicon glyphicon-search"></span>
+        Search for place names, addresses, or categories to add to your trip
+        <div ng-include="'omnibox-template'" class="omnibox-container">
         </div>
       </div>
     </div>

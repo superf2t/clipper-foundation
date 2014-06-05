@@ -1082,9 +1082,9 @@ var Grouping = {
   DAY: 2
 };
 
-var SidePanelMode = {
-  ENTITIES: 1,
-  ADD_PLACE: 2
+var MidPanelMode = {
+  GUIDE: 1,
+  SEARCH_PLACES: 2
 };
 
 var TutorialState = {
@@ -1096,9 +1096,9 @@ var TutorialState = {
 }
 
 function PageStateModel(grouping, needsTutorial) {
-  this.sidePanelMode = SidePanelMode.ENTITIES;
   this.omniboxOpen = false;
   this.midPanelExpanded = false;
+  this.midPanelMode = MidPanelMode.GUIDE;
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
@@ -1125,25 +1125,8 @@ function PageStateModel(grouping, needsTutorial) {
     return this.inNewTripPlanModal || this.tutorialState == TutorialState.START;
   };
 
-  this.shouldShowAddPlaceButton = function() {
-    return !(this.omniboxOpen || this.inAddPlacePanel() || this.inNewTripPlanModal
-      || this.inTutorial());
-  };
-
-  this.inEntityPanel = function() {
-    return this.sidePanelMode == SidePanelMode.ENTITIES;
-  };
-
   this.inAddPlacePanel = function() {
-    return this.sidePanelMode == SidePanelMode.ADD_PLACE;
-  };
-
-  this.showEntityPanel = function() {
-    this.sidePanelMode = SidePanelMode.ENTITIES;
-  };
-
-  this.showAddPlacePanel = function() {
-    this.sidePanelMode = SidePanelMode.ADD_PLACE;
+    return this.midPanelMode != MidPanelMode.GUIDE;
   };
 
   this.isGroupByCategory = function() {
@@ -1367,6 +1350,17 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.closeMidPanel = function() {
     $pageStateModel.midPanelExpanded = false;
+    $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
+  };
+
+  $scope.openGuide = function() {
+    $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
+    $scope.openMidPanel();
+  };
+
+  $scope.openSearchPlaces = function() {
+    $pageStateModel.midPanelMode = MidPanelMode.SEARCH_PLACES;
+    $scope.openMidPanel();
   };
 
   $scope.updateMap = function() {
@@ -1394,9 +1388,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     }
   };
 
-  $scope.showEntityPanel = function() {
-    $scope.pageStateModel.showEntityPanel();
-  };
 
   $scope.showOmnibox = function(windowClass) {
     $scope.$broadcast('openomnibox', windowClass);
@@ -2054,7 +2045,6 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
   };
 
   $scope.closePanel = function() {
-    $pageStateModel.showEntityPanel();
     $scope.queryState.rawQuery = null;
     $scope.loadingData = false;
     $scope.searchResults = null;

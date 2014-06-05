@@ -452,13 +452,6 @@ hr.dropdown-separator {
   top: 0px;
 }
 
-.guide-panel .close-control {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 2em;
-}
-
 .guide-panel .entity-separator,
 .results-details-panel .entity-separator {
   border-top: 1px solid #BBBBBB;
@@ -776,6 +769,13 @@ hr.dropdown-separator {
   transition: left 0.3s;
 }
 
+#mid-panel .close-control {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 2em;
+}
+
 #map-panel {
   position: fixed;
   height: calc(100% - 41px);
@@ -824,10 +824,33 @@ hr.dropdown-separator {
   color: #000;
 }
 
+#main-control-buttons .add-place-button-container {
+  display: inline-block;
+  position: relative;
+}
+
 #main-control-buttons .add-place-btn {
   color: #fff;
   background-color: #4A90E2;
   -webkit-font-smoothing:antialiased;
+  width: 133px;
+}
+
+#main-control-buttons .add-place-options-dropdown {
+  background-color: #4A4A4A;
+  border-radius: 0;
+  margin: -1px 0 0 -1px;
+  min-width: inherit;
+  width: 133px;
+}
+
+#main-control-buttons .add-place-options-dropdown a {
+  color: #fff;
+  -webkit-font-smoothing:antialiased;
+}
+
+#main-control-buttons .add-place-options-dropdown a:hover {
+  color: #000;
 }
 
 #main-control-buttons .right-buttons {
@@ -1012,42 +1035,13 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 /* Add Place Overlays */
 
-.omnibox-modal-window .modal-dialog {
-  max-width: 40%;
-  min-width: 300px;
-  margin: 0;
-  padding: 0;
-  position: fixed;
-  top: 51px;
-  left: calc(20% + 10px);
-}
-
-.omnibox-modal-window.mid-panel-expanded .modal-dialog {
-  left: calc(50% + 10px);
-}
-
-.omnibox-modal-window .modal-content {
-  background-color: inherit;
-}
-
-.omnibox-container .omnibox-content {
-  position: relative;
-}
-
-.omnibox-container .search-spinner {
-  text-align: center;
-  position: absolute;
-  top: 7px;
-  width: 100%;
-}
-
-.add-place-panel-container {
+.add-place-panel-OLD-container {
   width: 100%;
   height: 100%;
   background-color: #fff;
 }
 
-.add-place-panel {
+.add-place-panel-OLD {
   position: relative;
   background-color: inherit;
   height: 100%;
@@ -1056,20 +1050,66 @@ temporary hack that lines up the arrows a bit better for most pictures */
   color: #fff;
 }
 
-.add-place-panel .search-again {
+.add-place-panel-OLD .search-again {
   margin: -5px 10px 5px 10px;
 }
 
-.add-place-panel .search-again a {
+.add-place-panel-OLD .search-again a {
   color: #428bca;
 }
 
-.add-place-panel .search-again a:hover {
+.add-place-panel-OLD .search-again a:hover {
   color: #2D73A0;
 }
 
-.add-place-panel h4 {
+.add-place-panel-OLD h4 {
   margin: 10px;
+}
+
+.add-place-panel .header {
+  color: #fff;
+  background-color: #4A90E2;
+  -webkit-font-smoothing:antialiased;
+  font-size: 1.2em;
+  padding: 10px;
+}
+
+.add-place-panel .header .breadcrumb-separator {
+  font-size: 0.6em;
+  line-height: 1.2em;
+  top: -1px;
+}
+
+.add-place-panel .header .mode-dropdown-control {
+  cursor: pointer;
+  padding: 10px;
+}
+
+.add-place-panel .header .mode-dropdown-control:hover {
+  background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
+  background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
+  background-color: transparent;  background-color: #4A90E2;
+}
+
+.add-place-panel .omnibox-container {
+  margin: 10px 0;
+}
+
+.add-place-panel .omnibox-content {
+  position: relative;
+}
+
+.add-place-panel .omnibox-content .search-spinner {
+  text-align: center;
+  position: absolute;
+  top: 7px;
+  width: 100%;
+}
+
+.add-place-panel .add-place-body {
+  margin: 10px;
+  color: #000;
 }
 
 /* Custom calculation to support 360px image/map */
