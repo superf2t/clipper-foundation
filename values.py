@@ -57,7 +57,7 @@ SubCategory.BAKERY = SubCategory(23, 'bakery', 'Bakery', Category.FOOD_AND_DRINK
 SubCategory.DESSERT = SubCategory(24, 'dessert', 'Dessert', Category.FOOD_AND_DRINK.category_id)
 
 SubCategory.LANDMARK = SubCategory(12, 'landmark', 'Landmark', Category.ATTRACTIONS.category_id)
-SubCategory.MUSEUM = SubCategory(13, 'musuem', 'Museum', Category.ATTRACTIONS.category_id)
+SubCategory.MUSEUM = SubCategory(13, 'museum', 'Museum', Category.ATTRACTIONS.category_id)
 
 SubCategory.TOUR = SubCategory(14, 'tour', 'Tour', Category.ACTIVITIES.category_id)
 SubCategory.OUTDOOR = SubCategory(15, 'outdoor', 'Outdoor', Category.ACTIVITIES.category_id)
