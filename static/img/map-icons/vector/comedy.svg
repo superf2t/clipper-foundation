@@ -1,27 +1,28 @@
-<svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100px" height="100px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
-<switch>
-	<foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" x="0" y="0" width="1" height="1">
-		</foreignObject>
-	<g i:extraneous="self">
-		<g id="Captions">
-		</g>
-		<g id="Your_Icon">
-			<g>
-				<path d="M64.02,68.533H35.066c-0.951,0-1.721,0.771-1.721,1.722v3.442c0,0.951,0.771,1.723,1.721,1.723H64.02      c0.951,0,1.722-0.771,1.722-1.723v-3.442C65.741,69.304,64.971,68.533,64.02,68.533z"/>
-			</g>
-			<g>
-				<circle cx="13.756" cy="48.5" r="3.756"/>
-			</g>
-			<g>
-				<circle cx="72.784" cy="35.51" r="3.756"/>
-			</g>
-			<g>
-				<path d="M84.592,53.459c-1.925-12.433-14.941-11.983-24.484-6.054c-2.319-5.942-1.953-12.42,7.559-13.346      c0.186-0.656,0.495-1.261,0.9-1.788c-12.643-12.784-28.681-9.465-25.675,8.717c-7.204-9.472-25.552-4.502-28.679,2.212      c1.176,0.101,2.244,0.584,3.077,1.327c7.104-2.164,16.837,5.225,16.837,17.432v2.035c0,0.951,0.771,1.722,1.722,1.722h27.232      c0.95,0,1.722-0.771,1.722-1.722c0,0-0.011-0.312,0-0.313c0-9.86,8.479-11.965,17.189-8.36      C82.641,54.459,83.545,53.802,84.592,53.459z"/>
-			</g>
-			<g>
-				<circle cx="86.244" cy="58.516" r="3.756"/>
-			</g>
-		</g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 17.1.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
+<g id="Captions">
+</g>
+<g id="Your_Icon">
+	<g>
+		<path d="M67.5,70.9H31.3c-1.2,0-2.2,1-2.2,2.2v4.3c0,1.2,1,2.2,2.2,2.2h36.2c1.2,0,2.2-1,2.2-2.2v-4.3
+			C69.7,71.9,68.7,70.9,67.5,70.9z"/>
 	</g>
-</switch>
+	<g>
+		<circle cx="4.7" cy="45.9" r="4.7"/>
+	</g>
+	<g>
+		<circle cx="78.5" cy="29.7" r="4.7"/>
+	</g>
+	<g>
+		<path d="M93.2,52.1c-2.4-15.5-18.7-15-30.6-7.6c-2.9-7.4-2.4-15.5,9.4-16.7c0.2-0.8,0.6-1.6,1.1-2.2c-15.8-16-35.9-11.8-32.1,10.9
+			c-9-11.8-31.9-5.6-35.8,2.8c1.5,0.1,2.8,0.7,3.8,1.7c8.9-2.7,21,6.5,21,21.8v2.5c0,1.2,1,2.2,2.2,2.2h34c1.2,0,2.2-1,2.2-2.2
+			c0,0,0-0.4,0-0.4c0-12.3,10.6-15,21.5-10.5C90.8,53.3,91.9,52.5,93.2,52.1z"/>
+	</g>
+	<g>
+		<circle cx="95.3" cy="58.4" r="4.7"/>
+	</g>
+</g>
 </svg>
