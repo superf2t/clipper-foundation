@@ -67,14 +67,12 @@
 
   <div id="mid-panel" ng-show="pageStateModel.shouldShowMidPanel()"
     ng-class="{'closed': !pageStateModel.midPanelExpanded}"
-    {% if not initial_state.mid_panel_expanded %}class="closed"{% endif %}>
+    class="closed">
     <div ng-include="'guide-panel-template'" class="full-width full-height"
       ng-show="pageStateModel.inEntityPanel()">
     </div>
     <div ng-include="'results-details-panel-template'" class="full-width full-height"
       ng-if="pageStateModel.inAddPlacePanel()">
-    </div>
-    <div class="toggle-handle" ng-click="toggleMidPanel()">
     </div>
   </div>
 
@@ -82,8 +80,7 @@
     tc-transitionend="updateMap()"
     class-when-true="mid-panel-closed" after-complete="updateMap()"
     ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
-    class="
-      {% if not initial_state.mid_panel_expanded %}mid-panel-closed{% endif %}
+    class="mid-panel-closed
       {% if needs_tutorial %}full-screen{% endif %}
       ">
     <div id="map-container">
@@ -144,10 +141,15 @@
   <script type="text/ng-template" id="editor-controls-template">
     <div id="main-control-buttons">
       <div class="left-buttons">
-        <button class="btn"
+        <button class="btn btn-primary view-guide-btn" ng-click="openMidPanel()">
+          <span class="glyphicon glyphicon-picture"></span>
+          View Guide
+        </button>
+        <button class="btn btn-primary add-place-btn"
           ng-click="showOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
           ng-show="pageStateModel.shouldShowAddPlaceButton()">
-          Add Place
+          <span class="glyphicon glyphicon-plus"></span>
+          Add Places
         </button>
         <button class="btn" ng-show="pageStateModel.inAddPlacePanel()"
           ng-click="closeAddPlacePanel()">
@@ -696,6 +698,11 @@
           </a>
         </div>
         {% endif %}
+        <div class="close-control">
+          <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+          </a>
+        </div>
       </div>
       <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
       </div>

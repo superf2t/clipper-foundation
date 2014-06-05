@@ -23,6 +23,14 @@ a.color-link:hover {
   color: #2D73A0;
 }
 
+a.white-link {
+  color: #fff;
+}
+
+a.white-link:hover {
+  color: #2D73A0;
+}
+
 .light-label {
   font-weight: 400;
 }
@@ -386,6 +394,7 @@ hr.dropdown-separator {
 
 .guide-panel .overview {
   width: 100%;
+  position: relative;
 }
 
 .guide-panel .guide-panel-hero-img {
@@ -441,6 +450,13 @@ hr.dropdown-separator {
   position: absolute;
   right: 0px;
   top: 0px;
+}
+
+.guide-panel .close-control {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 2em;
 }
 
 .guide-panel .entity-separator,
@@ -760,23 +776,6 @@ hr.dropdown-separator {
   transition: left 0.3s;
 }
 
-#mid-panel .toggle-handle {
-  width: 15px;
-  height: 50px;
-  position: absolute;
-  left: 100%;
-  top: calc(50% - 25px);
-  background-color: #FAFAFA;
-  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-}
-
-#mid-panel .toggle-handle:hover {
-  background-color: #ccc;
-}
-
 #map-panel {
   position: fixed;
   height: calc(100% - 41px);
@@ -812,13 +811,23 @@ hr.dropdown-separator {
 }
 
 #main-control-buttons .left-buttons {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  position: fixed;
+  top: 51px;
+  left: calc(20% + 10px);
 }
 
 #main-control-buttons .left-buttons button {
   font-size: 1.1em;
+}
+
+#main-control-buttons .view-guide-btn {
+  color: #000;
+}
+
+#main-control-buttons .add-place-btn {
+  color: #fff;
+  background-color: #4A90E2;
+  -webkit-font-smoothing:antialiased;
 }
 
 #main-control-buttons .right-buttons {

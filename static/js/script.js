@@ -1095,10 +1095,10 @@ var TutorialState = {
   CONCLUSION: 5
 }
 
-function PageStateModel(grouping, midPanelExpanded, needsTutorial) {
+function PageStateModel(grouping, needsTutorial) {
   this.sidePanelMode = SidePanelMode.ENTITIES;
   this.omniboxOpen = false;
-  this.midPanelExpanded = midPanelExpanded;
+  this.midPanelExpanded = false;
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
@@ -1169,9 +1169,8 @@ function PageStateModel(grouping, midPanelExpanded, needsTutorial) {
 
 PageStateModel.fromInitialState = function(initialState) {
   var grouping = initialState['sort'] == 'day' ? Grouping.DAY : Grouping.CATEGORY;
-  var midPanelExpanded = initialState['mid_panel_expanded'];
   var needsTutorial = initialState['needs_tutorial'];
-  return new PageStateModel(grouping, midPanelExpanded, needsTutorial);
+  return new PageStateModel(grouping, needsTutorial);
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -1362,8 +1361,12 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.broadcastFilters();
   };
 
-  $scope.toggleMidPanel = function() {
-    $pageStateModel.midPanelExpanded = !$pageStateModel.midPanelExpanded;
+  $scope.openMidPanel = function() {
+    $pageStateModel.midPanelExpanded = true;
+  };
+
+  $scope.closeMidPanel = function() {
+    $pageStateModel.midPanelExpanded = false;
   };
 
   $scope.updateMap = function() {

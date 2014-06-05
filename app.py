@@ -110,7 +110,7 @@ def trip_plan_by_id(trip_plan_id):
     needs_tutorial = (allow_editing and len(all_trip_plans) == 1 and not entities) or (
         request.values.get('tutorial') and not entities)
     initial_state = data.InitialPageState(request.values.get('sort'),
-        mid_panel_expanded=bool(entities), needs_tutorial=needs_tutorial)
+        needs_tutorial=needs_tutorial)
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
