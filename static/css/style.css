@@ -914,6 +914,7 @@ hr.dropdown-separator {
   background-color: #fff;
   font-size: 11pt;
   padding: 5px;
+  min-width: 130px;
 }
 
 .marker-tools a {

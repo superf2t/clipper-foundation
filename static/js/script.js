@@ -923,6 +923,10 @@ HtmlInfowindow.prototype.draw = function() {
     'width': this.contentDiv.width(),
     'z-index': Math.floor(point.y)
   });
+  // Firefox doesn't compute the height properly the first time around.
+  // Reset the top position using the height that is computed after the
+  // width is set above.
+  this.div.css('top', point.y - this.contentDiv.height());
   this.panMap();
 };
 
