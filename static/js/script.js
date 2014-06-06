@@ -304,18 +304,15 @@ function TaxonomyTree(categories, subCategories) {
   };
 }
 
-function ItemGroupCtrl($scope, $tripPlanModel, $map) {
-  $scope.show = true;
-
-  $scope.$on('filtersupdated', function($event, filterModel) {
-    var selected = true;
+function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
+  $scope.show = function() {
     if ($scope.itemGroupModel.grouping == Grouping.CATEGORY) {
-      selected = filterModel.isCategoryNameSelected($scope.itemGroupModel.groupKey);
+      return $filterModel.isCategoryNameSelected($scope.itemGroupModel.groupKey);
     } else if ($scope.itemGroupModel.grouping == Grouping.DAY) {
-      selected = filterModel.isDaySelected($scope.itemGroupModel.groupKey);
+      return $filterModel.isDaySelected($scope.itemGroupModel.groupKey);
     }
-    $scope.show = selected;
-  });
+    return true;
+  };
 
   $scope.centerMapOnGroup = function() {
     var bounds = new google.maps.LatLngBounds()
@@ -331,7 +328,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map) {
 }
 
 function EntityCtrl($scope, $entityService, $modal,
-    $pagePositionManager, $tripPlanModel, $pageStateModel,
+    $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
     $timeout, $map, $templateToStringRenderer, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
@@ -483,16 +480,16 @@ function EntityCtrl($scope, $entityService, $modal,
     $scope.markerState.marker.setMap(null);
   });
 
-  $scope.$on('filtersupdated', function($event, filterModel) {
+  this.setMarkerState = function() {
     if (!$scope.markerState.marker) {
       return;
     }
-    var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
+    var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
+    var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
     var selected = categorySelected && daySelected;
     $scope.markerState.marker.setMap(selected ? $map : null);
-    if (filterModel.emphasisActive()) {
-      var dayEmphasized = $scope.ed['day'] && ($scope.ed['day'] == filterModel.emphasizedDayNumber);
+    if ($filterModel.emphasisActive()) {
+      var dayEmphasized = $scope.ed['day'] && ($scope.ed['day'] == $filterModel.emphasizedDayNumber);
       $scope.markerState.emphasized = dayEmphasized;
       $scope.markerState.deemphasized = !dayEmphasized;
     } else {
@@ -506,7 +503,10 @@ function EntityCtrl($scope, $entityService, $modal,
         $scope.infowindowOpen = false;
       }
     }
-  });
+  };
+
+ $scope.$watch(_.constant($filterModel), this.setMarkerState, true);
+ $timeout(this.setMarkerState);
 
   $scope.markerClicked = function($event) {
     $scope.selectEntity($scope.ed);  // parent scope method
@@ -533,7 +533,7 @@ function EntityCtrl($scope, $entityService, $modal,
 }
 
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $modal, $window) {
+    $filterModel, $modal, $window) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
   $scope.dayPlannerActive = false;
@@ -597,11 +597,11 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     $scope.dayPlannerActive = false;
   };
 
-  $scope.$on('filtersupdated', function($event, filterModel) {
-    var categorySelected = !$scope.ed['category'] || filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || filterModel.isDaySelected($scope.ed['day']);
-    $scope.show = categorySelected && daySelected;
-  });
+  $scope.show = function() {
+    var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
+    var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
+    return categorySelected && daySelected;
+  };
 }
 
 function NoteCtrl($scope, $noteService, $tripPlanModel) {
@@ -1343,23 +1343,13 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     opt_callback && opt_callback();
   });
 
-  $scope.broadcastFilters = function() {
-    $scope.$broadcast('filtersupdated', $filterModel);
-  };
-
-  $scope.$on('asktobroadcastfilters', function() {
-    $scope.broadcastFilters();
-  });
-
   $scope.emphasizeDay = function(dayNumber) {
     $filterModel.emphasizedDayNumber = dayNumber;
-    $scope.$broadcast('filtersupdated', $filterModel);
   };
 
   $scope.resetMapState = function() {
     $map.fitBounds($tripPlanModel.getMapBounds());
     $filterModel.emphasizedDayNumber = null;
-    $scope.broadcastFilters();
   };
 
   $scope.toggleMidPanel = function() {
@@ -1735,7 +1725,7 @@ function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
   };
 }
 
-function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy, $filterModel) {
+function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy) {
   $scope.typesExpanded = false;
   $scope.daysExpanded = false;
 
@@ -2028,7 +2018,6 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     me.setMapBounds($scope.searchResults);
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
-    $scope.$emit('asktobroadcastfilters');
     omniboxModal.close();
     if ($tripPlanModel.isEmpty()) {
       $pageStateModel.midPanelExpanded = true;
@@ -2057,7 +2046,6 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $scope.searchResults = null;
     $searchResultState.clear();
     $filterModel.searchResultsEmphasized = false;
-    $scope.$emit('asktobroadcastfilters');
     $scope.$broadcast('clearresults');
   };
 
@@ -4232,13 +4220,10 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('BulkClipCtrl', BulkClipCtrl)
     .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
       '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
-    .controller('ItemGroupCtrl', ['$scope', '$tripPlanModel', '$map', ItemGroupCtrl])
+    .controller('ItemGroupCtrl', ItemGroupCtrl)
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
-    .controller('EntityCtrl', ['$scope', '$entityService', '$modal',
-      '$pagePositionManager', '$tripPlanModel', '$pageStateModel', '$timeout',
-      '$map', '$templateToStringRenderer', '$window', EntityCtrl])
-    .controller('GuideviewEntityCtrl', ['$scope', '$entityService',
-      '$tripPlanModel', '$modal', '$window', GuideviewEntityCtrl])
+    .controller('EntityCtrl', EntityCtrl)
+    .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
     .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
