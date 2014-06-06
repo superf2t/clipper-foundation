@@ -91,10 +91,8 @@
       <div id="map">
       </div>
     </div>
-    {% if allow_editing %}
-    <div ng-include="'editor-controls-template'">
+    <div ng-include="'control-buttons-template'">
     </div>
-    {% endif %}
     {% if needs_tutorial %}
     <div ng-include="'tutorial-map-panel-template'" ng-show="pageStateModel.inTutorial()">
     </div>
@@ -141,14 +139,14 @@
     </li>
   </ul>
 
-  {% if allow_editing %}
-  <script type="text/ng-template" id="editor-controls-template">
+  <script type="text/ng-template" id="control-buttons-template">
     <div id="main-control-buttons">
       <div class="left-buttons">
         <button class="btn btn-primary view-guide-btn" ng-click="openGuide()">
           <span class="glyphicon glyphicon-picture"></span>
           View Guide
         </button>
+        {% if allow_editing %}
         <span class="add-place-button-container">
           <button class="btn btn-primary add-place-btn dropdown-toggle">
             <span class="glyphicon glyphicon-plus"></span>
@@ -169,7 +167,9 @@
             </li>
           </ul>
         </span>
+        {% endif %}
       </div>
+      {% if allow_editing %}
       <div class="right-buttons">
         <button class="btn settings-btn dropdown-toggle">
           <span class="glyphicon glyphicon-cog"></span>
@@ -192,9 +192,9 @@
           </li>
         </ul>
       </div>
+      {% endif %}
     </div>
   </script>
-  {% endif %}
 
   <script type="text/ng-template" id="infowindow-template">
     <div class="infowindow" ng-controller="InfowindowCtrl"
