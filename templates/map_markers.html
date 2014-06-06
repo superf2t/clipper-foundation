@@ -93,6 +93,19 @@
   }
 </style>
 
+<svg height="0" xmlns="http://www.w3.org/2000/svg">
+  <filter id="drop-shadow">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+    <feOffset dx="10" dy="10" result="offsetblur"/>
+    <!-- <feFlood flood-color="rgba(0,0,0,0.5)"/> -->
+    <feComposite in2="offsetblur" operator="in"/>
+    <feMerge>
+      <feMergeNode/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+</svg>
+
 <script type="text/ng-template" id="entity-marker-template">
   <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
     <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
@@ -124,28 +137,14 @@
 <script type="text/ng-template" id="marker-precise-shape-template">
   <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
      viewBox="197 74 175 251" enable-background="new 197 74 175 251" xml:space="preserve">
-    <defs>
-      <filter id="[[filterId]]" x="0" y="0" width="200%" height="200%">
-        <feOffset result="offOut" in="SourceAlpha" dx="10" dy="10" />
-        <feGaussianBlur result="blurOut" in="offOut" stdDeviation="5" />
-        <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
-      </filter>
-    </defs>
-    <path d="M284.5,85c-42,0-76,34-76,76s33.3,90.8,76,164c42.8-73.2,76-122,76-164S326.5,85,284.5,85z" filter="url(#[[filterId]])"/>
+    <path d="M284.5,85c-42,0-76,34-76,76s33.3,90.8,76,164c42.8-73.2,76-122,76-164S326.5,85,284.5,85z" filter="url(#drop-shadow)"/>
   </svg>
 </script>
 
 <script type="text/ng-template" id="marker-imprecise-shape-template">
   <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
      viewBox="197 74 175 251" enable-background="new 197 74 175 251" xml:space="preserve">
-    <defs>
-      <filter id="[[filterId]]" x="0" y="0" width="200%" height="200%">
-        <feOffset result="offOut" in="SourceAlpha" dx="10" dy="10" />
-        <feGaussianBlur result="blurOut" in="offOut" stdDeviation="5" />
-        <feBlend in="SourceGraphic" in2="blurOut" mode="normal" />
-      </filter>
-    </defs>
-    <circle cx="284.5" cy="159.5" r="76" filter="url(#[[filterId]])"/>
+    <circle cx="284.5" cy="159.5" r="76" filter="url(#drop-shadow)"/>
   </svg>
 </script>
 

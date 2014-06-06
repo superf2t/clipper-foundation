@@ -834,8 +834,6 @@ function tcEntityMarker() {
     },
     templateUrl: 'entity-marker-template',
     controller: function($scope) {
-      $scope.filterId = Math.floor(Math.random() * 1e9);
-
       $scope.getClasses = function() {
         var classes = [];
         if ($scope.categoryName) {
@@ -873,8 +871,6 @@ function tcSearchResultMarker() {
     },
     templateUrl: 'search-result-marker-template',
     controller: function($scope) {
-      $scope.filterId = Math.floor(Math.random() * 1e9);
-
       $scope.getClasses = function() {
         var classes = [];
         if ($scope.selected()) {
