@@ -554,7 +554,7 @@
     <div ng-controller="ItemGroupCtrl" ng-show="itemGroupModel.hasContent()" ng-if="itemGroupModel.getEntityItems().length != 0">
       <div ng-include="'item-group-header-template'">
       </div>
-      <div ng-show="show">
+      <div ng-show="show()">
         <div ng-repeat="item in itemGroupModel.getNonemptyNoteItems()">
           <div ng-include="'mapview-one-note-template'">
           </div>
@@ -736,7 +736,7 @@
   <script type="text/ng-template" id="guideview-one-entity-template">
     <div ng-controller="GuideviewEntityCtrl"
       class="one-entity-guideview"
-      ng-show="show"
+      ng-show="show()"
       tc-entity-id="[[ed['entity_id'] ]]">
       <hr class="entity-separator"/>
       <div class="name">

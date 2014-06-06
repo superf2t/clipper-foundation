@@ -743,6 +743,7 @@ hr.dropdown-separator {
   top: 41px;
   width: 20%;
   -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
   z-index: 2;
   -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
@@ -911,6 +912,7 @@ hr.dropdown-separator {
   padding: 5px 10px;
   font-size: 11pt;
   -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .infowindow .day-and-star {
@@ -944,6 +946,7 @@ hr.dropdown-separator {
   background-color: #fff;
   font-size: 11pt;
   padding: 5px;
+  min-width: 130px;
 }
 
 .marker-tools a {
@@ -1545,6 +1548,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   color: #fff;
   padding: 0;
   -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .bulk-clip-modal .entity-list .select-controls {
