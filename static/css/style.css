@@ -424,8 +424,7 @@ hr.dropdown-separator {
   margin: 0 15px;
 }
 
-.one-entity-guideview .name,
-.one-entity-search-result .name {
+.one-entity-guideview .name {
   position: relative;
 }
 
@@ -489,6 +488,35 @@ hr.dropdown-separator {
   right: 0px;
 }
 
+.one-entity-search-result .header-bar {
+  position: relative;
+}
+
+.one-entity-search-result .header-bar .name {
+  font-size: 1.2em;
+}
+
+.one-entity-search-result .controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.one-entity-search-result .result-letter-icon {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.one-entity-search-result .result-letter-icon .map-marker .marker-shape {
+  width: 20px;
+  height: 31px;
+}
+
+.one-entity-search-result .result-letter-icon .search-result-marker .result-letter {
+  top: 3%;
+  font-size: 1.2em;
+}
+
 .one-entity-search-result .save-confirmation {
   color: rgb(39, 172, 113);
 }
@@ -512,12 +540,6 @@ hr.dropdown-separator {
 
 .one-entity-guideview .inline-day-planner a:hover {
   color: #2D73A0;
-}
-
-.one-entity-search-result .controls {
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 
 .results-details-panel {

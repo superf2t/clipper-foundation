@@ -891,6 +891,17 @@ function tcSearchResultMarker() {
   };
 }
 
+function tcSearchResultIcon() {
+    return {
+      restrict: 'AE',
+      scope: {
+        precise: '=',
+        resultLetter: '='
+      },
+      templateUrl: 'search-result-marker-template'
+    };
+}
+
 HtmlInfowindow.prototype = new google.maps.OverlayView();
 
 function HtmlInfowindow(marker, contentDiv) {
@@ -4184,6 +4195,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
+    .directive('tcSearchResultIcon', tcSearchResultIcon)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager);

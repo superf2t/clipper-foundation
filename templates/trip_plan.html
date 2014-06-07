@@ -704,16 +704,16 @@
           </a>
         </div>
         {% endif %}
+        <div class="close-control">
+          <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+          </a>
+        </div>
       </div>
       <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
       </div>
       <div class="mapview-footer">
         Copyright 2014 Unicycle Labs
-      </div>
-      <div class="close-control">
-        <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
-          <span class="glyphicon glyphicon-remove-circle"></span>
-        </a>
       </div>
     </div>
   </script>
@@ -1011,6 +1011,9 @@
 
   <script type="text/ng-template" id="results-details-panel-template">
     <div class="results-details-panel">
+      <div ng-show="searchComplete && searchResults && searchResults.length">
+        <h4>Results from Google Maps</h4>
+      </div>
       <div ng-repeat="result in searchResultState.results"
         tc-entity-search-result index="$index" entity-data="result"
         search-result-state="searchResultState">
@@ -1025,8 +1028,11 @@
     <div class="one-entity-search-result" tc-entity-result-id="[[index]]"
       ng-controller="EntitySearchResultCtrl">
       <hr class="entity-separator" ng-show="index > 0"/>
-      <div class="name">
-        <h4>[[ed['name'] ]]</h4>
+      <div class="header-bar">
+        <span class="result-letter-icon" tc-search-result-icon
+          precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()">
+        </span>
+        <span class="name">[[ed['name'] ]]</span>
         <div class="controls">
           <span ng-show="!searchResultState.savedResultIndices[index]">
             <a ng-click="saveResult()" href="javascript:void(0)" class="color-link">
