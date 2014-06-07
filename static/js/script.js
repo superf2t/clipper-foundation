@@ -1129,6 +1129,10 @@ function PageStateModel(grouping, needsTutorial) {
     return this.midPanelMode != MidPanelMode.GUIDE;
   };
 
+  this.inSearchPanel = function() {
+    return this.midPanelMode == MidPanelMode.SEARCH_PLACES;
+  };
+
   this.isGroupByCategory = function() {
     return this.grouping == Grouping.CATEGORY;
   };
@@ -1341,6 +1345,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.closeMidPanel = function() {
     $pageStateModel.midPanelExpanded = false;
     $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
+    $scope.$broadcast('midpanelclosing');
   };
 
   $scope.openGuide = function() {
@@ -1376,11 +1381,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       $scope.pageStateModel.groupByDay();
       me.processItemsIntoGroups();
     }
-  };
-
-
-  $scope.showOmnibox = function(windowClass) {
-    $scope.$broadcast('openomnibox', windowClass);
   };
 
   $scope.closeAddPlacePanel = function() {
@@ -1944,36 +1944,13 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
   $scope.queryState = {rawQuery: null};
   $scope.loadingData = false;
   $scope.searchResults = null;
+  $scope.searchComplete = false;
   $scope.resultsAreFromSearch = true;
-
-  var omniboxModal = null;
-
-  $scope.$on('openomnibox', function($event, windowClass) {
-    $scope.openOmnibox(windowClass);
-  });
-
-  $scope.openOmnibox = function(windowClass) {
-    $scope.$emit('asktocloseallinfowindows');
-    $pageStateModel.selectedEntity = null;
-    $pageStateModel.omniboxOpen = true;
-    omniboxModal = $modal.open({
-      templateUrl: 'omnibox-template',
-      scope: $scope,
-      windowClass: windowClass
-    });
-    omniboxModal.result.finally(function() {
-      $scope.omniboxFocus = false;
-      $timeout(function() {
-        $pageStateModel.omniboxOpen = false;
-      }, 150);
-    });
-    $timeout(function() {
-      $scope.omniboxFocus = true;
-    }, 200);
-  };
 
   $scope.googlePlaceSelected = function(place) {
     $scope.loadingData = true;
+    $scope.searchComplete = false;
+    $scope.searchResults = null;
     if (place['reference']) {
       $entityService.googleplacetoentity(place['reference'])
         .success(me.processResponse);
@@ -1984,6 +1961,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     }
   };
 
+  // Move to clip panel ctrl
   $scope.textPasted = function() {
     // Ugly hack to wrap this in a timeout; without it, the paste event
     // fires before the input has been populated with the pasted data.
@@ -1992,7 +1970,9 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
         return;
       }
       $scope.loadingData = true;
+      $scope.searchComplete = false;
       $scope.resultsAreFromSearch = false;
+      $scope.searchResults = null;
       $entityService.urltoentities($scope.queryState.rawQuery)
         .success(me.processResponse);
     });
@@ -2007,15 +1987,10 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     }
     $scope.searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
-    $scope.queryState.rawQuery = null;
-    $pageStateModel.showAddPlacePanel();
+    $scope.searchComplete = true;
     me.setMapBounds($scope.searchResults);
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
-    omniboxModal.close();
-    if ($tripPlanModel.isEmpty()) {
-      $pageStateModel.midPanelExpanded = true;
-    }
   };
 
   this.setMapBounds = function(entities) {
@@ -2033,24 +2008,21 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $map.fitBounds(bounds);
   };
 
-  $scope.closePanel = function() {
+  $scope.$on('midpanelclosing', function() {
     $scope.queryState.rawQuery = null;
     $scope.loadingData = false;
     $scope.searchResults = null;
     $searchResultState.clear();
     $filterModel.searchResultsEmphasized = false;
-    $scope.$broadcast('clearresults');
-  };
-
-  $scope.$on('closeaddplacepanel', $scope.closePanel);
+  });
 }
 
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     $tripPlanModel, $entityService, $dataRefreshManager) {
   var me = this;
   $scope.ed = $scope.entityData;
-  $scope.em = new EntityModel($scope.entityData);
-  $scope.im = new ItemModel($scope.entityData);
+  $scope.em = new EntityModel($scope.ed);
+  $scope.im = new ItemModel($scope.ed);
 
   $scope.map = $map;
   $scope.position = $scope.em.gmapsLatLng();
@@ -2118,23 +2090,6 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   };
 }
 
-function EntitySearchResultDetailsCtrl($scope, $entityService,
-    $tripPlanModel, $dataRefreshManager) {
-  $scope.ed = $scope.entityData;
-
-  $scope.saveResult = function() {
-    $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.addNewEntities(response['entities']);
-          $scope.searchResultState.savedResultIndices[$scope.index] = true;
-          $scope.$emit('redrawgroupings');
-        }
-      });
-  };
-}
-
 function EntityListingCtrl($scope) {
   $scope.ed = $scope.entityData;
   $scope.im = new ItemModel($scope.ed);
@@ -2148,21 +2103,7 @@ function tcEntitySearchResult() {
       searchResultState: '=',
       index: '='
     },
-    templateUrl: 'one-entity-search-result-template',
-    controller: EntitySearchResultCtrl
-  };
-}
-
-function tcEntitySearchResultDetails() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      searchResultState: '=',
-      index: '='
-    },
-    templateUrl: 'one-entity-search-result-details-template',
-    controller: EntitySearchResultDetailsCtrl
+    templateUrl: 'one-entity-search-result-template'
   };
 }
 
@@ -3304,7 +3245,7 @@ function tcScrollToSelector($interpolate) {
     link: function(scope, element, attrs) {
       var elem = $(element);
       scope.$watch(attrs.scrollOnChangesTo, function(value) {
-        if (value) {
+        if (value != undefined || value != null) {
           var selector = $interpolate(attrs.scrollDestSelector)(scope);
           var dest = $(selector);
           var newScrollTop = elem.scrollTop() + dest.offset().top - elem.offset().top;
@@ -4240,7 +4181,6 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
     .directive('tcEntitySearchResult', tcEntitySearchResult)
-    .directive('tcEntitySearchResultDetails', tcEntitySearchResultDetails)
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcSearchResultMarker', tcSearchResultMarker)

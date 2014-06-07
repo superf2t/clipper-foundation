@@ -65,19 +65,11 @@
     <div ng-include="'guide-panel-template'" class="full-width full-height"
       ng-show="!pageStateModel.inAddPlacePanel()">
     </div>
-<!--     <div ng-include="'results-details-panel-template'" class="full-width full-height"
-      ng-if="pageStateModel.inAddPlacePanel()">
-    </div> -->
     {% if allow_editing %}
     <div ng-include="'add-place-panel-template'" class="full-width full-height"
       ng-if="pageStateModel.inAddPlacePanel()">
     </div>
     {% endif %}
-    <div class="close-control">
-      <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
-        <span class="glyphicon glyphicon-remove-circle"></span>
-      </a>
-    </div>
   </div>
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
@@ -718,6 +710,11 @@
       <div class="mapview-footer">
         Copyright 2014 Unicycle Labs
       </div>
+      <div class="close-control">
+        <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+          <span class="glyphicon glyphicon-remove-circle"></span>
+        </a>
+      </div>
     </div>
   </script>
 
@@ -971,104 +968,76 @@
     </div>
   </script>
 
-  <!--REMOVE-->
-  <script type="text/ng-template" id="add-place-panel-template-OLD">
-    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl"
+  <script type="text/ng-template" id="add-place-panel-template">
+    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
+      <div ng-if="pageStateModel.inSearchPanel()" ng-include="'search-panel-template'"
+        class="full-width full-height">
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="add-place-panel-header-template">
+    <div class="header">
+      Add Places
+      <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
+      <span class="dropdown-toggle mode-dropdown-control">
+        Search
+        <span class="caret"></span>
+      </span>
+      <div class="close-control">
+        <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+          <span class="glyphicon glyphicon-remove-circle"></span>
+        </a>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="search-panel-template">
+    <div class="search-panel"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      <div ng-if="pageStateModel.inAddPlacePanel()" class="panel-content">
-        <div class="search-results-panel">
-          <div class="search-results" ng-show="searchResults && searchResults.length">
-            <h4 ng-show="resultsAreFromSearch">Results from Google Places</h4>
-            <h4 ng-show="!resultsAreFromSearch">Results</h4>
-            <div class="search-again">
-              <a ng-click="openOmnibox(pageStateModel.midPanelExpanded ? 'omnibox-modal-window mid-panel-expanded' : 'omnibox-modal-window')"
-                href="javascript:void(0)">
-                <span class="glyphicon glyphicon-search"></span> Search again
-              </a>
-            </div>
-            <div ng-repeat="result in searchResults" tc-entity-search-result
-              entity-data="result" index="$index"
-              search-result-state="searchResultState">
-            </div>
-          </div>
-          <div ng-show="!searchResults || !searchResults.length">
-            <h4>No places found</h4>
-          </div>
+      <div ng-include="'add-place-panel-header-template'">
+      </div>
+      <div class="search-panel-body">
+        <span class="glyphicon glyphicon-search"></span>
+          Search for place names, addresses, or categories to add to your trip
+        <div ng-include="'omnibox-template'" class="omnibox-container">
+        </div>
+        <div ng-include="'results-details-panel-template'">
         </div>
       </div>
     </div>
   </script>
 
-
-  <script type="text/ng-template" id="add-place-panel-template">
-    <div class="add-place-panel">
-      <div class="header">
-        Add Places
-        <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
-        <span class="dropdown-toggle mode-dropdown-control">
-          Search
-          <span class="caret"></span>
-        </span>
+  <script type="text/ng-template" id="results-details-panel-template">
+    <div class="results-details-panel">
+      <div ng-repeat="result in searchResultState.results"
+        tc-entity-search-result index="$index" entity-data="result"
+        search-result-state="searchResultState">
       </div>
-      <div class="add-place-body">
-        <span class="glyphicon glyphicon-search"></span>
-        Search for place names, addresses, or categories to add to your trip
-        <div ng-include="'omnibox-template'" class="omnibox-container">
-        </div>
+      <div ng-show="searchComplete && (!searchResults || !searchResults.length)">
+        <h4>No places found</h4>
       </div>
     </div>
   </script>
 
   <script type="text/ng-template" id="one-entity-search-result-template">
-    <div class="one-entity-search-result"
-      tc-entity-result-id="[[index]]"
-      ng-class="{'selected': searchResultState.selectedIndex == index}"
-      ng-click="selectResult()">
-      <span class="entity-circle-img">
-        <img ng-src="[[im.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
-      </span>
-      <span class="result-letter">
-        [[resultLetter()]]
-      </span>
-      <span class="entity-info">
-        <div class="name">
-          [[ed['name'] ]]
-        </div>
-        <div class="details">
-          <span ng-show="im.hasCategory()"
-            ng-class="'text-' + ed['category']['name']">
-            [[im.categoryDisplayText()]]
-          </span>
-          <span ng-show="searchResultState.savedResultIndices[index]" class="save-confirmation">
-            saved
-          </span>
-        </div>
-      </span>
-      <tc-search-result-marker marker="markerState.marker" position="position" map="map"
-        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
-        selected="isSelected()"
-        on-click="markerClicked($event)">
-      </tc-search-result-marker>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="results-details-panel-template">
-    <div class="results-details-panel"
-      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result-details[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      <div ng-repeat="result in searchResultState.results"
-        tc-entity-search-result-details index="$index" entity-data="result"
-        search-result-state="searchResultState">
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="one-entity-search-result-details-template">
-    <div class="one-entity-search-result-details" tc-entity-result-id="[[index]]">
+    <div class="one-entity-search-result" tc-entity-result-id="[[index]]"
+      ng-controller="EntitySearchResultCtrl">
       <hr class="entity-separator" ng-show="index > 0"/>
       <div class="name">
         <h4>[[ed['name'] ]]</h4>
+        <div class="controls">
+          <span ng-show="!searchResultState.savedResultIndices[index]">
+            <a ng-click="saveResult()" href="javascript:void(0)" class="color-link">
+              <span class="glyphicon glyphicon-plus"></span>
+              Add to trip
+            </a>
+          </span>
+          <span class="save-confirmation" ng-show="searchResultState.savedResultIndices[index]">
+            saved
+          </span>
+        </div>
       </div>
       <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
         <span class="vertical-spacer"></span><!--
@@ -1086,17 +1055,11 @@
         </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
-      <div class="controls">
-        <span class="save-cta" ng-show="!searchResultState.savedResultIndices[index]">
-          <a ng-click="saveResult()" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-plus"></span>
-            Add to trip
-          </a>
-        </span>
-        <span class="save-confirmation" ng-show="searchResultState.savedResultIndices[index]">
-          saved
-        </span>
-      </div>
+      <tc-search-result-marker marker="markerState.marker" position="position" map="map"
+        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
+        selected="isSelected()"
+        on-click="markerClicked($event)">
+      </tc-search-result-marker>
     </div>
   </script>
   {% endif %}

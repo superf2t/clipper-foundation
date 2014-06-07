@@ -330,61 +330,6 @@ hr.dropdown-separator {
   color: #ccc;
 }
 
-.one-entity-search-result {
-  position: relative;
-  padding: 7px 10px;
-  cursor: pointer;
-}
-
-.one-entity-search-result.selected {
-  background-color: #666666 !important;
-}
-
-.one-entity-search-result:hover {
-  background-color: #444444;
-}
-
-.one-entity-search-result .entity-circle-img {
-  width: 40px;
-  height: 40px;
-  display: inline-block;
-  vertical-align: top;
-}
-
-.one-entity-search-result .entity-circle-img img {
-  width: 100%;
-  height: 100%;
-  border-radius: 20px;
-}
-
-.one-entity-search-result .result-letter {
-  display: inline-block;
-  position: absolute;
-  left: 22px;
-  top: 9px;
-  color: #fff;
-  font-size: 18pt;
-  font-family: Arial;
-  text-shadow: 2px 2px 2px #000;
-}
-
-.one-entity-search-result .entity-info {
-  display: inline-block;
-  max-width: calc(100% - 44px);
-}
-
-.one-entity-search-result .entity-info .name {
-  line-height: 1.2;
-}
-
-.one-entity-search-result .entity-info .details {
-  font-size: 0.9em;
-}
-
-.one-entity-search-result .save-confirmation {
-  color: rgb(39, 172, 113);  
-}
-
 .guide-panel {
   color: #000;
   width: 100%;
@@ -452,6 +397,13 @@ hr.dropdown-separator {
   top: 0px;
 }
 
+.guide-panel .close-control {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 20pt;
+}
+
 .guide-panel .entity-separator,
 .results-details-panel .entity-separator {
   border-top: 1px solid #BBBBBB;
@@ -468,13 +420,12 @@ hr.dropdown-separator {
   padding: 15px;
 }
 
-.one-entity-guideview,
-.one-entity-search-result-details {
+.one-entity-guideview {
   margin: 0 15px;
 }
 
 .one-entity-guideview .name,
-.one-entity-search-result-details .name {
+.one-entity-search-result .name {
   position: relative;
 }
 
@@ -485,18 +436,18 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview .photo-carousel,
-.one-entity-search-result-details .photo-carousel {
+.one-entity-search-result .photo-carousel {
   height: 250px;
   text-align: center;
 }
 
 .one-entity-guideview .photo-carousel .image-carousel,
-.one-entity-search-result-details .photo-carousel .image-carousel  {
+.one-entity-search-result .photo-carousel .image-carousel  {
   height: 100%;
 }
 
 .one-entity-guideview .photo-carousel .vertical-spacer,
-.one-entity-search-result-details .photo-carousel .vertical-spacer {
+.one-entity-search-result .photo-carousel .vertical-spacer {
   vertical-align: middle;
   height: 100%;
   width: 0;
@@ -504,54 +455,49 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview .photo-carousel .carousel-content,
-.one-entity-search-result-details .photo-carousel .carousel-content {
+.one-entity-search-result .photo-carousel .carousel-content {
   display: inline-block;
   height: 100%;
 }
 
 .one-entity-guideview .metadata,
-.one-entity-search-result-details .metadata {
+.one-entity-search-result .metadata {
   margin: 15px 0;
 }
 
 .one-entity-guideview .metadata .source-text,
-.one-entity-search-result-details .metadata .source-text  {
+.one-entity-search-result .metadata .source-text  {
   text-decoration: underline;
 }
 
 .one-entity-guideview .description,
-.one-entity-search-result-details .description {
+.one-entity-search-result .description {
   white-space: pre-line;
   text-align: justify;
 }
 
-.one-entity-guideview .controls,
-.one-entity-search-result-details .controls {
+.one-entity-guideview .controls {
   margin-top: 10px;
   position: relative;
   min-height: 20px;
 }
 
-.one-entity-guideview .clip-cta,
-.one-entity-search-result-details .save-cta,
-.one-entity-search-result-details .save-confirmation {
+.one-entity-guideview .clip-cta {
   display: inline-block;
   position: absolute;
   top: 0px;
   right: 0px;
 }
 
-.one-entity-search-result-details .save-confirmation {
+.one-entity-search-result .save-confirmation {
   color: rgb(39, 172, 113);
 }
 
-.one-entity-guideview .clip-cta a,
-.one-entity-search-result-details .save-cta a {
+.one-entity-guideview .clip-cta a {
   color: #428bca;
 }
 
-.one-entity-guideview .clip-cta a:hover,
-.one-entity-search-result-details .save-cta a:hover {
+.one-entity-guideview .clip-cta a:hover {
   color: #2D73A0;
 }
 
@@ -566,6 +512,12 @@ hr.dropdown-separator {
 
 .one-entity-guideview .inline-day-planner a:hover {
   color: #2D73A0;
+}
+
+.one-entity-search-result .controls {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .results-details-panel {
@@ -768,13 +720,6 @@ hr.dropdown-separator {
 #mid-panel.closed {
   left: -10%;
   transition: left 0.3s;
-}
-
-#mid-panel .close-control {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 2em;
 }
 
 #map-panel {
@@ -1036,37 +981,11 @@ temporary hack that lines up the arrows a bit better for most pictures */
   }
 }
 
-/* Add Place Overlays */
+/* Add Place Panels */
 
-.add-place-panel-OLD-container {
+.add-place-panel {
   width: 100%;
   height: 100%;
-  background-color: #fff;
-}
-
-.add-place-panel-OLD {
-  position: relative;
-  background-color: inherit;
-  height: 100%;
-  overflow-y: auto;
-  background-color: #4A4A4A;
-  color: #fff;
-}
-
-.add-place-panel-OLD .search-again {
-  margin: -5px 10px 5px 10px;
-}
-
-.add-place-panel-OLD .search-again a {
-  color: #428bca;
-}
-
-.add-place-panel-OLD .search-again a:hover {
-  color: #2D73A0;
-}
-
-.add-place-panel-OLD h4 {
-  margin: 10px;
 }
 
 .add-place-panel .header {
@@ -1075,6 +994,14 @@ temporary hack that lines up the arrows a bit better for most pictures */
   -webkit-font-smoothing:antialiased;
   font-size: 1.2em;
   padding: 10px;
+  position: relative;
+}
+
+.add-place-panel .close-control {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 20pt;
 }
 
 .add-place-panel .header .breadcrumb-separator {
@@ -1110,7 +1037,13 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 100%;
 }
 
-.add-place-panel .add-place-body {
+.add-place-panel .search-panel {
+  width: 100%;
+  height: 100%;
+  overflow-y: scroll;
+}
+
+.add-place-panel .search-panel-body {
   margin: 10px;
   color: #000;
 }
