@@ -804,7 +804,7 @@ hr.dropdown-separator {
   width: 133px;
 }
 
-#main-control-buttons .add-place-options-dropdown {
+.add-place-options-dropdown {
   background-color: #4A4A4A;
   border-radius: 0;
   margin: -1px 0 0 -1px;
@@ -812,12 +812,12 @@ hr.dropdown-separator {
   width: 133px;
 }
 
-#main-control-buttons .add-place-options-dropdown a {
+.add-place-options-dropdown > li > a {
   color: #fff;
   -webkit-font-smoothing:antialiased;
 }
 
-#main-control-buttons .add-place-options-dropdown a:hover {
+.add-place-options-dropdown > li > a:hover {
   color: #000;
 }
 
@@ -1030,6 +1030,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
   font-size: 0.6em;
   line-height: 1.2em;
   top: -1px;
+}
+
+.add-place-panel .header .header-mode-control {
+  position: relative;
 }
 
 .add-place-panel .header .mode-dropdown-control {

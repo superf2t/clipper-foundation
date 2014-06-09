@@ -144,20 +144,8 @@
             <span class="glyphicon glyphicon-plus"></span>
             Add Places
           </button>
-          <ul class="dropdown-menu add-place-options-dropdown">
-            <li>
-              <a ng-click="openSearchPlaces()" href="javascript:void(0)">Search</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)">From the Web</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)">Travel Guides</a>
-            </li>
-            <li>
-              <a href="javascript:void(0)">Clip My Own</a>
-            </li>
-          </ul>
+          <div tc-include-and-replace="add-place-mode-dropdown-template">
+          </div>
         </span>
         {% endif %}
       </div>
@@ -186,6 +174,17 @@
       </div>
       {% endif %}
     </div>
+  </script>
+
+  <script type="text/ng-template" id="add-place-mode-dropdown-template">
+    <ul class="dropdown-menu add-place-options-dropdown"
+      ng-controller="AddPlaceOptionsDropdownCtrl">
+      <li ng-repeat="option in options">
+        <a ng-click="setOption(option)" href="javascript:void(0)">
+          [[option.name]]
+        </a>
+      </li>
+    </ul>
   </script>
 
   <script type="text/ng-template" id="infowindow-template">
@@ -970,7 +969,12 @@
 
   <script type="text/ng-template" id="add-place-panel-template">
     <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
-      <div ng-if="pageStateModel.inSearchPanel()" ng-include="'search-panel-template'"
+      <div ng-if="pageStateModel.midPanelMode == MidPanelMode.SEARCH_PLACES"
+        ng-include="'search-panel-template'"
+        class="full-width full-height">
+      </div>
+      <div ng-if="pageStateModel.midPanelMode == MidPanelMode.WEB_SEARCH_PLACES"
+        ng-include="'web-search-panel-template'"
         class="full-width full-height">
       </div>
     </div>
@@ -980,9 +984,13 @@
     <div class="header">
       Add Places
       <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
-      <span class="dropdown-toggle mode-dropdown-control">
-        Search
-        <span class="caret"></span>
+      <span class="header-mode-control">
+        <span class="dropdown-toggle mode-dropdown-control">
+          [[pageStateModel.midPanelModeName]]
+          <span class="caret"></span>
+        </span>
+        <div tc-include-and-replace="add-place-mode-dropdown-template">
+        </div>
       </span>
       <div class="close-control">
         <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
@@ -1068,6 +1076,15 @@
       </tc-search-result-marker>
     </div>
   </script>
+
+  <script type="text/ng-template" id="web-search-panel-template">
+    <div class="web-search-panel">
+      <div ng-include="'add-place-panel-header-template'">
+      </div>
+      Hello
+    </div>
+  </script>
+
   {% endif %}
 
   {% if allow_editing %}

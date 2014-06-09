@@ -1095,7 +1095,10 @@ var Grouping = {
 
 var MidPanelMode = {
   GUIDE: 1,
-  SEARCH_PLACES: 2
+  SEARCH_PLACES: 2,
+  WEB_SEARCH_PLACES: 3,
+  TRAVEL_GUIDES: 4,
+  CLIP_MY_OWN: 5
 };
 
 var TutorialState = {
@@ -1110,6 +1113,7 @@ function PageStateModel(grouping, needsTutorial) {
   this.omniboxOpen = false;
   this.midPanelExpanded = false;
   this.midPanelMode = MidPanelMode.GUIDE;
+  this.midPanelModeName = null;
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
@@ -1138,10 +1142,6 @@ function PageStateModel(grouping, needsTutorial) {
 
   this.inAddPlacePanel = function() {
     return this.midPanelMode != MidPanelMode.GUIDE;
-  };
-
-  this.inSearchPanel = function() {
-    return this.midPanelMode == MidPanelMode.SEARCH_PLACES;
   };
 
   this.isGroupByCategory = function() {
@@ -1310,6 +1310,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
+  $scope.MidPanelMode = MidPanelMode;
   $scope.planModel = $tripPlanModel;
   $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
@@ -1361,11 +1362,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.openGuide = function() {
     $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
-    $scope.openMidPanel();
-  };
-
-  $scope.openSearchPlaces = function() {
-    $pageStateModel.midPanelMode = MidPanelMode.SEARCH_PLACES;
     $scope.openMidPanel();
   };
 
@@ -2026,6 +2022,23 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $searchResultState.clear();
     $filterModel.searchResultsEmphasized = false;
   });
+}
+
+function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel) {
+  $scope.options = [
+    {name: 'Search', mode: MidPanelMode.SEARCH_PLACES},
+    {name: 'From the Web', mode: MidPanelMode.WEB_SEARCH_PLACES},
+    {name: 'Travel Guides', mode: MidPanelMode.TRAVEL_GUIDES},
+    {name: 'Clip My Own', mode: MidPanelMode.CLIP_MY_OWN}
+  ];
+
+  $scope.setOption = function(option) {
+    if ($pageStateModel.midPanelMode != option.mode) {
+      $pageStateModel.midPanelMode = option.mode;
+      $pageStateModel.midPanelModeName = option.name;
+      $pageStateModel.midPanelExpanded = true;
+    }
+  };
 }
 
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
@@ -3679,6 +3692,16 @@ function tcImageCarousel() {
   };
 }
 
+function tcIncludeAndReplace() {
+  return {
+    restrict: 'A',
+    replace: true,
+    templateUrl: function(element, attrs) {
+      return attrs.tcIncludeAndReplace;
+    }
+  };
+}
+
 function bnLazySrc( $window, $document, $rootScope ) {
     // I manage all the images that are currently being
     // monitored on the page for lazy loading.
@@ -4125,6 +4148,7 @@ angular.module('directivesModule', [])
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)
+  .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 function makeFilter(fn) {
@@ -4174,6 +4198,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
+    .controller('AddPlaceOptionsDropdownCtrl', AddPlaceOptionsDropdownCtrl)
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
