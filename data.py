@@ -307,8 +307,11 @@ def load_trip_plans_by_ids(trip_plan_ids):
     return [load_trip_plan_by_id(id) for id in trip_plan_ids]
 
 def load_all_trip_plans(session_info):
+    return load_all_trip_plans_for_creator(session_info.user_identifier)
+
+def load_all_trip_plans_for_creator(creator):
     trip_plans = []    
-    fname_prefix = 'trip_plan_%s_' % session_info.user_identifier
+    fname_prefix = 'trip_plan_%s_' % creator
     data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
     for fname in os.listdir(data_dir):
         if fname.startswith(fname_prefix):

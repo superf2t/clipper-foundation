@@ -2105,6 +2105,30 @@ function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
   };
 }
 
+function TravelGuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
+    $mapManager, $filterModel) {
+  $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
+  $scope.loading = true;
+  $scope.tripPlans = null;
+  $scope.selectedTripPlan = null;
+
+  $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
+    .success(function(response) {
+      $scope.loading = false;
+      $scope.tripPlans = response['trip_plans'];
+    });
+
+  $scope.selectTripPlan = function(tripPlan) {
+    $scope.selectedTripPlan = tripPlan;
+    $mapManager.fitBoundsToEntities(tripPlan['entities']);
+    $filterModel.searchResultsEmphasized = true;
+  };
+
+  $scope.backToListings = function() {
+    $scope.selectedTripPlan = null;
+  };
+}
+
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     $tripPlanModel, $entityService, $dataRefreshManager) {
   var me = this;
@@ -4289,6 +4313,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('AddPlaceOptionsDropdownCtrl', AddPlaceOptionsDropdownCtrl)
+    .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
+    .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])

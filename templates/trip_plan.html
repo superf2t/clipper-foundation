@@ -977,6 +977,10 @@
         ng-include="'web-search-panel-template'"
         class="full-width full-height">
       </div>
+      <div ng-if="pageStateModel.midPanelMode == MidPanelMode.TRAVEL_GUIDES"
+        ng-include="'travel-guides-panel-template'"
+        class="full-width full-height">
+      </div>
     </div>
   </script>
 
@@ -1158,6 +1162,55 @@
     </div>
   </script>
 
+  <script type="text/ng-template" id="travel-guides-panel-template">
+    <div class="travel-guides-panel" ng-controller="TravelGuidesPanelCtrl">
+      <div ng-include="'add-place-panel-header-template'">
+      </div>
+      <div class="panel-body">
+        <div>
+          See full itineraries from well-known sources and from travelers like you.
+        </div>
+        <div class="guides-listings" ng-show="!selectedTripPlan">
+          <h4>Popular travel guides for [[locationName]]:</h4>
+          <div ng-show="loading">
+            Loading... <img ng-src="/static/img/spinner-small.gif"/>
+          </div>
+          <div ng-show="!loading && (!tripPlans || !tripPlans.length)">
+            <h4>There are no featured trip plans for this area</h4>
+          </div>
+          <div ng-show="tripPlans && tripPlans.length">
+            <div ng-repeat="tripPlan in tripPlans"
+              class="featured-trip-plan-header featured-trip-plan-preview"
+              ng-style="{'background-image': tripPlan['cover_image_url']}"
+              ng-click="selectTripPlan(tripPlan)">
+              <div class="text">
+                <div class="name">[[tripPlan['name'] ]]</div>
+                <div class="creator">[[tripPlan['creator'] ]]</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="one-guide-panel" ng-show="selectedTripPlan">
+          <div>
+            <a ng-click="backToListings()" href="javascript:void(0)">
+              &laquo; back to guides
+            </a>
+          </div>
+          <div class="featured-trip-plan-header"
+            ng-style="{'background-image': selectedTripPlan['cover_image_url']}">
+            <div class="text">
+              <div class="name">[[selectedTripPlan['name'] ]]</div>
+              <div class="creator">[[selectedTripPlan['creator'] ]]</div>
+            </div>
+          </div>
+          <div ng-repeat="entity in selectedTripPlan['entities']"
+            tc-entity-search-result index="$index" entity-data="entity"
+            search-result-state="searchResultState">
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
   {% endif %}
 
   {% if allow_editing %}
