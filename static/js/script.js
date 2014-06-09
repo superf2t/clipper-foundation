@@ -1949,7 +1949,7 @@ function SearchResultState() {
 
 function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $entityService, $dataRefreshManager, $modal, $pageStateModel,
-    $searchResultState, $filterModel, $map) {
+    $searchResultState, $filterModel, $mapManager) {
   var me = this;
   $scope.queryState = {rawQuery: null};
   $scope.loadingData = false;
@@ -1998,24 +1998,9 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $scope.searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
     $scope.searchComplete = true;
-    me.setMapBounds($scope.searchResults);
+    $mapManager.fitBoundsToEntities($scope.searchResults);
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
-  };
-
-  this.setMapBounds = function(entities) {
-    if (_.isEmpty(entities)) {
-      return;
-    }
-    if (entities.length == 1) {
-      $map.setCenter(gmapsLatLngFromJson(entities[0]['latlng']));
-      return
-    }
-    var bounds = new google.maps.LatLngBounds();
-    $.each(entities, function(i, entity) {
-      bounds.extend(gmapsLatLngFromJson(entity['latlng']));
-    });
-    $map.fitBounds(bounds);
   };
 
   $scope.$on('midpanelclosing', function() {
@@ -2047,7 +2032,7 @@ function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel, $searchResultState
 }
 
 function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
-    $entityService, $searchResultState, $filterModel, $timeout) {
+    $entityService, $searchResultState, $filterModel, $mapManager, $timeout) {
   var me = this;
   $scope.sampleSites = $sampleSites;
   $scope.selectedSite = $sampleSites[0];
@@ -2112,7 +2097,9 @@ function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
         $scope.searching = false;
         $scope.searchComplete = true;
         $filterModel.searchResultsEmphasized = true;
+        $filterModel.emphasizedDayNumber = null;
         $scope.searchResults = response['entities'];
+        $mapManager.fitBoundsToEntities($scope.searchResults);
       });
   };
 }
@@ -3303,6 +3290,23 @@ function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
   };
 }
 
+function MapManager($map) {
+  this.fitBoundsToEntities = function(entities) {
+    if (_.isEmpty(entities)) {
+      return;
+    }
+    if (entities.length == 1) {
+      $map.setCenter(gmapsLatLngFromJson(entities[0]['latlng']));
+      return
+    }
+    var bounds = new google.maps.LatLngBounds();
+    $.each(entities, function(i, entity) {
+      bounds.extend(gmapsLatLngFromJson(entity['latlng']));
+    });
+    $map.fitBounds(bounds);
+  };
+}
+
 // Directives
 
 function tcEntityScroll() {
@@ -4299,7 +4303,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
-    .service('$pagePositionManager', PagePositionManager);
+    .service('$pagePositionManager', PagePositionManager)
+    .service('$mapManager', MapManager);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);

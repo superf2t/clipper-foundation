@@ -494,6 +494,8 @@ hr.dropdown-separator {
 
 .one-entity-search-result .header-bar .name {
   font-size: 1.2em;
+  display: inline-block;
+  width: calc(100% - 110px);
 }
 
 .one-entity-search-result .controls {
