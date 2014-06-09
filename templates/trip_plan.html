@@ -1034,7 +1034,8 @@
 
   <script type="text/ng-template" id="one-entity-search-result-template">
     <div class="one-entity-search-result" tc-entity-result-id="[[index]]"
-      ng-controller="EntitySearchResultCtrl">
+      ng-controller="EntitySearchResultCtrl"
+      ng-mouseenter="highlightResult()">
       <hr class="entity-separator" ng-show="index > 0"/>
       <div class="header-bar">
         <span class="result-letter-icon" tc-search-result-icon

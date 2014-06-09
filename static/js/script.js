@@ -1937,6 +1937,7 @@ function PagePositionManager($rootScope) {
 
 function SearchResultState() {
   this.selectedIndex = null;
+  this.highlightedIndex = null;
   this.savedResultIndices = [];
   this.results = [];
 
@@ -2144,14 +2145,23 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   };
 
   $scope.isSelected = function() {
-    return $scope.searchResultState.selectedIndex == $scope.index;
+    return $scope.searchResultState.selectedIndex == $scope.index ||
+      $scope.searchResultState.highlightedIndex == $scope.index;
   };
 
   $scope.selectResult = function() {
     $scope.searchResultState.selectedIndex = $scope.index;
+    $scope.searchResultState.highlightedIndex = null;
     if (!infowindow) {
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow();
+    }
+  };
+
+  $scope.highlightResult = function() {
+    $scope.searchResultState.highlightedIndex = $scope.index;
+    if (!infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
     }
   };
 
