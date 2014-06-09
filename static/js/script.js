@@ -83,6 +83,9 @@ function EntityModel(entityData, editable) {
   };
 
   this.gmapsLatLng = function() {
+    if (!this.data['latlng']) {
+      return null;
+    }
     return new google.maps.LatLng(this.data['latlng']['lat'], this.data['latlng']['lng']);
   };
 }
@@ -2024,7 +2027,7 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
   });
 }
 
-function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel) {
+function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel, $searchResultState, $filterModel) {
   $scope.options = [
     {name: 'Search', mode: MidPanelMode.SEARCH_PLACES},
     {name: 'From the Web', mode: MidPanelMode.WEB_SEARCH_PLACES},
@@ -2037,7 +2040,80 @@ function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel) {
       $pageStateModel.midPanelMode = option.mode;
       $pageStateModel.midPanelModeName = option.name;
       $pageStateModel.midPanelExpanded = true;
+      $searchResultState.clear();
+      $filterModel.searchResultsEmphasized = false;
     }
+  };
+}
+
+function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
+    $entityService, $searchResultState, $filterModel, $timeout) {
+  var me = this;
+  $scope.sampleSites = $sampleSites;
+  $scope.selectedSite = $sampleSites[0];
+  $scope.queryDropdownState = {isopen: false};
+  $scope.customQueryState = {
+    active: false,
+    input: null,
+    focus: 0
+  };
+  $scope.searching = false;
+  $scope.searchComplete = false;
+  $scope.searchResults = null;
+
+  this.selectDefaultQuery = function() {
+    var site = $scope.selectedSite;
+    if (!_.isEmpty(site['sample_queries'])) {
+      return site['sample_queries'][0];
+    } else if (site['pseudo_query']) {
+      return site['pseudo_query'];
+    }
+    return null;
+  };
+
+  $scope.selectedQuery = this.selectDefaultQuery();
+
+  $scope.selectSite = function(site) {
+    $scope.selectedSite = site;
+    $scope.selectedQuery = me.selectDefaultQuery();
+  }
+
+  $scope.selectQuery = function(query) {
+    $scope.selectedQuery = query;
+  }
+
+  $scope.openCustomQuery = function() {
+    $scope.customQueryState.active = true;
+    $scope.customQueryState.input = null;
+    $timeout(function() {
+      $scope.customQueryState.focus++;
+    });
+  };
+
+  $scope.selectCustomQuery = function() {
+    $scope.selectedQuery = $scope.customQueryState.input;
+    $scope.customQueryState.active = false;
+    $scope.customQueryState.input = null;
+    $scope.queryDropdownState.isopen = false;
+  };
+
+  $scope.querySelectEnabled = function() {
+    var site = $scope.selectedSite;
+    return site['custom_queries_allowed'] || site['sample_queries'];
+  };
+
+  $scope.submitSearch = function() {
+    $scope.searching = true;
+    $scope.searchComplete = false;
+    $searchResultState.clear();
+    $entityService.sitesearchtoentities($scope.selectedSite['host'],
+      $tripPlanModel.tripPlanData, $scope.selectedQuery)
+      .success(function(response) {
+        $scope.searching = false;
+        $scope.searchComplete = true;
+        $filterModel.searchResultsEmphasized = true;
+        $scope.searchResults = response['entities'];
+      });
   };
 }
 

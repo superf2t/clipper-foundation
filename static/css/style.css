@@ -1063,15 +1063,62 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 100%;
 }
 
-.add-place-panel .search-panel {
+.add-place-panel .search-panel,
+.add-place-panel .web-search-panel  {
   width: 100%;
   height: 100%;
   overflow-y: scroll;
 }
 
-.add-place-panel .search-panel-body {
-  margin: 10px;
+.add-place-panel .panel-body {
   color: #000;
+}
+
+.add-place-panel .site-icon {
+  max-width: 16px;
+  max-height: 16px;
+}
+
+.add-place-panel .web-search-panel .sample-site-selector-row {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.add-place-panel .web-search-panel .inline-dropdown-parent {
+  position: relative;
+}
+
+.add-place-panel .web-search-panel .inline-dropdown-parent .dropdown-menu {
+  text-align: left;
+}
+
+.add-place-panel .web-search-panel .custom-search-link {
+  font-style: italic;
+}
+
+.add-place-panel .web-search-panel .custom-query-row {
+  display: inline-block;
+  padding: 3px 20px;
+  width: 203px;
+}
+
+.add-place-panel .web-search-panel .custom-query-input {
+  display: inline-block;
+  width: 130px;
+  height: 28px;
+}
+
+.add-place-panel .web-search-panel .custom-query-row .ok-button {
+  padding: 2px 6px;
+  height: 28px;
+}
+
+.add-place-panel .web-search-panel .search-spinner {
+  text-align: center;
+}
+
+.add-place-panel .web-search-panel .search-results {
+  margin-top: 20px;
 }
 
 /* Custom calculation to support 360px image/map */

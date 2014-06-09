@@ -8,7 +8,7 @@
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-animate.min.js"></script>
-  <script src="/static/js/ui-bootstrap-tpls-0.10.9.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
   <script src="/static/js/sprintf.js"></script>
   <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
@@ -139,7 +139,7 @@
           View Guide
         </button>
         {% if allow_editing %}
-        <span class="add-place-button-container">
+        <span class="add-place-button-container dropdown">
           <button class="btn btn-primary add-place-btn dropdown-toggle">
             <span class="glyphicon glyphicon-plus"></span>
             Add Places
@@ -150,7 +150,7 @@
         {% endif %}
       </div>
       {% if allow_editing %}
-      <div class="right-buttons">
+      <div class="right-buttons dropdown">
         <button class="btn settings-btn dropdown-toggle">
           <span class="glyphicon glyphicon-cog"></span>
         </button>
@@ -459,7 +459,7 @@
                   </span>
                 </h4>
 
-                <div class="day-planner-one-day-controls">
+                <div class="day-planner-one-day-controls dropdown">
                   <a href="javascript:void(0)" class="dropdown-toggle">
                     <span class="glyphicon glyphicon-cog"></span>
                   </a>
@@ -814,7 +814,7 @@
           </span>
         </div>
       </div>
-      <div class="controls" tc-lock-after-scroll scroll-parent="#entity-container"
+      <div class="controls dropdown" tc-lock-after-scroll scroll-parent="#entity-container"
         class-when-fixed="fixed" recompute-spread-on="planModel.tripPlanName()">
         <a class="dropdown-toggle" href="javascript:void(0)">
           Organize <span class="caret"></span>
@@ -984,7 +984,7 @@
     <div class="header">
       Add Places
       <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
-      <span class="header-mode-control">
+      <span class="header-mode-control dropdown">
         <span class="dropdown-toggle mode-dropdown-control">
           [[pageStateModel.midPanelModeName]]
           <span class="caret"></span>
@@ -1006,7 +1006,7 @@
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <div ng-include="'add-place-panel-header-template'">
       </div>
-      <div class="search-panel-body">
+      <div class="panel-body">
         <span class="glyphicon glyphicon-search"></span>
           Search for place names, addresses, or categories to add to your trip
         <div ng-include="'omnibox-template'" class="omnibox-container">
@@ -1078,10 +1078,81 @@
   </script>
 
   <script type="text/ng-template" id="web-search-panel-template">
-    <div class="web-search-panel">
+    <div class="web-search-panel" ng-controller="WebSearchPanelCtrl"
+      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
+      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <div ng-include="'add-place-panel-header-template'">
       </div>
-      Hello
+      <div class="panel-body">
+        <div>
+          Not sure where to go? Browse places rated highly by users and writers on trop travel websites.
+        </div>
+        <div class="sample-site-selector-row">
+          Browse
+          <span class="inline-dropdown-parent dropdown">
+            <button class="btn btn-default dropdown-toggle">
+              <img ng-src="[[selectedSite['icon_url'] ]]" class="site-icon"/>
+              [[selectedSite['display_name'] ]]
+            </button>
+            <ul class="dropdown-menu">
+              <li ng-repeat="site in sampleSites">
+                <a ng-click="selectSite(site)" href="javascript:void(0)">
+                  <img ng-src="[[site['icon_url'] ]]" class="site-icon"/>
+                  [[site['display_name'] ]]
+                </a>
+              </li>
+            </ul>
+          </span>
+          &nbsp;&nbsp;for&nbsp;&nbsp;
+          <span class="inline-dropdown-parent" dropdown is-open="queryDropdownState.isopen">
+            <button class="btn btn-default dropdown-toggle" ng-disabled="!querySelectEnabled()">
+              [[selectedQuery]]
+            </button>
+            <ul class="dropdown-menu">
+              <li ng-repeat="query in selectedSite['sample_queries']">
+                <a ng-click="selectQuery(query)" href="javascript:void(0)">
+                  [[query]]
+                </a>
+              </li>
+              <li ng-click="$event.stopPropagation()"
+                ng-if="selectedSite['custom_queries_allowed']">
+                <a ng-click="openCustomQuery()"
+                  ng-show="!customQueryState.active"
+                  href="javascript:void(0)">
+                  <span class="custom-search-link" >
+                    custom search
+                  </span>
+                </a>
+                <span ng-show="customQueryState.active" class="custom-query-row">
+                  <form ng-submit="selectCustomQuery()">
+                    <input type="text" class="form-control custom-query-input" ng-model="customQueryState.input"
+                    tc-focus-on="customQueryState.focus"/>
+                    <button class="btn ok-button">
+                      ok
+                    </button>
+                  </form>
+                </span>
+              </li>
+            </ul>
+          </span>
+          <button ng-click="submitSearch()" class="btn btn-primary">
+            Go
+          </button>
+        </div>
+        <div ng-show="searching" class="search-spinner">
+          <img ng-src="/static/img/spinner-small.gif"/>
+        </div>
+        <div class="search-results" ng-if="searchComplete && searchResults && searchResults.length">
+          <h4>Results from [[selectedSite['display_name'] ]]</h4>
+          <div ng-repeat="result in searchResults"
+            tc-entity-search-result index="$index" entity-data="result"
+            search-result-state="searchResultState">
+          </div>
+        </div>
+        <div ng-if="searchComplete && (!searchResults || !searchResults.length)">
+          <h4>No places found</h4>
+        </div>
+      </div>
     </div>
   </script>
 
@@ -1250,7 +1321,7 @@
               TravelClipper can organize and map places from other websites. Try searching for restaurants, lodging, and attractions from these sample sites.
             </div>
             <div class="site-select">
-              <span class="site-select-inner">
+              <span class="site-select-inner dropdown">
                 <button class="btn btn-default dropdown-toggle selected-site-button">
                   [[selectedSiteState.site['prompt_text'] ]]
                   <img class="site-logo-img" ng-src="[[selectedSiteState.site['icon_url'] ]]"/>

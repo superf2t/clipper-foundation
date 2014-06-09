@@ -44,6 +44,18 @@ def find_tripadvisor_attractions_url(location_name):
         return 'http://www.tripadvisor.com/Attractions-g%d.html' % geo_id
     return None
 
+def find_tripadvisor_restaurants_url(location_name):
+    geo_id = find_tripadvisor_geo_id(location_name)
+    if geo_id:
+        return 'http://www.tripadvisor.com/Restaurants-g%d.html' % geo_id
+    return None
+
+def find_tripadvisor_hotels_url(location_name):
+    geo_id = find_tripadvisor_geo_id(location_name)
+    if geo_id:
+        return 'http://www.tripadvisor.com/Hotels-g%d.html' % geo_id
+    return None
+
 if __name__ == '__main__':
     url = find_hotelsdotcom_url('Mandarin Oriental, Kuala Lumpur Hotel')
     print url
