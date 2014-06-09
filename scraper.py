@@ -206,7 +206,14 @@ class TripAdvisorScraper(ScrapedPage):
             REQUIRES_SERVER_PAGE_SOURCE),
         ('^http(s)?://www\.tripadvisor\.com/Attractions-.*\.html$',
             ScrapedPage.result_page_expander('.//div[@id="ATTRACTION_OVERVIEW"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
+            REQUIRES_SERVER_PAGE_SOURCE),
+        ('^http(s)?://www\.tripadvisor\.com/Hotels-.*\.html$',
+            ScrapedPage.result_page_expander('.//div[@id="HAC_RESULTS"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
+            REQUIRES_SERVER_PAGE_SOURCE),
+        ('^http(s)?://www\.tripadvisor\.com/Restaurants-.*\.html$',
+            ScrapedPage.result_page_expander('.//div[@id="EATERY_SEARCH_RESULTS"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
             REQUIRES_SERVER_PAGE_SOURCE))
+
 
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
