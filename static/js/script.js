@@ -1937,6 +1937,7 @@ function PagePositionManager($rootScope) {
 
 function SearchResultState() {
   this.selectedIndex = null;
+  this.highlightedIndex = null;
   this.savedResultIndices = [];
   this.results = [];
 
@@ -2104,6 +2105,30 @@ function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
   };
 }
 
+function TravelGuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
+    $mapManager, $filterModel) {
+  $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
+  $scope.loading = true;
+  $scope.tripPlans = null;
+  $scope.selectedTripPlan = null;
+
+  $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
+    .success(function(response) {
+      $scope.loading = false;
+      $scope.tripPlans = response['trip_plans'];
+    });
+
+  $scope.selectTripPlan = function(tripPlan) {
+    $scope.selectedTripPlan = tripPlan;
+    $mapManager.fitBoundsToEntities(tripPlan['entities']);
+    $filterModel.searchResultsEmphasized = true;
+  };
+
+  $scope.backToListings = function() {
+    $scope.selectedTripPlan = null;
+  };
+}
+
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     $tripPlanModel, $entityService, $dataRefreshManager) {
   var me = this;
@@ -2144,14 +2169,23 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   };
 
   $scope.isSelected = function() {
-    return $scope.searchResultState.selectedIndex == $scope.index;
+    return $scope.searchResultState.selectedIndex == $scope.index ||
+      $scope.searchResultState.highlightedIndex == $scope.index;
   };
 
   $scope.selectResult = function() {
     $scope.searchResultState.selectedIndex = $scope.index;
+    $scope.searchResultState.highlightedIndex = null;
     if (!infowindow) {
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow();
+    }
+  };
+
+  $scope.highlightResult = function() {
+    $scope.searchResultState.highlightedIndex = $scope.index;
+    if (!infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
     }
   };
 
@@ -4279,6 +4313,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('AddPlaceOptionsDropdownCtrl', AddPlaceOptionsDropdownCtrl)
+    .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
+    .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])

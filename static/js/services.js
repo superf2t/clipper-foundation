@@ -167,6 +167,11 @@ function TripPlanService($http) {
     var request = {'gmaps_url': url};
     return $http.post('/tripplanservice/gmapsimport', request);
   }
+
+  this.findTripPlans = function(locationLatlng) {
+    var request = {'location_latlng': locationLatlng};
+    return $http.post('/tripplanservice/findtripplans', request);
+  }
 }
 
 var TripPlanServiceError = {

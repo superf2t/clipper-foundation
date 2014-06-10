@@ -6,6 +6,7 @@ import data
 import clip_logic
 import enums
 import geocode
+import geometry
 import google_places
 import kml_import
 import sample_sites
@@ -405,12 +406,28 @@ class GmapsImportResponse(service.ServiceResponse):
         super(GmapsImportResponse, self).__init__(**kwargs)
         self.trip_plan = trip_plan
 
+class FindTripPlansRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(serializable.objf('location_latlng', data.LatLng))
+
+    def __init__(self, location_latlng=None):
+        self.location_latlng = location_latlng
+
+class FindTripPlansResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('trip_plans', data.TripPlan)))
+
+    def __init__(self, trip_plans=None, **kwargs):
+        super(FindTripPlansResponse, self).__init__(**kwargs)
+        self.trip_plans = trip_plans
+
 class TripPlanService(service.Service):
     METHODS = service.servicemethods(
         ('get', TripPlanGetRequest, TripPlanGetResponse),
         ('mutate', TripPlanMutateRequest, TripPlanMutateResponse),
         ('clone', TripPlanCloneRequest, TripPlanCloneResponse),
-        ('gmapsimport', GmapsImportRequest, GmapsImportResponse))
+        ('gmapsimport', GmapsImportRequest, GmapsImportResponse),
+        ('findtripplans', FindTripPlansRequest, FindTripPlansResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -540,6 +557,27 @@ class TripPlanService(service.Service):
         return GmapsImportResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             trip_plan=trip_plan)
+
+    FEATURED_TRIP_PLANS_USERS = (
+         'admin@unicyclelabs.com', 'admin@nytimes.com',
+         'admin@nomadicmatt.com', 'admin@letsgo.com',
+        )
+
+    def findtripplans(self, request):
+        featured_trip_plans = []
+        for username in self.FEATURED_TRIP_PLANS_USERS:
+            featured_trip_plans.extend(data.load_all_trip_plans_for_creator(username))
+        trip_plans = []
+        for trip_plan in featured_trip_plans:
+            if not trip_plan.location_latlng:
+                continue
+            distance = geometry.earth_distance_meters(trip_plan.location_latlng.lat, trip_plan.location_latlng.lng,
+                request.location_latlng.lat, request.location_latlng.lng)
+            if distance < 10000:
+                trip_plans.append(trip_plan)
+        return FindTripPlansResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plans=trip_plans)
 
 class NoteGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
