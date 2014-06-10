@@ -670,15 +670,10 @@ hr.dropdown-separator {
 }
 
 .account-dropdown {
-  position: fixed;
-  z-index: 10000;
   width: 300px;
-  top: 41px;
-  right: 0px;
-  background-color: white;
   padding: 20px;
-  list-style: none;
   background-color: rgba(255, 255, 255, 0.9);
+  top: 93%;
 }
 
 .account-dropdown-login-info {

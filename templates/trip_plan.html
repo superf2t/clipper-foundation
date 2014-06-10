@@ -27,10 +27,12 @@
         <ul class="nav navbar-nav navbar-right" id="header-site">
           <li>
             <ul class="nav nav-pills">
-              <li class="view-mode-pill">
-                <a href="javascript:void(0)" ng-click="toggleAccountDropdown()">
+              <li class="view-mode-pill dropdown">
+                <a href="javascript:void(0)" class="dropdown-toggle">
                   <span class="glyphicon glyphicon-user" id="header-user"></span>
                 </a>
+                <div tc-include-and-replace="account-dropdown-template">
+                </div>
               </li>
             <ul>
           </li>
@@ -91,45 +93,48 @@
     {% endif %}
   </div>
 
-  {# This is below the map in the DOM so that it appears visually on top #}
-  <ul ng-show="accountDropdownOpen" class="account-dropdown" ng-controller="AccountDropdownCtrl">
-    <li class="account-dropdown-login-info">
-      <div ng-show="accountInfo.loggedIn && !showLoginForm">
-        <span class="logged-in-email">[[accountInfo['email'] ]]</span>
-        <span class="logout-link">
-          <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
+  <script type="text/ng-template" id="account-dropdown-template">
+    <ul class="account-dropdown dropdown-menu" ng-controller="AccountDropdownCtrl">
+      <li class="account-dropdown-login-info" ng-click="$event.stopPropagation()">
+        <div ng-show="accountInfo.loggedIn && !showLoginForm">
+          <span class="logged-in-email">[[accountInfo['email'] ]]</span>
+          <span class="logout-link">
+            <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
+          </span>
+        </div>
+        <div ng-show="showLoginForm">
+          <form role="form" ng-submit="doLogin()">
+            <input type="text" class="form-control email-entry-input"
+              ng-model="accountInfo['email']"
+              placeholder="Enter your email to login"/>
+            <button type="submit()" class="btn btn-default btn-login">Login</button>
+          </form>
+        </div>
+      </li>
+      <li ng-show="allTripPlans">
+        <div class="my-trip-plans-heading">
+          My Trip Plans
+        </div>
+      </li>
+      <li ng-repeat="tripPlan in allTripPlans">
+        <span ng-if="tripPlan['trip_plan_id'] == currentTripPlan['trip_plan_id']">
+          {# Use the name from the shared info container so it will auto update 
+             if the user edits it inline. #}
+          [[currentTripPlan['name'] ]]
         </span>
-      </div>
-      <div ng-show="showLoginForm">
-        <form role="form" ng-submit="doLogin()">
-          <input type="text" class="form-control email-entry-input"
-            ng-model="accountInfo['email']"
-            placeholder="Enter your email to login"/>
-          <button type="submit()" class="btn btn-default btn-login">Login</button>
-        </form>
-      </div>
-    </li>
-    <li ng-show="allTripPlans">
-      <div class="my-trip-plans-heading">
-        My Trip Plans
-      </div>
-    </li>
-    <li ng-repeat="tripPlan in allTripPlans">
-      <span ng-if="tripPlan['trip_plan_id'] == currentTripPlan['trip_plan_id']">
-        {# Use the name from the shared info container so it will auto update 
-           if the user edits it inline. #}
-        [[currentTripPlan['name'] ]]
-      </span>
-      <span ng-if="tripPlan['trip_plan_id'] != currentTripPlan['trip_plan_id']">
-          <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlan['trip_plan_id'])">
-            [[tripPlan['name'] ]]
-          </a>
+        <span ng-if="tripPlan['trip_plan_id'] != currentTripPlan['trip_plan_id']">
+            <a href="javascript:void(0)" ng-click="loadTripPlan(tripPlan['trip_plan_id'])">
+              [[tripPlan['name'] ]]
+            </a>
+          </span>
+      </li>
+      <li class="create-new-trip-dropdown-link">
+        <span>
+          <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create New Trip Plan</a>
         </span>
-    </li>
-    <li class="create-new-trip-dropdown-link">
-      <a href="javascript:void(0)" ng-click="createNewTripPlan()">Create New Trip Plan</a>
-    </li>
-  </ul>
+      </li>
+    </ul>
+  </script>
 
   <script type="text/ng-template" id="control-buttons-template">
     <div id="main-control-buttons">
