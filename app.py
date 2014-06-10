@@ -43,11 +43,6 @@ def index():
     session_info = decode_session(request.cookies)
     return process_response(render_template('index.html'), request, session_info)
 
-@app.route('/intro')
-def intro():
-    session_info = decode_session(request.cookies)
-    return process_response(render_template('intro.html'), request, session_info)
-
 @app.route('/get_clipper')
 def get_clipper():
     session_info = decode_session(request.cookies)
