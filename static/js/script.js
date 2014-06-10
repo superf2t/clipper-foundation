@@ -1112,7 +1112,7 @@ function PageStateModel(grouping, needsTutorial) {
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
-  this.inTutorial = needsTutorial;
+  this.needsTutorial = needsTutorial;
 
   this.isMapFullScreen = function() {
     return this.inNewTripPlanModal;
@@ -1341,6 +1341,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.openGuide = function() {
     $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
     $scope.openMidPanel();
+  };
+
+  $scope.inTutorial = function() {
+    return $pageStateModel.needsTutorial && $tripPlanModel.isEmpty();
   };
 
   $scope.updateMap = function() {
@@ -1965,7 +1969,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
   };
 }
 
-function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel,
+function AddPlaceOptionsCtrl($scope, $pageStateModel,
     $searchResultState, $filterModel) {
   $scope.options = [
     {name: 'Search', mode: MidPanelMode.SEARCH_PLACES},
@@ -4209,7 +4213,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
-    .controller('AddPlaceOptionsDropdownCtrl', AddPlaceOptionsDropdownCtrl)
+    .controller('AddPlaceOptionsCtrl', AddPlaceOptionsCtrl)
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)

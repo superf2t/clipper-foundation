@@ -1743,6 +1743,64 @@ temporary hack that lines up the arrows a bit better for most pictures */
   height: 100%;
 }
 
+.tutorial-overlay .connector {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-bottom: 15px solid #fff;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  position: absolute;
+  top: -15px;
+  left: 58px;
+}
+
+.tutorial-overlay .content {
+  background-color: #fff;
+  color: #000;
+  padding: 10px 10px 0 10px;
+  position: fixed;
+  top: 104px;
+  left: calc(20% + 133px);
+  max-width: 320px;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0, .3);
+  -moz-box-shadow: 0 6px 12px rgba(0,0,0, .3);
+  box-shadow: 0 6px 12px rgba(0,0,0, .3);
+}
+
+.tutorial-overlay .header {
+  padding: 5px;
+  background-color: #000;
+  color: #fff;
+  font-size: 14pt;
+  text-align: center;
+}
+
+.tutorial-overlay .content-body {
+  padding: 10px;
+}
+
+.tutorial-overlay .intro {
+  font-size: 12pt;
+}
+
+.tutorial-overlay .section {
+  margin: 20px 0;
+}
+
+.tutorial-overlay .section-icon {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 14pt;
+  padding-right: 5px;
+}
+
+.tutorial-overlay .section-text {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: calc(100% - 24px);
+}
+
 .tutorial-left-panel .entity-placeholder {
   padding: 7px 10px;
 }
