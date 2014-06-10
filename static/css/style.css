@@ -31,6 +31,11 @@ a.white-link:hover {
   color: #2D73A0;
 }
 
+a.help-prompt {
+  color: #000;
+  opacity: 0.5;
+}
+
 .light-label {
   font-weight: 400;
 }
@@ -509,13 +514,15 @@ hr.dropdown-separator {
 }
 
 .one-entity-search-result .result-letter-icon .map-marker .marker-shape {
-  width: 20px;
-  height: 31px;
+  width: 24px;
+  height: 37px;
+  position: relative;
+  top: -3px;
 }
 
 .one-entity-search-result .result-letter-icon .search-result-marker .result-letter {
-  top: 3%;
   font-size: 1.2em;
+  top: -3px;
 }
 
 .one-entity-search-result .save-confirmation {
@@ -1059,15 +1066,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 100%;
 }
 
-.add-place-panel .omnibox-container {
+.add-place-panel .search-box-container {
   margin: 10px 0;
-}
-
-.add-place-panel .omnibox-content {
   position: relative;
 }
 
-.add-place-panel .omnibox-content .search-spinner {
+.add-place-panel .search-box-container .search-spinner {
   text-align: center;
   position: absolute;
   top: 7px;
@@ -1076,7 +1080,8 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .add-place-panel .search-panel,
 .add-place-panel .web-search-panel,
-.add-place-panel .travel-guides-panel  {
+.add-place-panel .travel-guides-panel,
+.add-place-panel .clip-my-own-panel {
   height: 100%;
   overflow-y: scroll;
   padding: 15px;
@@ -1090,6 +1095,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .add-place-panel .web-search-panel .sample-site-selector-row {
   text-align: center;
   margin: 10px 0;
+}
+
+.add-place-panel .web-search-panel .sample-site-selector-row .dropdown-toggle{
+  width: 130px;
 }
 
 .add-place-panel .web-search-panel .inline-dropdown-parent {
@@ -1107,16 +1116,21 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .add-place-panel .web-search-panel .custom-query-row {
   display: inline-block;
   padding: 3px 20px;
-  width: 203px;
+  width: 180px;
 }
 
 .add-place-panel .web-search-panel .custom-query-input {
   display: inline-block;
-  width: 130px;
+  width: 160px;
   height: 28px;
+  position: relative;
+  left: -10px;
 }
 
 .add-place-panel .web-search-panel .custom-query-row .ok-button {
+  position: relative;
+  top: -2px;
+  left: -5px;
   padding: 2px 6px;
   height: 28px;
 }
@@ -1175,6 +1189,50 @@ temporary hack that lines up the arrows a bit better for most pictures */
   font-size: 60px !important;
   top: calc(50% - 30px) !important;
   margin: none;
+}
+
+.add-place-panel .clip-my-own-panel .sample-sites-hover-window {
+  padding: 10px 20px;
+  width: 75%;
+  position: absolute;
+  left: 12.5%;
+  border: 1px solid rgba(0, 0, 0, .5)
+  border-radius: 2px;
+  list-style: none;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  -moz-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  z-index: 1;
+  background-color: #FAFAFA;
+}
+
+.add-place-panel .clip-my-own-panel .section-separator {
+  border-top: 1px solid #ddd;
+}
+
+.add-place-panel .clip-my-own-panel .bookmarklet {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.add-place-panel .clip-my-own-panel .bookmarklet-link {
+  display: inline-block;
+  padding: 15px 25px;
+  border: 1px solid #357ebd;
+  border-radius: 2px;
+  background-color: #428bca;
+  color: #fff;
+  cursor: move;
+}
+
+.add-place-panel .clip-my-own-panel .results,
+.add-place-panel .clip-my-own-panel .no-results {
+  margin-top: 20px;
+}
+
+.add-place-panel .clip-my-own-panel .invalid-url {
+  text-align: center;
+  font-size: 12pt;
 }
 
 /* Custom calculation to support 360px image/map */
@@ -1704,15 +1762,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   color: #2D73A0;
 }
 
-.tutorial-map-panel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.tutorial-map-panel .backdrop {
+.tutorial-overlay .backdrop {
   background-color: #000;
   opacity: 0.5;
   position: absolute;
@@ -1722,245 +1772,62 @@ temporary hack that lines up the arrows a bit better for most pictures */
   height: 100%;
 }
 
-.tutorial-map-panel .content {
-  width: calc(100% - 300px);
-  max-width: 700px;
-  max-height: calc(100% - 100px);
-  overflow-y: auto;
-  position: relative;
-  top: 100px;
-  margin: auto;
+.tutorial-overlay .connector {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-bottom: 15px solid #fff;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  position: absolute;
+  top: -15px;
+  left: 58px;
+}
+
+.tutorial-overlay .content {
   background-color: #fff;
-  border-radius: 2px;
-  padding: 20px;
   color: #000;
-  box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.5);
+  padding: 10px 10px 0 10px;
+  position: fixed;
+  top: 104px;
+  left: calc(20% + 133px);
+  max-width: 320px;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0, .3);
+  -moz-box-shadow: 0 6px 12px rgba(0,0,0, .3);
+  box-shadow: 0 6px 12px rgba(0,0,0, .3);
 }
 
-.tutorial-map-panel .content-scroll-container {
-  overflow-y: auto;
-  position: relative;
-}
-
-.tutorial-map-panel .content-scroll-container.needs-min-height {
-  min-height: 300px;
-}
-
-.tutorial-map-panel .start-new-trip-form .search-results {
-  text-align: left;
-}
-
-.tutorial-map-panel .awesome {
-  margin-bottom: 30px;
-  font-size: 12pt;
-  text-align: center;
-}
-
-.tutorial-map-panel .where-are-you-going {
-  font-size: 24pt;
-  margin-bottom: 15px;
-  text-align: center;
-}
-
-.tutorial-map-panel .just-exploring {
-  margin-bottom: 15px;
-  font-size: 12pt;
-  text-align: center;
-}
-
-.tutorial-map-panel .text-lg {
-  font-size: 14pt;
-}
-
-.tutorial-map-panel .text-md {
-  font-size: 13pt;
-}
-
-.tutorial-map-panel .text-section {
-  margin: 20px 0;
-}
-
-.tutorial-map-panel .text-with-image-section {
-  margin: 20px 0;
-  position: relative;
-}
-
-.tutorial-map-panel .text-with-image-section .text-section {
-  width: 75%;
-  margin: 0;
-  display: inline-block;
-}
-
-.tutorial-map-panel .text-with-image-section .image-section {
-  width: calc(25% - 4px);
-  display: inline-block;
-  vertical-align: top;
-  text-align: center;
-  margin-top: 14px;
-}
-
-.tutorial-map-panel .site-select {
-  text-align: center;
-  margin: 20px 0;
-  position: relative;
-}
-
-.tutorial-map-panel .directions {
-  font-size: 1.1em;
-}
-
-.tutorial-map-panel .site-select .site-select-inner {
-  position: relative;
-}
-
-.tutorial-map-panel .site-select .site-select-dropdown {
-  text-align: left;
-  margin: 10px 0;
-}
-
-.tutorial-map-panel .site-select .selected-site-button {
-  -webkit-box-shadow: none;
-  -moz-box-shadow: none;
-  box-shadow: none;
-}
-
-.tutorial-map-panel .site-logo-img {
-  max-height: 16px;
-  position: relative;
-  top: -2px;
-}
-
-.tutorial-map-panel .searching-msg {
-  text-align: center;
-  font-size: 12pt;
-  margin-top: 20px;
-}
-
-.tutorial-map-panel .search-results {
-  text-align: center;
-}
-
-.tutorial-map-panel .search-results .search-add-prompt {
-  color: #777;
-  margin-bottom: 10px;
-}
-
-.tutorial-map-panel .search-result {
-  display: inline-block;
-  width: 50%;
-  text-align: left;
-  cursor: pointer;
-  position: relative;
-  vertical-align: top;
-}
-
-.tutorial-map-panel .search-result .one-entity-listing:hover {
-  background-color: #bbb;
-}
-
-.tutorial-map-panel .search-result .saving,
-.tutorial-map-panel .search-result .saved  {
-  color: rgb(39, 172, 113);
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-}
-
-.tutorial-map-panel .no-results-msg {
-  text-align: center;
-  margin: 20px 0 10px 0;
-  font-size: 14pt
-}
-
-.tutorial-map-panel .no-results-expl {
-  text-align: center;
-}
-
-.tutorial-map-panel .skip-link {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-}
-
-.tutorial-map-panel .skip-link a,
-.tutorial-map-panel .email-skip-link a {
-  color: #428bca;
-}
-
-.tutorial-map-panel .skip-link a:hover,
-.tutorial-map-panel .email-skip-link a:hover {
-  color: #2D73A0;
-}
-
-.tutorial-map-panel .email-form {
-  width: 80%;
-  margin: 40px auto 10px auto;
-}
-
-.tutorial-map-panel .email-input {
-  width: calc(100% - 80px);
-}
-
-.tutorial-map-panel .email-skip-link {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.tutorial-map-panel .last-thing {
-  margin-bottom: 15px;
-}
-
-.tutorial-map-panel .add-place-fake-button {
-  background-color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3)
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
-}
-
-.tutorial-map-panel .clip-icon {
-  font-size: 30pt;
-  padding: 0 3px;
-  opacity: 0.75;
-}
-
-.tutorial-map-panel .expanded-details {
-  margin-top: 10px;
-}
-
-.tutorial-map-panel .bookmarklet {
-  margin: 20px 0;
-  text-align: center;
-}
-
-.tutorial-map-panel .bookmarklet-link {
-  display: inline-block;
-  padding: 6px 12px;
-  border: 1px solid #357ebd;
-  border-radius: 2px;
-  background-color: #428bca;
+.tutorial-overlay .header {
+  padding: 5px;
+  background-color: #000;
   color: #fff;
-  cursor: move;
+  font-size: 14pt;
+  text-align: center;
 }
 
-.tutorial-map-panel .bookmarklet-help-text {
-  color: #777;
+.tutorial-overlay .content-body {
+  padding: 10px;
 }
 
-.tutorial-map-panel .sample-sites {
-  margin-bottom: 10px;
+.tutorial-overlay .intro {
+  font-size: 12pt;
 }
 
-.tutorial-map-panel .button-panel {
-  margin-top: 10px;
-  text-align: right;
+.tutorial-overlay .section {
+  margin: 20px 0;
 }
 
-.tutorial-map-panel button {
-  border-radius: 1px;
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3)
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+.tutorial-overlay .section-icon {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 14pt;
+  padding-right: 5px;
+}
+
+.tutorial-overlay .section-text {
+  display: inline-block;
+  vertical-align: middle;
+  max-width: calc(100% - 24px);
 }
 
 .tutorial-left-panel .entity-placeholder {
