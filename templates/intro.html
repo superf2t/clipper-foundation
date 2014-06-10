@@ -4,6 +4,7 @@
   <title>TravelClipper</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
@@ -51,12 +52,19 @@
     }
 
     .login {
-      color: #FFFFFF;
       position: absolute;
       top: 20px;
       right: 20px;
       font-size: 1.1em;
       -webkit-font-smoothing:antialiased;
+    }
+
+    .login a {
+      color: #FFFFFF;
+    }
+
+    .login a:hover {
+      color: #2D73A0;
     }
 
     .item-content,
@@ -230,15 +238,109 @@
 
   </style>
   <script>
-    function IntroCtrl($scope) {
+    function IntroCtrl($scope, $http, $window) {
+      var me = this;
       $scope.selectionState = {
         itemNum: 1,
         needsAutoScroll: 0
       };
 
+      $scope.searchState = {
+        rawInput: null
+      };
+
       $scope.goToItem = function(itemNum) {
         $scope.selectionState.itemNum = itemNum;
         $scope.selectionState.needsAutoScroll++;
+      };
+
+      {# TODO: Much of this functionality is copied from StartNewTripInputCtrl,
+        figure out how to share this instead. #}
+
+      $scope.placeChanged = function($place) {
+        if (!$place) {
+          return;
+        }
+        if (!$place['geometry']) {
+          return me.searchForPlace($place['name']);
+        }
+        $scope.selectResult($place);
+      };
+
+      $scope.searchButtonClicked = function() {
+        if ($scope.searchState.rawInput) {
+          me.searchForPlace($scope.searchState.rawInput);
+        }
+      };
+
+      $scope.selectResult = function(place) {
+        var tripPlanDetails = me.placeToTripPlanDetails(place);
+        me.saveNewTripPlan(tripPlanDetails)
+          .success(function(response) {
+            var tripPlanId = response['trip_plans'][0]['trip_plan_id'];
+            $window.location.href = '/trip_plan/' + tripPlanId;
+          });
+      };
+
+      this.searchForPlace = function(query) {
+        $scope.searchResults = null;
+        $scope.searching = true;
+        var request = {
+          query: query
+        };
+        var dummyMap = new google.maps.Map($('<div>')[0], {
+          center: new google.maps.LatLng(0, 0)
+        });
+        var searchService = new google.maps.places.PlacesService(dummyMap);
+        searchService.textSearch(request, function(results, status) {
+          $scope.$apply(function() {
+            $scope.searching = false;
+            if (status != google.maps.places.PlacesServiceStatus.OK) {
+              alert('Search failed, please try again.');
+              return;
+            }
+            $scope.searchResults = results;
+          });
+        });
+      };
+
+      this.placeToTripPlanDetails = function(place) {
+        var geometry = place['geometry'];
+        var location = geometry && geometry['location'];
+        var viewport = geometry && geometry['viewport'];
+        var tripPlanDetails = {
+          'name': place['name'],
+          'location_name': place['formatted_address']
+        };
+        if (location) {
+          tripPlanDetails['location_latlng'] = {
+            'lat': location.lat(),
+            'lng': location.lng()
+          };
+        }
+        if (viewport) {
+          tripPlanDetails['location_bounds'] = {
+            'southwest': {
+              'lat': viewport.getSouthWest().lat(),
+              'lng': viewport.getSouthWest().lng()
+            },
+            'northeast': {
+              'lat': viewport.getNorthEast().lat(),
+              'lng': viewport.getNorthEast().lng()
+            }
+          }
+        }
+        return tripPlanDetails;
+      };
+
+      this.saveNewTripPlan = function(tripPlanDetails) {
+        var request = {
+          'operations': [{
+            'operator': 'ADD',
+            'trip_plan': tripPlanDetails
+          }]
+        };
+        return $http.post('/tripplanservice/mutate', request)
       };
     }
 
@@ -288,10 +390,35 @@
       };
     }
 
+    function tcGooglePlaceAutocomplete() {
+      return {
+        restrict: 'A',
+        scope: {
+          onPlaceChange: '&',
+        },
+        link: function(scope, element, attrs) {
+          var gPlace = new google.maps.places.Autocomplete(element[0], {
+            types: ['geocode'],
+            componentRestrictions: {}
+          });
+
+          google.maps.event.addListener(gPlace, 'place_changed', function() {
+            scope.onPlaceChange({$place: gPlace.getPlace()});
+            scope.$apply();
+          });
+        }
+      };
+    }
+
     angular.module('introApp', [])
       .controller('IntroCtrl', IntroCtrl)
       .directive('tcScrollToItemOn', tcScrollToItemOn)
-      .directive('tcWatchItemScrollState', tcWatchItemScrollState);
+      .directive('tcWatchItemScrollState', tcWatchItemScrollState)
+      .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete);
+
+    angular.element(document).ready(function() {
+      angular.element('#main-input').focus();
+    });
   </script>
 </head>
 <body ng-controller="IntroCtrl">
@@ -307,16 +434,19 @@
     </div>
   </div>
 
+  <div class="site-header">
+    <div class="logo">
+      TripClip
+    </div>
+    <div class="login">
+      <a href="/trip_plan">
+        Login
+      </a>
+    </div>
+  </div>
+
   <div class="items-content">
     <div class="item-1">
-      <div class="site-header">
-        <div class="logo">
-          TripClip
-        </div>
-        <div class="login">
-          Login
-        </div>
-      </div>
       <div class="item-header">
         Find awesome things to do on your trip. From tons of sources.<br>
         Plan it all out - maps, itineraries, photos, everything. Without the pain.<br>
@@ -324,9 +454,12 @@
       </div>
       <div class="search">
         <div class="input-group">
-          <input type="text" class="form-control search-input" placeholder="Where do you want to go?">
+          <input type="text" class="form-control search-input" id="main-input"
+            ng-model="searchState.rawInput"
+            placeholder="Where do you want to go?"
+            tc-google-place-autocomplete on-place-change="placeChanged($place)">
           <span class="input-group-btn">
-            <button class="btn btn-search" type="button">
+            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
               <span class="glyphicon glyphicon-search"></span>
             </button>
           </span>
@@ -339,14 +472,6 @@
       </div>
     </div>
     <div class="item-2">
-      <div class="site-header">
-        <div class="logo">
-          TripClip
-        </div>
-        <div class="login">
-          Login
-        </div>
-      </div>
       <div class="item-backdrop">
       </div>
       <div class="item-header">
@@ -395,14 +520,6 @@
       </div>
     </div>
     <div class="item-3">
-      <div class="site-header">
-        <div class="logo">
-          TripClip
-        </div>
-        <div class="login">
-          Login
-        </div>
-      </div>
       <div class="item-backdrop">
       </div>
       <div class="item-header">
@@ -452,14 +569,6 @@
       </div>
     </div>
     <div class="item-4">
-      <div class="site-header">
-        <div class="logo">
-          TripClip
-        </div>
-        <div class="login">
-          Login
-        </div>
-      </div>
       <div class="item-header">
         <br>
         <br>
@@ -467,9 +576,12 @@
       </div>
       <div class="search">
         <div class="input-group">
-          <input type="text" class="form-control search-input" placeholder="Where do you want to go?">
+          <input type="text" class="form-control search-input"
+            ng-model="searchState.rawInput"
+            placeholder="Where do you want to go?"
+            tc-google-place-autocomplete on-place-change="placeChanged($place)">
           <span class="input-group-btn">
-            <button class="btn btn-search" type="button">
+            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
               <span class="glyphicon glyphicon-search"></span>
             </button>
           </span>

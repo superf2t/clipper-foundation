@@ -1422,7 +1422,7 @@
   </script>
 
   <script type="text/ng-template" id="tutorial-overlay-template">
-    <div class="tutorial-overlay" ng-if="planModel.isEmpty()">
+    <div class="tutorial-overlay" ng-if="planModel.isEmpty() && !pageStateModel.inNewTripPlanModal">
       <div class="backdrop">
       </div>
       <div class="content" ng-show="!pageStateModel.midPanelExpanded">

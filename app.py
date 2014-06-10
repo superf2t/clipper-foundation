@@ -40,11 +40,13 @@ app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
 @app.route('/')
 def index():
-    return process_response(render_template('index.html'))
+    session_info = decode_session(request.cookies)
+    return process_response(render_template('index.html'), request, session_info)
 
 @app.route('/intro')
 def intro():
-    return process_response(render_template('intro.html'))
+    session_info = decode_session(request.cookies)
+    return process_response(render_template('intro.html'), request, session_info)
 
 @app.route('/get_clipper')
 def get_clipper():
