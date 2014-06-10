@@ -88,6 +88,25 @@
       font-size: 1.1em;
     }
 
+    .search-results {
+      background-color: #fff;
+      max-height: 300px;
+      overflow-y: scroll;
+    }
+
+    .one-search-result {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .one-search-result:hover {
+      color: #D0021B;
+    }
+
+    .result-icon {
+      max-width: 24px;
+    }
+
     .btn-search {
       color: #FFFFFF;
       background-color: #4A90E2;
@@ -299,6 +318,11 @@
               alert('Search failed, please try again.');
               return;
             }
+            $.each(results, function(i, result) {
+              if (result['icon'].indexOf('geocode') >= 0) {
+                result['icon'] = '/static/img/place-proximity.svg';
+              }
+            });
             $scope.searchResults = results;
           });
         });
@@ -410,7 +434,12 @@
       };
     }
 
-    angular.module('introApp', [])
+    function interpolator($interpolateProvider) {
+      $interpolateProvider.startSymbol('[[');
+      $interpolateProvider.endSymbol(']]');
+    }
+
+    angular.module('introApp', [], interpolator)
       .controller('IntroCtrl', IntroCtrl)
       .directive('tcScrollToItemOn', tcScrollToItemOn)
       .directive('tcWatchItemScrollState', tcWatchItemScrollState)
@@ -463,6 +492,8 @@
               <span class="glyphicon glyphicon-search"></span>
             </button>
           </span>
+        </div>
+        <div ng-include="'search-results-template'">
         </div>
       </div>
       <div class="learn-more-cta">
@@ -586,6 +617,8 @@
             </button>
           </span>
         </div>
+        <div ng-include="'search-results-template'">
+        </div>
       </div>
     </div>
   </div>
@@ -597,6 +630,15 @@
       </a>
     </div>
   </div>
+
+  <script type="text/ng-template" id="search-results-template">
+    <div class="search-results" ng-if="searchResults && searchResults.length">
+      <div ng-repeat="result in searchResults" class="one-search-result" ng-click="selectResult(result)">
+        <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+        [[result['formatted_address'] ]]
+      </div>
+    </div>
+  </script>
 
   {% include 'intro_icons.html' %}
 </body>
