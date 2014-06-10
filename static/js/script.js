@@ -1955,15 +1955,13 @@ function AddPlacePanelCtrl($scope, $searchResultState, $filterModel) {
   });
 }
 
-function SearchPanelCtrl($scope, $timeout, $tripPlanModel,
-    $entityService, $dataRefreshManager, $modal, $pageStateModel,
-    $searchResultState, $filterModel, $mapManager) {
+function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
+    $pageStateModel, $searchResultState, $filterModel, $mapManager) {
   var me = this;
   $scope.queryState = {rawQuery: null};
   $scope.loadingData = false;
   $scope.searchResults = null;
   $scope.searchComplete = false;
-  $scope.resultsAreFromSearch = true;
 
   $scope.googlePlaceSelected = function(place) {
     $scope.loadingData = true;
@@ -1979,25 +1977,7 @@ function SearchPanelCtrl($scope, $timeout, $tripPlanModel,
     }
   };
 
-  // Move to clip panel ctrl
-  $scope.textPasted = function() {
-    // Ugly hack to wrap this in a timeout; without it, the paste event
-    // fires before the input has been populated with the pasted data.
-    $timeout(function() {
-      if (!$scope.queryState.rawQuery || !looksLikeUrl($scope.queryState.rawQuery)) {
-        return;
-      }
-      $scope.loadingData = true;
-      $scope.searchComplete = false;
-      $scope.resultsAreFromSearch = false;
-      $scope.searchResults = null;
-      $entityService.urltoentities($scope.queryState.rawQuery)
-        .success(me.processResponse);
-    });
-  };
-
   this.processResponse = function(response) {
-    $scope.$broadcast('clearresults');
     if (response['entity']) {
       $scope.searchResults = [response['entity']]
     } else {
@@ -2012,7 +1992,8 @@ function SearchPanelCtrl($scope, $timeout, $tripPlanModel,
   };
 }
 
-function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel, $searchResultState, $filterModel) {
+function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel,
+    $searchResultState, $filterModel) {
   $scope.options = [
     {name: 'Search', mode: MidPanelMode.SEARCH_PLACES},
     {name: 'From the Web', mode: MidPanelMode.WEB_SEARCH_PLACES},
@@ -2125,6 +2106,68 @@ function TravelGuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
 
   $scope.backToListings = function() {
     $scope.selectedTripPlan = null;
+  };
+}
+
+function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
+    $filterModel, $document, $timeout) {
+  var me = this;
+  $scope.state = {rawInput: null};
+  $scope.loadingData = false;
+  $scope.results = null;
+  $scope.clipComplete = false;
+  $scope.invalidUrl = false;
+
+  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
+  $scope.sampleSiteState = {
+    hoverShow: false,
+    clickShow: false,
+
+    show: function() {
+      return this.hoverShow || this.clickShow;
+    }
+  };
+
+  $scope.openSampleSites = function() {
+    $scope.sampleSiteState.clickShow = true;
+    $timeout(function() {
+      $document.on('click', closeSampleSites);
+    });
+  };
+
+  var closeSampleSites = function() {
+    $scope.sampleSiteState.clickShow = false;
+    $document.off('click', null, closeSampleSites);
+    $scope.$apply();
+  };
+
+  $scope.textPasted = function() {
+    // Ugly hack to wrap this in a timeout; without it, the paste event
+    // fires before the input has been populated with the pasted data.
+    $timeout(function() {
+      var input = $scope.state.rawInput;
+      if (!looksLikeUrl(input)) {
+        $scope.invalidUrl = true;
+        return;
+      }
+      $scope.loadingData = true;
+      $scope.clipComplete = false;
+      $scope.results = null;
+      $scope.invalidUrl = false;
+      $scope.siteDomain = null;
+      $entityService.urltoentities(input)
+        .success(me.processResponse);
+    });
+  };
+
+  this.processResponse = function(response) {
+    $scope.results = response['entities'];
+    $scope.loadingData = false;
+    $scope.clipComplete = true;
+    $scope.siteDomain = hostnameFromUrl($scope.state.rawInput);
+    $mapManager.fitBoundsToEntities($scope.results);
+    $filterModel.searchResultsEmphasized = true;
+    $filterModel.emphasizedDayNumber = null;
   };
 }
 
@@ -4315,6 +4358,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
     .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
+    .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
       '$entityService', '$dataRefreshManager', EditPlaceCtrl])
     .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])

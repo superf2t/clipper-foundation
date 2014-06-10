@@ -31,6 +31,11 @@ a.white-link:hover {
   color: #2D73A0;
 }
 
+a.help-prompt {
+  color: #000;
+  opacity: 0.5;
+}
+
 .light-label {
   font-weight: 400;
 }
@@ -1068,7 +1073,8 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .add-place-panel .search-panel,
 .add-place-panel .web-search-panel,
-.add-place-panel .travel-guides-panel  {
+.add-place-panel .travel-guides-panel,
+.add-place-panel .clip-my-own-panel {
   height: 100%;
   overflow-y: scroll;
   padding: 15px;
@@ -1153,6 +1159,50 @@ temporary hack that lines up the arrows a bit better for most pictures */
 }
 
 .add-place-panel .travel-guides-panel .featured-trip-plan-header .creator {
+  font-size: 12pt;
+}
+
+.add-place-panel .clip-my-own-panel .sample-sites-hover-window {
+  padding: 10px 20px;
+  width: 75%;
+  position: absolute;
+  left: 12.5%;
+  border: 1px solid rgba(0, 0, 0, .5)
+  border-radius: 2px;
+  list-style: none;
+  -webkit-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  -moz-box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  box-shadow: 0 6px 12px rgba(0,0,0,.175);
+  z-index: 1;
+  background-color: #FAFAFA;
+}
+
+.add-place-panel .clip-my-own-panel .section-separator {
+  border-top: 1px solid #ddd;
+}
+
+.add-place-panel .clip-my-own-panel .bookmarklet {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.add-place-panel .clip-my-own-panel .bookmarklet-link {
+  display: inline-block;
+  padding: 15px 25px;
+  border: 1px solid #357ebd;
+  border-radius: 2px;
+  background-color: #428bca;
+  color: #fff;
+  cursor: move;
+}
+
+.add-place-panel .clip-my-own-panel .results,
+.add-place-panel .clip-my-own-panel .no-results {
+  margin-top: 20px;
+}
+
+.add-place-panel .clip-my-own-panel .invalid-url {
+  text-align: center;
   font-size: 12pt;
 }
 
