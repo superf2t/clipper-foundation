@@ -28,7 +28,6 @@
       width: 100%;
       height: 100%;
       position: relative;
-
       background-attachment: fixed;
       background-size: cover;
       background-repeat: no-repeat;
@@ -70,6 +69,23 @@
       pointer-events: none;
     }
 
+    .search {
+      width: 30%;
+      position: fixed;
+      top: 40%;
+      left: 35%;
+    }
+
+    .search-input {
+      font-size: 1.1em;
+    }
+
+    .btn-search {
+      color: #FFFFFF;
+      background-color: #4A90E2;
+      padding: 6px 20px;
+    }
+
     .item-backdrop {
       background-color: #fff;
       opacity: 0.8;
@@ -100,8 +116,8 @@
       margin: auto;
       left: 10%;
       top: 15%;
-      color: #fff;
-      font-size: 1.25em;
+      color: #FFFFFF;
+      font-size: 1.2em;
       line-height: 1.6;
       -webkit-font-smoothing:antialiased;
     }
@@ -112,13 +128,12 @@
       text-align: center;
       margin: auto;
       top: 90%;
-      margin-top: 15px;
       font-size: 1.1em;
       color: #000000;
     }
 
     .skip-prompt a {
-      color: #fff;
+      color: #FFFFFF;
     }
 
     .skip-prompt a:hover {
@@ -127,7 +142,7 @@
 
     .nav-controls {
       position: fixed;
-      top: calc(50% - 53px);
+      top: calc(50% - 49px);
       right: 30px;
     }
 
@@ -136,17 +151,17 @@
     }
 
     .nav-controls .nav-circle {
-      background-color: #fff;
+      background-color: #FFFFFF;
       opacity: 0.8;
       height: 12px;
       width: 12px;
       border-radius: 6px;
       display: block;
-      box-shadow: 1px 1px 2px 0px #000;
+      box-shadow: 1px 1px 2px 0px #000000;
     }
 
     .nav-controls .nav-circle:hover {
-      background-color: #ccc;
+      background-color: #CCCCCC;
     }
 
     .nav-controls .nav-circle.selected {
@@ -162,7 +177,6 @@
     .text-md {
       font-size: 1.1em;
       color: #444444;
-
     }
 
     .center {
@@ -201,45 +215,6 @@
       height: 10%;
     }
 
-    .button-panel {
-      position: absolute;
-      bottom: 0;
-      right: 0;
-      margin: 0 15px 15px 0;
-      pointer-events: auto;
-    }
-
-    .btn-primary {
-      border-radius: 2px;
-      border: none;
-      font-size: 1.2em;
-      padding: 8px 12px;
-      background-color: #4A90E2;
-    }
-
-    .btn-primary:hover {
-      background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
-      background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
-      background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
-      background-color: transparent;  background-color: #4A90E2;
-    }
-
-    .item-1-header {
-      margin-bottom: 10px;
-    }
-
-    .item-1-list {
-      margin-left: 10px;
-    }
-
-    .item-1-list .list-step {
-      margin-bottom: 10px;
-    }
-
-    #item-1-icon {
-      margin: 50% 0;
-    }
-
     .learn-more-cta {
       position: absolute;
       bottom: 20px;
@@ -250,6 +225,7 @@
       background-color: #FFFFFF;
       color: #D0021B;
       border-radius: 2px;
+      width: 100px;
     }
 
   </style>
@@ -329,9 +305,6 @@
     </div>
     <div class="item" style="background-image: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg')">
     </div>
-
-<!--     <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-7AMDc_gZveU/Uc-hQvYbuGI/AAAAAAAAisU/4yFH5v_QX9g/w1272-h848-no/IMG_5756.jpg')">
-    </div> -->
   </div>
 
   <div class="items-content">
@@ -349,12 +322,14 @@
         Plan it all out - maps, itineraries, photos, everything. Without the pain.<br>
         Take it all with you on your phone. No Internet required.
       </div>
-      <div class="item-content">
-        <div class="item-content-inner">
-          <div tc-start-new-trip-input
-            on-select-place="placeSelected($tripPlanDetails)"
-            hide-prompt="true" placeholder="'Where do you want to go?'">
-          </div>
+      <div class="search">
+        <div class="input-group">
+          <input type="text" class="form-control search-input" placeholder="Where do you want to go?">
+          <span class="input-group-btn">
+            <button class="btn btn-search" type="button">
+              <span class="glyphicon glyphicon-search"></span>
+            </button>
+          </span>
         </div>
       </div>
       <div class="learn-more-cta">
@@ -406,17 +381,17 @@
               <div ng-include="'map-icon'" class="icon"></div>
             </div>
           </div>
-          <div class="button-panel">
-            <button class="btn btn-primary" ng-click="goToItem(3)">
-              Next
-            </button>
-          </div>
         </div>
       </div>
       <div class="skip-prompt">
         <a href="/trip_plan">
           Want to jump right in?
         </a>
+      </div>
+      <div class="learn-more-cta">
+        <button class="btn btn-learn-more" ng-click="goToItem(3)">
+          Next
+        </button>
       </div>
     </div>
     <div class="item-3">
@@ -463,17 +438,17 @@
               <div ng-include="'calendar-icon'" class="icon"></div>
             </div>
           </div>
-          <div class="button-panel">
-            <button class="btn btn-primary" ng-click="goToItem(4)">
-              Next
-            </button>
-          </div>
         </div>
       </div>
       <div class="skip-prompt">
         <a href="/trip_plan">
           Want to jump right in?
         </a>
+      </div>
+      <div class="learn-more-cta">
+        <button class="btn btn-learn-more" ng-click="goToItem(4)">
+          Next
+        </button>
       </div>
     </div>
     <div class="item-4">
@@ -490,8 +465,14 @@
         <br>
         Take it all with you on your phone. No Internet required.
       </div>
-      <div class="item-content">
-        <div class="item-content-inner">
+      <div class="search">
+        <div class="input-group">
+          <input type="text" class="form-control search-input" placeholder="Where do you want to go?">
+          <span class="input-group-btn">
+            <button class="btn btn-search" type="button">
+              <span class="glyphicon glyphicon-search"></span>
+            </button>
+          </span>
         </div>
       </div>
     </div>
@@ -505,7 +486,6 @@
     </div>
   </div>
 
-  {% include 'widgets.html' %}
   {% include 'intro_icons.html' %}
 </body>
 </html>
