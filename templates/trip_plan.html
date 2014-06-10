@@ -956,22 +956,6 @@
   {% endif %}
 
   {% if allow_editing %}
-  <script type="text/ng-template" id="omnibox-template">
-    <div class="omnibox-content">
-        <input type="text" class="form-control"
-          placeholder="e.g. 'Eiffel Tower', '123 Main St', or 'Cafes'"
-          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
-          tc-focus-on="pageStateModel.midPanelMode"
-          on-place-change="googlePlaceSelected($newPlace)"
-          ng-model="queryState.rawQuery"
-          ng-disabled="loadingData"
-          ng-paste="textPasted()"/>
-        <div ng-show="loadingData" class="search-spinner">
-          <img src="/static/img/spinner-small.gif"/>
-        </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="add-place-panel-template">
     <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
       <div ng-include="'add-place-panel-header-template'">
@@ -1014,12 +998,22 @@
   </script>
 
   <script type="text/ng-template" id="search-panel-template">
-    <div class="search-panel"
+    <div class="search-panel" ng-controller="SearchPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <span class="glyphicon glyphicon-search"></span>
         Search for place names, addresses, or categories to add to your trip
-      <div ng-include="'omnibox-template'" class="omnibox-container">
+      <div class="search-box-container">
+        <input type="text" class="form-control"
+          placeholder="e.g. 'Eiffel Tower', '123 Main St', or 'Cafes'"
+          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
+          tc-focus-on="pageStateModel.midPanelMode"
+          on-place-change="googlePlaceSelected($newPlace)"
+          ng-model="queryState.rawQuery"
+          ng-disabled="loadingData"/>
+        <div ng-show="loadingData" class="search-spinner">
+          <img src="/static/img/spinner-small.gif"/>
+        </div>
       </div>
       <div ng-include="'results-details-panel-template'">
       </div>

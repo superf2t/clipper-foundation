@@ -1948,7 +1948,14 @@ function SearchResultState() {
   };
 }
 
-function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
+function AddPlacePanelCtrl($scope, $searchResultState, $filterModel) {
+  $scope.$on('midpanelclosing', function() {
+    $searchResultState.clear();
+    $filterModel.searchResultsEmphasized = false;
+  });
+}
+
+function SearchPanelCtrl($scope, $timeout, $tripPlanModel,
     $entityService, $dataRefreshManager, $modal, $pageStateModel,
     $searchResultState, $filterModel, $mapManager) {
   var me = this;
@@ -2003,14 +2010,6 @@ function AddPlacePanelCtrl($scope, $timeout, $tripPlanModel,
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
   };
-
-  $scope.$on('midpanelclosing', function() {
-    $scope.queryState.rawQuery = null;
-    $scope.loadingData = false;
-    $scope.searchResults = null;
-    $searchResultState.clear();
-    $filterModel.searchResultsEmphasized = false;
-  });
 }
 
 function AddPlaceOptionsDropdownCtrl($scope, $pageStateModel, $searchResultState, $filterModel) {
@@ -4311,8 +4310,9 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])
-    .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('AddPlaceOptionsDropdownCtrl', AddPlaceOptionsDropdownCtrl)
+    .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
+    .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
     .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
     .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',

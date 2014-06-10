@@ -1054,15 +1054,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 100%;
 }
 
-.add-place-panel .omnibox-container {
+.add-place-panel .search-box-container {
   margin: 10px 0;
-}
-
-.add-place-panel .omnibox-content {
   position: relative;
 }
 
-.add-place-panel .omnibox-content .search-spinner {
+.add-place-panel .search-box-container .search-spinner {
   text-align: center;
   position: absolute;
   top: 7px;
