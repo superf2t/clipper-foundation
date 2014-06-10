@@ -40,7 +40,7 @@
     </div>
   </nav>
 
-  <div id="left-panel" ng-show="pageStateModel.shouldShowLeftPanel()">
+  <div id="left-panel" ng-show="!pageStateModel.inNewTripPlanModal">
     <div id="entity-container" class="entity-container"
       tc-entity-scroll scroll-state="scrollState"
       tc-save-scroll-position scroll-position-watch="itemGroups">
@@ -54,13 +54,13 @@
       </div>
 
       {% if needs_tutorial %}
-      <div ng-include="'tutorial-left-panel-template'" ng-if="pageStateModel.shouldShowTutorialLeftPanel()">
+      <div ng-include="'tutorial-left-panel-template'" ng-if="pageStateModel.inTutorial">
       </div>
       {% endif %}
     </div>
   </div>
 
-  <div id="mid-panel" ng-show="pageStateModel.shouldShowMidPanel()"
+  <div id="mid-panel" ng-show="!pageStateModel.inNewTripPlanModal"
     ng-class="{'closed': !pageStateModel.midPanelExpanded}"
     class="closed">
     <div ng-include="'guide-panel-template'" class="full-width full-height"
@@ -84,12 +84,12 @@
       <div id="map">
       </div>
     </div>
-    <div ng-include="'control-buttons-template'">
-    </div>
     {% if needs_tutorial %}
-    <div ng-include="'tutorial-map-panel-template'" ng-show="pageStateModel.inTutorial()">
+    <div ng-include="'tutorial-overlay-template'">
     </div>
     {% endif %}
+    <div ng-include="'control-buttons-template'">
+    </div>
   </div>
 
   <script type="text/ng-template" id="account-dropdown-template">
@@ -136,9 +136,10 @@
   </script>
 
   <script type="text/ng-template" id="control-buttons-template">
-    <div id="main-control-buttons">
+    <div id="main-control-buttons" ng-show="!pageStateModel.inNewTripPlanModal">
       <div class="left-buttons">
-        <button class="btn btn-primary view-guide-btn" ng-click="openGuide()">
+        <button class="btn btn-primary view-guide-btn" ng-click="openGuide()"
+          ng-disabled="pageStateModel.inTutorial">
           <span class="glyphicon glyphicon-picture"></span>
           View Guide
         </button>
@@ -1422,196 +1423,9 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="tutorial-map-panel-template">
-    <div class="tutorial-map-panel" ng-controller="TutorialCtrl">
+  <script type="text/ng-template" id="tutorial-overlay-template">
+    <div class="tutorial-overlay">
       <div class="backdrop">
-      </div>
-      <div class="content">
-        <div class="content-scroll-container"
-          ng-class="{'needs-min-height': pageStateModel.tutorialState != TutorialState.START}">
-          <div ng-if="pageStateModel.tutorialState == TutorialState.START">
-            <div class="awesome">Awesome! You're planning your first trip.</div>
-            <div class="where-are-you-going">Where do you want to go?</div>
-            <div class="just-exploring">Just exploring? Try these popular locations - Paris, London, or Sydney.</div>
-            <div tc-start-new-trip-input
-              on-select-place="placeSelected($tripPlanDetails)"
-              hide-prompt="true" placeholder="''">
-            </div>
-          </div>
-          <div ng-if="pageStateModel.tutorialState == TutorialState.ADD_INITIAL_PLACES
-            || pageStateModel.tutorialState == TutorialState.ADD_MORE_PLACES">
-            <div class="text-lg">
-              Great! Let's add a few places to your trip.
-            </div>
-            <div class="directions">
-              TravelClipper can organize and map places from other websites. Try searching for restaurants, lodging, and attractions from these sample sites.
-            </div>
-            <div class="site-select">
-              <span class="site-select-inner dropdown">
-                <button class="btn btn-default dropdown-toggle selected-site-button">
-                  [[selectedSiteState.site['prompt_text'] ]]
-                  <img class="site-logo-img" ng-src="[[selectedSiteState.site['icon_url'] ]]"/>
-                  <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu site-select-dropdown">
-                  <li ng-repeat="site in sampleSites">
-                    <a ng-click="selectedSiteState.site = site" href="javascript:void(0)">
-                      [[site['prompt_text'] ]]
-                      <img class="site-logo-img" ng-src="[[site['icon_url'] ]]"/>
-                      <span class="glyphicon glyphicon-ok" ng-show="selectedSiteState.site == site"></span>
-                    </a>
-                  </li>
-                </ul>
-                <button ng-click="searchSite()" class="btn btn-primary">
-                  Go
-                </button>
-              </span>
-            </div>
-            <div class="searching-msg" ng-show="searching">
-              <img ng-src="[[selectedSiteState.site['icon_url'] ]]" class="site-logo-img"/>
-              Searching [[selectedSiteState.site['display_name'] ]] for results in
-              [[tripPlanModel.tripPlanData['location_name'] ]]
-              <img ng-src="/static/img/spinner2.gif"/>
-            </div>
-            <div class="search-results" ng-if="searchResults && searchResults.length">
-              <div class="directions search-add-prompt">
-                Click on places to add them to your trip. You can easily change your mind later.
-              </div>
-              <div>
-                <span ng-repeat="entity in searchResults" class="search-result">
-                  <tc-entity-listing entity-data="entity" on-select="selectResult($entityData)">
-                  </tc-entity-listing>
-                  <span ng-show="entity.saving" class="saving">saving...</span>
-                  <span ng-show="entity.saved" class="saved">saved</span>
-                </span>
-              </div>
-              <div class="button-panel">
-                <button class="btn btn-primary" ng-click="doneAddingPlaces()"
-                  ng-disabled="!savedEntities().length">
-                  Done adding places
-                </button>
-              </div>
-            </div>
-            <div ng-if="searchComplete && (!searchResults || !searchResults.length)">
-              <div class="no-results-msg">
-                Uh oh. No results found.
-              </div>
-              <div class="no-results-expl">
-                This site doesn't have places for where you are going. Please try searching another site.
-              </div>
-            </div>
-          </div>
-          <div ng-if="pageStateModel.tutorialState == TutorialState.ENTER_EMAIL">
-            <div class="text-lg">
-              Your trip is starting to look good!
-            </div>
-            <div>
-              Now might be a good time to save this trip.  Enter you email so that you can
-              easily come back to this trip any time you want.
-            </div>
-            <form class="email-form form-inline" role="form" ng-submit="submitEmail()">
-              <input type="text" class="form-control email-input"
-                ng-model="emailState.email" tc-focus-on="pageStateModel.tutorialState"
-                placeholder="Enter your email address"/>
-              <button class="btn btn-primary" ng-disabled="!emailState.email">
-                Submit
-              </button>
-            </form>
-            <div class="email-skip-link">
-              I'll sign up later.
-              <a ng-click="skipEmail()" href="javascript:void">
-                Skip this step.
-              </a>
-            </div>
-          </div>
-          <div ng-if="pageStateModel.tutorialState == TutorialState.CONCLUSION">
-            <div class="text-md last-thing">
-              Last thing and you're done!
-            </div>
-            <div class="text-lg">
-              There are 3 ways you can add places to your trip.
-            </div>
-            <div class="text-with-image-section">
-              <div class="text-section">
-                <div class="text-md">
-                  Add places by searching
-                </div>
-                <div>
-                  Click the 'Add Places' button to search Google Places or browse recommendations from popular travel websites.
-                </div>
-              </div>
-              <div class="image-section">
-                <button class="btn add-place-fake-button" disabled="true">
-                  Add Place
-                </button>
-              </div>
-            </div>
-            <div class="text-with-image-section">
-              <div class="text-section">
-                <div class="text-md">
-                  Add places by clipping from other trips
-                </div>
-                <div>
-                  Browse trips from friends and travel experts.  When you see a place that looks interesting, look for the Clip button to instantly add it to your trip.
-                </div>
-              </div>
-              <div class="image-section">
-                <span class="glyphicon glyphicon-paperclip clip-icon"></span>
-              </div>
-            </div>
-            <div class="text-section">
-              <div class="text-md">
-                Add places while browsing the web
-              </div>
-              <div>
-                While exploring other websites, use TravelClipper to import places of interest with a single click.
-                <a ng-click="showClipperDetails = !showClipperDetails" href="javascript:void(0)" class="color-link">
-                  <span ng-show="!showClipperDetails">
-                    Learn&nbsp;more&nbsp;&raquo;
-                  </span>
-                  <span ng-show="showClipperDetails">
-                    Learn&nbsp;more&nbsp;&laquo;
-                  </span>
-                </a>
-              </div>
-              <div class="expanded-details" ng-show="showClipperDetails">
-                <div>
-                  The TravelClipper bookmark lets you add places while browsing other websites.  It can pull place names, locations, images, and other information from dozens of travel websites and blogs with a single click.  For all other websites it allows you to quickly pull together the information and images you care about.
-                </div>
-                <div class="bookmarklet">
-                  <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
-                  onclick="event.stopPropagation(); event.preventDefault()">
-                    <span class="bookmarklet-link">
-                      <span class="glyphicon glyphicon-paperclip"></span> Travel Clipper
-                    </span>
-                  </a>
-                  <span class="glyphicon glyphicon-arrow-left"></span>
-                  Drag me to your bookmarks bar
-                </div>
-                <div class="sample-sites">
-                  Sample supported sites:
-                  <a ng-repeat="site in sampleSupportedSites" target="_blank"
-                    ng-href="[[site.url]]" tooltip="[[site.name]]">
-                    <img ng-src="[[site.iconUrl]]" class="site-logo-img"/>
-                  </a>
-                </div>
-                <div class="bookmarklet-help-text">
-                  Don't see your bookmarks bar? Press Cmd+Shift+B (Mac) or Ctrl+Shift+B (PC)
-                </div>
-              </div>
-            </div>
-            <div class="button-panel">
-              <button class="btn btn-primary" ng-click="closeTutorial()">
-                Finish
-              </button>
-            </div>
-          </div>
-          <div class="skip-link" ng-show="pageStateModel.tutorialState != TutorialState.START && pageStateModel.tutorialState != TutorialState.CONCLUSION">
-            <a ng-click="closeTutorial()" href="javascript:void(0)">
-              Skip tutorial
-            </a>
-          </div>
-        </div>
       </div>
     </div>
   </script>

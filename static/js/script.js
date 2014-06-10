@@ -1104,14 +1104,6 @@ var MidPanelMode = {
   CLIP_MY_OWN: 5
 };
 
-var TutorialState = {
-  START: 1,
-  ADD_INITIAL_PLACES: 2,
-  ADD_MORE_PLACES: 3,
-  ENTER_EMAIL: 4,
-  CONCLUSION: 5
-}
-
 function PageStateModel(grouping, needsTutorial) {
   this.omniboxOpen = false;
   this.midPanelExpanded = false;
@@ -1120,27 +1112,10 @@ function PageStateModel(grouping, needsTutorial) {
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
-  this.tutorialState = needsTutorial && TutorialState.START;
-
-  this.inTutorial = function() {
-    return !!this.tutorialState;
-  };
-
-  this.shouldShowLeftPanel = function() {
-    return !(this.inNewTripPlanModal || this.tutorialState == TutorialState.START);
-  };
-
-  this.shouldShowTutorialLeftPanel = function() {
-    return this.tutorialState == TutorialState.START
-    || this.tutorialState == TutorialState.ADD_INITIAL_PLACES;
-  };
-
-  this.shouldShowMidPanel = function() {
-    return !(this.inNewTripPlanModal || this.inTutorial());
-  };
+  this.inTutorial = needsTutorial;
 
   this.isMapFullScreen = function() {
-    return this.inNewTripPlanModal || this.tutorialState == TutorialState.START;
+    return this.inNewTripPlanModal;
   };
 
   this.inAddPlacePanel = function() {
@@ -1520,9 +1495,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
       });
   };
 
-  if ($pageStateModel.inTutorial()) {
-
-  } else if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
+  if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
     $pageStateModel.inNewTripPlanModal = true;
     startTripPlanModal = $modal.open({
       templateUrl: 'start-new-trip-modal-template',
@@ -2108,6 +2081,27 @@ function TravelGuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
     $scope.selectedTripPlan = null;
   };
 }
+
+var SAMPLE_SUPPORTED_SITES = _.map([
+  ['Yelp', 'http://www.yelp.com'],
+  ['TripAdvisor', 'http://www.tripadvisor.com'],
+  ['Foursquare', 'https://foursquare.com', 'https://foursquare.com/img/touch-icon-ipad-retina.png'],
+  ['Hotels.com', 'http://www.hotels.com'],
+  ['Airbnb', 'https://www.airbnb.com'],
+  ['Booking.com', 'http://www.booking.com'],
+  ['Hyatt', 'http://www.hyatt.com'],
+  ['Starwood Hotels', 'http://www.starwoodhotels.com'],
+  ['Hilton', 'http://www.hilton.com'],
+  ['Lonely Planet', 'http://www.lonelyplanet.com'],
+  ['Fodors', 'http://www.fodors.com'],
+  ['Wikipedia', 'http://en.wikipedia.org']
+], function(siteInfo) {
+  return {
+    name: siteInfo[0],
+    url: siteInfo[1],
+    iconUrl: siteInfo.length >= 3 ? siteInfo[2] : siteInfo[1] + '/favicon.ico'
+  };
+});
 
 function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
     $filterModel, $document, $timeout) {
@@ -3228,144 +3222,6 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
   };
 }
 
-var SAMPLE_SUPPORTED_SITES = _.map([
-  ['Yelp', 'http://www.yelp.com'],
-  ['TripAdvisor', 'http://www.tripadvisor.com'],
-  ['Foursquare', 'https://foursquare.com', 'https://foursquare.com/img/touch-icon-ipad-retina.png'],
-  ['Hotels.com', 'http://www.hotels.com'],
-  ['Airbnb', 'https://www.airbnb.com'],
-  ['Booking.com', 'http://www.booking.com'],
-  ['Hyatt', 'http://www.hyatt.com'],
-  ['Starwood Hotels', 'http://www.starwoodhotels.com'],
-  ['Hilton', 'http://www.hilton.com'],
-  ['Lonely Planet', 'http://www.lonelyplanet.com'],
-  ['Fodors', 'http://www.fodors.com'],
-  ['Wikipedia', 'http://en.wikipedia.org']
-], function(siteInfo) {
-  return {
-    name: siteInfo[0],
-    url: siteInfo[1],
-    iconUrl: siteInfo.length >= 3 ? siteInfo[2] : siteInfo[1] + '/favicon.ico'
-  };
-});
-
-function TutorialCtrl($scope, $tripPlanService, $entityService, $map,
-    $tripPlanModel, $pageStateModel, $sampleSites,
-    $accountInfo, $accountService, $document) {
-  $scope.state = $pageStateModel.tutorialState;
-  $scope.tripPlanModel = $tripPlanModel;
-  $scope.TutorialState = TutorialState;
-  $scope.sampleSites = $sampleSites
-  $scope.selectedSiteState = {site: $sampleSites[0]};
-  $scope.searchResults = null;
-  $scope.searching = false;
-  $scope.searchComplete = false;
-  $scope.emailState = {email: null};
-
-  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
-
-  $scope.placeSelected = function(tripPlanDetails) {
-    $scope.saveSettings(tripPlanDetails, function() {
-      $pageStateModel.tutorialState = TutorialState.ADD_INITIAL_PLACES;
-    });
-  };
-
-  $scope.saveSettings = function(tripPlanDetails, opt_callback) {
-    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
-    $tripPlanService.editTripPlan(tripPlanDetails)
-      .success(function(response) {
-        $map.setCenter(gmapsLatLngFromJson(tripPlanDetails['location_latlng']));
-        if (tripPlanDetails['location_bounds']) {
-          $map.fitBounds(gmapsBoundsFromJson(tripPlanDetails['location_bounds']));
-        }
-        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
-        $document[0].title = response['trip_plans'][0]['name'];
-        opt_callback && opt_callback()
-      });
-  };
-
-  $scope.searchSite = function() {
-    $scope.searchResults = null;
-    $scope.searchComplete = false;
-    $scope.searching = true;
-    $entityService.sitesearchtoentities($scope.selectedSiteState.site['host'],
-      $tripPlanModel.tripPlanData)
-      .success(function(response) {
-        $scope.searchResults = response['entities'];
-        $scope.searching = false;
-        $scope.searchComplete = true;
-      });
-  };
-
-  $scope.selectResult = function(entity) {
-    if (entity.saved) {
-      return;
-    }
-    entity.saving = true;
-    $entityService.saveNewEntity(entity, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.addNewEntities(response['entities']);
-          $scope.$emit('redrawgroupings');
-          $pageStateModel.tutorialState = TutorialState.ADD_MORE_PLACES;
-          entity.saving = false;
-          entity.saved = true;
-        }
-      });
-  };
-
-  $scope.savedEntities = function() {
-    return _.filter($scope.searchResults, function(entity) {
-      return entity.saved;
-    });
-  };
-
-  $scope.doneAddingPlaces = function() {
-    if ($accountInfo['email']) {
-      $pageStateModel.tutorialState = TutorialState.CONCLUSION;
-    } else {
-      $pageStateModel.tutorialState = TutorialState.ENTER_EMAIL;      
-    }
-  };
-
-  $scope.submitEmail = function() {
-    $accountService.loginAndMigrate($scope.emailState.email)
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $accountInfo['email'] = $scope.emailState.email;
-          $tripPlanModel.tripPlanData['creator'] = $scope.emailState.email;
-          $pageStateModel.tutorialState = TutorialState.CONCLUSION;
-        } else {
-          var error = extractError(response, AccountServiceError.INVALID_EMAIL);
-          if (error) {
-            alert(error['message']);
-          } else {
-            alert('Login failed');
-          }
-        }
-      }).error(function() {
-        alert('Login failed');
-      });
-  };
-
-  $scope.skipEmail = function() {
-    $pageStateModel.tutorialState = TutorialState.CONCLUSION;
-  };
-
-  $scope.closeTutorial = function() {
-    $pageStateModel.tutorialState = null;
-    if (!$tripPlanModel.isEmpty()) {
-      $pageStateModel.midPanelExpanded = true;
-      var deregister = $scope.$on('mapresized', function() {
-        var bounds = $tripPlanModel.getMapBounds();
-        bounds && $map.fitBounds(bounds);
-        deregister();
-      });
-    }
-  };
-}
-
 function MapManager($map) {
   this.fitBoundsToEntities = function(entities) {
     if (_.isEmpty(entities)) {
@@ -4369,7 +4225,6 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
     .controller('GmapsImporterCtrl', ['$scope', '$timeout', '$tripPlanService',
       '$entityService', '$dataRefreshManager', '$tripPlanModel', GmapsImporterCtrl])
-    .controller('TutorialCtrl', TutorialCtrl)
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcEntityScroll', tcEntityScroll)
