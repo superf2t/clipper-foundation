@@ -1019,6 +1019,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   font-size: 1.2em;
   padding: 10px;
   position: relative;
+  height: 44px;
 }
 
 .add-place-panel .close-control {
@@ -1050,6 +1051,14 @@ temporary hack that lines up the arrows a bit better for most pictures */
   background-color: transparent;  background-color: #4A90E2;
 }
 
+.add-place-panel .panel-body {
+  height: calc(100% - 44px);
+  color: #000;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
 .add-place-panel .omnibox-container {
   margin: 10px 0;
 }
@@ -1068,13 +1077,9 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .add-place-panel .search-panel,
 .add-place-panel .web-search-panel,
 .add-place-panel .travel-guides-panel  {
-  width: 100%;
   height: 100%;
   overflow-y: scroll;
-}
-
-.add-place-panel .panel-body {
-  color: #000;
+  padding: 15px;
 }
 
 .add-place-panel .site-icon {
