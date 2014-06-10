@@ -35,20 +35,47 @@
       background-position: 50% 50%;
     }
 
+    .site-header {
+      position: absolute;
+      top: 0%;
+      width: 100%;
+    }
+
+    .logo {
+      font: 'Raleway';
+      color: #FFFFFF;
+      font-size: 1.6em;
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .login {
+      color: #FFFFFF;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 1.1em;
+      -webkit-font-smoothing:antialiased;
+    }
+
     .item-content,
     .item-backdrop {
-      width: 40%;
-      height: 50%;
+      width: 36%;
+      height: 40%;
       position: fixed;
-      top: 25%;
-      left: 30%;
+      top: 30%;
+      left: 32%;
       pointer-events: none;
     }
 
     .item-backdrop {
       background-color: #fff;
       opacity: 0.8;
-      border-radius: 2px;
+      -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
+      -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
+      box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
     }
 
     .item-content {
@@ -68,16 +95,15 @@
     }
 
     .item-header {
-      text-align: center;
       position: absolute;
-      width: 100%;
+      width: 80%;
       margin: auto;
+      left: 10%;
       top: 15%;
       color: #fff;
-      font-size: 2.4em;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.75);
+      font-size: 1.25em;
+      line-height: 1.6;
       -webkit-font-smoothing:antialiased;
-
     }
 
     .skip-prompt {
@@ -85,10 +111,10 @@
       width: 100%;
       text-align: center;
       margin: auto;
-      top: 75%;
+      top: 90%;
       margin-top: 15px;
-      text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.75);
-      font-size: 1.2em;
+      font-size: 1.1em;
+      color: #000000;
     }
 
     .skip-prompt a {
@@ -112,9 +138,9 @@
     .nav-controls .nav-circle {
       background-color: #fff;
       opacity: 0.8;
-      height: 14px;
-      width: 14px;
-      border-radius: 7px;
+      height: 12px;
+      width: 12px;
+      border-radius: 6px;
       display: block;
       box-shadow: 1px 1px 2px 0px #000;
     }
@@ -124,16 +150,17 @@
     }
 
     .nav-controls .nav-circle.selected {
-      background-color: #4A90E2 !important;
+      background-color: #D0021B !important;
       transition: all 0.5s;
     }
 
     .text-lg {
-      font-size: 1.6em;
+      font-size: 1.2em;
+      color: #D0021B;
     }
 
     .text-md {
-      font-size: 1.2em;
+      font-size: 1.1em;
       color: #444444;
 
     }
@@ -178,15 +205,15 @@
       position: absolute;
       bottom: 0;
       right: 0;
-      margin: 0 10px 10px 0;
+      margin: 0 15px 15px 0;
       pointer-events: auto;
     }
 
     .btn-primary {
       border-radius: 2px;
       border: none;
-      font-size: 14pt;
-      padding: 10px 20px;
+      font-size: 1.2em;
+      padding: 8px 12px;
       background-color: #4A90E2;
     }
 
@@ -212,6 +239,19 @@
     #item-1-icon {
       margin: 50% 0;
     }
+
+    .learn-more-cta {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+    }
+
+    .btn-learn-more {
+      background-color: #FFFFFF;
+      color: #D0021B;
+      border-radius: 2px;
+    }
+
   </style>
   <script>
     function IntroCtrl($scope) {
@@ -281,184 +321,128 @@
 <body ng-controller="IntroCtrl">
   <div class="items" tc-scroll-to-item-on="selectionState.needsAutoScroll"
     tc-watch-item-scroll-state>
-    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-hh0EGY0S1xU/UspIKgaSxkI/AAAAAAAAmKQ/eXE_TqbSc5s/w1276-h848-no/IMG_0883_4_5.jpg')">
+    <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-OBJkwaugUlQ/U5Y_m73xRLI/AAAAAAAAAEE/k8dZp1R5VVY/s1600/tc-index-bw.jpg')">
+    </div>
+    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-FnDb4K0OIb4/U5Y_m9miZ9I/AAAAAAAAAD8/MK6Y37-jMn4/s1600/tc-index.jpg')">
     </div>
     <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg')">
     </div>
-    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-TG_39EmMvtQ/UspLX3y_4PI/AAAAAAAAmKQ/7Qt8GMIfKik/w1531-h1148-no/Aya+Sofia_tonemapped.jpg')">
+    <div class="item" style="background-image: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg')">
     </div>
-    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-dUvax-DFq18/UspLNjkIPqI/AAAAAAAAmKQ/GiJIc25L_ac/w1531-h1148-no/IMG_5810_tonemapped.jpg')">
-    </div>
+
+<!--     <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-7AMDc_gZveU/Uc-hQvYbuGI/AAAAAAAAisU/4yFH5v_QX9g/w1272-h848-no/IMG_5756.jpg')">
+    </div> -->
   </div>
 
   <div class="items-content">
-    <div class="item-backdrop">
-    </div>
     <div class="item-1">
+      <div class="site-header">
+        <div class="logo">
+          TripClip
+        </div>
+        <div class="login">
+          Login
+        </div>
+      </div>
       <div class="item-header">
-        Welcome! Let's introduce you to your trip plan
+        Find awesome things to do on your trip. From tons of sources.<br>
+        Plan it all out - maps, itineraries, photos, everything. Without the pain.<br>
+        Take it all with you on your phone. No Internet required.
       </div>
       <div class="item-content">
         <div class="item-content-inner">
-          <div class="text-lg center item-1-header">
-            Use your trip plan to
-          </div>
-          <div class="item-1-list">
-            <div class="text-with-icon-row">
-              <div class="text-section">
-                <div class="list-step">
-                  <div class="text-lg">
-                    <span class="list-num">1. Collect</span> 
-                  </div>
-                  <div class="text-md">
-                    Get ideas by quickly adding places to your trip from top travel sites and blogs
-                  </div>
-                </div>
-                <div class="list-step">
-                  <div class="text-lg">
-                    <span class="list-num">2. Decide</span>
-                  </div>
-                  <div class="text-md">
-                    View your map, browse photos, and compare places to build an itinerary
-                    of the best places to visit
-                  </div>
-                </div>
-                <div class="list-step">
-                  <div class="text-lg">
-                    <span class="list-num">3. Travel</span>
-                  </div>
-                  <div class="text-md">
-                    Bring your finished plan with you on your iPhone or Android mobile phone or tablet
-                  </div>
-                </div>
-              </div>
-              <div class="icon-section">
-                <div ng-include="'plan-icon'" class="icon" id="item-1-icon"></div>
-              </div>
-            </div>
-          </div>
-          <div class="button-panel">
-            <button class="btn btn-primary" ng-click="goToItem(2)">
-              Go to Step 1
-            </button>
+          <div tc-start-new-trip-input
+            on-select-place="placeSelected($tripPlanDetails)"
+            hide-prompt="true" placeholder="'Where do you want to go?'">
           </div>
         </div>
       </div>
-      <div class="skip-prompt">
-        <a href="/trip_plan">
-          Want to jump right in? Skip this tutorial
-        </a>
+      <div class="learn-more-cta">
+        <button class="btn btn-learn-more" ng-click="goToItem(2)">
+          Learn More
+        </button>
       </div>
     </div>
     <div class="item-2">
-      <div class="item-header">
-        Add attractions, dining, and lodging to your trip plan
-      </div>
-      <div class="item-content">
-        <div class="item-content-inner">
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                Create a map without the effort
-              </div>
-              <div class="text-md">
-                Add places in a single click, even while browsing other websites
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'map-icon'" class="icon"></div>
-            </div>
-          </div>
-          <div class="row-spacer"></div>
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                View photos and read about your&nbsp;places
-              </div>
-              <div class="text-md">
-                We grab photos and descriptions from trusted sources so you don't have to
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'picture-icon'" class="icon"></div>
-            </div>
-          </div>
-          <div class="button-panel">
-            <button class="btn btn-primary" ng-click="goToItem(3)">
-              Go to Step 2
-            </button>
-          </div>
+      <div class="site-header">
+        <div class="logo">
+          TripClip
+        </div>
+        <div class="login">
+          Login
         </div>
       </div>
-      <div class="skip-prompt">
-        <a href="/trip_plan">
-          Want to jump right in? Skip this tutorial
-        </a>
+      <div class="item-backdrop">
       </div>
-    </div>
-    <div class="item-3">
       <div class="item-header">
-        Have fun organizing your trip
+        Find awesome things to do on your trip. From tons of sources.
       </div>
-
       <div class="item-content">
         <div class="item-content-inner">
           <div class="text-with-icon-row">
             <div class="text-section">
               <div class="text-lg">
-                Plan your schedule
+                Get inspired
               </div>
               <div class="text-md">
-                Want a day-by-day itinerary? That's easy.
-                <br/>
-                Just want a short list of places to see?  That's even easier.
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'calendar-icon'" class="icon"></div>
-            </div>
-          </div>
-          <div class="row-spacer"></div>
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                Work together to build the perfect&nbsp;trip
-              </div>
-              <div class="text-md">
-                View and comment on places added by other people traveling with you
+                View and re-mix trips planned by other users and top travel editors from sites like Lonely Planet, the New York Times, and Nomadic Matt.
               </div>
             </div>
             <div class="icon-section">
               <div ng-include="'group-icon'" class="icon"></div>
             </div>
           </div>
+          <div class="row-spacer"></div>
+          <div class="text-with-icon-row">
+            <div class="text-section">
+              <div class="text-lg">
+                Personalize your trip
+              </div>
+              <div class="text-md">
+                Add attractions from your favorite travel sites and blogs. Easily incorporate recommendations from friends and family.
+              </div>
+            </div>
+            <div class="icon-section">
+              <div ng-include="'map-icon'" class="icon"></div>
+            </div>
+          </div>
           <div class="button-panel">
-            <button class="btn btn-primary" ng-click="goToItem(4)">
-              Go to Step 3
+            <button class="btn btn-primary" ng-click="goToItem(3)">
+              Next
             </button>
           </div>
         </div>
       </div>
       <div class="skip-prompt">
         <a href="/trip_plan">
-          Want to jump right in? Skip this tutorial
+          Want to jump right in?
         </a>
       </div>
     </div>
-    <div class="item-4">
+    <div class="item-3">
+      <div class="site-header">
+        <div class="logo">
+          TripClip
+        </div>
+        <div class="login">
+          Login
+        </div>
+      </div>
+      <div class="item-backdrop">
+      </div>
       <div class="item-header">
-        Travel with your Mobile Trip Plan
+        <br>
+        Plan it all out - maps, itineraries, photos, everything. Without the pain.
       </div>
       <div class="item-content">
         <div class="item-content-inner">
           <div class="text-with-icon-row">
             <div class="text-section">
               <div class="text-lg">
-                Use your map to find your way
+                Create a map without the&nbsp;effort
               </div>
               <div class="text-md">
-                It even works on your phone without an international data plan.
-                No more awkwardly asking for directions.
+                Collect places to visit and your mobile travel map builds itself. Even when you're doing research on other websites.
               </div>
             </div>
             <div class="icon-section">
@@ -469,23 +453,45 @@
           <div class="text-with-icon-row">
             <div class="text-section">
               <div class="text-lg">
-                Look up important information
+                Plan your schedule
               </div>
               <div class="text-md">
-                Have phone numbers, addresses, and hours of operation at your fingertips
+                Organize your trip by day or just keep a simple list of places to see. Either way, you'll have a beautiful personal itinerary.
               </div>
             </div>
             <div class="icon-section">
-              <div ng-include="'info-icon'" class="icon"></div>
+              <div ng-include="'calendar-icon'" class="icon"></div>
             </div>
           </div>
           <div class="button-panel">
-            <a href="/trip_plan?tutorial=1">
-              <button class="btn btn-primary">
-                Plan My Trip
-              </button>
-            </a>
+            <button class="btn btn-primary" ng-click="goToItem(4)">
+              Next
+            </button>
           </div>
+        </div>
+      </div>
+      <div class="skip-prompt">
+        <a href="/trip_plan">
+          Want to jump right in?
+        </a>
+      </div>
+    </div>
+    <div class="item-4">
+      <div class="site-header">
+        <div class="logo">
+          TripClip
+        </div>
+        <div class="login">
+          Login
+        </div>
+      </div>
+      <div class="item-header">
+        <br>
+        <br>
+        Take it all with you on your phone. No Internet required.
+      </div>
+      <div class="item-content">
+        <div class="item-content-inner">
         </div>
       </div>
     </div>
@@ -499,6 +505,7 @@
     </div>
   </div>
 
+  {% include 'widgets.html' %}
   {% include 'intro_icons.html' %}
 </body>
 </html>
