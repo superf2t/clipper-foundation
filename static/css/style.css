@@ -410,7 +410,7 @@ hr.dropdown-separator {
 
 .guide-panel .entity-separator,
 .add-place-panel .entity-separator {
-  border-top: 1px solid #BBBBBB;
+  border-top: 1px solid #CCCCCC;
   margin: 10px 0;
 }
 
@@ -1207,7 +1207,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 }
 
 .add-place-panel .clip-my-own-panel .section-separator {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #CCCCCC;
 }
 
 .add-place-panel .clip-my-own-panel .bookmarklet {
