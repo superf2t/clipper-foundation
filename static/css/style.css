@@ -24,7 +24,7 @@ a.color-link:hover {
 }
 
 a.white-link {
-  color: #fff;
+  color: #FFFFFF;
 }
 
 a.white-link:hover {
@@ -358,11 +358,10 @@ hr.dropdown-separator {
 
 .guide-panel .default-hero-img {
   width: 100%;
-  height: 124px;
+  height: 140px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
   background-image: url('/static/img/default-cover.jpg');
-  margin-bottom: 15px;
 }
 
 .guide-panel .title-floater {
@@ -372,13 +371,13 @@ hr.dropdown-separator {
   text-align: center;
   position: relative;
   top: calc(50% - 19px);
-  text-shadow: 2px 2px 3px #000;
+  text-shadow: 1px 1px 2px #000;
 }
 
 .guide-panel .overview .description {
   white-space: pre-line;
   text-align: justify;
-  margin: 0 15px 15px 15px;
+  margin: 15px;
 }
 
 .guide-panel .overview .clip-cta a {
@@ -404,14 +403,14 @@ hr.dropdown-separator {
 
 .guide-panel .close-control {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 20pt;
+  top: 10px;
+  right: 10px;
+  font-size: 16pt;
 }
 
 .guide-panel .entity-separator,
-.results-details-panel .entity-separator {
-  border-top: 1px solid #BBBBBB;
+.add-place-panel .entity-separator {
+  border-top: 1px solid #CCCCCC;
   margin: 10px 0;
 }
 
@@ -515,13 +514,15 @@ hr.dropdown-separator {
 }
 
 .one-entity-search-result .result-letter-icon .map-marker .marker-shape {
-  width: 20px;
-  height: 31px;
+  width: 24px;
+  height: 37px;
+  position: relative;
+  top: -3px;
 }
 
 .one-entity-search-result .result-letter-icon .search-result-marker .result-letter {
-  top: 3%;
   font-size: 1.2em;
+  top: -3px;
 }
 
 .one-entity-search-result .save-confirmation {
@@ -803,15 +804,20 @@ hr.dropdown-separator {
   color: #fff;
   background-color: #4A90E2;
   -webkit-font-smoothing:antialiased;
-  width: 133px;
+  width: 140px;
 }
 
 .add-place-options-dropdown {
   background-color: #4A4A4A;
   border-radius: 0;
-  margin: -1px 0 0 -1px;
+  margin: -1px 0px 0px 0px;
   min-width: inherit;
-  width: 133px;
+  width: 140px;
+}
+
+.header .add-place-options-dropdown {
+  position: absolute;
+  top: 33px;
 }
 
 .add-place-options-dropdown > li > a {
@@ -820,7 +826,8 @@ hr.dropdown-separator {
 }
 
 .add-place-options-dropdown > li > a:hover {
-  color: #000;
+  background-color: #444444;
+  color: #FFFFFF;
 }
 
 #main-control-buttons .right-buttons {
@@ -868,6 +875,8 @@ hr.dropdown-separator {
 }
 
 .infowindow-internal {
+  min-width: 200px;
+  max-width: 400px;
   text-align: center;
   border-radius: 1px;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
@@ -969,7 +978,6 @@ temporary hack that lines up the arrows a bit better for most pictures */
   font-size: 60px !important;
   top: calc(50% - 30px) !important;
   margin: none;
-
 }
 
 .note-text {
@@ -1024,9 +1032,9 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .add-place-panel .close-control {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  font-size: 20pt;
+  top: 10px;
+  right: 10px;
+  font-size: 16pt;
 }
 
 .add-place-panel .header .breadcrumb-separator {
@@ -1090,6 +1098,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
   margin: 10px 0;
 }
 
+.add-place-panel .web-search-panel .sample-site-selector-row .dropdown-toggle{
+  width: 130px;
+}
+
 .add-place-panel .web-search-panel .inline-dropdown-parent {
   position: relative;
 }
@@ -1105,18 +1117,15 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .add-place-panel .web-search-panel .custom-query-row {
   display: inline-block;
   padding: 3px 20px;
-  width: 203px;
+  width: 180px;
 }
 
 .add-place-panel .web-search-panel .custom-query-input {
   display: inline-block;
-  width: 130px;
+  width: 160px;
   height: 28px;
-}
-
-.add-place-panel .web-search-panel .custom-query-row .ok-button {
-  padding: 2px 6px;
-  height: 28px;
+  position: relative;
+  left: -10px;
 }
 
 .add-place-panel .web-search-panel .search-spinner {
@@ -1151,7 +1160,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
   width: 100%;
   position: absolute;
   top: calc(50% - 28px);
-  text-shadow: 2px 2px 3px #000;
+  text-shadow: 1px 1px 2px #000;
 }
 
 .add-place-panel .travel-guides-panel .featured-trip-plan-header .name {
@@ -1160,6 +1169,19 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .add-place-panel .travel-guides-panel .featured-trip-plan-header .creator {
   font-size: 12pt;
+}
+
+.add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
+  font-size: 60px !important;
+  top: calc(50% - 30px) !important;
+  margin: none;
+  left: 16px;
+}
+
+.add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-prev {
+  font-size: 60px !important;
+  top: calc(50% - 30px) !important;
+  margin: none;
 }
 
 .add-place-panel .clip-my-own-panel .sample-sites-hover-window {
@@ -1178,7 +1200,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 }
 
 .add-place-panel .clip-my-own-panel .section-separator {
-  border-top: 1px solid #ddd;
+  border-top: 1px solid #CCCCCC;
 }
 
 .add-place-panel .clip-my-own-panel .bookmarklet {

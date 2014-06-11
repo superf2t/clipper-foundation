@@ -162,9 +162,6 @@
             <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
           </li>
           <li>
-            <a href="javascript:void(0)">Advanced Places Editor</a>
-          </li>
-          <li>
             <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
           </li>
           <li>
@@ -1003,8 +1000,7 @@
     <div class="search-panel" ng-controller="SearchPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      <span class="glyphicon glyphicon-search"></span>
-        Search for place names, addresses, or categories to add to your trip
+      Search for place names, addresses, or categories to add to your trip
       <div class="search-box-container">
         <input type="text" class="form-control"
           placeholder="e.g. 'Eiffel Tower', '123 Main St', or 'Cafes'"
@@ -1089,7 +1085,7 @@
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <div>
-        Not sure where to go? Browse places rated highly by users and writers on trop travel websites.
+        Not sure where to go? Browse places rated highly by users and writers on top travel websites.
       </div>
       <div class="sample-site-selector-row">
         Browse
@@ -1131,9 +1127,6 @@
                 <form ng-submit="selectCustomQuery()">
                   <input type="text" class="form-control custom-query-input" ng-model="customQueryState.input"
                   tc-focus-on="customQueryState.focus"/>
-                  <button class="btn ok-button">
-                    ok
-                  </button>
                 </form>
               </span>
             </li>
@@ -1189,7 +1182,7 @@
       <div class="one-guide-panel" ng-show="selectedTripPlan">
         <div>
           <a ng-click="backToListings()" href="javascript:void(0)" class="color-link">
-            &laquo; back to guides
+            &laquo; Back to guides
           </a>
         </div>
         <div class="featured-trip-plan-header"
@@ -1212,7 +1205,7 @@
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <p>
-        The TravelClipper bookmark lets you add places while browsing other websites.  It can pull place names, locations, images, and other information from dozens of
+        Add places to your trip while browsing other websites. The TravelClipper bookmark clips place names, locations, images, and other information from dozens of
         <a ng-mouseenter="sampleSiteState.hoverShow = true"
           ng-mouseleave="sampleSiteState.hoverShow = false"
           ng-click="openSampleSites()"
@@ -1222,7 +1215,7 @@
         with a single click.
       </p>
       <ul class="sample-sites-hover-window" ng-show="sampleSiteState.show()">
-        Here are some examples of sites directly supported by TravelClipper:
+        Example Sites:
         <br/><br/>
         <li ng-repeat="site in sampleSupportedSites">
           <img ng-src="[[site.iconUrl]]" class="site-icon"/>
@@ -1230,7 +1223,7 @@
         </li>
       </ul>
       <p>
-        For all other websites it allows you to quickly pull together the information and images you care about.
+        For other websites, quickly clip the information and images you care about.
       </p>
       <p>
         Drag the bookmark to your bookmarks bar:
@@ -1275,9 +1268,9 @@
       </div>
       <div class="no-results" ng-show="clipComplete && (!results || !results.length)">
         <h4>No results found</h4>
-        TravelClipper couldn't automatically find places on that page.  However, if you
-        <a ng-href="[[urlToVisit()]]" target="_blank" class="color-link">visit the site</a>
-        and use the bookmark, you'll be able to quickly clip information and photos yourself.
+        TravelClipper couldn't automatically find places on that page. Install the bookmark, then
+        <a ng-href="[[urlToVisit()]]" target="_blank" class="color-link">visit the website</a>
+         to quickly clip information and images.
       </div>
     </div>
     </script>
