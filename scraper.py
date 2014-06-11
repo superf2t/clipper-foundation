@@ -1020,14 +1020,28 @@ def pick_best_location(locations, entity_name):
 def parse_tree(url):
     req = urllib2.Request(url, headers={'User-Agent': USER_AGENT})
     html = urllib2.urlopen(req)
-    parser = etree.HTMLParser()
+    parser = htmlparser()
     tree = etree.parse(html, parser)
     return tree
 
 def parse_tree_from_string(page_source_string):
     html = cStringIO.StringIO(page_source_string)
-    parser = etree.HTMLParser()
+    parser = htmlparser()
     return etree.parse(html, parser)
+
+def htmlparser():
+    # You're not supposed to need to specify the encoding here, lxml will
+    # otherwise detect it from the input.  However, without specifying this,
+    # character encoding is breaking on prod (EC2, Linux) while working properly
+    # on dev (OSX) for mysterious reasons.  Forcing the encoding fixes it, but may
+    # not work properly for non-utf-8 websites.
+    # The problem can be demonstrated by running the following:
+    # import urllib2, lxml
+    # lxml.etree.parse(urllib2.urlopen('https://www.airbnb.com/rooms/2827655'),
+    #    lxml.etree.HTMLParser()).getroot().find('body//div[@id="room"]//span[@id="display-address"]').text
+    # This returns a string with an extra byte on prod.  Adding the forced encoding in the
+    # above snippet fixes it.
+    return etree.HTMLParser(encoding='utf-8')
 
 ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, ScrapedPage))
 
@@ -1046,7 +1060,7 @@ def build_scrapers(url, client_page_source=None, force_fetch_page=False):
                 if not resp:
                     print 'Failed to fetch url: %s' % url
                     continue
-                tree = etree.parse(resp, etree.HTMLParser())
+                tree = etree.parse(resp, htmlparser())
                 scraper = scraper_class(url, tree)
                 scraped_pages.append(scraper)
             break

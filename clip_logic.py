@@ -3,6 +3,7 @@ import scraper
 
 import utils
 
+# TODO: Remove url as a param here since it's no longer used.
 def entity_from_scraper(scr, url):
     latlng_json = scr.get_latlng()
     latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
