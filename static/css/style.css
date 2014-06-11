@@ -466,6 +466,7 @@ hr.dropdown-separator {
 .one-entity-search-result .photo-carousel .carousel-content {
   display: inline-block;
   height: 100%;
+  max-width: 100%;
 }
 
 .one-entity-guideview .metadata,
@@ -809,6 +810,7 @@ hr.dropdown-separator {
   color: #fff;
   background-color: #4A90E2;
   -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
   width: 140px;
 }
 
@@ -828,6 +830,7 @@ hr.dropdown-separator {
 .add-place-options-dropdown > li > a {
   color: #fff;
   -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .add-place-options-dropdown > li > a:hover {
