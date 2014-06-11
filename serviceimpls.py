@@ -566,6 +566,7 @@ class TripPlanService(service.Service):
     FEATURED_TRIP_PLANS_USERS = (
          'admin@unicyclelabs.com', 'admin@nytimes.com',
          'admin@nomadicmatt.com', 'admin@letsgo.com',
+         'admin@tripadvisor.com', 'admin@frommers.com',
         )
 
     def findtripplans(self, request):
