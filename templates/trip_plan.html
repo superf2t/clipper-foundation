@@ -1072,7 +1072,7 @@
         </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
-      <tc-search-result-marker ng-if="!searchResultState.savedResultIndices[index]"
+      <tc-search-result-marker ng-if="position && !searchResultState.savedResultIndices[index]"
         marker="markerState.marker" position="position" map="map"
         precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
         selected="isSelected()"
