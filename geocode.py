@@ -12,7 +12,6 @@ def lookup_latlng(address):
     url = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&sensor=false&key=%s' % (
         urllib.quote(address.encode('utf-8')), constants.GOOGLE_PLACES_API_KEY)
     response = urllib2.urlopen(url).read()
-    print response
     data = json.loads(response)
     try:
         return GeocodeResult(data['results'][0])
