@@ -1152,7 +1152,7 @@ temporary hack that lines up the arrows a bit better for most pictures */
 }
 
 .add-place-panel .travel-guides-panel .featured-trip-plan-preview:hover {
-  border: 1px solid #2D73A0;
+  opacity: 0.8;
 }
 
 .add-place-panel .travel-guides-panel .featured-trip-plan-header .text {
