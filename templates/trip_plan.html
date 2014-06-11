@@ -1171,7 +1171,7 @@
         <div ng-show="tripPlans && tripPlans.length">
           <div ng-repeat="tripPlan in tripPlans"
             class="featured-trip-plan-header featured-trip-plan-preview"
-            ng-style="{'background-image': tripPlan['cover_image_url']}"
+            ng-style="{'background-image': 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}"
             ng-click="selectTripPlan(tripPlan)">
             <div class="text">
               <div class="name">[[tripPlan['name'] ]]</div>
@@ -1187,7 +1187,7 @@
           </a>
         </div>
         <div class="featured-trip-plan-header"
-          ng-style="{'background-image': selectedTripPlan['cover_image_url']}">
+          ng-style="{'background-image': 'url(&quot;' + selectedTripPlan['cover_image_url'] + '&quot;)'}">
           <div class="text">
             <div class="name">[[selectedTripPlan['name'] ]]</div>
             <div class="creator">[[selectedTripPlan['creator'] ]]</div>
@@ -1416,7 +1416,7 @@
   </script>
 
   <script type="text/ng-template" id="tutorial-overlay-template">
-    <div class="tutorial-overlay" ng-if="planModel.isEmpty()">
+    <div class="tutorial-overlay" ng-if="planModel.isEmpty() && !pageStateModel.inNewTripPlanModal">
       <div class="backdrop">
       </div>
       <div class="content" ng-show="!pageStateModel.midPanelExpanded">

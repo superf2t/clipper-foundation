@@ -1,182 +1,645 @@
 <!doctype html>
-<html>
+<html ng-app="introApp">
 <head>
   <title>TravelClipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
-  <style>
+  <style type="text/css">
     html, body {
       width: 100%;
       height: 100%;
       font-family: 'Nunito';
-      background-color: #EAEAEA;
-      color: #666666;
     }
 
-    .navbar {
-      min-height: 40px;
-      margin-bottom: 0;
+    a:hover {
+      text-decoration: none;
     }
 
-    .navbar-brand {
-      height: 40px;
-      padding: 10px;
+    .items {
+      width: 100%;
+      height: 100%;
+      overflow-y: scroll;
     }
 
-    .account-nav-item {
-      margin: 8px 12px;
-      font-size: 13pt;
-      color: #000;
-    }
-
-    #logo {
-      font-family: 'Raleway';
-      font-size: 1.4em;
-    }
-
-    #travel-clip-navbar {
-      background-color: #FFFFFF;
-      border: none;
-      -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-      -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-      box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-    }
-
-    body {
-      background-image: url('https://lh6.googleusercontent.com/-1jbUypVTfNM/U4OHvC2KT2I/AAAAAAAAACU/6BbXe_CIuqo/s1600/bg1.jpg');
+    .item {
+      width: 100%;
+      height: 100%;
+      position: relative;
       background-attachment: fixed;
       background-size: cover;
       background-repeat: no-repeat;
       background-position: 50% 50%;
     }
 
-    .content {
-      height: calc(100% - 40px);
+    .site-header {
+      position: absolute;
+      top: 0%;
       width: 100%;
-      position: fixed;
-      top: 40px;
     }
 
-    .intro-text {
-      width: 70%;
-      text-align: center;
-      color: #fff;
+    .logo {
+      font: 'Raleway';
+      color: #FFFFFF;
+      font-size: 1.6em;
       position: absolute;
-      top: 20%;
+      top: 20px;
+      left: 20px;
       -webkit-font-smoothing:antialiased;
-
     }
 
-    .intro-text .intro-large {
-      font-size: 26pt;
-      margin-bottom: 15px;
-    }
-
-    .intro-text .intro-small {
-      font-size: 18pt;
-    }
-
-    .cta-box {
-      width: 360px;
-      height: 200px;
+    .login {
       position: absolute;
-      left: 68%;
-      top: 32%;
+      top: 20px;
+      right: 20px;
+      font-size: 1.1em;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .login a {
+      color: #FFFFFF;
+    }
+
+    .login a:hover {
+      color: #2D73A0;
+    }
+
+    .item-content,
+    .item-backdrop {
+      width: 36%;
+      height: 40%;
+      position: fixed;
+      top: 30%;
+      left: 32%;
+      pointer-events: none;
+    }
+
+    .search {
+      width: 30%;
+      position: fixed;
+      top: 40%;
+      left: 35%;
+    }
+
+    .search-input {
+      font-size: 1.1em;
+    }
+
+    .search-results {
+      background-color: #fff;
+      max-height: 300px;
+      overflow-y: scroll;
+    }
+
+    .one-search-result {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .one-search-result:hover {
+      color: #D0021B;
+    }
+
+    .result-icon {
+      max-width: 24px;
+    }
+
+    .btn-search {
+      color: #FFFFFF;
+      background-color: #4A90E2;
+      padding: 6px 20px;
+    }
+
+    .item-backdrop {
+      background-color: #fff;
+      opacity: 0.8;
+      -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
+      -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
+      box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
+    }
+
+    .item-content {
+      margin: auto;
+    }
+
+    .item-content-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+    }
+
+    .item-2, .item-3, .item-4 {
+      opacity: 0;
+      display: none;
+    }
+
+    .item-header {
+      position: absolute;
+      width: 80%;
+      margin: auto;
+      left: 10%;
+      top: 15%;
+      color: #FFFFFF;
+      font-size: 1.2em;
+      line-height: 1.6;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .skip-prompt {
+      position: absolute;
+      width: 100%;
+      text-align: center;
+      margin: auto;
+      top: 90%;
+      font-size: 1.1em;
+      color: #000000;
+    }
+
+    .skip-prompt a {
+      color: #FFFFFF;
+    }
+
+    .skip-prompt a:hover {
+      text-decoration: underline;
+    }
+
+    .nav-controls {
+      position: fixed;
+      top: calc(50% - 49px);
+      right: 30px;
+    }
+
+    .nav-controls .nav-item {
+      margin: 10px 0;
+    }
+
+    .nav-controls .nav-circle {
+      background-color: #FFFFFF;
+      opacity: 0.8;
+      height: 12px;
+      width: 12px;
+      border-radius: 6px;
+      display: block;
+      box-shadow: 1px 1px 2px 0px #000000;
+    }
+
+    .nav-controls .nav-circle:hover {
+      background-color: #CCCCCC;
+    }
+
+    .nav-controls .nav-circle.selected {
+      background-color: #D0021B !important;
+      transition: all 0.5s;
+    }
+
+    .text-lg {
+      font-size: 1.2em;
+      color: #D0021B;
+    }
+
+    .text-md {
+      font-size: 1.1em;
+      color: #444444;
+    }
+
+    .center {
       text-align: center;
     }
 
-    .cta-backdrop {
-      background-color: #fff;
-      box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.5);
-      opacity: 0.8;
+    .text-with-icon-row {
       width: 100%;
-      height: 100%;
+      height: 40%;
+      position: relative;
+    }
+
+    .text-with-icon-row .text-section {
+      width: 75%;
+      padding: 0 10px;
+    }
+
+    .text-with-icon-row .icon-section {
+      width: 25%;
+      text-align: center;
       position: absolute;
+      top: 0;
+      left: 75%;
     }
 
-    .cta-content {
-      width: 100%;
-      height: 100%;
-      position: absolute;
-      padding: 20px;
-      color: #000;
+    .text-with-icon-row .icon-section .icon {
+      margin: 0 20px;
     }
 
-    .build {
-      font-size: 16pt;
+    .text-with-icon-row .icon-section .icon svg {
+      max-width: 100%;
+      max-height: 100%;
     }
 
-    .start-button {
-      margin: 20px 0;
+    .row-spacer {
+      height: 10%;
     }
 
-    .start-button .btn-primary {
-      border-radius: 2px;
-      border: none;
-      font-size: 14pt;
-      padding: 10px 20px;
-      background-color: #4A90E2;
-    }
-
-    .start-button .btn-primary:hover {
-      background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
-      background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
-      background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
-      background-color: transparent;  background-color: #4A90E2;
-    }
-
-    .login-prompt {
+    .learn-more-cta {
       position: absolute;
       bottom: 20px;
-      left: 0;
-      width: 100%;
+      right: 20px;
     }
+
+    .btn-learn-more {
+      background-color: #FFFFFF;
+      color: #D0021B;
+      border-radius: 2px;
+      width: 100px;
+    }
+
   </style>
+  <script>
+    function IntroCtrl($scope, $http, $window) {
+      var me = this;
+      $scope.selectionState = {
+        itemNum: 1,
+        needsAutoScroll: 0
+      };
+
+      $scope.searchState = {
+        rawInput: null
+      };
+
+      $scope.goToItem = function(itemNum) {
+        $scope.selectionState.itemNum = itemNum;
+        $scope.selectionState.needsAutoScroll++;
+      };
+
+      {# TODO: Much of this functionality is copied from StartNewTripInputCtrl,
+        figure out how to share this instead. #}
+
+      $scope.placeChanged = function($place) {
+        if (!$place) {
+          return;
+        }
+        if (!$place['geometry']) {
+          return me.searchForPlace($place['name']);
+        }
+        $scope.selectResult($place);
+      };
+
+      $scope.searchButtonClicked = function() {
+        if ($scope.searchState.rawInput) {
+          me.searchForPlace($scope.searchState.rawInput);
+        }
+      };
+
+      $scope.selectResult = function(place) {
+        var tripPlanDetails = me.placeToTripPlanDetails(place);
+        me.saveNewTripPlan(tripPlanDetails)
+          .success(function(response) {
+            var tripPlanId = response['trip_plans'][0]['trip_plan_id'];
+            $window.location.href = '/trip_plan/' + tripPlanId;
+          });
+      };
+
+      this.searchForPlace = function(query) {
+        $scope.searchResults = null;
+        $scope.searching = true;
+        var request = {
+          query: query
+        };
+        var dummyMap = new google.maps.Map($('<div>')[0], {
+          center: new google.maps.LatLng(0, 0)
+        });
+        var searchService = new google.maps.places.PlacesService(dummyMap);
+        searchService.textSearch(request, function(results, status) {
+          $scope.$apply(function() {
+            $scope.searching = false;
+            if (status != google.maps.places.PlacesServiceStatus.OK) {
+              alert('Search failed, please try again.');
+              return;
+            }
+            $.each(results, function(i, result) {
+              if (result['icon'].indexOf('geocode') >= 0) {
+                result['icon'] = '/static/img/place-proximity.svg';
+              }
+            });
+            $scope.searchResults = results;
+          });
+        });
+      };
+
+      this.placeToTripPlanDetails = function(place) {
+        var geometry = place['geometry'];
+        var location = geometry && geometry['location'];
+        var viewport = geometry && geometry['viewport'];
+        var tripPlanDetails = {
+          'name': place['name'],
+          'location_name': place['formatted_address']
+        };
+        if (location) {
+          tripPlanDetails['location_latlng'] = {
+            'lat': location.lat(),
+            'lng': location.lng()
+          };
+        }
+        if (viewport) {
+          tripPlanDetails['location_bounds'] = {
+            'southwest': {
+              'lat': viewport.getSouthWest().lat(),
+              'lng': viewport.getSouthWest().lng()
+            },
+            'northeast': {
+              'lat': viewport.getNorthEast().lat(),
+              'lng': viewport.getNorthEast().lng()
+            }
+          }
+        }
+        return tripPlanDetails;
+      };
+
+      this.saveNewTripPlan = function(tripPlanDetails) {
+        var request = {
+          'operations': [{
+            'operator': 'ADD',
+            'trip_plan': tripPlanDetails
+          }]
+        };
+        return $http.post('/tripplanservice/mutate', request)
+      };
+    }
+
+    function tcScrollToItemOn() {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          var elem = $(element);
+          scope.$watch(attrs.tcScrollToItemOn, function(value) {
+            if (!value) return;
+            var newScrollTop = elem.height() * (scope.selectionState.itemNum - 1);
+            elem.animate({scrollTop: newScrollTop}, 500);
+          });
+        }
+      };
+    }
+
+    function tcWatchItemScrollState() {
+      return {
+        restict: 'A',
+        link: function(scope, element, attrs) {
+          var elem = $(element);
+          elem.on('scroll', function() {
+            var itemNum = Math.round(elem.scrollTop() / elem.height()) + 1;
+            scope.selectionState.itemNum = itemNum;
+
+            var div = elem.scrollTop() / elem.height();
+            for (var i = 1; i < 5; i++) {
+              var visState = div - (i - 1);
+              var opacity;
+              if (visState < -0.5 || visState > 0.5) {
+                opacity = 0;
+              } else {
+                opacity = Math.pow(1 - Math.abs(visState / 0.5), 2);
+              }
+              $('.item-' + i).css('opacity', opacity);
+              if (opacity == 0) {
+                $('.item-' + i).hide();
+              } else {
+                $('.item-' + i).show();
+              }
+            }
+
+            scope.$apply();
+          });
+        }
+      };
+    }
+
+    function tcGooglePlaceAutocomplete() {
+      return {
+        restrict: 'A',
+        scope: {
+          onPlaceChange: '&',
+        },
+        link: function(scope, element, attrs) {
+          var gPlace = new google.maps.places.Autocomplete(element[0], {
+            types: ['geocode'],
+            componentRestrictions: {}
+          });
+
+          google.maps.event.addListener(gPlace, 'place_changed', function() {
+            scope.onPlaceChange({$place: gPlace.getPlace()});
+            scope.$apply();
+          });
+        }
+      };
+    }
+
+    function interpolator($interpolateProvider) {
+      $interpolateProvider.startSymbol('[[');
+      $interpolateProvider.endSymbol(']]');
+    }
+
+    angular.module('introApp', [], interpolator)
+      .controller('IntroCtrl', IntroCtrl)
+      .directive('tcScrollToItemOn', tcScrollToItemOn)
+      .directive('tcWatchItemScrollState', tcWatchItemScrollState)
+      .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete);
+
+    angular.element(document).ready(function() {
+      angular.element('#main-input').focus();
+    });
+  </script>
 </head>
-<body>
-  <nav class="navbar navbar-default navbar-fixed-top" role="navigation" id="travel-clip-navbar">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" id="logo" href="#">TravelClipper</a>
-      </div>
-      <div class="collapse navbar-collapse" id="header-navbar-collapse">
-        <ul class="nav navbar-nav navbar-right" id="header-site">
-          <li class="account-nav-item">
-            <span class="glyphicon glyphicon-user" id="header-user"></span>
-          </li>
-        </ul>
-      </div>
+<body ng-controller="IntroCtrl">
+  <div class="items" tc-scroll-to-item-on="selectionState.needsAutoScroll"
+    tc-watch-item-scroll-state>
+    <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-OBJkwaugUlQ/U5Y_m73xRLI/AAAAAAAAAEE/k8dZp1R5VVY/s1600/tc-index-bw.jpg')">
     </div>
-  </nav>
-  <div class="content">
-    <div class="intro-text">
-      <div class="intro-large">
-        Take the pain out of building your trip plan
-      </div>
-      <div class="intro-small">
-        Quickly add, organize, and map places of interest
-      </div>
+    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-FnDb4K0OIb4/U5Y_m9miZ9I/AAAAAAAAAD8/MK6Y37-jMn4/s1600/tc-index.jpg')">
     </div>
-    <div class="cta-box">
-      <div class="cta-backdrop">
+    <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg')">
+    </div>
+    <div class="item" style="background-image: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg')">
+    </div>
+  </div>
+
+  <div class="site-header">
+    <div class="logo">
+      TravelClipper
+    </div>
+    <div class="login">
+      <a href="/trip_plan">
+        Login
+      </a>
+    </div>
+  </div>
+
+  <div class="items-content">
+    <div class="item-1">
+      <div class="item-header">
+        Find awesome things to do on your trip. From tons of sources.<br>
+        Plan it all out - maps, itineraries, photos, everything. Without the pain.<br>
+        Take it all with you on your phone. No Internet required.
       </div>
-      <div class="cta-content">
-        <div class="build">
-          Build your personal trip plan
-        </div>
-        <div class="start-button">
-          <a href="/intro">
-            <button class="btn btn-primary">
-              Start Planning
+      <div class="search">
+        <div class="input-group">
+          <input type="text" class="form-control search-input" id="main-input"
+            ng-model="searchState.rawInput"
+            placeholder="Where do you want to go?"
+            tc-google-place-autocomplete on-place-change="placeChanged($place)">
+          <span class="input-group-btn">
+            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
+              <span class="glyphicon glyphicon-search"></span>
             </button>
-          </a>
+          </span>
         </div>
-        <div class="login-prompt">
-          Already a member? <a href="/trip_plan">Login</a>
+        <div ng-include="'search-results-template'">
+        </div>
+      </div>
+      <div class="learn-more-cta">
+        <button class="btn btn-learn-more" ng-click="goToItem(2)">
+          Learn More
+        </button>
+      </div>
+    </div>
+    <div class="item-2">
+      <div class="item-backdrop">
+      </div>
+      <div class="item-header">
+        Find awesome things to do on your trip. From tons of sources.
+      </div>
+      <div class="item-content">
+        <div class="item-content-inner">
+          <div class="text-with-icon-row">
+            <div class="text-section">
+              <div class="text-lg">
+                Get inspired
+              </div>
+              <div class="text-md">
+                View and re-mix trips planned by other users and top travel editors from sites like Lonely Planet, the New York Times, and Nomadic Matt.
+              </div>
+            </div>
+            <div class="icon-section">
+              <div ng-include="'group-icon'" class="icon"></div>
+            </div>
+          </div>
+          <div class="row-spacer"></div>
+          <div class="text-with-icon-row">
+            <div class="text-section">
+              <div class="text-lg">
+                Personalize your trip
+              </div>
+              <div class="text-md">
+                Add attractions from your favorite travel sites and blogs. Easily incorporate recommendations from friends and family.
+              </div>
+            </div>
+            <div class="icon-section">
+              <div ng-include="'map-icon'" class="icon"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="skip-prompt">
+        <a href="/trip_plan">
+          Want to jump right in?
+        </a>
+      </div>
+      <div class="learn-more-cta">
+        <button class="btn btn-learn-more" ng-click="goToItem(3)">
+          Next
+        </button>
+      </div>
+    </div>
+    <div class="item-3">
+      <div class="item-backdrop">
+      </div>
+      <div class="item-header">
+        <br>
+        Plan it all out - maps, itineraries, photos, everything. Without the pain.
+      </div>
+      <div class="item-content">
+        <div class="item-content-inner">
+          <div class="text-with-icon-row">
+            <div class="text-section">
+              <div class="text-lg">
+                Create a map without the&nbsp;effort
+              </div>
+              <div class="text-md">
+                Collect places to visit and your mobile travel map builds itself. Even when you're doing research on other websites.
+              </div>
+            </div>
+            <div class="icon-section">
+              <div ng-include="'map-2-icon'" class="icon"></div>
+            </div>
+          </div>
+          <div class="row-spacer"></div>
+          <div class="text-with-icon-row">
+            <div class="text-section">
+              <div class="text-lg">
+                Plan your schedule
+              </div>
+              <div class="text-md">
+                Organize your trip by day or just keep a simple list of places to see. Either way, you'll have a beautiful personal itinerary.
+              </div>
+            </div>
+            <div class="icon-section">
+              <div ng-include="'calendar-icon'" class="icon"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="skip-prompt">
+        <a href="/trip_plan">
+          Want to jump right in?
+        </a>
+      </div>
+      <div class="learn-more-cta">
+        <button class="btn btn-learn-more" ng-click="goToItem(4)">
+          Next
+        </button>
+      </div>
+    </div>
+    <div class="item-4">
+      <div class="item-header">
+        <br>
+        <br>
+        Take it all with you on your phone. No Internet required.
+      </div>
+      <div class="search">
+        <div class="input-group">
+          <input type="text" class="form-control search-input"
+            ng-model="searchState.rawInput"
+            placeholder="Where do you want to go?"
+            tc-google-place-autocomplete on-place-change="placeChanged($place)">
+          <span class="input-group-btn">
+            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
+              <span class="glyphicon glyphicon-search"></span>
+            </button>
+          </span>
+        </div>
+        <div ng-include="'search-results-template'">
         </div>
       </div>
     </div>
   </div>
+
+  <div class="nav-controls">
+    <div class="nav-item" ng-repeat="itemNum in [1, 2, 3, 4]">
+      <a ng-click="goToItem(itemNum)" href="javscript:void(0)">
+        <span class="nav-circle" ng-class="{'selected': itemNum == selectionState.itemNum}"></span>
+      </a>
+    </div>
+  </div>
+
+  <script type="text/ng-template" id="search-results-template">
+    <div class="search-results" ng-if="searchResults && searchResults.length">
+      <div ng-repeat="result in searchResults" class="one-search-result" ng-click="selectResult(result)">
+        <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+        [[result['formatted_address'] ]]
+      </div>
+    </div>
+  </script>
+
+  {% include 'index_icons.html' %}
 </body>
 </html>
