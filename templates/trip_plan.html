@@ -1193,6 +1193,7 @@
             <div class="creator">[[selectedTripPlan['creator'] ]]</div>
           </div>
         </div>
+        <div class="description" ng-if="selectedTripPlan['description']"><span ng-bind-html="selectedTripPlan['description'] | linky:'_blank'"></span></div>
         <div ng-repeat="entity in selectedTripPlan['entities']"
           tc-entity-search-result index="$index" entity-data="entity"
           search-result-state="searchResultState">

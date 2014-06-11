@@ -1152,6 +1152,12 @@ temporary hack that lines up the arrows a bit better for most pictures */
   color: #fff;
 }
 
+.add-place-panel .travel-guides-panel .description {
+  white-space: pre-line;
+  text-align: justify;
+  margin-bottom: 15px;
+}
+
 .add-place-panel .travel-guides-panel .featured-trip-plan-preview {
   cursor: pointer;
 }
