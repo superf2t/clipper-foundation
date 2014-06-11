@@ -1166,7 +1166,7 @@
           Loading... <img ng-src="/static/img/spinner-small.gif"/>
         </div>
         <div ng-show="!loading && (!tripPlans || !tripPlans.length)">
-          <h4>There are no featured trip plans for this area</h4>
+          <h4>There aren't any featured trip plans for this area yet</h4>
         </div>
         <div ng-show="tripPlans && tripPlans.length">
           <div ng-repeat="tripPlan in tripPlans"
@@ -1206,14 +1206,21 @@
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
       <p>
-        Add places to your trip while browsing other websites. The TravelClipper bookmark clips place names, locations, images, and other information from dozens of
+        Add places to your trip while browsing other websites.
+      </p>
+      <p>
+        Drag the TravelClipper bookmark to your bookmarks bar to clip places from dozens of
         <a ng-mouseenter="sampleSiteState.hoverShow = true"
           ng-mouseleave="sampleSiteState.hoverShow = false"
           ng-click="openSampleSites()"
           class="color-link" href="javascript:void(0)">
-          travel websites and blogs
+          websites and blogs
         </a>
-        with a single click.
+        in a single click.
+        <a href="javascript:void(0)" class="help-prompt" tooltip="Don't see your bookmarks bar? Press Cmd+Shift+B (Mac) or Ctrl+Shift+B (PC)"
+          tooltip-placement="left">
+          <span class="glyphicon glyphicon-question-sign"></span>
+        </a>
       </p>
       <ul class="sample-sites-hover-window" ng-show="sampleSiteState.show()">
         Example Sites:
@@ -1223,15 +1230,6 @@
           <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
         </li>
       </ul>
-      <p>
-        For other websites, quickly clip the information and images you care about.
-      </p>
-      <p>
-        Drag the bookmark to your bookmarks bar:
-        <a href="javascript:void(0)" class="help-prompt" tooltip="Don't see your bookmarks bar? Press Cmd+Shift+B (Mac) or Ctrl+Shift+B (PC)">
-          <span class="glyphicon glyphicon-question-sign"></span>
-        </a>
-      </p>
       <div class="bookmarklet">
         <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
         onclick="event.stopPropagation(); event.preventDefault()">
@@ -1239,6 +1237,23 @@
             <span class="glyphicon glyphicon-paperclip"></span> Travel Clipper
           </span>
         </a>
+      </div>
+      <p>
+        <a ng-click="learnMoreState.expanded = !learnMoreState.expanded" href="javascript:void(0)" class="color-link">
+          Learn more
+          <span class="glyphicon learn-more-chevron"
+            ng-class="{'glyphicon-chevron-down': !learnMoreState.expanded,
+                       'glyphicon-chevron-up': learnMoreState.expanded}">
+          </span>
+        </a>
+      </p>
+      <div ng-show="learnMoreState.expanded">
+        <p>
+          The TravelClipper bookmark clips place names, locations, images, and other information from supported websites and automatically adds them to your trip plan.
+        </p>
+        <p>
+          For all other websites, the bookmark helps you quickly clip the information and images you care about.
+        </p>
       </div>
       <hr class="section-separator"/>
       <p>
@@ -1424,7 +1439,7 @@
         </div>
         <div class="header">Welcome to your [[planModel.tripPlanName()]] trip plan!</div>
         <div class="content-body" ng-controller="AddPlaceOptionsCtrl">
-          <div class="intro">Quickly build a personal guide by adding places to your trip.</div>
+          <div class="intro">Quickly build a personal trip plan by adding places</div>
           <div class="section">
             <span class="section-icon">
               <span class="glyphicon glyphicon-search"></span>

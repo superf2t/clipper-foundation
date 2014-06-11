@@ -1973,8 +1973,8 @@ function AddPlaceOptionsCtrl($scope, $pageStateModel,
     $searchResultState, $filterModel) {
   $scope.options = [
     {name: 'Search', mode: MidPanelMode.SEARCH_PLACES},
-    {name: 'From the Web', mode: MidPanelMode.WEB_SEARCH_PLACES},
-    {name: 'Travel Guides', mode: MidPanelMode.TRAVEL_GUIDES},
+    {name: 'Browse the Web', mode: MidPanelMode.WEB_SEARCH_PLACES},
+    {name: 'Browse Guides', mode: MidPanelMode.TRAVEL_GUIDES},
     {name: 'Clip My Own', mode: MidPanelMode.CLIP_MY_OWN}
   ];
 
@@ -2117,6 +2117,7 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
   $scope.results = null;
   $scope.clipComplete = false;
   $scope.invalidUrl = false;
+  $scope.learnMoreState = {expanded: false};
 
   $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
   $scope.sampleSiteState = {

@@ -1223,6 +1223,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
   cursor: move;
 }
 
+.add-place-panel .clip-my-own-panel .learn-more-chevron {
+  font-size: 10px;
+}
+
 .add-place-panel .clip-my-own-panel .results,
 .add-place-panel .clip-my-own-panel .no-results {
   margin-top: 20px;
