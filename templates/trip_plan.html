@@ -620,7 +620,8 @@
           </span>
         </div>
       </span>
-      <tc-entity-marker map="map" marker="markerState.marker" position="position"
+      <tc-entity-marker ng-if="position"
+        map="map" marker="markerState.marker" position="position"
         category-name="ed['category'] && ed['category']['name']"
         icon-template-name="markerState.iconTemplateName"
         selected="pageStateModel.entityIsSelected(ed['entity_id'])"
