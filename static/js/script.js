@@ -311,6 +311,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
   };
 
   $scope.centerMapOnGroup = function() {
+    $scope.$emit('asktocloseallinfowindows');
     var bounds = new google.maps.LatLngBounds()
     $.each($scope.itemGroupModel.getEntityItems(), function(i, item) {
       if (item.hasLocation()) {
@@ -1317,6 +1318,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
 
   $scope.resetMapState = function() {
+    $scope.$broadcast('closeallinfowindows');
     $map.fitBounds($tripPlanModel.getMapBounds());
     $filterModel.emphasizedDayNumber = null;
   };
