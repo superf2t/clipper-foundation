@@ -22,13 +22,6 @@ function getParameterByName(name) {
   return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function looksLikeUrl(text) {
-  if (!text) {
-    return false;
-  }
-  return text.toLowerCase().substring(0, 4) == 'http';
-}
-
 function dictByAttr(objs, attrNameOrFn) {
   var dict = {};
   var isFn = _.isFunction(attrNameOrFn);
@@ -2151,10 +2144,6 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
     // fires before the input has been populated with the pasted data.
     $timeout(function() {
       var input = $scope.state.rawInput;
-      if (!looksLikeUrl(input)) {
-        $scope.invalidUrl = true;
-        return;
-      }
       $scope.loadingData = true;
       $scope.clipComplete = false;
       $scope.results = null;
@@ -2173,6 +2162,17 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
     $mapManager.fitBoundsToEntities($scope.results);
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
+  };
+
+  $scope.urlToVisit = function() {
+    var url = $scope.state.rawInput;
+    if (url.indexOf('//') == 0) {
+      url = 'http:' + url;
+    }
+    if (url.indexOf('http') != 0) {
+      url = 'http://' + url;
+    }
+    return url;
   };
 }
 
