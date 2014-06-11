@@ -2242,6 +2242,7 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $tripPlanModel.updateLastModified(response['last_modified']);
           $tripPlanModel.addNewEntities(response['entities']);
+          $pageStateModel.selectedEntity = response['entities'][0];
           $scope.searchResultState.savedResultIndices[$scope.index] = true;
           me.destroyInfowindow();
           $scope.$emit('redrawgroupings');
