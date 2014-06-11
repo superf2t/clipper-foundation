@@ -42,8 +42,8 @@
 
   <div id="left-panel" ng-show="!pageStateModel.inNewTripPlanModal">
     <div id="entity-container" class="entity-container"
-      tc-entity-scroll scroll-state="scrollState"
-      tc-save-scroll-position scroll-position-watch="itemGroups">
+      tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
+      scroll-dest-selector=".one-entity-leftnav[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor">
 
       <div ng-include="'trip-plan-header-template'">
       </div>
@@ -600,6 +600,7 @@
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
       ng-click="selectEntity(ed); openInfowindow()">
+      <a class="scroll-anchor"></a>
       <span class="entity-circle-img">
         <img ng-src="[[item.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
       </span>

@@ -286,6 +286,11 @@ hr.dropdown-separator {
   cursor: pointer;
 }
 
+.one-entity-leftnav .scroll-anchor {
+  position: relative;
+  top: -40px;
+}
+
 .one-entity-listing {
   padding: 7px 10px;
 }

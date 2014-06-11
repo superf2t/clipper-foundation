@@ -3254,40 +3254,6 @@ function MapManager($map) {
 
 // Directives
 
-function tcEntityScroll() {
-  return {
-    restrict: 'A',
-    scope: {
-      scrollState: '='
-    },
-    link: function(scope, elem, attrs) {
-      var container = $(elem);
-      scope.$watch('scrollState.entityId', function(newEntityId, oldEntityId) {
-        if (newEntityId) {
-          var entityElem = container.find('[tc-entity-id="' + newEntityId + '"]');
-          scrollMapviewToId(container, entityElem);
-          scope.scrollState.entityId = null;
-        }
-      });
-    }
-  };
-}
-
-function scrollMapviewToId(container, scrollDestElem, opt_classToAdd, opt_removeClassAfter) {
-  var newScrollTop = container.scrollTop() + scrollDestElem.offset().top - 88;
-  if (newScrollTop != 0) {
-    container.animate({scrollTop: newScrollTop}, 500);
-  }
-  if (opt_classToAdd) {
-    scrollDestElem.addClass(opt_classToAdd);
-    if (opt_removeClassAfter) {
-      setTimeout(function() {
-        scrollDestElem.removeClass(opt_classToAdd);
-      }, opt_removeClassAfter);
-    }
-  }
-}
-
 function tcScrollToSelector($interpolate) {
   return {
     restrict: 'A',
@@ -4240,7 +4206,6 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
       '$entityService', '$dataRefreshManager', '$tripPlanModel', GmapsImporterCtrl])
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
-    .directive('tcEntityScroll', tcEntityScroll)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
