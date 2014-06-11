@@ -292,7 +292,12 @@ class EntityService(service.Service):
             entity=result.to_entity() if result else None)
 
     def urltoentities(self, request):
-        entities = clip_logic.scrape_entities_from_url(request.url)
+        url = request.url
+        if url.startswith('//'):
+            url = 'http:' + url
+        if not url.startswith('http'):
+            url = 'http://' + url
+        entities = clip_logic.scrape_entities_from_url(url)
         return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)

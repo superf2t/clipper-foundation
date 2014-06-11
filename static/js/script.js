@@ -22,13 +22,6 @@ function getParameterByName(name) {
   return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function looksLikeUrl(text) {
-  if (!text) {
-    return false;
-  }
-  return text.toLowerCase().substring(0, 4) == 'http';
-}
-
 function dictByAttr(objs, attrNameOrFn) {
   var dict = {};
   var isFn = _.isFunction(attrNameOrFn);
@@ -318,6 +311,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
   };
 
   $scope.centerMapOnGroup = function() {
+    $scope.$emit('asktocloseallinfowindows');
     var bounds = new google.maps.LatLngBounds()
     $.each($scope.itemGroupModel.getEntityItems(), function(i, item) {
       if (item.hasLocation()) {
@@ -1324,6 +1318,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
 
   $scope.resetMapState = function() {
+    $scope.$broadcast('closeallinfowindows');
     $map.fitBounds($tripPlanModel.getMapBounds());
     $filterModel.emphasizedDayNumber = null;
   };
@@ -1335,6 +1330,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.closeMidPanel = function() {
     $pageStateModel.midPanelExpanded = false;
     $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
+    $scope.$broadcast('closeallinfowindows');
+    $pageStateModel.selectedEntity = null;
     $scope.$broadcast('midpanelclosing');
   };
 
@@ -1355,6 +1352,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   google.maps.event.addListener($map, 'click', function() {
     $scope.$broadcast('closeallinfowindows');
     $pageStateModel.selectedEntity = null;
+    $searchResultState.selectedIndex = null;
+    $searchResultState.highlightedIndex = null;
     $scope.$apply();
   });
 
@@ -1390,6 +1389,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.selectEntity = function(entityData) {
     $scope.pageStateModel.selectedEntity = entityData;
+    $searchResultState.selectedIndex = null;
   };
 
   $scope.toggleAccountDropdown = function() {
@@ -1980,9 +1980,11 @@ function AddPlaceOptionsCtrl($scope, $pageStateModel,
 
   $scope.setOption = function(option) {
     if ($pageStateModel.midPanelMode != option.mode) {
+      $scope.$emit('asktocloseallinfowindows');
       $pageStateModel.midPanelMode = option.mode;
       $pageStateModel.midPanelModeName = option.name;
       $pageStateModel.midPanelExpanded = true;
+      $pageStateModel.selectedEntity = null;
       $searchResultState.clear();
       $filterModel.searchResultsEmphasized = false;
     }
@@ -2144,10 +2146,6 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
     // fires before the input has been populated with the pasted data.
     $timeout(function() {
       var input = $scope.state.rawInput;
-      if (!looksLikeUrl(input)) {
-        $scope.invalidUrl = true;
-        return;
-      }
       $scope.loadingData = true;
       $scope.clipComplete = false;
       $scope.results = null;
@@ -2167,10 +2165,21 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
   };
+
+  $scope.urlToVisit = function() {
+    var url = $scope.state.rawInput;
+    if (url.indexOf('//') == 0) {
+      url = 'http:' + url;
+    }
+    if (url.indexOf('http') != 0) {
+      url = 'http://' + url;
+    }
+    return url;
+  };
 }
 
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
-    $tripPlanModel, $entityService, $dataRefreshManager) {
+    $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager) {
   var me = this;
   $scope.ed = $scope.entityData;
   $scope.em = new EntityModel($scope.ed);
@@ -2216,6 +2225,7 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
   $scope.selectResult = function() {
     $scope.searchResultState.selectedIndex = $scope.index;
     $scope.searchResultState.highlightedIndex = null;
+    $pageStateModel.selectedEntity = null;
     if (!infowindow) {
       $scope.$emit('asktocloseallinfowindows');
       me.createInfowindow();
@@ -2224,9 +2234,6 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
 
   $scope.highlightResult = function() {
     $scope.searchResultState.highlightedIndex = $scope.index;
-    if (!infowindow) {
-      $scope.$emit('asktocloseallinfowindows');
-    }
   };
 
   $scope.saveResult = function() {
@@ -2236,6 +2243,7 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
           $tripPlanModel.updateLastModified(response['last_modified']);
           $tripPlanModel.addNewEntities(response['entities']);
           $scope.searchResultState.savedResultIndices[$scope.index] = true;
+          me.destroyInfowindow();
           $scope.$emit('redrawgroupings');
         }
       });
