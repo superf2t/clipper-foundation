@@ -1790,6 +1790,8 @@ temporary hack that lines up the arrows a bit better for most pictures */
   border-bottom: 15px solid #fff;
   border-right: 10px solid transparent;
   border-left: 10px solid transparent;
+  -moz-transform: scale(.9999);
+  -webkit-transform: scale(.9999);
   position: absolute;
   top: -15px;
   left: 58px;
