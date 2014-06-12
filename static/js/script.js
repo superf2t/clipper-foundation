@@ -3271,7 +3271,11 @@ function tcScrollToSelector($interpolate) {
         if (value != undefined || value != null) {
           var selector = $interpolate(attrs.scrollDestSelector)(scope);
           var dest = $(selector);
-          var newScrollTop = elem.scrollTop() + dest.offset().top - elem.offset().top;
+          var oldScrollTop = elem.scrollTop();
+          var newScrollTop = oldScrollTop + dest.offset().top - elem.offset().top;
+          if (attrs.skipScrollWhenInView && newScrollTop >= oldScrollTop && newScrollTop < (oldScrollTop + elem.height())) {
+            return;
+          }
           elem.animate({scrollTop: newScrollTop}, 500);
         }
       });
@@ -3298,6 +3302,7 @@ function tcFocusOn() {
     link: function(scope, element, attrs) {
       scope.$watch('focusValue', function(currentValue, previousValue) {
         if (currentValue) {
+          console.log("focusing");
           element[0].focus();
         }
       });

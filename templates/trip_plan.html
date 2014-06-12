@@ -43,6 +43,7 @@
   <div id="left-panel" ng-show="!pageStateModel.inNewTripPlanModal">
     <div id="entity-container" class="entity-container"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
+      skip-scroll-when-in-view="true"
       scroll-dest-selector=".one-entity-leftnav[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor">
 
       <div ng-include="'trip-plan-header-template'">
