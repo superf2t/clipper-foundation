@@ -69,6 +69,7 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
 
   $scope.addEntity = function(entityData) {
     $scope.entities.push(entityData);
+    entityData.selected = true;
     $scope.clipperState.status = ClipperState.SUMMARY;
     $scope.displayState.dirtyCounter++;
   };
