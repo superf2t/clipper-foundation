@@ -9,7 +9,8 @@ import constants
 def lookup_latlng(address):
     if not address:
         return None
-    url = 'http://maps.googleapis.com/maps/api/geocode/json?address=%s&sensor=false' % urllib.quote(address.encode('utf-8'))
+    url = 'https://maps.googleapis.com/maps/api/geocode/json?address=%s&sensor=false&key=%s' % (
+        urllib.quote(address.encode('utf-8')), constants.GOOGLE_PLACES_API_KEY)
     response = urllib2.urlopen(url).read()
     data = json.loads(response)
     try:

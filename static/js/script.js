@@ -1944,6 +1944,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     $scope.loadingData = true;
     $scope.searchComplete = false;
     $scope.searchResults = null;
+    $searchResultState.clear();
     if (place['reference']) {
       $entityService.googleplacetoentity(place['reference'])
         .success(me.processResponse);
@@ -3242,14 +3243,20 @@ function MapManager($map) {
       return;
     }
     if (entities.length == 1) {
-      $map.setCenter(gmapsLatLngFromJson(entities[0]['latlng']));
-      return
+      if (!_.isEmpty(entities[0]['latlng'])) {
+        $map.setCenter(gmapsLatLngFromJson(entities[0]['latlng']));
+      }
+      return;
     }
     var bounds = new google.maps.LatLngBounds();
     $.each(entities, function(i, entity) {
-      bounds.extend(gmapsLatLngFromJson(entity['latlng']));
+      if (!_.isEmpty(entity['latlng'])) {
+        bounds.extend(gmapsLatLngFromJson(entity['latlng']));
+      }
     });
-    $map.fitBounds(bounds);
+    if (!bounds.isEmpty()) {
+      $map.fitBounds(bounds);
+    }
   };
 }
 
