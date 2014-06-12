@@ -1944,6 +1944,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     $scope.loadingData = true;
     $scope.searchComplete = false;
     $scope.searchResults = null;
+    $searchResultState.clear();
     if (place['reference']) {
       $entityService.googleplacetoentity(place['reference'])
         .success(me.processResponse);
