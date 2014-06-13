@@ -20,6 +20,8 @@ Category.ATTRACTIONS = Category(3, 'attractions', 'Attractions')
 Category.ACTIVITIES = Category(4, 'activities', 'Activities')
 Category.SHOPPING = Category(5, 'shopping', 'Shopping')
 Category.ENTERTAINMENT = Category(6, 'entertainment', 'Entertainment & Performance')
+Category.REGION = Category(7, 'region', 'Regions')
+Category.TRANSPORTATION = Category(8, 'transportation', 'Transportation')
 
 ALL_CATEGORIES = sorted([c for c in Category.__dict__.itervalues() if isinstance(c, Category)],
     key=operator.attrgetter('category_id'))
@@ -36,7 +38,7 @@ class SubCategory(serializable.Serializable):
     def __str__(self):
         return self.name
 
-# Next id: 25
+# Next id: 31
 
 SubCategory.NONE = SubCategory(0, 'none', 'None')
 
@@ -67,6 +69,14 @@ SubCategory.THEATER = SubCategory(17, 'theater', 'Theater', Category.ENTERTAINME
 SubCategory.SPORTS = SubCategory(18, 'sports', 'Sports', Category.ENTERTAINMENT.category_id)
 SubCategory.DANCE = SubCategory(19, 'dance', 'Dance', Category.ENTERTAINMENT.category_id)
 SubCategory.COMEDY = SubCategory(21, 'comedy', 'Comedy', Category.ENTERTAINMENT.category_id)
+
+SubCategory.CITY = SubCategory(25, 'city', 'City', Category.REGION.category_id)
+SubCategory.NEIGHBORHOOD = SubCategory(26, 'neighborhood', 'Neighborhood', Category.REGION.category_id)
+
+SubCategory.AIRPORT = SubCategory(27, 'airport', 'Airport', Category.TRANSPORTATION.category_id)
+SubCategory.TRAIN_STATION = SubCategory(28, 'train_station', 'Train Station', Category.TRANSPORTATION.category_id)
+SubCategory.BUS_STATION = SubCategory(29, 'bus_station', 'Bus Station', Category.TRANSPORTATION.category_id)
+SubCategory.CAR_RENTAL = SubCategory(30, 'car_rental', 'Car Rental', Category.TRANSPORTATION.category_id)
 
 ALL_SUBCATEGORIES = sorted([s for s in SubCategory.__dict__.itervalues() if isinstance(s, SubCategory)],
     key=operator.attrgetter('sub_category_id'))
