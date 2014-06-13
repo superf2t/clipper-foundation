@@ -829,6 +829,17 @@ HtmlMarker.prototype.getHeight = function() {
   return this.sizeDiv.height();
 };
 
+HtmlMarker.prototype.getPosition = function() {
+  return this.position;
+};
+
+HtmlMarker.prototype.setPosition = function(position) {
+  this.position = position;
+  if (this.ready_) {
+    this.draw();
+  }
+};
+
 HtmlMarker.prototype.getDraggable = function() {
   return this.options.draggable;
 };
@@ -1034,6 +1045,8 @@ function tcEntityMarker() {
       starred: '=',
       emphasized: '=',
       deemphasized: '=',
+      draggable: '=',
+      onDragEnd: '&',
       selected: '&',
       onClick: '&'
     },
@@ -1057,7 +1070,20 @@ function tcEntityMarker() {
       };
     },
     link: function(scope, element, attrs) {
-      scope.marker = new HtmlMarker(scope.position, scope.map, element[0]);
+      scope.marker = new HtmlMarker(scope.position, scope.map, element[0], {
+        draggable: scope.draggable
+      });
+      scope.$watch('position', function(newValue) {
+        if (newValue) {
+          scope.marker.setPosition(newValue);
+        }
+      });
+      if (scope.draggable) {
+        google.maps.event.addListener(scope.marker, 'dragend', function() {
+          scope.onDragEnd({$position: scope.marker.getPosition()});
+          scope.$apply();
+        });
+      }
     }
   };
 }
@@ -2509,31 +2535,31 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
   $scope.selectedEntity = $scope.ed;
   $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
   $scope.selectedPhoto = {index: null};
-  $scope.map = null;
+  $scope.mapState = {map: null};
 
   $scope.categories = $taxonomy.allCategories();
   $scope.getSubCategories = function(categoryId) {
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
 
-  this.createMarker = function(latlng, opt_map) {
-    var marker = new google.maps.Marker({
-      draggable: true,
-      position: latlng,
-      icon: '/static/img/map-icons/' + $scope.ed['icon_url'],
-      map: opt_map
-    });
-    google.maps.event.addListener(marker, 'dragend', function() {
-      var entityData = $scope.ed;
-      if (_.isEmpty(entityData['latlng'])) {
-        entityData['latlng'] = {};
-      }
-      entityData['latlng']['lat'] = marker.getPosition().lat();
-      entityData['latlng']['lng'] = marker.getPosition().lng();
-      entityData['address_precision'] = 'Precise';
-      $scope.updateMarkerIcon();
-    });
-    return marker;
+  $scope.markerDragged = function($position) {
+    var entityData = $scope.ed;
+    if (_.isEmpty(entityData['latlng'])) {
+      entityData['latlng'] = {};
+    }
+    entityData['latlng']['lat'] = $position.lat();
+    entityData['latlng']['lng'] = $position.lng();
+    entityData['address_precision'] = 'Precise';
+  };
+
+  $scope.iconTemplateName = function() {
+    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
+      return $scope.ed['sub_category']['name'] + '-icon-template';
+    }
+    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
+      return $scope.ed['category']['name'] + '-icon-template';
+    }
+    return null;
   };
 
   this.findMapCenter = function() {
@@ -2543,7 +2569,6 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
   }
 
   var mapCenter = this.findMapCenter();
-  var marker = this.createMarker(mapCenter);
   $scope.mapOptions = {
     center: mapCenter,
     zoom: !_.isEmpty($scope.ed['latlng']) ? 15 : 2,
@@ -2553,9 +2578,13 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     streetViewControl: false,
     mapTypeControl: false
   };
+  $scope.markerState = {
+    marker: null,
+    position: mapCenter  
+  };
 
   $scope.setupMap = function($map) {
-    marker.setMap($map);
+    $scope.markerState.marker.setMap($map);
   };
 
   $scope.addressChanged = function(place) {
@@ -2572,9 +2601,8 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
       $scope.ed['latlng']['lat'] = location.lat();
       $scope.ed['latlng']['lng'] = location.lng();
       $scope.ed['address_precision'] = 'Precise';
-      $scope.map.setCenter(location);
-      marker.setPosition(location);
-      $scope.updateMarkerIcon();
+      $scope.mapState.map.setCenter(location);
+      $scope.markerState.position = location;
       if (place['geometry']['viewport']) {
         $scope.map.fitBounds(place['geometry']['viewport']);
       }
@@ -2584,17 +2612,6 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
   $scope.categoryChanged = function() {
     $scope.ed['sub_category'] = $taxonomy.getSubCategoriesForCategory(
       $scope.ed['category']['category_id'])[0];
-    $scope.updateMarkerIcon();
-  };
-
-  $scope.updateMarkerIcon = function() {
-    var data =  $scope.ed;
-    var iconUrl = categoryToIconUrl(
-      data['category'] && data['category']['name'],
-      data['sub_category'] && data['sub_category']['name'],
-      data['address_precision']);
-    data['icon_url'] = iconUrl;
-    marker.setIcon('/static/img/map-icons/' + iconUrl)
   };
 
   $scope.setPhotoAsPrimary = function() {

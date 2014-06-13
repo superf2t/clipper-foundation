@@ -380,13 +380,20 @@
               tc-google-place-autocomplete search-bounds-json="locationBounds"
               location-types="geocode" on-place-change="addressChanged($newPlace)"/>
             <div class="map-container">
-              <div tc-google-map class="map" map="map" map-options="mapOptions" after-creation="setupMap($map)">
+              <div tc-google-map class="map" map="mapState.map" map-options="mapOptions" after-creation="setupMap($map)">
               </div>
             </div>
+            <tc-entity-marker map="mapState.map" marker="markerState.marker"
+              position="markerState.position"
+              category-name="ed['category'] && ed['category']['name']"
+              icon-template-name="iconTemplateName()"
+              precise="ed['address_precision'] == 'Precise'"
+              draggable="true" on-drag-end="markerDragged($position)">
+            </tc-entity-marker>
             <form class="form-inline precision-and-star-strip" role="form">
-              <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="precise-radio"/>
+              <input type="radio" class="form-control" value="Precise" ng-model="ed['address_precision']" id="precise-radio"/>
               <label for="precise-radio">Exact location</label>
-              <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" ng-change="updateMarkerIcon()" id="imprecise-radio"/>
+              <input type="radio" class="form-control" value="Imprecise" ng-model="ed['address_precision']" id="imprecise-radio"/>
               <label for="imprecise-radio">Approximate location</label>
               <a ng-click="ed['starred'] = !ed['starred']" href="javascript:void(0)" class="star-control">
                 <span class="glyphicon glyphicon-star"
@@ -399,8 +406,7 @@
               ng-change="categoryChanged()">
             </select>
             <select class="form-control" ng-model="ed['sub_category']"
-              ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']"
-              ng-change="updateMarkerIcon()">
+              ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']">
             </select>
           </div>
         </div>
