@@ -52,24 +52,54 @@ class PlaceDetails(object):
         return utils.parallelize(resolve_photo_url,
             [(obj['photo_reference'], obj['width'], obj['height']) for obj in photo_objs])
 
+    CATEGORY_TO_GOOGLE_TYPES = {
+        values.Category.FOOD_AND_DRINK: ('bar', 'restaurant', 'cafe',
+            'food', 'bakery', 'cafe', 'night_club', 'grocery_or_supermarket', 'liquor_store'),
+        values.Category.LODGING: ('lodging', 'campground'),
+        values.Category.TRANSPORTATION: ('airport', 'car_rental',
+            'bus_station', 'train_station', 'parking', 'subway_station', 'gas_station',
+            'transit_station'),
+        values.Category.SHOPPING: ('book_store', 'clothing_store', 'department_store',
+            'furniture_store', 'home_goods_store', 'jewelry_store', 'shoe_store',
+            'shopping_mall', 'store'),
+        values.Category.ENTERTAINMENT: ('stadium', 'casino', 'movie_theater'),
+        values.Category.REGION: ('administrative_area_level_1', 'administrative_area_level_2',
+            'administrative_area_level_3', 'administrative_area_level_4',
+            'administrative_area_level_5', 'colloquial_area',
+            'country', 'locality', 'natural_feature', 'neighborhood',
+            'political', 'postal_code', 'postal_code_prefix', 'postal_town'),
+    }
+
     @staticmethod
     def types_to_category(places_api_types):
-        types = dict((t, True) for t in places_api_types or ())
-        if 'bar' in types or 'restaurant' in types or 'cafe' in types or 'food' in types:
-            return values.Category.FOOD_AND_DRINK
-        elif 'lodging' in types:
-            return values.Category.LODGING
-        else:
-            return values.Category.ATTRACTIONS
+        types = set(places_api_types or ())
+        for category, types_for_category in PlaceDetails.CATEGORY_TO_GOOGLE_TYPES.iteritems():
+            for t in types_for_category:
+                if t in types:
+                    return category
+        return values.Category.ATTRACTIONS
+
+    SUB_CATEGORY_TO_GOOGLE_TYPES = {
+        values.SubCategory.BAR: ('bar',),
+        values.SubCategory.RESTAURANT: ('restaurant', 'cafe'),
+        values.SubCategory.NIGHTCLUB: ('night_club',),
+        values.SubCategory.BAKERY: ('bakery',),
+        values.SubCategory.MUSEUM: ('museum',),
+        values.SubCategory.SPORTS: ('stadium',),
+        values.SubCategory.THEATER: ('movie_theater',),
+        values.SubCategory.CITY: ('locality',),
+        values.SubCategory.NEIGHBORHOOD: ('neighborhood',),
+        values.SubCategory.AIRPORT: ('airport',),
+        values.SubCategory.TRAIN_STATION: ('train_station', 'transit_station', 'subway_station'),
+        values.SubCategory.BUS_STATION: ('bus_station',),
+        values.SubCategory.CAR_RENTAL: ('car_rental',),
+    }
 
     @staticmethod
     def types_to_sub_category(places_api_types):
-        types = dict((t, True) for t in places_api_types or ())
-        if 'bar' in types:
-            return values.SubCategory.BAR
-        elif 'restaurant' in types or 'cafe' in types or 'food' in types:
-            return values.SubCategory.RESTAURANT
-        elif 'lodging' in types:
-            return values.SubCategory.HOTEL
-        else:
-            return None
+        types = set(places_api_types or ())
+        for sub_category, types_for_sub_category in PlaceDetails.SUB_CATEGORY_TO_GOOGLE_TYPES.iteritems():
+            for t in types_for_sub_category:
+                if t in types:
+                    return sub_category
+        return None
