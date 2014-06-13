@@ -2065,58 +2065,6 @@ function CarouselCtrl($scope) {
   };
 }
 
-var SUB_CATEGORY_NAME_TO_ICON_URL = {
-  'outdoor': 'outdoor.png',
-  'dance': 'dance.png',
-  'food_truck': 'food-truck.png',
-  'coffee_shop': 'coffee.png',
-  'hostel': 'hostel.png',
-  'bakery': 'bakery.png',
-  'dessert': 'dessert.png',
-  'sports': 'sports.png',
-  'music': 'music.png',
-  'comedy': 'comedy.png',
-  'friends_and_family': 'friends-and-family.png',
-  'hotel': 'hotel.png',
-  'private_rental': 'private-rental.png',
-  'bed_and_breakfast': 'bed-and-breakfast.png',
-  'theater': 'theater.png',
-  'bar': 'bar.png',
-  'restaurant': 'restaurant.png',
-  'couchsurfing': 'couch-surfing.png',
-  'street_food': 'street-food.png',
-  'nightclub': 'nightclub.png',
-  'tour': 'tour.png',
-  'landmark': 'landmark.png',
-  'musuem': 'museum.png'
-};
-
-var CATEGORY_NAME_TO_ICON_URL = {
-  'activities': 'activity.png',
-  'shopping': 'shopping.png',
-  'entertainment': 'entertainment.png',
-  'attractions': 'sight.png',
-  'lodging': 'lodging.png',
-  'food_and_drink': 'food-and-drink.png'
-};
-
-var DEFAULT_ICON_URL = 'default.png';
-
-function categoryToIconUrl(categoryName, subCategoryName, precision) {
-  var iconUrl = '';
-  if (subCategoryName) {
-    iconUrl = SUB_CATEGORY_NAME_TO_ICON_URL[subCategoryName];
-  }
-  if (!iconUrl && categoryName) {
-    iconUrl = CATEGORY_NAME_TO_ICON_URL[categoryName];
-  }
-  iconUrl = iconUrl || DEFAULT_ICON_URL
-  if (precision == 'Imprecise') {
-    iconUrl = iconUrl.replace('.', '-imprecise.');
-  }
-  return iconUrl;
-}
-
 function DataRefreshManager($rootScope) {
   this.askToRefresh = function() {
     $rootScope.$broadcast('refreshdata');

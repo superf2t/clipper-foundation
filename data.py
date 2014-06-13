@@ -28,48 +28,6 @@ class LatLngBounds(serializable.Serializable):
         self.southwest = southwest
         self.northeast = northeast
 
-
-SUB_CATEGORY_NAME_TO_ICON_URL = {
-    values.SubCategory.HOTEL.name: 'hotel.png',
-    values.SubCategory.PRIVATE_RENTAL.name: 'private-rental.png',
-    values.SubCategory.BED_AND_BREAKFAST.name: 'bed-and-breakfast.png',
-    values.SubCategory.HOSTEL.name: 'hostel.png',
-    values.SubCategory.COUCHSURFING.name: 'couch-surfing.png',
-    values.SubCategory.FRIENDS_AND_FAMILY.name: 'friends-and-family.png',
-
-    values.SubCategory.RESTAURANT.name: 'restaurant.png',
-    values.SubCategory.BAR.name: 'bar.png',
-    values.SubCategory.NIGHTCLUB.name: 'nightclub.png',
-    values.SubCategory.FOOD_TRUCK.name: 'food-truck.png',
-    values.SubCategory.STREET_FOOD.name: 'street-food.png',
-    values.SubCategory.COFFEE_SHOP.name: 'coffee.png',
-    values.SubCategory.BAKERY.name: 'bakery.png',
-    values.SubCategory.DESSERT.name: 'dessert.png',
-
-    values.SubCategory.LANDMARK.name: 'landmark.png',
-    values.SubCategory.MUSEUM.name: 'museum.png',
-
-    values.SubCategory.TOUR.name: 'tour.png',
-    values.SubCategory.OUTDOOR.name: 'outdoor.png',
-
-    values.SubCategory.MUSIC.name: 'music.png',
-    values.SubCategory.THEATER.name: 'theater.png',
-    values.SubCategory.SPORTS.name: 'sports.png',
-    values.SubCategory.DANCE.name: 'dance.png',
-    values.SubCategory.COMEDY.name: 'comedy.png',
-}
-
-CATEGORY_NAME_TO_ICON_URL = {
-    values.Category.LODGING.name: 'lodging.png',
-    values.Category.FOOD_AND_DRINK.name: 'food-and-drink.png',
-    values.Category.ATTRACTIONS.name: 'sight.png',
-    values.Category.ACTIVITIES.name: 'activity.png',
-    values.Category.SHOPPING.name: 'shopping.png',
-    values.Category.ENTERTAINMENT.name: 'entertainment.png',
-}
-
-DEFAULT_ICON_URL = 'default.png'
-
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
         serializable.objf('category', values.Category),
@@ -78,13 +36,13 @@ class Entity(serializable.Serializable):
         serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'description', 'starred',
         'primary_photo_url', serializable.listf('photo_urls'),
-        'source_url', 'icon_url', 'google_reference', 'day', 'day_position')
+        'source_url', 'google_reference', 'day', 'day_position')
 
     def __init__(self, entity_id=None, name=None,
             category=None, sub_category=None,
             address=None, latlng=None, address_precision=None,
             rating=None, description=None, starred=None,
-            primary_photo_url=None, photo_urls=(), source_url=None, icon_url=None,
+            primary_photo_url=None, photo_urls=(), source_url=None,
             google_reference=None, day=None, day_position=None):
         self.entity_id = entity_id
         self.name = name
@@ -102,23 +60,6 @@ class Entity(serializable.Serializable):
         self.google_reference = google_reference
         self.day = day
         self.day_position = day_position
-
-        self.initialize()
-
-    def initialize(self):
-        self.set_icon_url()
-
-    def set_icon_url(self):
-        icon_url = None
-        if self.sub_category:
-            icon_url = SUB_CATEGORY_NAME_TO_ICON_URL.get(self.sub_category.name)
-        if not icon_url and self.category:
-            icon_url = CATEGORY_NAME_TO_ICON_URL.get(self.category.name)
-        if not icon_url:
-            icon_url = DEFAULT_ICON_URL
-        if icon_url and self.address_precision == 'Imprecise':
-            icon_url = icon_url.replace('.', '-imprecise.')
-        self.icon_url = icon_url
 
     @staticmethod
     def chronological_cmp(e1, e2):
