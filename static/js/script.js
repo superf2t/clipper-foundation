@@ -753,13 +753,27 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
   };
 }
 
+// A map marker whose content can be arbitrary html rather
+// than just an image.
+// This class is very similar to that in 
+// https://code.google.com/p/google-maps-utility-library-v3/source/browse/trunk/richmarker/src/richmarker.js
+// However it was implemented independently and RichMarker
+// doesn't behave as well with regard to markers changing size
+// using CSS transitions.  It would be nice to see if the two
+// classes could be reconciled at some point though.
+// The dragging functionality in HtmlMarker is taken nearly verbatim
+// from RichMarker however.
 HtmlMarker.prototype = new google.maps.OverlayView();
 
 function HtmlMarker(position, map, contentDiv, opt_options) {
   this.position = position;
   this.map = map;
   this.options = opt_options || {};
-  this.div = $('<div>').css('position', 'absolute').append(
+
+  this.ready_ = false;
+  this.dragging_ = false;
+
+  this.div =  $('<div>').css('position', 'absolute').append(
     $('<div>').css({
       'position': 'absolute',
       'bottom': 0,
@@ -772,6 +786,7 @@ function HtmlMarker(position, map, contentDiv, opt_options) {
       }).append(contentDiv)));
   var elem = $(contentDiv);
   this.sizeDiv = elem.height() ? elem : $(elem.children()[0])
+  this.markerWrapper_ = this.div[0];
   map && this.setMap(map);
 }
 
@@ -786,6 +801,8 @@ HtmlMarker.prototype.setMap = function(map) {
 // Override
 HtmlMarker.prototype.onAdd = function() {
   this.getPanes().overlayMouseTarget.appendChild(this.div[0]);
+  this.ready_ = true;
+  this.draggableChanged();
 };
 
 // Override
@@ -811,6 +828,197 @@ HtmlMarker.prototype.onRemove = function() {
 HtmlMarker.prototype.getHeight = function() {
   return this.sizeDiv.height();
 };
+
+HtmlMarker.prototype.getDraggable = function() {
+  return this.options.draggable;
+};
+
+HtmlMarker.prototype.setCursor_ = function(whichCursor) {
+  if (!this.ready_) {
+    return;
+  }
+
+  var cursor = '';
+  if (navigator.userAgent.indexOf('Gecko/') !== -1) {
+    // Moz has some nice cursors :)
+    if (whichCursor == 'dragging') {
+      cursor = '-moz-grabbing';
+    }
+
+    if (whichCursor == 'dragready') {
+      cursor = '-moz-grab';
+    }
+
+    if (whichCursor == 'draggable') {
+      cursor = 'pointer';
+    }
+  } else {
+    if (whichCursor == 'dragging' || whichCursor == 'dragready') {
+      cursor = 'move';
+    }
+
+    if (whichCursor == 'draggable') {
+      cursor = 'pointer';
+    }
+  }
+
+  if (this.markerWrapper_.style.cursor != cursor) {
+    this.markerWrapper_.style.cursor = cursor;
+  }
+};
+
+HtmlMarker.prototype.startDrag = function(e) {
+  if (!this.getDraggable()) {
+    return;
+  }
+
+  if (!this.dragging_) {
+    this.dragging_ = true;
+    var map = this.getMap();
+    this.mapDraggable_ = map.get('draggable');
+    map.set('draggable', false);
+
+    // Store the current mouse position
+    this.mouseX_ = e.clientX;
+    this.mouseY_ = e.clientY;
+
+    this.setCursor_('dragready');
+
+    // Stop the text from being selectable while being dragged
+    this.markerWrapper_.style['MozUserSelect'] = 'none';
+    this.markerWrapper_.style['KhtmlUserSelect'] = 'none';
+    this.markerWrapper_.style['WebkitUserSelect'] = 'none';
+
+    this.markerWrapper_['unselectable'] = 'on';
+    this.markerWrapper_['onselectstart'] = function() {
+      return false;
+    };
+
+    this.addDraggingListeners_();
+
+    google.maps.event.trigger(this, 'dragstart');
+  }
+};
+
+HtmlMarker.prototype.stopDrag = function() {
+  if (!this.getDraggable()) {
+    return;
+  }
+
+  if (this.dragging_) {
+    this.dragging_ = false;
+    this.getMap().set('draggable', this.mapDraggable_);
+    this.mouseX_ = this.mouseY_ = this.mapDraggable_ = null;
+
+    // Allow the text to be selectable again
+    this.markerWrapper_.style['MozUserSelect'] = '';
+    this.markerWrapper_.style['KhtmlUserSelect'] = '';
+    this.markerWrapper_.style['WebkitUserSelect'] = '';
+    this.markerWrapper_['unselectable'] = 'off';
+    this.markerWrapper_['onselectstart'] = function() {};
+
+    this.removeDraggingListeners_();
+
+    this.setCursor_('draggable');
+    google.maps.event.trigger(this, 'dragend');
+
+    this.draw();
+  }
+};
+
+HtmlMarker.prototype.drag = function(e) {
+  if (!this.getDraggable() || !this.dragging_) {
+    // This object isn't draggable or we have stopped dragging
+    this.stopDrag();
+    return;
+  }
+
+  var dx = this.mouseX_ - e.clientX;
+  var dy = this.mouseY_ - e.clientY;
+
+  this.mouseX_ = e.clientX;
+  this.mouseY_ = e.clientY;
+
+  var left = parseInt(this.markerWrapper_.style['left'], 10) - dx;
+  var top = parseInt(this.markerWrapper_.style['top'], 10) - dy;
+
+  this.markerWrapper_.style['left'] = left + 'px';
+  this.markerWrapper_.style['top'] = top + 'px';
+
+  var point = new google.maps.Point(left, top);
+  var projection = this.getProjection();
+  this.position = projection.fromDivPixelToLatLng(point);
+
+  this.setCursor_('dragging');
+  google.maps.event.trigger(this, 'drag');
+};
+
+HtmlMarker.prototype.removeDragListeners_ = function() {
+  if (this.draggableListener_) {
+    google.maps.event.removeListener(this.draggableListener_);
+    delete this.draggableListener_;
+  }
+  this.setCursor_('');
+};
+
+HtmlMarker.prototype.addDragging_ = function(node) {
+  if (!node) {
+    return;
+  }
+
+  var that = this;
+  this.draggableListener_ =
+    google.maps.event.addDomListener(node, 'mousedown', function(e) {
+      that.startDrag(e);
+    });
+
+  this.setCursor_('draggable');
+};
+
+HtmlMarker.prototype.addDraggingListeners_ = function() {
+  var that = this;
+  if (this.markerWrapper_.setCapture) {
+    this.markerWrapper_.setCapture(true);
+    this.draggingListeners_ = [
+      google.maps.event.addDomListener(this.markerWrapper_, 'mousemove', function(e) {
+        that.drag(e);
+      }, true),
+      google.maps.event.addDomListener(this.markerWrapper_, 'mouseup', function() {
+        that.stopDrag();
+        that.markerWrapper_.releaseCapture();
+      }, true)
+    ];
+  } else {
+    this.draggingListeners_ = [
+      google.maps.event.addDomListener(window, 'mousemove', function(e) {
+        that.drag(e);
+      }, true),
+      google.maps.event.addDomListener(window, 'mouseup', function() {
+        that.stopDrag();
+      }, true)
+    ];
+  }
+};
+
+HtmlMarker.prototype.removeDraggingListeners_ = function() {
+  if (this.draggingListeners_) {
+    for (var i = 0, listener; listener = this.draggingListeners_[i]; i++) {
+      google.maps.event.removeListener(listener);
+    }
+    this.draggingListeners_.length = 0;
+  }
+};
+
+HtmlMarker.prototype.draggableChanged = function() {
+  if (this.ready_) {
+    if (this.getDraggable()) {
+      this.addDragging_(this.markerWrapper_);
+    } else {
+      this.removeDragListeners_();
+    }
+  }
+};
+
 
 function tcEntityMarker() {
   return {
