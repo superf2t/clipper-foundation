@@ -36,6 +36,21 @@ a.help-prompt {
   opacity: 0.5;
 }
 
+.tc-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+}
+
+.tc-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+a:hover .tc-icon svg {
+  fill: #2D73A0;
+}
+
 .light-label {
   font-weight: 400;
 }
@@ -463,9 +478,9 @@ hr.dropdown-separator {
   position: relative;
 }
 
-.one-entity-guideview .star {
+.one-entity-guideview .control-toggle {
   position: absolute;
-  top: 0;
+  display: inline-block;
   right: 0;
 }
 
@@ -515,6 +530,7 @@ hr.dropdown-separator {
   margin-top: 10px;
   position: relative;
   min-height: 20px;
+  font-size: 1.4em;
 }
 
 .one-entity-guideview .clip-cta {
@@ -974,17 +990,6 @@ hr.dropdown-separator {
 
 .marker-tools a {
   padding: 0 3px;
-}
-
-.marker-tools .compass-icon {
-  width: 15px;
-  height: 15px;
-  display: inline-block;
-}
-
-.marker-tools .compass-icon svg {
-  width: 100%;
-  height: 100%;
 }
 
 .results-infowindow .tools-section {

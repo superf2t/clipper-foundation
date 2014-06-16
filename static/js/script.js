@@ -535,6 +535,8 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
   $scope.show = true;
   $scope.dayPlannerActive = false;
 
+  $scope.showSecondaryControls = false;
+
   $scope.saveStarState = function(starred) {
     $scope.ed['starred'] = starred;
     $entityService.editEntity({
@@ -598,6 +600,10 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
     var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
     return categorySelected && daySelected;
+  };
+
+  $scope.toggleControls = function() {
+    $scope.showSecondaryControls = !$scope.showSecondaryControls;
   };
 }
 
@@ -3464,6 +3470,18 @@ function tcScrollToSelector($interpolate) {
   };
 }
 
+function tcIcon() {
+  return {
+    restrict: 'AEC',
+    templateUrl: function(element, attrs) {
+      return attrs.tcIcon + '-icon-template';
+    },
+    link: function(scope, element, attrs) {
+      $(element).addClass('tc-icon');
+    }
+  };
+}
+
 function tcStarRating() {
   return {
     restrict: 'AEC',
@@ -3483,7 +3501,6 @@ function tcFocusOn() {
     link: function(scope, element, attrs) {
       scope.$watch('focusValue', function(currentValue, previousValue) {
         if (currentValue) {
-          console.log("focusing");
           element[0].focus();
         }
       });
@@ -4334,6 +4351,7 @@ angular.module('directivesModule', [])
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
+  .directive('tcIcon', tcIcon)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 function makeFilter(fn) {
