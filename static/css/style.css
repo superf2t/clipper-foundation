@@ -307,6 +307,7 @@ hr.dropdown-separator {
 .one-entity-leftnav {
   padding: 7px 10px;
   cursor: pointer;
+  position: relative;
 }
 
 .one-entity-leftnav .scroll-anchor {
@@ -348,6 +349,10 @@ hr.dropdown-separator {
   max-width: calc(100% - 44px);
 }
 
+.one-entity-leftnav.controls-open {
+  background-color: #FAFAFA !important;
+}
+
 .one-entity-leftnav .entity-info .name,
 .one-entity-listing .entity-info .name  {
   line-height: 1.2;
@@ -361,6 +366,53 @@ hr.dropdown-separator {
 .one-entity-leftnav .entity-info .day,
 .one-entity-listing .entity-info .day {
   color: #ccc;
+}
+
+.one-entity-leftnav .control-cog-section {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 24px;
+  padding: 0 5px;
+  display: none;
+}
+
+.one-entity-leftnav .control-cog {
+  position: absolute;
+  top: calc(50% - 7px);
+}
+
+.one-entity-leftnav:hover .control-cog-section,
+.one-entity-leftnav.controls-open .control-cog-section {
+  display: block;
+}
+
+.one-entity-leftnav.controls-open .control-cog-section {
+  background-color: #666;
+}
+
+.one-entity-leftnav .controls {
+  font-size: 1.6em;
+  display: inline-block;
+  margin-top: 7px;
+}
+
+.one-entity-leftnav .controls a {
+  color: #000;
+  padding: 5px;
+}
+
+.one-entity-leftnav .controls a:hover {
+  color: #2D73A0;
+}
+
+.one-entity-leftnav .controls .control-toggle {
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  right: 24px;
+  margin-top: 7px;
 }
 
 .guide-panel {

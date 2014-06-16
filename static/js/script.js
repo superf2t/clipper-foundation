@@ -330,8 +330,26 @@ function EntityCtrl($scope, $entityService, $modal,
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
-  $scope.editing = false;
-  $scope.detailsExpanded = false;
+
+  $scope.controlState = {
+    open: false,
+    showSecondaryControls: false
+  };
+
+  $scope.openControls = function() {
+    $scope.$emit('asktocloseallcontrols');
+    $scope.controlState.open = true;
+    $scope.controlState.showSecondaryControls = false;
+  };
+
+  $scope.closeControls = function() {
+    $scope.controlState.open = false;
+    $scope.controlState.showSecondaryControls = false;
+  };
+
+  $scope.$on('closeallcontrols', function() {
+    $scope.closeControls();
+  });
 
   this.iconTemplateName = function() {
     if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
@@ -352,24 +370,6 @@ function EntityCtrl($scope, $entityService, $modal,
     deemphasized: false
   };
 
-  $scope.toggleDetails = function($event) {
-    $scope.detailsExpanded = !$scope.detailsExpanded;
-    $event.stopPropagation();
-    $event.preventDefault();
-  };
-
-  $scope.openEditEntity = function() {
-    $scope.editing = true;
-  }
-
-  $scope.cancelEditing = function() {
-    $scope.editing = false;
-  };
-
-  $scope.hasDescription = function() {
-    return !$scope.ed['description'] || isWhitespace($scope.ed['description']);
-  };
-
   $scope.openEditPlaceModal = function(windowClass) {
     var scope = $scope.$new(true);
     scope.ed = angular.copy($scope.ed);
@@ -378,23 +378,6 @@ function EntityCtrl($scope, $entityService, $modal,
       windowClass: windowClass,
       scope: scope
     });
-  };
-
-  // Note that this does not refresh the page state, so is only
-  // appropriate for things like description editing which don't
-  // require further updating.
-  $scope.saveEntityEdit = function() {
-    $entityService.editEntity($scope.item.data, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-        } else {
-          alert('Failed to save edits');
-        }
-      }).error(function() {
-        alert('Failed to save edits');
-      });
-    $scope.editing = false;
   };
 
   $scope.reclipEntity = function() {
@@ -425,18 +408,6 @@ function EntityCtrl($scope, $entityService, $modal,
       }).error(function() {
         alert('Failed to delete entity')
       });
-  };
-
-  $scope.openModalCarousel = function(imgUrls) {
-    var scope = $scope.$new(true);
-    scope.slides = _.map(imgUrls, function(url) {
-      return {imgUrl: url};
-    });
-    $modal.open({
-      templateUrl: 'modal-carousel-template',
-      windowClass: 'modal-carousel',
-      scope: scope
-    });
   };
 
   $scope.saveStarState = function(starred) {
@@ -1729,6 +1700,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
+  });
+
+  $scope.$on('asktocloseallcontrols', function() {
+    $scope.$broadcast('closeallcontrols');
   });
 
   var startTripPlanModal = null;

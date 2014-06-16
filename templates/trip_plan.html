@@ -622,13 +622,14 @@
   <script type="text/ng-template" id="one-entity-leftnav-template">
     <div ng-controller="EntityCtrl" class="one-entity-leftnav"
       tc-entity-id="[[ed['entity_id'] ]]"
-      ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id'])}"
+      ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id']),
+        'controls-open': controlState.open}"
       ng-click="selectEntity(ed); openInfowindow()">
       <a class="scroll-anchor"></a>
       <span class="entity-circle-img">
         <img ng-src="[[item.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
       </span>
-      <span class="entity-info">
+      <span class="entity-info" ng-show="!controlState.open">
         <div class="name">
           [[ed['name'] ]]
         </div>
@@ -644,6 +645,54 @@
           </span>
         </div>
       </span>
+      <span class="controls" ng-show="controlState.open" ng-click="$event.stopPropagation()">
+        <span ng-show="!controlState.showSecondaryControls">
+          <a href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-comment"></span>
+          </a>
+          <a href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-calendar"></span>
+          </a>
+          <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-star-empty"></span>
+          </a>
+          <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-star favorite-star"></span>
+          </a>
+        </span>
+        <span ng-show="controlState.showSecondaryControls">
+          <a href="javascript:void(0)" tooltip="Get directions"
+          tooltip-placement="bottom">
+            <span tc-icon="compass"></span>
+          </a>
+          <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-pencil"></span>
+          </a>
+          <a ng-click="deleteEntity()" href="javascript:void(0)"
+            tooltip="Delete" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-trash"></span>
+          </a>
+        </span>
+        <span class="control-toggle">
+          <a ng-click="controlState.showSecondaryControls = !controlState.showSecondaryControls"
+            href="javascript:void(0)"
+            tooltip="More controls" tooltip-placement="bottom">
+            &hellip;
+          </a>
+        </span>
+      </span>
+      <div class="control-cog-section" ng-click="$event.stopPropagation()">
+        <span class="control-cog">
+          <a ng-click="openControls()" href="javascript:void(0)" class="white-link"
+            ng-show="!controlState.open">
+            <span class="glyphicon glyphicon-cog"></span>
+          </a>
+          <a ng-click="closeControls()" href="javascript:void(0)" class="white-link"
+            ng-show="controlState.open">
+            <span class="glyphicon glyphicon-remove"></span>
+          </a>
+        </span>
+      </div>
       <tc-entity-marker ng-if="position"
         map="map" marker="markerState.marker" position="position"
         category-name="ed['category'] && ed['category']['name']"
