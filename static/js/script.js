@@ -694,6 +694,9 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
     destination: null
   };
 
+  $scope.showPrimaryControls = true;
+  $scope.showSecondaryControls = false;
+
   $scope.toggleDirectionsDirection = function() {
     $scope.directionsState.direction = 
       $scope.directionsState.direction == 'to' ? 'from' : 'to';
@@ -745,6 +748,11 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
   $scope.closeDirections = function() {
     $scope.directionsPlannerActive = false;
     $timeout($scope.onSizeChange);
+  };
+
+  $scope.toggleControls = function() {
+    $scope.showPrimaryControls = !$scope.showPrimaryControls;
+    $scope.showSecondaryControls = !$scope.showSecondaryControls;
   };
 
   $scope.suppressEvent = function($event) {

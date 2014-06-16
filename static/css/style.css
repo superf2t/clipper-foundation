@@ -964,6 +964,14 @@ hr.dropdown-separator {
   min-width: 130px;
 }
 
+.marker-tools .control-toggle {
+  display: inline-block;
+  position: absolute;
+  right: 5px;
+  padding: 0 10px;
+  border-left: 1px solid #000;
+}
+
 .marker-tools a {
   padding: 0 3px;
 }
