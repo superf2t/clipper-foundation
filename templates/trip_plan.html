@@ -140,7 +140,7 @@
         <button class="btn btn-primary view-guide-btn" ng-click="openGuide()"
           ng-disabled="inTutorial()">
           <span class="glyphicon glyphicon-picture"></span>
-          View Guide
+          Trip Details
         </button>
         {% if allow_editing %}
         <span class="add-place-button-container dropdown">
@@ -688,7 +688,16 @@
   </script>
 
   <script type="text/ng-template" id="guide-panel-template">
-    <div class="guide-panel"
+    <div class="guide-panel">
+      <div class="persistent-header">
+        <div class="header-text">Trip Details</div>
+        <div class="close-control">
+          <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+            <span class="glyphicon glyphicon-remove-circle"></span>
+          </a>
+        </div>
+      </div>
+      <div class="guide-panel-body"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-guideview[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <div class="overview">
@@ -696,7 +705,7 @@
           ng-style="{'background-image': 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)'}">
           <div class="title-floater">
             [[planModel.tripPlanName()]]
-          </div>
+        </div>
         </div>
         <div class="default-hero-img" ng-if="!planModel.hasCoverImage()">
           <div class="title-floater">
@@ -714,11 +723,6 @@
           </a>
         </div>
         {% endif %}
-        <div class="close-control">
-          <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
-            <span class="glyphicon glyphicon-remove-circle"></span>
-          </a>
-        </div>
       </div>
       <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
       </div>

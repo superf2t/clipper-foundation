@@ -352,6 +352,24 @@ hr.dropdown-separator {
   color: #000;
   width: 100%;
   height: 100%;
+}
+
+.guide-panel .persistent-header {
+  height: 44px;
+  background-color: #8F8F8F;
+  color: #fff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.guide-panel .persistent-header .header-text {
+  font-size: 1.2em;
+  padding: 10px;
+}
+
+.guide-panel-body {
+  width: 100%;
+  height: calc(100% - 44px);
   overflow-y: scroll;
 }
 
@@ -806,7 +824,10 @@ hr.dropdown-separator {
 }
 
 #main-control-buttons .view-guide-btn {
-  color: #000;
+  color: #fff;
+  background-color: #8F8F8F;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #main-control-buttons .add-place-button-container {
