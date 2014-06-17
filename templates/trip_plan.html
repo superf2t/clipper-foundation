@@ -650,7 +650,8 @@
           <a href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-comment"></span>
           </a>
-          <a href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
+          <a ng-click="openInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)"
+            tooltip="Add to day" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-calendar"></span>
           </a>
           <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
@@ -661,8 +662,8 @@
           </a>
         </span>
         <span ng-show="controlState.showSecondaryControls">
-          <a href="javascript:void(0)" tooltip="Get directions"
-          tooltip-placement="bottom">
+          <a ng-click="openInlineEdit(InlineEditMode.DIRECTIONS)" href="javascript:void(0)"
+            tooltip="Get directions" tooltip-placement="bottom">
             <span tc-icon="compass"></span>
           </a>
           <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
@@ -681,6 +682,7 @@
           </a>
         </span>
       </span>
+      {% if allow_editing %}
       <div class="control-cog-section" ng-click="$event.stopPropagation()">
         <span class="control-cog">
           <a ng-click="openControls()" href="javascript:void(0)" class="white-link"
@@ -693,6 +695,7 @@
           </a>
         </span>
       </div>
+      {% endif %}
       <tc-entity-marker ng-if="position"
         map="map" marker="markerState.marker" position="position"
         category-name="ed['category'] && ed['category']['name']"
@@ -833,38 +836,63 @@
         </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+      {% if allow_editing %}
+      <div class="inline-day-planner inline-editor" ng-if="inlineEditMode == InlineEditMode.DAY_PLANNER">
+        <tc-day-select-dropdown entity-data="ed" on-select="closeInlineEditor()">
+        </tc-day-select-dropdown>
+      </div>
+      <div class="inline-editor inline-directions" ng-if="inlineEditMode == InlineEditMode.DIRECTIONS">
+        Get directions
+        <a ng-click="toggleDirectionsDirection()" href="javascript:void(0)" class="color-link">
+          [[directionsState.direction == 'to' ? 'to' : 'from' ]]
+        </a>
+        <select class="form-control directions-select"
+          ng-options="e['name'] for e in allEntities"
+          ng-model="directionsState.destination">
+          <option value="">Select destination</option>
+        </select>
+        <button class="btn btn-primary go-button" ng-click="getDirections()"
+          ng-disabled="!directionsState.destination">
+          Go
+        </button>
+      </div>
+      {% endif %}
       <div class="controls">
         {% if allow_editing %}
         <span>
           <a href="javascript:void(0)"
-            tooltip="Comment" tooltip-append-to-body="1">
+            tooltip="Comment" tooltip-append-to-body="1" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-comment"></span>
           </a>
-          <a ng-click="openDayPlanner()" href="javascript:void(0)" tooltip="Add to day">
+          <a ng-click="toggleInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)"
+            tooltip="Add to day" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-calendar"><span>
           </a>
-          <a ng-click="saveStarState(false)" href="javascript:void(0)" tooltip="Favorite">
+          <a ng-click="saveStarState(false)" href="javascript:void(0)"
+            tooltip="Favorite" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']"></span>
           </a>
-          <a ng-click="saveStarState(true)" href="javascript:void(0)" tooltip="Un-favorite">
+          <a ng-click="saveStarState(true)" href="javascript:void(0)"
+            tooltip="Un-favorite" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-star-empty" ng-show="!ed['starred']"></span>
           </a>
         </span>
         <span class="control-toggle">
           <span ng-show="showSecondaryControls">
-            <a href="javascript:void(0)"
-              tooltip="Get directions" tooltip-append-to-body="1">
+            <a ng-click="toggleInlineEdit(InlineEditMode.DIRECTIONS)" href="javascript:void(0)"
+              tooltip="Get directions" tooltip-append-to-body="1" tooltip-placement="bottom">
               <span tc-icon="compass"></span>
             </a>
-            <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit">
+            <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
               <span class="glyphicon glyphicon-pencil"><span>
             </a>
-            <a ng-click="deleteEntity()" href="javascript:void(0)" tooltip="Delete">
+            <a ng-click="deleteEntity()" href="javascript:void(0)"
+              tooltip="Delete" tooltip-placement="bottom">
               <span class="glyphicon glyphicon-trash"><span>
             </a>
           </span>
           <a ng-click="toggleControls()" href="javascript:void(0)"
-            tooltip="More controls" tooltip-append-to-body="1">
+            tooltip="More controls" tooltip-append-to-body="1" tooltip-placement="bottom">
             &hellip;
           </a>
         </span>
@@ -878,13 +906,6 @@
           </a>
         </span>
         {% endif %}
-      </div>
-      <div class="inline-day-planner" ng-if="dayPlannerActive">
-        <tc-day-select-dropdown entity-data="ed" on-select="closeDayPlanner()">
-        </tc-day-select-dropdown>
-        <a ng-click="closeDayPlanner()" href="javascript:void(0)">
-          Close <span class="caret caret-up"></span>
-        </a>
       </div>
     </div>
   </script>

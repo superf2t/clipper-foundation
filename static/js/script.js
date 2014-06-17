@@ -330,6 +330,7 @@ function EntityCtrl($scope, $entityService, $modal,
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
+  $scope.InlineEditMode = InlineEditMode;
 
   $scope.controlState = {
     open: false,
@@ -421,6 +422,13 @@ function EntityCtrl($scope, $entityService, $modal,
     });
   };
 
+  $scope.openInlineEdit = function(inlineEditMode) {
+    $pageStateModel.midPanelExpanded = true;
+    $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
+    $scope.selectEntity($scope.ed);
+    $scope.$emit('asktoopeninlineedit', $scope.ed['entity_id'], inlineEditMode);
+  };
+
   // Map and Marker Controls
 
   var infowindow = null;
@@ -500,13 +508,45 @@ function EntityCtrl($scope, $entityService, $modal,
   });
 }
 
+var InlineEditMode = {
+  COMMENTS: 1,
+  DAY_PLANNER: 2,
+  DIRECTIONS: 3
+};
+
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     $filterModel, $modal, $window) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
-  $scope.dayPlannerActive = false;
+  $scope.inlineEditMode = null;
+  $scope.InlineEditMode = InlineEditMode;
 
   $scope.showSecondaryControls = false;
+
+  $scope.allEntities = $tripPlanModel.entities();
+  $scope.directionsState = {
+    direction: 'from',
+    destination: null
+  };
+
+  $scope.toggleDirectionsDirection = function() {
+    $scope.directionsState.direction = 
+      $scope.directionsState.direction == 'to' ? 'from' : 'to';
+  };
+
+  $scope.getDirections = function() {
+    if (!$scope.directionsState.destination) {
+      return;
+    }
+    var origin = $scope.directionsState.direction == 'to'
+      ? $scope.ed : $scope.directionsState.destination;
+    var destination = $scope.directionsState.direction == 'to'
+      ? $scope.directionsState.destination : $scope.ed;
+    var url = 'https://www.google.com/maps/dir/' + 
+      new ItemModel(origin).latlngString() + '/' +
+      new ItemModel(destination).latlngString();
+    $window.open(url, '_blank');
+  };
 
   $scope.saveStarState = function(starred) {
     $scope.ed['starred'] = starred;
@@ -559,13 +599,28 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     });   
   };
 
-  $scope.openDayPlanner = function() {
-    $scope.dayPlannerActive = true;
+  $scope.toggleInlineEdit = function(inlineEditMode) {
+    if ($scope.inlineEditMode == inlineEditMode) {
+      $scope.inlineEditMode = null;
+    } else {
+      $scope.inlineEditMode = inlineEditMode;
+    }
   };
 
-  $scope.closeDayPlanner = function() {
-    $scope.dayPlannerActive = false;
+  $scope.closeInlineEditor = function() {
+    $scope.inlineEditMode = null;
   };
+
+  $scope.$on('openinlineedit', function($event, entityId, inlineEditMode) {
+    if ($scope.ed['entity_id'] != entityId) {
+      return;
+    }
+    $scope.inlineEditMode = inlineEditMode;
+  });
+
+  $scope.$on('closeallcontrols', function() {
+    $scope.inlineEditMode = null;
+  });
 
   $scope.show = function() {
     var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
@@ -1704,6 +1759,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
 
   $scope.$on('asktocloseallcontrols', function() {
     $scope.$broadcast('closeallcontrols');
+  });
+
+  $scope.$on('asktoopeninlineedit', function($event, entityId, inlineEditMode) {
+    $scope.$broadcast('openinlineedit', entityId, inlineEditMode);
   });
 
   var startTripPlanModal = null;

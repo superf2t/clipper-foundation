@@ -590,6 +590,12 @@ hr.dropdown-separator {
   position: absolute;
   top: 0px;
   right: 0px;
+  font-size: 11pt;
+}
+
+.one-entity-guideview .inline-editor {
+  background-color: #eee;
+  padding: 10px;
 }
 
 .one-entity-search-result .header-bar {
@@ -648,6 +654,10 @@ hr.dropdown-separator {
 
 .one-entity-guideview .inline-day-planner a:hover {
   color: #2D73A0;
+}
+
+.one-entity-guideview .inline-directions .directions-select {
+  margin: 10px 0;
 }
 
 .results-details-panel {
