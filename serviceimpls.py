@@ -107,6 +107,33 @@ class EntityMutateResponse(service.ServiceResponse):
         self.entities = entities
         self.last_modified = last_modified
 
+class EntityCommentOperation(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id', serializable.objf('comment', data.Comment))
+
+    def __init__(self, operator=None, trip_plan_id=None, comment=None):
+        self.operator = operator
+        self.trip_plan_id = trip_plan_id
+        self.comment = comment
+
+class EntityMutateCommentRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(serializable.objlistf('operations', EntityCommentOperation))
+
+    def __init__(self, operations=None):
+        self.operations = operations
+
+    def trip_plan_ids(self):
+        return set(operation.trip_plan_id for operation in self.operations) 
+
+class EntityMutateCommentResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('comments', data.Comment), 'last_modified'))
+
+    def __init__(self, comments=(), last_modified=None, **kwargs):
+        super(EntityMutateCommentResponse, self).__init__(**kwargs)
+        self.comments = comments
+        self.last_modified = last_modified
+
 class GooglePlaceToEntityRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('reference')
 
@@ -169,6 +196,7 @@ class EntityService(service.Service):
     METHODS = service.servicemethods(
         ('get', EntityGetRequest, EntityGetResponse),
         ('mutate', EntityMutateRequest, EntityMutateResponse),
+        ('mutatecomments', EntityMutateCommentRequest, EntityMutateCommentResponse),
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
         ('urltoentities', UrlToEntitiesRequest, GenericMultiEntityResponse),
         ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
@@ -227,6 +255,8 @@ class EntityService(service.Service):
         for op in operations:
             if not op.operation.trip_plan_id:
                 self.validation_errors.append(op.missingfield('trip_plan_id'))
+            # Comments are read-only
+            op.operation.comments = None
         self.raise_if_errors()
 
     def validate_editability(self, operations):
@@ -284,6 +314,45 @@ class EntityService(service.Service):
                 if entity.entity_id == op.operation.entity.entity_id:
                     op.result = op.trip_plan.entities.pop(i)
                     break
+
+    def mutatecomments(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids())
+        trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id')
+        for op in operations:
+            op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan_id)
+        self.validate_editability(operations)
+
+        for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
+            add_op.operation.comment.comment_id = data.generate_comment_id()
+            add_op.operation.comment.set_last_modified(datetime.datetime.now(tz.tzutc()))
+            add_op.trip_plan.entity_by_id(add_op.operation.comment.entity_id).append_comment(
+                add_op.operation.comment)
+            add_op.result = add_op.operation.comment
+        for edit_op in OperationData.filter_by_operator(operations, Operator.EDIT):
+            original_comment = edit_op.trip_plan.entity_by_id(
+                edit_op.operation.comment.entity_id).comment_by_id(
+                    edit_op.operation.comment_id)
+            if original_comment.author != self.session_info.email:
+                self.validation_errors.append(
+                    edit_op.newerror(EntityServiceError.NOT_AUTHORIZED_FOR_OPERATION, field_name='comment.author'))
+                continue
+            original_comment.set_last_modified(datetime.datetime.now(tz.tzutc()))
+            original_comment.text = edit_op.operation.comment.text
+        for delete_op in OperationData.filter_by_operator(operations, Operator.DELETE):
+            pass
+
+        self.raise_if_errors()
+
+        for trip_plan in trip_plans:
+            data.save_trip_plan(trip_plan)
+        comments = [op.result for op in operations]
+        return EntityMutateCommentResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            # TODO: This implementation for last_modified is currently insufficient
+            # if multiple trip plans are being edited together, since each will be saved
+            # at a different time.
+            comments=comments, last_modified=trip_plans[0].last_modified)
 
     def googleplacetoentity(self, request):
         result = google_places.lookup_place_by_reference(request.reference)

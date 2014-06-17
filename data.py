@@ -28,6 +28,18 @@ class LatLngBounds(serializable.Serializable):
         self.southwest = southwest
         self.northeast = northeast
 
+class Comment(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields(
+        'comment_id', 'entity_id', 'text', 'author', 'last_modified')
+
+    def __init__(self, comment_id=None, entity_id=None, text=None,
+            author=None, last_modified=None):
+        self.comment_id = comment_id
+        self.entity_id = entity_id
+        self.text = text
+        self.author = author
+        self.last_modified = last_modified
+
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
         serializable.objf('category', values.Category),
@@ -36,14 +48,16 @@ class Entity(serializable.Serializable):
         serializable.objf('latlng', LatLng), 'address_precision',
         'rating', 'description', 'starred',
         'primary_photo_url', serializable.listf('photo_urls'),
-        'source_url', 'google_reference', 'day', 'day_position')
+        'source_url', 'google_reference', 'day', 'day_position',
+        serializable.objlistf('comments', Comment))
 
     def __init__(self, entity_id=None, name=None,
             category=None, sub_category=None,
             address=None, latlng=None, address_precision=None,
             rating=None, description=None, starred=None,
             primary_photo_url=None, photo_urls=(), source_url=None,
-            google_reference=None, day=None, day_position=None):
+            google_reference=None, day=None, day_position=None,
+            comments=None):
         self.entity_id = entity_id
         self.name = name
         self.category = category
@@ -60,6 +74,18 @@ class Entity(serializable.Serializable):
         self.google_reference = google_reference
         self.day = day
         self.day_position = day_position
+        self.comments = comments
+
+    def comment_by_id(self, comment_id):
+        for comment in self.comments:
+            if comment.comment_id == comment_id:
+                return comment
+        return None
+
+    def append_comment(self, comment):
+        if self.comments is None:
+            self.comments = []
+        self.comments.append(comment)
 
     @staticmethod
     def chronological_cmp(e1, e2):
@@ -118,6 +144,12 @@ class TripPlan(serializable.Serializable):
     def entity_by_source_url(self, source_url):
         for entity in self.entities:
             if entity.source_url == source_url:
+                return entity
+        return None
+
+    def entity_by_id(self, entity_id):
+        for entity in self.entities:
+            if entity.entity_id == entity_id:
                 return entity
         return None
 
@@ -207,6 +239,9 @@ def generate_note_id():
     return generate_id()
 
 def generate_trip_plan_id():
+    return generate_id()
+
+def generate_comment_id():
     return generate_id()
 
 def generate_id():
