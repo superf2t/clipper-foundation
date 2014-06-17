@@ -27,6 +27,10 @@ a.white-link {
   color: #FFFFFF;
 }
 
+a.white-link svg {
+  fill: #FFFFFF;
+}
+
 a.white-link:hover {
   color: #2D73A0;
 }
@@ -66,6 +70,11 @@ a:hover .tc-icon svg {
   background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
   background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
   background-color: transparent;  background-color: #4A90E2;
+}
+
+.emphasis-zoom-icon {
+  width: 1.5em;
+  height: 1.5em;
 }
 
 .text-lodging {
@@ -250,12 +259,12 @@ hr.dropdown-separator {
   display: none;
 }
 
-#trip-plan-header .controls:hover .reset-control {
+#trip-plan-header .controls .reset-control.emphasis-active {
   display: block;
 }
 
-#trip-plan-header .controls:hover .reset-control a:hover {
-  color: #2D73A0;
+#trip-plan-header .controls:hover .reset-control {
+  display: block;
 }
 
 /* Map View */
@@ -293,15 +302,14 @@ hr.dropdown-separator {
   position: absolute;
   top: 10px;
   right: 10px;
+}
+
+.item-group-header .item-group-controls .emphasis-control {
   display: none;
 }
 
-.item-group-header:hover .item-group-controls {
+.item-group-header:hover .item-group-controls .emphasis-control {
   display: block;
-}
-
-.item-group-header .item-group-controls a:hover {
-  color: #2D73A0;
 }
 
 .one-entity-leftnav {

@@ -1591,6 +1591,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $filterModel.emphasizedDayNumber = dayNumber;
   };
 
+  $scope.deemphasizeDay = function() {
+    $filterModel.emphasizedDayNumber = null;
+  };
+
   $scope.resetMapState = function() {
     $scope.$broadcast('closeallinfowindows');
     $map.fitBounds($tripPlanModel.getMapBounds());
