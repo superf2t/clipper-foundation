@@ -116,6 +116,39 @@ function EntityService($http) {
     };
     return $http.post('/entityservice/sitesearchtoentities', request);
   };
+
+  this.addComment = function(comment, tripPlanId) {
+    var request = {
+      'operations': [this.operationFromComment(comment, tripPlanId, Operator.ADD)]
+    };
+    return this.mutatecomments(request);
+  };
+
+  this.editComment = function(comment, tripPlanId) {
+    var request = {
+      'operations': [this.operationFromComment(comment, tripPlanId, Operator.EDIT)]
+    };
+    return this.mutatecomments(request);
+  };
+
+  this.deleteComment = function(comment, tripPlanId) {
+    var request = {
+      'operations': [this.operationFromComment(comment, tripPlanId, Operator.DELETE)]
+    };
+    return this.mutatecomments(request);
+  };
+
+  this.operationFromComment = function(comment, tripPlanId, operator) {
+    return {
+      'operator': operator,
+      'trip_plan_id': tripPlanId,
+      'comment': comment
+    };
+  };
+
+  this.mutatecomments = function(request) {
+    return $http.post('/entityservice/mutatecomments', request);
+  };
 }
 
 

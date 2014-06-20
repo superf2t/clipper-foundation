@@ -241,6 +241,39 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     });
   };
 
+  this.addNewComments = function(comments) {
+    $.each(comments, function(i, comment) {
+      var entity = me.entitiesById[comment['entity_id']];
+      if (!entity['comments']) {
+        entity['comments'] = [];
+      }
+      entity['comments'].push(comment);
+    });
+  };
+
+  this.updateComments = function(comments) {
+    $.each(comments, function(i, comment) {
+      var entity = me.entitiesById[comment['entity_id']];
+      $.each(entity['comments'], function(j, existingComment) {
+        if (existingComment['comment_id'] == comment['comment_id']) {
+          entity['comments'][j] = comment;
+        }
+      });
+    });
+  };
+
+  this.removeComments = function(comments) {
+    $.each(comments, function(i, comment) {
+      var entity = me.entitiesById[comment['entity_id']];
+      for (var j = 0, J = entity['comments'].length; j < J; j++) {
+        if (entity['comments'][j]['comment_id'] == comment['comment_id']) {
+          entity['comments'].splice(j, 1);
+          break;
+        }
+      }
+    });
+  };
+
   this.updateNotes = function(noteDatas) {
     var newNotesById = dictByAttr(noteDatas, 'note_id');
     for (var i = this.notes.length - 1; i >= 0; i--) {
@@ -604,6 +637,13 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
       $scope.inlineEditMode = null;
     } else {
       $scope.inlineEditMode = inlineEditMode;
+      if (inlineEditMode == InlineEditMode.COMMENTS) {
+        $scope.closeCommentEdit();
+        $scope.newComment = {
+          'entity_id': $scope.ed['entity_id'],
+          'text': ''
+        };
+      }
     }
   };
 
@@ -620,7 +660,56 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
 
   $scope.$on('closeallcontrols', function() {
     $scope.inlineEditMode = null;
+    $scope.closeCommentEdit();
   });
+
+  $scope.saveNewComment = function() {
+    if (!$scope.newComment['text']) {
+      return;
+    }
+    $entityService.addComment($scope.newComment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.addNewComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $scope.closeInlineEditor();
+        }
+      });
+  };
+
+  $scope.saveCommentEdit = function() {
+    if (!$scope.editingComment || !$scope.editingComment['text']) {
+      return;
+    }
+    $entityService.editComment($scope.editingComment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $scope.closeCommentEdit();
+        }
+      });
+  };
+
+  $scope.deleteComment = function(comment) {
+    $entityService.deleteComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.removeComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $scope.closeCommentEdit();
+        }
+      });
+  };
+
+  $scope.openCommentEdit = function(comment) {
+    $scope.editingComment = angular.copy(comment);
+    $scope.closeInlineEditor();
+  };
+
+  $scope.closeCommentEdit = function() {
+    $scope.editingComment = null;
+  };
 
   $scope.show = function() {
     var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);

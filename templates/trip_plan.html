@@ -658,7 +658,7 @@
       </span>
       <span class="controls" ng-show="controlState.open" ng-click="$event.stopPropagation()">
         <span ng-show="!controlState.showSecondaryControls">
-          <a href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
+          <a ng-click="openInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-comment"></span>
           </a>
           <a ng-click="openInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)"
@@ -847,7 +847,52 @@
         </div>
       </div>
       <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+      <div class="comments" ng-if="ed['comments'] && ed['comments'].length">
+        <div class="comments-header">
+          Comments
+        </div>
+        <div class="comments-body">
+          <div ng-repeat="comment in ed['comments']" class="one-comment">
+            <div class="author-name">
+              [[comment['author'] ]]
+            </div>
+            <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
+              [[comment['text'] ]]
+              <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
+                href="javascript:void(0)" class="color-link comment-edit-link">
+                <span class="glyphicon glyphicon-pencil"></span>
+              </a>
+              <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
+                href="javascript:void(0)" class="color-link comment-edit-link">
+                <span class="glyphicon glyphicon-trash"></span>
+              </a>
+            </div>
+            <div ng-show="editingComment && editingComment['comment_id'] == comment['comment_id']">
+              <textarea class="form-control" ng-model="editingComment['text']"
+                tc-focus-on="editingComment">
+              </textarea>
+              <div>
+                <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
+                <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       {% if allow_editing %}
+      <div class="inline-comment-editor inline-editor" ng-if="inlineEditMode == InlineEditMode.COMMENTS">
+        <div class="author-name">
+          [[accountInfo['email'] ]]
+        </div>
+        <textarea class="form-control" placeholder="Add a comment"
+          tc-focus-on="inlineEditMode"
+          ng-model="newComment['text']">
+        </textarea>
+        <div>
+          <a ng-click="saveNewComment()" href="javascript:void(0)" class="color-link">Save</a>
+          <a ng-click="closeInlineEditor()" href="javascript:void(0)">Cancel</a>
+        </div>
+      </div>
       <div class="inline-day-planner inline-editor" ng-if="inlineEditMode == InlineEditMode.DAY_PLANNER">
         <tc-day-select-dropdown entity-data="ed" on-select="closeInlineEditor()">
         </tc-day-select-dropdown>
@@ -871,7 +916,7 @@
       <div class="controls">
         {% if allow_editing %}
         <span>
-          <a href="javascript:void(0)"
+          <a ng-click="toggleInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)"
             tooltip="Comment" tooltip-append-to-body="1" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-comment"></span>
           </a>

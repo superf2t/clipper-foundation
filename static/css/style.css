@@ -586,6 +586,26 @@ hr.dropdown-separator {
   text-align: justify;
 }
 
+.one-entity-guideview .comments .comments-body {
+  margin: 0 5px;
+}
+
+.one-entity-guideview .comments .one-comment {
+  margin-top: 5px;
+}
+
+.one-entity-guideview .comments .author-name {
+  font-weight: bold;
+}
+
+.one-entity-guideview .comments .one-comment .comment-edit-link {
+  display: none;
+}
+
+.one-entity-guideview .comments .one-comment:hover .comment-edit-link {
+  display: inline;
+}
+
 .one-entity-guideview .controls {
   margin-top: 10px;
   position: relative;
@@ -649,6 +669,11 @@ hr.dropdown-separator {
 
 .one-entity-guideview .clip-cta a:hover {
   color: #2D73A0;
+}
+
+.one-entity-guideview .inline-comment-editor .author-name {
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .one-entity-guideview .inline-day-planner select {
