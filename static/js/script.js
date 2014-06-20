@@ -805,10 +805,10 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
-  $scope.dayPlannerActive = false;
+function InfowindowCtrl($scope, $tripPlanModel, $entityService, $window, $timeout) {
+  $scope.inlineEditMode = null;
+  $scope.InlineEditMode = InlineEditMode;
 
-  $scope.directionsPlannerActive = false;
   $scope.allEntities = $tripPlanModel.entities();
   $scope.directionsState = {
     direction: 'from',
@@ -837,48 +837,51 @@ function InfowindowCtrl($scope, $tripPlanModel, $window, $timeout) {
     $window.open(url, '_blank');
   };
 
+  $scope.saveNewComment = function() {
+    if (!$scope.newComment['text']) {
+      return;
+    }
+    $entityService.addComment($scope.newComment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.addNewComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $scope.closeInlineEditor();
+        }
+      });
+  };
+
   $scope.showInfoSection = function() {
     return $scope.ed['day'] || $scope.ed['starred'] || $scope.ed['address_precision'] == 'Imprecise';
   };
 
   $scope.workspaceActive = function() {
-    return $scope.dayPlannerActive || $scope.directionsPlannerActive;
+    return !!$scope.inlineEditMode;
   };
 
-  $scope.toggleDayPlanner = function() {
-    $scope.dayPlannerActive = !$scope.dayPlannerActive;
-    if ($scope.dayPlannerActive) {
-      $scope.directionsPlannerActive = false;
+  $scope.toggleInlineEdit = function(inlineEditMode) {
+    if ($scope.inlineEditMode == inlineEditMode) {
+      $scope.inlineEditMode = null;
+    } else {
+      $scope.inlineEditMode = inlineEditMode;
+      if (inlineEditMode == InlineEditMode.COMMENTS) {
+        $scope.newComment = {
+          'entity_id': $scope.ed['entity_id'],
+          'text': ''
+        };
+      }
     }
     $timeout($scope.onSizeChange);
   };
 
-  $scope.closeDayPlanner = function() {
-    $scope.dayPlannerActive = false;
-    $timeout($scope.onSizeChange);
-  };
-
-  $scope.toggleDirections = function() {
-    $scope.directionsPlannerActive = !$scope.directionsPlannerActive;
-    if ($scope.directionsPlannerActive) {
-      $scope.dayPlannerActive = false;      
-    }
-    $timeout($scope.onSizeChange);
-  };
-
-  $scope.closeDirections = function() {
-    $scope.directionsPlannerActive = false;
+  $scope.closeInlineEditor = function() {
+    $scope.inlineEditMode = null;
     $timeout($scope.onSizeChange);
   };
 
   $scope.toggleControls = function() {
     $scope.showPrimaryControls = !$scope.showPrimaryControls;
     $scope.showSecondaryControls = !$scope.showSecondaryControls;
-  };
-
-  $scope.suppressEvent = function($event) {
-    $event.stopPropagation();
-    $event.preventDefault();
   };
 }
 
@@ -1276,9 +1279,16 @@ function HtmlInfowindow(marker, contentDiv) {
       'position': 'absolute',
       'pointer-events': 'none'
     }).append(this.innerDiv);
+
+  var me = this;
+  $.each(['click', 'dblclick', 'mousewheel', 'DOMMouseScroll'], function(i, eventName) {
+    me.div.on(eventName, function(event) {
+      event.stopPropagation();
+    });
+  });
+
   marker.map && this.setMap(marker.map);
 }
-
 // Override
 HtmlInfowindow.prototype.onAdd = function() {
   this.getPanes().floatPane.appendChild(this.div[0]);
@@ -2577,11 +2587,6 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
 
   $scope.resultLetter = function() {
     return String.fromCharCode(65 + $scope.index);
-  };
-
-  $scope.suppressEvent = function($event) {
-    $event.stopPropagation();
-    $event.preventDefault();
   };
 }
 
@@ -4523,7 +4528,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
     .controller('EntityCtrl', EntityCtrl)
     .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
-    .controller('InfowindowCtrl', ['$scope', '$tripPlanModel', '$window', '$timeout', InfowindowCtrl])
+    .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
     .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
     .controller('CarouselCtrl', ['$scope', CarouselCtrl])

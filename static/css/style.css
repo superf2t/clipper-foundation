@@ -376,6 +376,10 @@ hr.dropdown-separator {
   color: #ccc;
 }
 
+.one-entity-leftnav .entity-info .quickinfo-icon {
+  margin-left: 3px;
+}
+
 .one-entity-leftnav .control-cog-section {
   position: absolute;
   top: 0;
@@ -596,6 +600,10 @@ hr.dropdown-separator {
 
 .one-entity-guideview .comments .author-name {
   font-weight: bold;
+}
+
+.one-entity-guideview .comments .one-comment .text {
+  white-space: pre-wrap;
 }
 
 .one-entity-guideview .comments .one-comment .comment-edit-link {
@@ -1045,6 +1053,28 @@ hr.dropdown-separator {
   font-size: 9pt;
 }
 
+.infowindow .comments-section {
+  background-color: #FFFFFF;
+  color: #000;
+  text-align: left;
+  padding: 0 5px 5px 5px;
+  border-bottom: 1px solid #777;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.infowindow .comments-section .one-comment {
+  padding-top: 5px;
+}
+
+.infowindow .comments-section .author-name {
+  font-weight: bold;
+}
+
+.infowindow .comments-section .one-comment .text {
+  white-space: pre-wrap;
+}
+
 .infowindow .workspace-section {
   background-color: #FFFFFF;
   padding: 5px 10px;
@@ -1053,7 +1083,7 @@ hr.dropdown-separator {
 }
 
 .infowindow .workspace-section a {
-  color: #428bca;;
+  color: #428bca;
 }
 
 .infowindow .workspace-section a:hover {
@@ -1066,6 +1096,20 @@ hr.dropdown-separator {
 
 .infowindow .workspace-section .directions-planner .go-button {
   padding: 3px 6px;
+}
+
+.infowindow .inline-comment-editor .author-name {
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 5px;
+}
+
+.infowindow .inline-comment-editor a.cancel-link {
+  color: #000;
+}
+
+.infowindow .inline-comment-editor a.cancel-link:hover {
+  color: #2D73A0;
 }
 
 .marker-tools {

@@ -189,8 +189,7 @@
   </script>
 
   <script type="text/ng-template" id="infowindow-template">
-    <div class="infowindow" ng-controller="InfowindowCtrl"
-      ng-click="suppressEvent($event)" ng-dblclick="suppressEvent($event)">
+    <div class="infowindow" ng-controller="InfowindowCtrl">
       <div class="infowindow-internal">
         <div class="info-section">
           <div class="name">
@@ -203,12 +202,35 @@
               tooltip="Location is approximate"><span>
           </div>
         </div>
+        <div class="comments-section" ng-if="ed['comments'] && ed['comments'].length">
+          <div ng-repeat="comment in ed['comments']" class="one-comment">
+            <div class="author-name">
+              [[comment['author'] ]]
+            </div>
+            <div>
+              <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
+            </div>
+          </div>
+        </div>
         <div class="workspace-section" ng-if="workspaceActive()">
-          <div ng-if="dayPlannerActive">
-            <tc-day-select-dropdown entity-data="ed" on-select="closeDayPlanner()">
+          <div ng-if="inlineEditMode == InlineEditMode.COMMENTS" class="inline-comment-editor">
+            <div class="author-name">
+              [[accountInfo['email'] ]]
+            </div>
+            <textarea class="form-control" placeholder="Add a comment"
+              tc-focus-on="inlineEditMode"
+              ng-model="newComment['text']">
+            </textarea>
+            <div>
+              <a ng-click="saveNewComment()" href="javascript:void(0)" class="color-link">Save</a>
+              <a ng-click="closeInlineEditor()" href="javascript:void(0)" class="cancel-link">Cancel</a>
+            </div>
+          </div>
+          <div ng-if="inlineEditMode == InlineEditMode.DAY_PLANNER">
+            <tc-day-select-dropdown entity-data="ed" on-select="closeInlineEditor()">
             </tc-day-select-dropdown>
           </div>
-          <div ng-if="directionsPlannerActive" class="directions-planner">
+          <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="directions-planner">
             Get directions
             <a ng-click="toggleDirectionsDirection()" href="javascript:void(0)">
               [[directionsState.direction == 'to' ? 'to' : 'from' ]]
@@ -233,8 +255,7 @@
 
   {% if allow_editing %}
   <script type="text/ng-template" id="results-infowindow-template">
-    <div class="infowindow results-infowindow"
-      ng-click="suppressEvent($event)" ng-dblclick="suppressEvent($event)">
+    <div class="infowindow results-infowindow">
       <div class="infowindow-internal">
         <div class="info-section">
           <div class="name">
@@ -259,10 +280,10 @@
     <div class="marker-tools">
       {% if allow_editing %}
       <span ng-show="showPrimaryControls">
-        <a href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
+        <a ng-click="toggleInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-comment"></span>
         </a>
-        <a ng-click="toggleDayPlanner()" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
+        <a ng-click="toggleInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-calendar"></span>
         </a>
         <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
@@ -273,7 +294,7 @@
         </a>
       </span>
       <span ng-show="showSecondaryControls">
-        <a ng-click="toggleDirections()" href="javascript:void(0)" tooltip="Get directions"
+        <a ng-click="toggleInlineEdit(InlineEditMode.DIRECTIONS)" href="javascript:void(0)" tooltip="Get directions"
         tooltip-placement="bottom">
           <span tc-icon="compass"></span>
         </a>
@@ -649,10 +670,14 @@
             ng-class="'text-' + ed['category']['name']">
             [[item.categoryDisplayText()]]
           </span>
-          <span ng-show="item.day() && pageStateModel.isGroupByCategory()" ng-class="day">
+          <span ng-show="ed['comments'] && ed['comments'].length" class="glyphicon glyphicon-comment quickinfo-icon">
+          </span>
+          </span>
+          <span ng-show="item.day() && pageStateModel.isGroupByCategory()"
+            class="quickinfo-icon" ng-class="day">
             Day [[item.day()]]
           </span>
-          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
+          <span class="glyphicon glyphicon-star favorite-star quickinfo-icon" ng-show="ed['starred']">
           </span>
         </div>
       </span>
@@ -857,7 +882,7 @@
               [[comment['author'] ]]
             </div>
             <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
-              [[comment['text'] ]]
+              <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
               <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
                 href="javascript:void(0)" class="color-link comment-edit-link">
                 <span class="glyphicon glyphicon-pencil"></span>
