@@ -1,6 +1,8 @@
+import datetime
 import re
 
 from dateutil import parser as date_parser
+from dateutil import tz
 
 import data
 import clip_logic
@@ -322,25 +324,28 @@ class EntityService(service.Service):
         for op in operations:
             op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan_id)
         self.validate_editability(operations)
+        self.validate_mutatecomments_fields(operations)
 
         for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
             add_op.operation.comment.comment_id = data.generate_comment_id()
-            add_op.operation.comment.set_last_modified(datetime.datetime.now(tz.tzutc()))
-            add_op.trip_plan.entity_by_id(add_op.operation.comment.entity_id).append_comment(
-                add_op.operation.comment)
+            add_op.operation.comment.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
+            add_op.operation.comment.author = self.session_info.user_identifier
+            entity = add_op.trip_plan.entity_by_id(add_op.operation.comment.entity_id)
+            entity.append_comment(add_op.operation.comment)
             add_op.result = add_op.operation.comment
         for edit_op in OperationData.filter_by_operator(operations, Operator.EDIT):
-            original_comment = edit_op.trip_plan.entity_by_id(
-                edit_op.operation.comment.entity_id).comment_by_id(
-                    edit_op.operation.comment_id)
+            entity = edit_op.trip_plan.entity_by_id(edit_op.operation.comment.entity_id)
+            original_comment = entity.comment_by_id(edit_op.operation.comment.comment_id)
             if original_comment.author != self.session_info.email:
                 self.validation_errors.append(
                     edit_op.newerror(EntityServiceError.NOT_AUTHORIZED_FOR_OPERATION, field_name='comment.author'))
                 continue
-            original_comment.set_last_modified(datetime.datetime.now(tz.tzutc()))
+            original_comment.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
             original_comment.text = edit_op.operation.comment.text
+            edit_op.result = original_comment
         for delete_op in OperationData.filter_by_operator(operations, Operator.DELETE):
-            pass
+            entity = delete_op.trip_plan.entity_by_id(delete_op.operation.comment.entity_id)
+            delete_op.result = entity.delete_comment_by_id(delete_op.operation.comment.comment_id)
 
         self.raise_if_errors()
 
@@ -353,6 +358,20 @@ class EntityService(service.Service):
             # if multiple trip plans are being edited together, since each will be saved
             # at a different time.
             comments=comments, last_modified=trip_plans[0].last_modified)
+
+    def validate_mutatecomments_fields(self, operations):
+        for op in operations:
+            if not op.operation.trip_plan_id:
+                self.validation_errors.append(op.missingfield('trip_plan_id'))
+            if not op.operation.comment.entity_id:
+                self.validation_errors.append(op.missingfield('comment.entity_id'))
+            if op.operation.operator in (Operator.EDIT.name, Operator.DELETE.name):
+                if not op.operation.comment.comment_id:
+                    self.validation_errors.append(op.missingfield('comment.comment_id'))
+            if op.operation.operator == Operator.ADD.name:
+                if not op.operation.comment.text:
+                    self.validation_errors.append(op.missingfield('comment.text'))
+        self.raise_if_errors()
 
     def googleplacetoentity(self, request):
         result = google_places.lookup_place_by_reference(request.reference)

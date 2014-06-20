@@ -40,6 +40,14 @@ class Comment(serializable.Serializable):
         self.author = author
         self.last_modified = last_modified
 
+    def last_modified_datetime(self):
+        if not self.last_modified:
+            return None
+        return date_parser.parse(self.last_modified)
+
+    def set_last_modified_datetime(self, d):
+        self.last_modified = d.isoformat()
+
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
         serializable.objf('category', values.Category),
@@ -74,7 +82,7 @@ class Entity(serializable.Serializable):
         self.google_reference = google_reference
         self.day = day
         self.day_position = day_position
-        self.comments = comments
+        self.comments = comments or []
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:
@@ -86,6 +94,12 @@ class Entity(serializable.Serializable):
         if self.comments is None:
             self.comments = []
         self.comments.append(comment)
+
+    def delete_comment_by_id(self, comment_id):
+        for i, comment in enumerate(self.comments):
+            if comment.comment_id == comment_id:
+                return self.comments.pop(i)
+        return None
 
     @staticmethod
     def chronological_cmp(e1, e2):
