@@ -163,6 +163,9 @@
             <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
           </li>
           <li>
+            <a ng-click="openSharingSettings('sharing-settings-modal')" href="javascript:void(0)">Sharing and collaborators</a>
+          </li>
+          <li>
             <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
           </li>
           <li>
@@ -1522,6 +1525,46 @@
                 ng-class="{'dragactive': coverImgDragActive}">
               </textarea>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="sharing-settings-editor-template">
+    <div class="sharing-settings-editor" ng-controller="SharingSettingsCtrl">
+      <div class="header">
+        <div class="title">Sharing and Collaborators</div>
+        <div class="button-panel">
+          <button class="btn btn-default" ng-click="$close()">
+            Close
+          </button>
+        </div>
+      </div>
+      <div class="creator">
+        <h4>Creator</h4>
+        [[creator]]
+        <span ng-show="isCreator">(you)</span>
+      </div>
+      <div ng-show="hasCollaborators()">
+        <h4>Collaborators</h4>
+        <p ng-repeat="collaborator in collaborators()" class="collaborator">
+          [[collaborator]]
+          <a ng-click="removeCollaborator(collaborator)"
+            href="javascript:void(0)" class="remove-link color-link">
+            <span class="glyphicon glyphicon-trash"></span>
+          </a>
+        </p>
+      </div>
+      <div>
+        <h4>Add collaborators</h4>
+        Collaborators can edit and comment on the trip plan and invite other collaborators.
+        <form class="form-inline" role="form" ng-submit="addCollaborator()">
+          <div class="form-group">
+            <input type="text" class="form-control email-input" placeholder="Enter an email address" ng-model="formState.email"/>
+            <button class="btn btn-primary">
+              Add
+            </button>
           </div>
         </div>
       </div>

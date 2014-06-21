@@ -174,7 +174,9 @@ class TripPlan(serializable.Serializable):
         return False
 
     def editable_by(self, session_info):
-        return str(self.creator) in (session_info.email, str(session_info.sessionid)) or session_info.is_admin()
+        return (str(self.creator) in (session_info.email, str(session_info.sessionid))
+            or session_info.is_admin()
+            or (session_info.email and session_info.email in self.editors))
 
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
@@ -194,7 +196,6 @@ class TripPlan(serializable.Serializable):
         self.entities = ()
         self.notes = ()
         self.creator = None
-        self.editors = ()
         self.last_modified = None
         return self
 

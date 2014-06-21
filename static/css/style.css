@@ -1617,6 +1617,37 @@ temporary hack that lines up the arrows a bit better for most pictures */
   border: 1px solid red;
 }
 
+.sharing-settings-editor {
+  margin: 20px;
+}
+
+.sharing-settings-editor .header {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.sharing-settings-editor .header .title {
+  font-size: 18pt;
+}
+
+.sharing-settings-editor .header .button-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.sharing-settings-editor .email-input {
+  width: 400px;
+}
+
+.sharing-settings-editor .collaborator .remove-link {
+  display: none;
+}
+
+.sharing-settings-editor .collaborator:hover .remove-link {
+  display: inline;
+}
+
 .reclip-confirmation-modal {
   min-height: 150px; 
   margin: 20px;

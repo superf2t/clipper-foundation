@@ -1857,6 +1857,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     });
   };
 
+  $scope.openSharingSettings = function(windowClass) {
+    $modal.open({
+      templateUrl: 'sharing-settings-editor-template',
+      scope: $scope.$new(true),
+      windowClass: windowClass
+    });
+  };
+
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
   });
@@ -2891,6 +2899,59 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
       .error(function() {
         alert('Error saving trip plan, please try again.');
       });
+  };
+}
+
+function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanService) {
+  $scope.formState = {email: null};
+  $scope.creator = $tripPlanModel.tripPlanData['creator'];
+  $scope.isCreator = $accountInfo['email'] == $tripPlanModel.tripPlanData['creator'];
+
+  $scope.hasCollaborators = function() {
+    var collaborators = $scope.collaborators();
+    return collaborators && collaborators.length;
+  };
+
+  $scope.collaborators = function() {
+    var currentUser = $accountInfo['email'].toLowerCase();
+    return _.filter($tripPlanModel.tripPlanData['editors'], function(email) {
+      return currentUser != email.toLowerCase();
+    });
+  };
+
+  $scope.addCollaborator = function() {
+    var email = $scope.formState.email;
+    if (!email) {
+      return;
+    }
+    if ($tripPlanModel.tripPlanData['editors'].indexOf(email) > -1) {
+      return;
+    }
+    var newEditors = $tripPlanModel.tripPlanData['editors'].slice(0);
+    newEditors.push(email);
+    $tripPlanService.editTripPlan({
+      'trip_plan_id': $tripPlanModel.tripPlanId(),
+      'editors': newEditors
+    }).success(function(response) {
+      if (response['response_code'] == ResponseCode.SUCCESS) {
+        $tripPlanModel.tripPlanData['editors'] = newEditors;
+        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
+        $scope.formState.email = null;
+      }
+    });
+  };
+
+  $scope.removeCollaborator = function(email) {
+    var index = $tripPlanModel.tripPlanData['editors'].indexOf(email);
+    $tripPlanModel.tripPlanData['editors'].splice(index, 1);
+    $tripPlanService.editTripPlan({
+      'trip_plan_id': $tripPlanModel.tripPlanId(),
+      'editors': $tripPlanModel.tripPlanData['editors']
+    }).success(function(response) {
+      if (response['response_code'] == ResponseCode.SUCCESS) {
+        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
+      }
+    });
   };
 }
 
@@ -4523,32 +4584,28 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('RootCtrl', RootCtrl)
     .controller('OrganizeMenuCtrl', OrganizeMenuCtrl)
     .controller('BulkClipCtrl', BulkClipCtrl)
-    .controller('AccountDropdownCtrl', ['$scope', '$accountService', '$tripPlanService', '$accountInfo',
-      '$tripPlan', '$allTripPlans', AccountDropdownCtrl])
+    .controller('AccountDropdownCtrl', AccountDropdownCtrl)
     .controller('ItemGroupCtrl', ItemGroupCtrl)
-    .controller('GuideviewItemGroupCtrl', ['$scope', GuideviewItemGroupCtrl])
+    .controller('GuideviewItemGroupCtrl', GuideviewItemGroupCtrl)
     .controller('EntityCtrl', EntityCtrl)
     .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
-    .controller('NoteCtrl', ['$scope', '$noteService', '$tripPlanModel', NoteCtrl])
-    .controller('ReclipConfirmationCtrl', ['$scope', '$timeout', '$entityService', ReclipConfirmationCtrl])
-    .controller('CarouselCtrl', ['$scope', CarouselCtrl])
+    .controller('NoteCtrl', NoteCtrl)
+    .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
+    .controller('CarouselCtrl', CarouselCtrl)
     .controller('AddPlaceOptionsCtrl', AddPlaceOptionsCtrl)
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
     .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
     .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
-    .controller('EditPlaceCtrl', ['$scope', '$tripPlanModel', '$taxonomy',
-      '$entityService', '$dataRefreshManager', EditPlaceCtrl])
-    .controller('EditImagesCtrl', ['$scope', '$timeout', EditImagesCtrl])
-    .controller('TripPlanSettingsEditorCtrl', ['$scope', '$tripPlanModel',
-      '$tripPlanService', '$timeout', '$document', TripPlanSettingsEditorCtrl])
-    .controller('DayPlannerCtrl', ['$scope', '$entityService', '$noteService',
-      '$tripPlanModel', '$dataRefreshManager', DayPlannerCtrl])
-    .controller('DayPlannerOneDayCtrl', ['$scope', DayPlannerOneDayCtrl])
-    .controller('GmapsImporterCtrl', ['$scope', '$timeout', '$tripPlanService',
-      '$entityService', '$dataRefreshManager', '$tripPlanModel', GmapsImporterCtrl])
+    .controller('EditPlaceCtrl', EditPlaceCtrl)
+    .controller('EditImagesCtrl', EditImagesCtrl)
+    .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
+    .controller('SharingSettingsCtrl', SharingSettingsCtrl)
+    .controller('DayPlannerCtrl', DayPlannerCtrl)
+    .controller('DayPlannerOneDayCtrl', DayPlannerOneDayCtrl)
+    .controller('GmapsImporterCtrl', GmapsImporterCtrl)
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
