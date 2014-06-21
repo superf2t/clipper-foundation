@@ -1054,6 +1054,7 @@ hr.dropdown-separator {
 }
 
 .infowindow .comments-section {
+  min-width: 300px;
   background-color: #FFFFFF;
   color: #000;
   text-align: left;

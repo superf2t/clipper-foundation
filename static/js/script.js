@@ -1274,6 +1274,7 @@ function HtmlInfowindow(marker, contentDiv) {
   this.innerDiv = $('<div>').css({
         'position': 'relative',
         'left': '-50%',
+        'cursor': 'auto',
         'pointer-events': 'auto'
       }).append(contentDiv);
   this.div = $('<div>').css({
@@ -1281,11 +1282,8 @@ function HtmlInfowindow(marker, contentDiv) {
       'pointer-events': 'none'
     }).append(this.innerDiv);
 
-  var me = this;
-  $.each(['click', 'dblclick', 'mousewheel', 'DOMMouseScroll'], function(i, eventName) {
-    me.div.on(eventName, function(event) {
-      event.stopPropagation();
-    });
+  this.div.on('mousedown click dblclick mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
+    event.stopPropagation();
   });
 
   marker.map && this.setMap(marker.map);
@@ -1302,7 +1300,9 @@ HtmlInfowindow.prototype.draw = function() {
   this.div.css({
     'left': point.x,
     'top': point.y - this.contentDiv.height(),
-    'width': this.contentDiv.width(),
+    // This hack used to be needed, but may be obsolete now that max-width
+    // is set on the infowindow.
+    // 'width': this.contentDiv.width(),
     'z-index': Math.floor(point.y)
   });
   // Firefox doesn't compute the height properly the first time around.
