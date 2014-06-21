@@ -1175,6 +1175,7 @@ function tcEntityMarker() {
       iconTemplateName: '=',
       precise: '=',
       starred: '=',
+      hasComments: '=',
       emphasized: '=',
       deemphasized: '=',
       draggable: '=',

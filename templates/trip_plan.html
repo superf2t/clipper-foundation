@@ -324,14 +324,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="map-marker-annotations-template">
-    <div class="marker-annotations" ng-show="!infowindowOpen">
-      <div class="star-annotation" ng-show="ed['starred']">
-        <span class="glyphicon glyphicon-star favorite-star"></span>
-      </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="day-select-dropdown-template">
     <select class="form-control"
       ng-options="option.createNew ? 'Add a new day' : 'Day ' + option.dayNumber for option in getDaySelectOptions()"
@@ -738,7 +730,7 @@
         icon-template-name="markerState.iconTemplateName"
         selected="pageStateModel.entityIsSelected(ed['entity_id'])"
         precise="ed['address_precision'] == 'Precise'"
-        starred="ed['starred']"
+        starred="ed['starred']" has-comments="ed['comments'] && ed['comments'].length"
         emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
         on-click="markerClicked($event)">
       </tc-entity-marker>

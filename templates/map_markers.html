@@ -107,6 +107,20 @@
     padding-left: 1px;
     border-radius: 9px;  
   }
+
+  .marker-annotations .comment-annotation {
+    position: absolute;
+    top: 30%;
+    right: -20%;
+    background-color: #4A4A4A;
+    color: #fff;
+    width: 18px;
+    height: 18px;
+    text-align: center;
+    border: 1px solid #fff;
+    padding: 1px;
+    border-radius: 9px;  
+  }
 </style>
 
 <svg height="0" xmlns="http://www.w3.org/2000/svg">
@@ -134,6 +148,9 @@
     <div class="marker-annotations">
       <div ng-if="starred" class="star-annotation">
         <span class="glyphicon glyphicon-star favorite-star"></span>
+      </div>
+      <div ng-if="hasComments" class="comment-annotation">
+        <span class="glyphicon glyphicon-comment"></span>
       </div>
     </div>
   </div>
