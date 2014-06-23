@@ -47,6 +47,10 @@ a:hover {
   padding: 10px;
 }
 
+.clipper-panel .entity-results {
+  margin-bottom: 50px;
+}
+
 .clipper-panel .save-button-panel {
   text-align: center;
   position: fixed;
