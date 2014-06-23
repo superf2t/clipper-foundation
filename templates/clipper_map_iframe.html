@@ -1,0 +1,111 @@
+<!doctype html>
+<html>
+<head>
+  <title>Travel Clipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/script.js"></script>
+  <script src="/static/js/clipper.js"></script>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <style>
+    html, body, #map {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+  <script>
+    function ClipperMapCtrl($scope, $window) {
+      $scope.mapState = {map: null};
+      $scope.mapOptions = {
+        center: new google.maps.LatLng(0, 0),
+        zoom: 1,
+        panControl: false,
+        scaleControl: true,
+        streetViewControl: false,
+        mapTypeControlOptions: {
+          mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
+          position: google.maps.ControlPosition.RIGHT_BOTTOM
+        }
+      };
+
+      $scope.mapReady = function($map) {
+        //$window.parent.postMessage('tc-map-ready', '*');
+      };
+
+      this.plotEntities = function(data) {
+        $scope.entities = data['entities'];
+        var bounds = new google.maps.LatLngBounds();
+        $.each($scope.entities, function(i, entity) {
+          if (!_.isEmpty(entity['latlng'])) {
+            bounds.extend(gmapsLatLngFromJson(entity['latlng']));
+          }
+        });
+        if (!bounds.isEmpty()) {
+          $scope.mapState.map.fitBounds(bounds);
+        }
+      };
+
+      var handlers = {
+        'tc-map-plot-entities': _.bind(this.plotEntities, this)
+      };
+
+      $($window).on('message', function(event) {
+        var messageName = event.originalEvent.data.message;
+        var handler = handlers[messageName];
+        if (handler) {
+          handler(event.originalEvent.data);
+        }
+        $scope.$apply();
+      });
+    }
+
+    function MapEntityCtrl($scope) {
+      $scope.ed = $scope.entity;
+      var entityModel = new EntityModel($scope.ed);
+      $scope.markerState = {
+        marker: null,
+        position: entityModel.gmapsLatLng()
+      };
+
+      $scope.iconTemplateName = function() {
+        if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
+          return $scope.ed['sub_category']['name'] + '-icon-template';
+        }
+        if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
+          return $scope.ed['category']['name'] + '-icon-template';
+        }
+        return null;
+      };
+    }
+
+    angular.module('clipperMapModule',
+        ['directivesModule', 'filtersModule'],
+        interpolator)
+      .controller('ClipperMapCtrl', ClipperMapCtrl)
+      .controller('MapEntityCtrl', MapEntityCtrl)
+      .directive('tcEntityMarker', tcEntityMarker);
+
+    angular.element(document).ready(function() {
+      angular.bootstrap(document, ['clipperMapModule']);
+    });
+  </script>
+</head>
+<body ng-controller="ClipperMapCtrl">
+  <div id="map" tc-google-map map="mapState.map" map-options="mapOptions"
+    after-creation="mapReady($map)">
+  </div>
+  <div style="display: none" ng-repeat="entity in entities" ng-controller="MapEntityCtrl">
+    <tc-entity-marker ng-if="markerState.position"
+      map="mapState.map" marker="markerState.marker"
+      position="markerState.position"
+      category-name="ed['category'] && ed['category']['name']"
+      icon-template-name="iconTemplateName()"
+      precise="ed['address_precision'] == 'Precise'">
+    </tc-entity-marker>
+  </div>
+
+  {% include 'map_markers.html' %}
+</body>
+</html>

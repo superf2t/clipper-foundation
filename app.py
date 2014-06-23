@@ -65,6 +65,10 @@ def clipper_iframe():
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)
 
+@app.route('/clipper_map_iframe')
+def clipper_map_iframe():
+    return render_template('clipper_map_iframe.html')
+
 @app.route('/trip_plan')
 def trip_plan():
     session_info = decode_session(request.cookies)

@@ -97,6 +97,21 @@
         background-color: transparent;
       }
 
+      .__tc-map-container {
+        width: 30%;
+        height: 40%;
+        min-width: 200px;
+        min-height: 200px;
+        position: fixed;
+        bottom: 0;
+        left: 340px;
+      }
+
+      .__tc-map {
+        width: 100%;
+        height: 100%;
+      }
+
       .__tc-droptarget {
         width: 100%;
         height: 100%;
@@ -163,11 +178,22 @@
       {% endstrip %}');
     window['__tcNodes'].push(wrapper);
 
+    var mapWrapper = $('{% strip %}
+      <div class="__tc-map-container">
+        <iframe class="__tc-iframe">
+        </iframe>
+      </div>
+      {% endstrip %}');
+    window['__tcNodes'].push(mapWrapper);
+
     var iframe = wrapper.find('iframe')
     iframe.attr('src', absUrl('/clipper_iframe?url=' + encodeURIComponent(window.location.href)));
     $('head').append(style);
     $(document.body).append(wrapper);
     wrapper.draggable({axis: 'x', iframeFix: true});
+    var mapIframe = mapWrapper.find('iframe');
+    mapIframe.attr('src', absUrl('/clipper_map_iframe'));
+    $(document.body).append(mapWrapper);
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
@@ -235,6 +261,8 @@
         photoEditingActive = true;
       } else if (data == 'tc-photo-editing-inactive') {
         photoEditingActive = false;
+      } else if (data.message && data.message.indexOf('tc-map') == 0) {
+        mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
       }
     });
 

@@ -143,7 +143,7 @@ function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $datatypeValue
   $window.parent.postMessage('tc-needs-page-source', '*'); 
 }
 
-function TripPlanPanelCtrl($scope, $tripPlanState, $tripPlanService, $entityService) {
+function TripPlanPanelCtrl($scope, $tripPlanState, $mapProxy, $tripPlanService, $entityService) {
   $scope.tripPlanState = $tripPlanState;
   $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
     if (!tripPlan) {
@@ -156,13 +156,21 @@ function TripPlanPanelCtrl($scope, $tripPlanState, $tripPlanService, $entityServ
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.loadingEntities = false;
           $scope.tripPlanState.entities = response['entities'];
+          $mapProxy.plotEntities(response['entities']);
         }
       });
   });
 }
 
-function MapCtrl($scope) {
+// TODO: Queue up requests until the map is ready, and then send.
+function MapProxy($window) {
+  this.plotEntities = function(entities) {
+    this.sendMessage('tc-map-plot-entities', {entities: entities});
+  };
 
+  this.sendMessage = function(messageName, data) {
+    $window.parent.postMessage(_.extend({message: messageName}, data), '*');
+  };
 }
 
 function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
@@ -410,10 +418,10 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .controller('ClipperRootCtrl', ClipperRootCtrl)
     .controller('ClipperPanelCtrl', ClipperPanelCtrl)
     .controller('TripPlanPanelCtrl', TripPlanPanelCtrl)
-    .controller('MapCtrl', MapCtrl)
     .controller('ClipperOmniboxCtrl', ClipperOmniboxCtrl)
     .controller('ClipperEntityCtrl', ClipperEntityCtrl)
     .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
+    .service('$mapProxy', MapProxy)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcEntityListing', tcEntityListing);
 

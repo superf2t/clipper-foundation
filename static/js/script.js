@@ -486,7 +486,6 @@ function EntityCtrl($scope, $entityService, $modal,
 
   $scope.$on('$destroy', function() {
     me.destroyInfowindow();
-    $scope.markerState.marker.setMap(null);
   });
 
   this.setMarkerState = function() {
@@ -1220,6 +1219,10 @@ function tcEntityMarker() {
           scope.$apply();
         });
       }
+
+      scope.$on('$destroy', function() {
+        scope.marker.setMap(null);
+      });
     }
   };
 }
