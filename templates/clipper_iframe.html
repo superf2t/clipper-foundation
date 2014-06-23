@@ -18,120 +18,125 @@
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body">
 
-  <div ng-if="clipperState.status == ClipperState.SUMMARY"
-    class="summary-panel"
-    tc-watch-for-overflow class-when-overflowing="has-overflow"
-    watch-expr="displayState.dirtyCounter">
-    <div class="upper-panel">
-      <div class="intro-text">
-        <span ng-if="entities.length > 1">
-          We found the following [[entities.length]] places:
-        </span>
-        <span ng-if="entities.length == 1">
-          We found the following place:
-        </span>
+  <div class="clipper-panel" ng-include="'clipper-panel-template'">
+  </div>
+
+  <div class="trip-plan-panel" ng-include="'trip-plan-panel-template'">
+  </div>
+
+  <script type="text/ng-template" id="clipper-panel-template">
+    <div ng-controller="ClipperPanelCtrl" class="full-width full-height">
+      <div ng-if="clipperState.status == ClipperState.SUMMARY"
+        class="summary-panel"
+        tc-watch-for-overflow class-when-overflowing="has-overflow"
+      watch-expr="displayState.dirtyCounter">
+        <div class="intro-text">
+          Places on this page:
+        </div>
+
+        <div class="entity-results">
+          <div ng-show="entities.length > 1" class="select-all-link">
+            Select:
+            <a ng-click="selectAll()" href="javascript:void(0)"
+              class="color-link">
+              All
+            </a>
+            <a ng-click="deselectAll()" href="javascript:void(0)"
+              class="color-link">
+              None
+            </a>
+          </div>
+          <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
+          </div>
+        </div>
+        <div class="save-button-panel">
+          <button class="btn btn-primary" ng-disabled="!saveButtonEnabled()"
+            ng-click="saveEntities()">
+            <span ng-if="selectedEntities().length != 1">
+              Save [[selectedEntities().length]] places to trip
+            </span>
+            <span ng-if="selectedEntities().length == 1">
+              Save place to trip
+            </span>
+          </button>
+        </div>
       </div>
 
-      <div class="entity-results">
-        <div ng-show="entities.length > 1" class="select-all-link">
-          Select:
-          <a ng-click="selectAll()" href="javascript:void(0)"
-            class="color-link">
-            All
-          </a>
-          <a ng-click="deselectAll()" href="javascript:void(0)"
-            class="color-link">
-            None
+      <div ng-if="clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
+        <div class="intro-text">
+          <span ng-if="entities.length == 0">
+            Uh oh, we couldn't find the place(s) on this page.
+            <br/>
+            Help us help you by tagging this page with a place.
+          </span>
+        </div>
+        <div class="omnibox-panel" ng-controller="ClipperOmniboxCtrl">
+          <div class="search-prompt-text">Search</div>
+          <input class="form-control" ng-model="rawInputText" placeholder="Search for a place name or address"
+                tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
+                on-place-change="placeChanged($newPlace)"/>
+          <div ng-show="loadingData" class="search-spinner">
+            <img src="/static/img/spinner-small.gif"/>
+          </div>
+          <div class="search-results" ng-show="searchResults">
+            <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
+              <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+              [[result['name'] ]]
+              <span class="result-address">[[result['formatted_address'] ]]</span>
+            </div>
+          </div>
+        </div>
+        <div class="enter-manually-link">
+          <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
+            Or enter place manually
           </a>
         </div>
-        <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
+      </div>
+
+      <div ng-if="clipperState.status == ClipperState.SUCCESS_CONFIRMATION" class="clip-success">
+        <div class="checkmark">
+          <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
+          <g>
+            <g>
+              <polygon points="94.587,27.48 31.657,86.15 31.217,85.68 18.847,72.41 0.566,52.81 14.106,40.19 32.387,59.79 81.776,13.74"/>
+            </g>
+          </g>
+          </svg>
         </div>
+        <div>
+          <span ng-if="savedEntities.length == 1">
+            Successfully clipped [[savedEntities[0]['name'] ]] to
+          </span>
+          <span ng-if="savedEntities.length > 1">
+            Successfully clipped [[savedEntities.length]] places to
+          </span>
+        </div>
+        <div class="trip-plan-name">
+          <a href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
+            [[tripPlanState.tripPlan['name'] ]]
+          </a>
+        </div>
+      </div>
+
+      <div ng-if="clipperState.status == ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE"
+        class="loading-panel full-spinner">
+        <h4>Looking for places on this page...</h4>
       </div>
     </div>
+  </script>
 
-    <div class="save-to-trip-plan-panel">
-      <div class="save-prompt-text">
-        <span ng-if="entities.length > 1">
-          Save [[selectedEntities().length]] selected places to a trip
-        </span>
-        <span ng-if="entities.length == 1">
-          Save [[entities[0]['name'] ]] to a trip
-        </span>
-      </div>
+  <script type="text/ng-template" id="trip-plan-panel-template">
+    <div ng-controller="TripPlanPanelCtrl" class="full-width full-height"
+      ng-class="{'full-spinner': loadingEntities}">
       <div tc-trip-plan-select-dropdown
-        select-trip-plan-to="selectedTripPlanState.tripPlan"
+        select-trip-plan-to="tripPlanState.tripPlan"
         class="trip-plan-dropdown">
       </div> 
-      <div class="save-button">
-        <button class="btn btn-primary" ng-click="saveEntities()"
-          ng-disabled="!saveButtonEnabled()">
-          Save to trip
-        </button>
-      </div>
+      <tc-entity-listing ng-repeat="entity in tripPlanState.entities"
+        entity-data="entity" should-show-day="true">
+      </tc-entity-listing>
     </div>
-  </div>
-
-  <div ng-if="clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
-    <div class="upper-panel">
-      <div class="intro-text">
-        <span ng-if="entities.length == 0">
-          Uh oh, we couldn't find the place(s) on this page.
-          <br/>
-          Help us help you by tagging this page with a place.
-        </span>
-      </div>
-    </div>
-    <div class="omnibox-panel" ng-controller="ClipperOmniboxCtrl">
-      <div class="search-prompt-text">Search</div>
-      <input class="form-control" ng-model="rawInputText" placeholder="Search for a place name or address"
-            tc-google-place-autocomplete search-bounds-json="selectedTripPlanState.tripPlan['location_bounds']"
-            on-place-change="placeChanged($newPlace)"/>
-      <div ng-show="loadingData" class="search-spinner">
-        <img src="/static/img/spinner-small.gif"/>
-      </div>
-      <div class="search-results" ng-show="searchResults">
-        <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
-          <img ng-src="[[result['icon'] ]]" class="result-icon"/>
-          [[result['name'] ]]
-          <span class="result-address">[[result['formatted_address'] ]]</span>
-        </div>
-      </div>
-    </div>
-    <div class="enter-manually-link">
-      <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
-        Or enter place manually
-      </a>
-    </div>
-  </div>
-
-  <div ng-if="clipperState.status == ClipperState.SUCCESS_CONFIRMATION" class="clip-success">
-    <div class="checkmark">
-      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="40px" height="40px" viewBox="0 0 95.453 100" enable-background="new 0 0 95.453 100" xml:space="preserve">
-      <g>
-        <g>
-          <polygon points="94.587,27.48 31.657,86.15 31.217,85.68 18.847,72.41 0.566,52.81 14.106,40.19 32.387,59.79 81.776,13.74"/>
-        </g>
-      </g>
-      </svg>
-    </div>
-    <div>
-      <span ng-if="savedEntities.length == 1">
-        Successfully clipped [[savedEntities[0]['name'] ]] to
-      </span>
-      <span ng-if="savedEntities.length > 1">
-        Successfully clipped [[savedEntities.length]] places to
-      </span>
-    </div>
-    <div class="trip-plan-name">
-      <a href="/trip_plan/[[selectedTripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
-        [[selectedTripPlanState.tripPlan['name'] ]]
-      </a>
-    </div>
-  </div>
-
-  <div ng-if="clipperState.status == ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE"
-    class="full-spinner">
-  </div>
+  </script>
 
   <script type="text/ng-template" id="one-entity-result-template">
     <div class="one-entity-result" ng-controller="ClipperEntityCtrl"
@@ -226,12 +231,38 @@
     </div>
   </script>
 
+  {# TODO: Move to widgets.html #}
+  <script type="text/ng-template" id="one-entity-listing-template">
+    <div class="one-entity-listing"
+      tc-entity-id="[[ed['entity_id'] ]]"
+      ng-class="{'selected': isSelected({$entityData: ed})}"
+      ng-click="onSelect({$entityData: ed})">
+      <span class="entity-circle-img">
+        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
+      </span>
+      <span class="entity-info">
+        <div class="name">
+          [[ed['name'] ]]
+        </div>
+        <div class="details">
+          <span ng-show="im.hasCategory()"
+            ng-class="'text-' + ed['category']['name']">
+            [[im.categoryDisplayText()]]
+          </span>
+          <span ng-show="im.day() && shouldShowDay" ng-class="day">
+            Day [[im.day()]]
+          </span>
+          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
+          </span>
+        </div>
+      </span>
+    </div>
+  </script>
+
   {% include 'widgets.html' %}
 
   <script>
     initClipper(
-      {{entities_json|safe}},
-      {{needs_client_page_source|jsbool}},
       {{all_trip_plans_json|safe}},
       {{all_datatype_values.to_json_str()|safe}});
   </script>

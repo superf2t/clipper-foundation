@@ -55,7 +55,7 @@
         background-color: #fff;
         position: fixed;
         top: 0;
-        right: 0;
+        left: 0;
         padding: 0;
         margin: 0;
         opacity: 1.0;
@@ -198,7 +198,10 @@
     }).on('dragover', function(event) {
       event.preventDefault();
       return false;
-    });
+    }).on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
+      event.stopPropagation();
+      event.preventDefault();
+    });;
 
     wrapper.on('drop', function(event) {
       if (!dropTarget) {

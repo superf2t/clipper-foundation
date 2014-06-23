@@ -1,7 +1,3 @@
-function ClipperStateModel(initialStatus) {
-  this.status = initialStatus;
-}
-
 var ClipperState = {
   SUMMARY: 1,
   EDIT: 2,
@@ -11,17 +7,47 @@ var ClipperState = {
   WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE: 6
 };
 
+function TripPlanState(opt_tripPlan, opt_entities) {
+  this.tripPlan = opt_tripPlan;
+  this.entities = opt_entities;
 
-function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
-    $needsPageSource, $entities, $allTripPlans, $datatypeValues) {
-  var me = this;
-  $scope.clipperState = new ClipperStateModel();
-  $scope.ClipperState = ClipperState;
+  this.bounds = function() {
+    if (this.tripPlan && !_.isEmpty(this.tripPlan['location_bounds'])) {
+      return gmapsBoundsFromJson(this.tripPlan['location_bounds']);
+    }
+    return null;
+  };
+}
 
+function ClipperRootCtrl($scope, $window) {
+
+  // TODO: Figure out if this is still needed.
   // Dummy counter to increment when models have changed
   // in a way that may affect the amount of content displayed
   // in the UI, so that directives can listen for changes.
   $scope.displayState = {dirtyCounter: 0};
+
+  $scope.closeAllEditors = function() {
+    $scope.$broadcast('closealleditors');
+  };
+
+  $scope.dismissClipper = function() {
+    $window.parent.postMessage('tc-close-clipper', '*');
+  };
+}
+
+function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $datatypeValues, $window, $timeout) {
+  var me = this;
+
+  $scope.entities = [];
+  $scope.clipperState = {
+    status: ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE
+  };
+  $scope.ClipperState = ClipperState;
+  $scope.tripPlanState = $tripPlanState;
+
+  $scope.categories = $datatypeValues['categories'];
+  $scope.subCategories = $datatypeValues['sub_categories'];
 
   this.setupEntityState = function(entities) {
     $scope.entities = entities;
@@ -35,37 +61,6 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     }
     $scope.displayState.dirtyCounter++;
   };
-
-  $scope.selectedTripPlanState = {
-    tripPlan: null,
-    bounds: function() {
-      if ($scope.selectedTripPlanState.tripPlan
-        && !_.isEmpty($scope.selectedTripPlanState.tripPlan['location_bounds'])) {
-        return gmapsBoundsFromJson($scope.selectedTripPlanState.tripPlan['location_bounds']);
-      }
-      return null;
-    }
-  };
-
-  if ($needsPageSource) {
-    $($window).on('message', function(event) {
-      if (!event.originalEvent.data['message'] == 'tc-page-source') {
-        return;
-      }
-      var pageSource = event.originalEvent.data['data'];
-      $entityService.pagesourcetoentities(getParameterByName('url'), pageSource)
-        .success(function(response) {
-          me.setupEntityState(response['entities']);
-        });
-    });
-    $window.parent.postMessage('tc-needs-page-source', '*'); 
-    $scope.clipperState = new ClipperStateModel(ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE);
-  } else {
-    this.setupEntityState($entities);
-  }
-
-  $scope.categories = $datatypeValues['categories'];
-  $scope.subCategories = $datatypeValues['sub_categories'];
 
   $scope.addEntity = function(entityData) {
     $scope.entities.push(entityData);
@@ -99,13 +94,13 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     if (entitiesWithNames.length == 0 || selectedEntities.length != entitiesWithNames.length) {
       return false;
     }
-    return $scope.selectedTripPlanState.tripPlan
-      && $scope.selectedTripPlanState.tripPlan['trip_plan_id'] > 0;
+    return $tripPlanState.tripPlan
+      && $tripPlanState.tripPlan['trip_plan_id'] > 0;
   };
 
   $scope.saveEntities = function() {
     var entitiesToSave = $scope.selectedEntities();
-    $entityService.saveNewEntities(entitiesToSave, $scope.selectedTripPlanState.tripPlan['trip_plan_id'])
+    $entityService.saveNewEntities(entitiesToSave, $tripPlanState.tripPlan['trip_plan_id'])
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.clipperState.status = ClipperState.SUCCESS_CONFIRMATION;
@@ -115,7 +110,7 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
           $scope.clipperState.status = ClipperState.CLIP_ERROR;
         }
       }).error(function(response) {
-       $scope.clipperState.status = ClipperState.CLIP_ERROR;
+        $scope.clipperState.status = ClipperState.CLIP_ERROR;
       });
   };
 
@@ -135,20 +130,47 @@ function ClipperRootCtrl($scope, $window, $http, $timeout, $entityService,
     });
   };
 
-  $scope.closeAllEditors = function() {
-    $scope.$broadcast('closealleditors');
-  };
-
-  $scope.dismissClipper = function() {
-    $window.parent.postMessage('tc-close-clipper', '*');
-  };
+  $($window).on('message', function(event) {
+    if (!event.originalEvent.data['message'] == 'tc-page-source') {
+      return;
+    }
+    var pageSource = event.originalEvent.data['data'];
+    $entityService.pagesourcetoentities(getParameterByName('url'), pageSource)
+      .success(function(response) {
+        me.setupEntityState(response['entities']);
+      });
+  });
+  $window.parent.postMessage('tc-needs-page-source', '*'); 
 }
 
-function ClipperOmniboxCtrl($scope, $entityService) {
+function TripPlanPanelCtrl($scope, $tripPlanState, $tripPlanService, $entityService) {
+  $scope.tripPlanState = $tripPlanState;
+  $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
+    if (!tripPlan) {
+      return;
+    }
+    $scope.tripPlanState.entities = null;
+    $scope.loadingEntities = true;
+    $entityService.getByTripPlanId(tripPlan['trip_plan_id'])
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $scope.loadingEntities = false;
+          $scope.tripPlanState.entities = response['entities'];
+        }
+      });
+  });
+}
+
+function MapCtrl($scope) {
+
+}
+
+function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   var me = this;
   $scope.loadingData = false;
   $scope.rawInputText = '';
   $scope.searchResults = null;
+  $scope.tripPlanState = $tripPlanState;
 
   $scope.placeChanged = function(newPlace) {
     if (!newPlace) {
@@ -181,7 +203,7 @@ function ClipperOmniboxCtrl($scope, $entityService) {
     $scope.loadingData = true;
     var request = {
       query: query,
-      bounds: $scope.selectedTripPlanState.bounds()
+      bounds: $tripPlanState.bounds()
     };
     var dummyMap = new google.maps.Map($('<div>')[0], {
       center: new google.maps.LatLng(0, 0)
@@ -376,23 +398,24 @@ function ClipperEntityPhotoCtrl($scope, $window) {
   };
 }
 
-window['initClipper'] = function(entities, needsPageSource,
-    allTripPlans, datatypeValues) {
+window['initClipper'] = function(allTripPlans, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
-    .value('$entities', entities)
-    .value('$needsPageSource', needsPageSource)
     .value('$allTripPlans', allTripPlans)
-    .value('$datatypeValues', datatypeValues);
+    .value('$datatypeValues', datatypeValues)
+    .value('$tripPlanState', new TripPlanState(_.isEmpty(allTripPlans) ? null : allTripPlans[0]));
 
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule', 'ui.bootstrap'],
       interpolator)
-    .controller('ClipperRootCtrl', ['$scope', '$window', '$http', '$timeout', '$entityService',
-      '$needsPageSource', '$entities', '$allTripPlans', '$datatypeValues', ClipperRootCtrl])
-    .controller('ClipperOmniboxCtrl', ['$scope', '$entityService', ClipperOmniboxCtrl])
+    .controller('ClipperRootCtrl', ClipperRootCtrl)
+    .controller('ClipperPanelCtrl', ClipperPanelCtrl)
+    .controller('TripPlanPanelCtrl', TripPlanPanelCtrl)
+    .controller('MapCtrl', MapCtrl)
+    .controller('ClipperOmniboxCtrl', ClipperOmniboxCtrl)
     .controller('ClipperEntityCtrl', ClipperEntityCtrl)
     .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
-    .directive('tcStartNewTripInput', tcStartNewTripInput);
+    .directive('tcStartNewTripInput', tcStartNewTripInput)
+    .directive('tcEntityListing', tcEntityListing);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);
