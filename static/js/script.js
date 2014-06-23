@@ -2905,10 +2905,11 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
   };
 }
 
-function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanService) {
+function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanService, $location) {
   $scope.formState = {email: null};
   $scope.creator = $tripPlanModel.tripPlanData['creator'];
   $scope.isCreator = $accountInfo['email'] == $tripPlanModel.tripPlanData['creator'];
+  $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
 
   $scope.hasCollaborators = function() {
     var collaborators = $scope.collaborators();
@@ -4576,6 +4577,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
     .value('$sampleSites', sampleSites);
+
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));

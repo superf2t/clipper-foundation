@@ -163,7 +163,7 @@
             <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
           </li>
           <li>
-            <a ng-click="openSharingSettings('sharing-settings-modal')" href="javascript:void(0)">Sharing and Collaborators</a>
+            <a ng-click="openSharingSettings('sharing-settings-modal')" href="javascript:void(0)">Sharing</a>
           </li>
           <li>
             <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
@@ -1534,7 +1534,7 @@
   <script type="text/ng-template" id="sharing-settings-editor-template">
     <div class="sharing-settings-editor" ng-controller="SharingSettingsCtrl">
       <div class="header">
-        <div class="title">Sharing and Collaborators</div>
+        <div class="title">Sharing</div>
         <div class="button-panel">
           <button class="btn btn-default" ng-click="$close()">
             Close
@@ -1561,12 +1561,17 @@
         Collaborators can edit and comment on the trip plan and invite other collaborators.
         <form class="form-inline" role="form" ng-submit="addCollaborator()">
           <div class="form-group">
-            <input type="text" class="form-control email-input" placeholder="Enter an email address" ng-model="formState.email"/>
+            <input type="text" class="form-control email-input" placeholder="Enter an email address" value=""/>
             <button class="btn btn-primary">
               Add
             </button>
           </div>
-        </div>
+        </form>
+      </div>
+      <div>
+        <h4>Share Trip Plan</h4>
+        Share this trip plan with others by copying this link:
+        <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
       </div>
     </div>
   </script>

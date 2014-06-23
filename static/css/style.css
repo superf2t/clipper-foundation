@@ -1648,6 +1648,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
   display: inline;
 }
 
+.sharing-settings-editor .share-url {
+  cursor: text;
+}
+
 .reclip-confirmation-modal {
   min-height: 150px; 
   margin: 20px;
