@@ -692,6 +692,9 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
   };
 
   $scope.deleteComment = function(comment) {
+    if (!$window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
     $entityService.deleteComment(comment, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
