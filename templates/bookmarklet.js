@@ -105,9 +105,48 @@
         position: fixed;
         bottom: 0;
         left: 340px;
+        border: 1px solid #bbbbbb;
+        box-shadow: 0px 1px 2px #aaaaaa;
       }
 
-      .__tc-map {
+      .__tc-map-container.expanded {
+        width: 66%;
+        height: 66%;
+      }
+
+      .__tc-map-iframe {
+        background-color: #fff;
+        height: calc(100% - 20px);
+      }
+
+      .__tc-map-header {
+        width: 100%;
+        height: 20px;
+        background-color: #fff;
+        position: relative;
+        cursor: move;
+        box-shadow: 0px 1px 2px #aaaaaa;
+      }
+
+      .__tc-map-resize-icon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 20px;
+        height: 20px;
+      }
+
+      .__tc-map-resize-icon a {
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .__tc-map-resize-icon a:hover {
+        text-decoration: none;
+        background-color: #777;
+      }
+
+      .__tc-map-resize-icon svg {
         width: 100%;
         height: 100%;
       }
@@ -180,7 +219,18 @@
 
     var mapWrapper = $('{% strip %}
       <div class="__tc-map-container">
-        <iframe class="__tc-iframe">
+        <div class="__tc-map-header">
+          <div class="__tc-map-resize-icon">
+            <a onclick="var e = __tc$(\'.__tc-map-container\'); e.hasClass(\'expanded\') ? e.removeClass(\'expanded\') : e.addClass(\'expanded\')" href="javascript:void(0)">
+              <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" baseProfile="tiny" x="0px" y="0px" width="100px" height="100px" viewBox="0 0 100 100" xml:space="preserve">
+                <g>
+                  <path fill-rule="evenodd" d="M51.781,39.34l8.879,8.879c2.26,2.262,3.141,2.201,5.34,0l13.34-13.34L90,45.559V10   H54.439l10.682,10.66L51.781,34C49.621,36.16,49.559,37.121,51.781,39.34z M48.219,60.66l-8.879-8.879   c-2.26-2.262-3.141-2.201-5.34,0l-13.34,13.34L10,54.441V90h35.559l-10.68-10.66L48.219,66   C50.379,63.84,50.439,62.879,48.219,60.66z"/>
+                </g>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <iframe class="__tc-iframe __tc-map-iframe">
         </iframe>
       </div>
       {% endstrip %}');
@@ -191,9 +241,11 @@
     $('head').append(style);
     $(document.body).append(wrapper);
     wrapper.draggable({axis: 'x', iframeFix: true});
+
     var mapIframe = mapWrapper.find('iframe');
     mapIframe.attr('src', absUrl('/clipper_map_iframe'));
     $(document.body).append(mapWrapper);
+    mapWrapper.draggable({iframeFix: true});
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
