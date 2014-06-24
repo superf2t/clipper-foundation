@@ -110,17 +110,12 @@
         height: 40%;
         min-width: 200px;
         min-height: 200px;
-        position: fixed;
+        position: fixed !important;
         bottom: 0;
         left: 340px;
         border: 1px solid #bbbbbb;
         box-shadow: 0px 1px 2px #aaaaaa;
         z-index: 2147483647;
-      }
-
-      .__tc-map-container.expanded {
-        width: 66%;
-        height: 66%;
       }
 
       .__tc-map-iframe-container {
