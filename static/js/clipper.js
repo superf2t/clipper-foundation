@@ -134,12 +134,19 @@ function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $datatypeValue
     if (!event.originalEvent.data['message'] == 'tc-page-source') {
       return;
     }
-    var pageSource = event.originalEvent.data['data'];
+    var pageSource = event.originalEvent.data['pageSource'];
+    if (!pageSource) {
+      // This is really weird, the tc-page-source message is being received
+      // twice, despite it only being sent once by the parent frame.
+      // The duplicate message is missing the page source, so just discard it here.
+      return;
+    }
     $entityService.pagesourcetoentities(getParameterByName('url'), pageSource)
       .success(function(response) {
         me.setupEntityState(response['entities']);
       });
   });
+
   $window.parent.postMessage('tc-needs-page-source', '*'); 
 }
 

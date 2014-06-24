@@ -254,8 +254,8 @@
         if (!iframe.length) return;
         var data = {
           message: 'tc-page-source',
-          data: $('html')[0].innerHTML
-        }
+          pageSource: $('html')[0].innerHTML
+        };
         iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
       } else if (data == 'tc-photo-editing-active') {
         photoEditingActive = true;
