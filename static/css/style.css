@@ -328,6 +328,7 @@ hr.dropdown-separator {
 .item-group-header h4 {
   margin: 0px;
   padding: 10px;
+  font-weight: 300;
 }
 
 .item-group-header .item-group-controls {
@@ -635,10 +636,6 @@ hr.dropdown-separator {
 .one-entity-guideview .comments .one-comment .comment-details {
   display: inline-block;
   width: calc(100% - 24px);
-}
-
-.one-entity-guideview .comments .one-comment .comment-content {
-
 }
 
 .one-entity-guideview .comments .one-comment .text {
@@ -1077,6 +1074,9 @@ hr.dropdown-separator {
 .infowindow {
   position: relative;
   bottom: 79px;
+  font-size: 10pt;
+  font-family: 'Nunito';
+  font-weight: 300;
 }
 
 .infowindow-internal {
@@ -1114,11 +1114,18 @@ hr.dropdown-separator {
 }
 
 .infowindow .comments-section .one-comment {
-  padding-top: 5px;
+  margin: 5px 0px;
 }
 
-.infowindow .comments-section .author-name {
-  font-weight: bold;
+.infowindow .comments-section .one-comment .comment-timestamp {
+  display: inline-block;
+  color: #666666;
+  font-size: 0.8em;
+}
+
+.infowindow .comments-section .one-comment .comment-details {
+  display: inline-block;
+  width: calc(100% - 24px);
 }
 
 .infowindow .comments-section .one-comment .text {
@@ -1164,7 +1171,7 @@ hr.dropdown-separator {
 
 .marker-tools {
   background-color: #fff;
-  font-size: 11pt;
+  font-size: 14pt;
   padding: 5px;
   min-width: 130px;
 }

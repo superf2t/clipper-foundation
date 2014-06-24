@@ -211,12 +211,14 @@
             <div>
               <span tc-user-icon email="comment['author']">
               </span>
-              <span>
-                [[comment['last_modified'] | date: 'short']]
+              <span class="comment-details">
+                <div>
+                  <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
+                </div>
+                <div class="comment-timestamp">
+                  [[comment['last_modified'] | date: 'short']]
+                </div>
               </span>
-            </div>
-            <div>
-              <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
             </div>
           </div>
         </div>
@@ -912,17 +914,6 @@
                 <div>
                   <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
                   <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
-                </div>
-                <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
-                  <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
-                  <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
-                    href="javascript:void(0)" class="color-link comment-edit-link">
-                    <span class="glyphicon glyphicon-pencil"></span>
-                  </a>
-                  <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
-                    href="javascript:void(0)" class="color-link comment-edit-link">
-                    <span class="glyphicon glyphicon-trash"></span>
-                  </a>
                 </div>
               </div>
             </span>
