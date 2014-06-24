@@ -17,6 +17,7 @@
   </style>
   <script>
     function ClipperMapCtrl($scope, $window) {
+      var me = this;
       $scope.mapState = {map: null};
       $scope.mapOptions = {
         center: new google.maps.LatLng(0, 0),
@@ -31,7 +32,7 @@
       };
 
       $scope.mapReady = function($map) {
-        //$window.parent.postMessage('tc-map-ready', '*');
+        me.sendMessage('tc-map-ready');
       };
 
       this.plotEntities = function(data) {
@@ -59,6 +60,10 @@
         }
         $scope.$apply();
       });
+
+      this.sendMessage = function(messageName, data) {
+        $window.parent.postMessage(_.extend({message: messageName}, data), '*');
+      };
     }
 
     function MapEntityCtrl($scope) {

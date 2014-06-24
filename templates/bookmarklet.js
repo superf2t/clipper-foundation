@@ -261,6 +261,8 @@
         photoEditingActive = true;
       } else if (data == 'tc-photo-editing-inactive') {
         photoEditingActive = false;
+      } else if (data['message'] && data['message'] == 'tc-map-ready') {
+        iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
       } else if (data.message && data.message.indexOf('tc-map') == 0) {
         mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
       }
