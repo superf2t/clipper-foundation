@@ -11,7 +11,7 @@
   <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
   <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
-  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300">
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
@@ -95,6 +95,7 @@
     <ul class="account-dropdown dropdown-menu" ng-controller="AccountDropdownCtrl">
       <li class="account-dropdown-login-info" ng-click="$event.stopPropagation()">
         <div ng-show="accountInfo.loggedIn && !showLoginForm">
+          <span tc-user-icon email="accountInfo['email']" no-tooltip="true"></span>
           <span class="logged-in-email">[[accountInfo['email'] ]]</span>
           <span class="logout-link">
             <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
@@ -154,32 +155,16 @@
         {% endif %}
       </div>
       {% if allow_editing %}
-      <div class="right-buttons dropdown" ng-show="!inTutorial()">
-        <button class="btn settings-btn dropdown-toggle">
-          <span class="glyphicon glyphicon-cog"></span>
+      <div class="right-buttons" ng-show="!inTutorial()">
+        <button class="btn btn-primary share-btn" ng-click="openSharingSettings('sharing-settings-modal')">
+          Share
         </button>
-        <ul class="dropdown-menu right-top-dropdown-menu">
-          <li>
-            <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
-          </li>
-          <li>
-            <a ng-click="openSharingSettings('sharing-settings-modal')" href="javascript:void(0)">Sharing and Collaborators</a>
-          </li>
-          <li>
-            <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
-          </li>
-          <li>
-            <a ng-click="startGmapsImport()" href="javascript:void(0)">Import Google Custom Map</a>
-          </li>
-          <li>
-            <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">Delete Trip</a>
-          </li>
-        </ul>
       </div>
       {% endif %}
     </div>
   </script>
 
+  {% if allow_editing %}
   <script type="text/ng-template" id="add-place-mode-dropdown-template">
     <ul class="dropdown-menu add-place-options-dropdown"
       ng-controller="AddPlaceOptionsCtrl">
@@ -190,6 +175,24 @@
       </li>
     </ul>
   </script>
+
+  <script type="text/ng-template" id="trip-plan-settings-dropdown-template">
+    <ul class="dropdown-menu right-top-dropdown-menu">
+      <li>
+        <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
+      </li>
+      <li>
+        <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
+      </li>
+      <li>
+        <a ng-click="startGmapsImport()" href="javascript:void(0)">Import Google Custom Map</a>
+      </li>
+      <li>
+        <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">Delete Trip</a>
+      </li>
+    </ul>
+  </script>
+  {% endif %}
 
   <script type="text/ng-template" id="infowindow-template">
     <div class="infowindow" ng-controller="InfowindowCtrl">
@@ -207,18 +210,27 @@
         </div>
         <div class="comments-section" ng-if="ed['comments'] && ed['comments'].length">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
-            <div class="author-name">
-              [[comment['author'] ]]
-            </div>
             <div>
-              <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
+              <span class="comment-sidebar">
+                <span tc-user-icon email="comment['author']">
+                </span>
+              </span>
+              <span class="comment-details">
+                <div>
+                  <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
+                </div>
+                <div class="comment-timestamp">
+                  [[comment['last_modified'] | date: 'short']]
+                </div>
+              </span>
             </div>
           </div>
         </div>
         <div class="workspace-section" ng-if="workspaceActive()">
           <div ng-if="inlineEditMode == InlineEditMode.COMMENTS" class="inline-comment-editor">
             <div class="author-name">
-              [[accountInfo['email'] ]]
+              <span tc-user-icon email="accountInfo['email']">
+              </span>
             </div>
             <textarea class="form-control" placeholder="Add a comment"
               tc-focus-on="inlineEditMode"
@@ -284,10 +296,10 @@
       {% if allow_editing %}
       <span ng-show="showPrimaryControls">
         <a ng-click="toggleInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
-          <span class="glyphicon glyphicon-comment"></span>
+          <span tc-icon="comment"></span>
         </a>
         <a ng-click="toggleInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
-          <span class="glyphicon glyphicon-calendar"></span>
+          <span tc-icon="calendar"></span>
         </a>
         <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-star-empty"></span>
@@ -665,7 +677,7 @@
             ng-class="'text-' + ed['category']['name']">
             [[item.categoryDisplayText()]]
           </span>
-          <span ng-show="ed['comments'] && ed['comments'].length" class="glyphicon glyphicon-comment quickinfo-icon">
+          <span ng-show="ed['comments'] && ed['comments'].length" class="quickinfo-icon" tc-icon="comment">
           </span>
           </span>
           <span ng-show="item.day() && pageStateModel.isGroupByCategory()"
@@ -678,29 +690,36 @@
       </span>
       <span class="controls" ng-show="controlState.open" ng-click="$event.stopPropagation()">
         <span ng-show="!controlState.showSecondaryControls">
-          <a ng-click="openInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
-            <span class="glyphicon glyphicon-comment"></span>
+          <a ng-click="openInlineEdit(InlineEditMode.COMMENTS); closeControls()"
+            href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
+            <span tc-icon="comment"></span>
           </a>
-          <a ng-click="openInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)"
+          <a ng-click="openInlineEdit(InlineEditMode.DAY_PLANNER); closeControls()"
+            href="javascript:void(0)"
             tooltip="Add to day" tooltip-placement="bottom">
-            <span class="glyphicon glyphicon-calendar"></span>
+            <span tc-icon="calendar"></span>
           </a>
-          <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
+          <a ng-click="saveStarState(true); closeControls()"
+            ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-star-empty"></span>
           </a>
-          <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
+          <a ng-click="saveStarState(false); closeControls()"
+            ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-star favorite-star"></span>
           </a>
         </span>
         <span ng-show="controlState.showSecondaryControls">
-          <a ng-click="openInlineEdit(InlineEditMode.DIRECTIONS)" href="javascript:void(0)"
+          <a ng-click="openInlineEdit(InlineEditMode.DIRECTIONS); closeControls()"
+            href="javascript:void(0)"
             tooltip="Get directions" tooltip-placement="bottom">
             <span tc-icon="compass"></span>
           </a>
-          <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
+          <a ng-click="openEditPlaceModal('edit-place-modal'); closeControls()"
+            href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
-          <a ng-click="deleteEntity()" href="javascript:void(0)"
+          <a ng-click="deleteEntity(); closeControls()"
+            href="javascript:void(0)"
             tooltip="Delete" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-trash"></span>
           </a>
@@ -873,36 +892,45 @@
         </div>
         <div class="comments-body">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
-            <div class="author-name">
-              [[comment['author'] ]]
-            </div>
-            <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
-              <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
-              <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
-                href="javascript:void(0)" class="color-link comment-edit-link">
-                <span class="glyphicon glyphicon-pencil"></span>
-              </a>
-              <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
-                href="javascript:void(0)" class="color-link comment-edit-link">
-                <span class="glyphicon glyphicon-trash"></span>
-              </a>
-            </div>
-            <div ng-show="editingComment && editingComment['comment_id'] == comment['comment_id']">
-              <textarea class="form-control" ng-model="editingComment['text']"
-                tc-focus-on="editingComment">
-              </textarea>
-              <div>
-                <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
-                <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
+            <span class="comment-sidebar">
+              <span tc-user-icon email="comment['author']">
+              </span>
+            </span>
+            <span class="comment-details">
+              <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
+                <div>
+                  <span ng-bind-html="comment['text'] | linky:'_blank'" class="text comment-content"></span>
+                  <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
+                    href="javascript:void(0)" class="color-link comment-edit-link">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                  </a>
+                  <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
+                    href="javascript:void(0)" class="color-link comment-edit-link">
+                    <span class="glyphicon glyphicon-trash"></span>
+                  </a>
+                </div>
+                <div class="comment-timestamp">
+                  [[comment['last_modified'] | date: 'short']]
+                </div>
               </div>
-            </div>
+              <div ng-show="editingComment && editingComment['comment_id'] == comment['comment_id']">
+                <textarea class="form-control" ng-model="editingComment['text']"
+                  tc-focus-on="editingComment">
+                </textarea>
+                <div>
+                  <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
+                  <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
+                </div>
+              </div>
+            </span>
           </div>
         </div>
       </div>
       {% if allow_editing %}
       <div class="inline-comment-editor inline-editor" ng-if="inlineEditMode == InlineEditMode.COMMENTS">
         <div class="author-name">
-          [[accountInfo['email'] ]]
+          <span tc-user-icon email="accountInfo['email']">
+          </span>
         </div>
         <textarea class="form-control" placeholder="Add a comment"
           tc-focus-on="inlineEditMode"
@@ -938,11 +966,11 @@
         <span>
           <a ng-click="toggleInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)"
             tooltip="Comment" tooltip-append-to-body="1" tooltip-placement="bottom">
-            <span class="glyphicon glyphicon-comment"></span>
+            <span tc-icon="comment"></span>
           </a>
           <a ng-click="toggleInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)"
             tooltip="Add to day" tooltip-placement="bottom">
-            <span class="glyphicon glyphicon-calendar"><span>
+            <span tc-icon="calendar"><span>
           </a>
           <a ng-click="saveStarState(false)" href="javascript:void(0)"
             tooltip="Favorite" tooltip-placement="bottom">
@@ -989,8 +1017,18 @@
   <script type="text/ng-template" id="trip-plan-header-template">
     <div id="trip-plan-header">
       <div class="trip-plan-info">
-        <div class="title">
-          [[planModel.tripPlanName()]]
+        <div class="title-section">
+          <div class="title">
+            [[planModel.tripPlanName()]]
+          </div>
+          {% if allow_editing %}
+          <div class="settings-control dropdown" ng-show="!inTutorial()">
+            <a href="javascript:void(0)" class="dropdown-toggle white-link">
+              <span class="glyphicon glyphicon-cog"></span>
+            </a>
+            <ul tc-include-and-replace="trip-plan-settings-dropdown-template"></ul>
+          </div>
+          {% endif %}
         </div>
         <div class="creator-info">
           <span ng-if="planModel.hasSource()">
@@ -1534,7 +1572,7 @@
   <script type="text/ng-template" id="sharing-settings-editor-template">
     <div class="sharing-settings-editor" ng-controller="SharingSettingsCtrl">
       <div class="header">
-        <div class="title">Sharing and Collaborators</div>
+        <div class="title">Share</div>
         <div class="button-panel">
           <button class="btn btn-default" ng-click="$close()">
             Close
@@ -1543,12 +1581,13 @@
       </div>
       <div class="creator">
         <h4>Creator</h4>
-        [[creator]]
+        <span tc-user-icon email="creator" no-tooltip="true"></span> [[creator]]
         <span ng-show="isCreator">(you)</span>
       </div>
       <div ng-show="hasCollaborators()">
         <h4>Collaborators</h4>
         <p ng-repeat="collaborator in collaborators()" class="collaborator">
+          <span tc-user-icon email="collaborator" no-tooltip="true"></span>
           [[collaborator]]
           <a ng-click="removeCollaborator(collaborator)"
             href="javascript:void(0)" class="remove-link color-link">
@@ -1561,12 +1600,17 @@
         Collaborators can edit and comment on the trip plan and invite other collaborators.
         <form class="form-inline" role="form" ng-submit="addCollaborator()">
           <div class="form-group">
-            <input type="text" class="form-control email-input" placeholder="Enter an email address" ng-model="formState.email"/>
+            <input type="text" class="form-control email-input" placeholder="Enter an email address" value=""/>
             <button class="btn btn-primary">
               Add
             </button>
           </div>
-        </div>
+        </form>
+      </div>
+      <div>
+        <h4>Share Trip Plan</h4>
+        Share this trip plan by sending others the trip plan link. Viewers that are not collaborators cannot edit and comment on the trip plan or invite other collaborators.
+        <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
       </div>
     </div>
   </script>
@@ -1718,6 +1762,16 @@
     </div>
   </script>
   {% endif %}
+
+  <script type="text/ng-template" id="user-icon-template">
+    <a href="javascript:void(0)" tooltip="[[noTooltip ? null : email]]"
+      tooltip-append-to-body="true">
+      <span class="user-icon"
+        ng-class="'user-' + userStyleIdentifier(email)">
+        [[email.substring(0, 1) ]]
+      </span>
+    </a>
+  </script>
 
   {% include 'widgets.html' %}
   {% include 'map_markers.html' %}

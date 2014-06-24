@@ -2,6 +2,7 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Nunito';
+  font-weight: 300;
   background-color: #EAEAEA;
   color: #666666;
 }
@@ -130,6 +131,37 @@ a:hover .tc-icon svg {
   border-bottom: 4px solid;
 }
 
+.user-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: top;
+  color: #fff;
+}
+
+.user-1 {
+  background-color: #7738FF;
+}
+
+.user-2 {
+  background-color: #E8160C;
+}
+
+.user-3 {
+  background-color: #FFB300;
+}
+
+.user-4 {
+  background-color: #56E80C
+}
+
+.user-5 {
+  background-color: #1CEAFF;
+}
+
 /* Navigation */
 
 .navbar {
@@ -216,8 +248,18 @@ hr.dropdown-separator {
   margin: 10px;
 }
 
+#trip-plan-header .title-section {
+  position: relative;
+}
+
 #trip-plan-header .title {
   font-size: 1.2em;
+}
+
+#trip-plan-header .settings-control {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 #trip-plan-header .controls {
@@ -296,6 +338,7 @@ hr.dropdown-separator {
 .item-group-header h4 {
   margin: 0px;
   padding: 10px;
+  font-weight: 300;
 }
 
 .item-group-header .item-group-controls {
@@ -369,6 +412,11 @@ hr.dropdown-separator {
 .one-entity-leftnav .entity-info .details,
 .one-entity-listing .entity-info .details {
   font-size: 0.9em;
+}
+
+.one-entity-leftnav .entity-info .details svg,
+.one-entity-listing .entity-info .details svg {
+  fill: #FFFFFF;
 }
 
 .one-entity-leftnav .entity-info .day,
@@ -574,11 +622,6 @@ hr.dropdown-separator {
   max-width: 100%;
 }
 
-.one-entity-guideview .metadata,
-.one-entity-search-result .metadata {
-  margin: 15px 0;
-}
-
 .one-entity-guideview .metadata .source-text,
 .one-entity-search-result .metadata .source-text  {
   text-decoration: underline;
@@ -590,16 +633,24 @@ hr.dropdown-separator {
   text-align: justify;
 }
 
-.one-entity-guideview .comments .comments-body {
-  margin: 0 5px;
-}
-
 .one-entity-guideview .comments .one-comment {
-  margin-top: 5px;
+  margin: 10px 0px;
 }
 
-.one-entity-guideview .comments .author-name {
-  font-weight: bold;
+.one-entity-guideview .comments .one-comment .comment-sidebar {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.one-entity-guideview .comments .one-comment .comment-timestamp {
+  display: inline-block;
+  color: #666666;
+  font-size: 0.8em;
+}
+
+.one-entity-guideview .comments .one-comment .comment-details {
+  display: inline-block;
+  width: calc(100% - 24px);
 }
 
 .one-entity-guideview .comments .one-comment .text {
@@ -630,8 +681,18 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview .inline-editor {
-  background-color: #eee;
   padding: 10px;
+  background-color: #eee;  
+}
+
+.one-entity-guideview .inline-editor.ng-enter {
+  -webkit-transition: all linear 1s;
+  transition: all linear 1s;
+  background-color: #ccc;
+}
+
+.one-entity-guideview .inline-editor.ng-enter-active { 
+  background-color: #eee;
 }
 
 .one-entity-search-result .header-bar {
@@ -827,7 +888,7 @@ hr.dropdown-separator {
 }
 
 .account-dropdown {
-  width: 300px;
+  width: 400px;
   padding: 20px;
   background-color: rgba(255, 255, 255, 0.9);
   top: 93%;
@@ -989,19 +1050,16 @@ hr.dropdown-separator {
 #main-control-buttons .right-buttons {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: 40px;
 }
 
-#main-control-buttons .settings-btn {
-  font-size: 1.2em;
-  color: #000;
-  padding: 3px;
-  height: 31px;
+#main-control-buttons .share-btn {
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 #main-control-buttons button {
   border-radius: 1px;
-  background-color: #fff;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
@@ -1028,6 +1086,9 @@ hr.dropdown-separator {
 .infowindow {
   position: relative;
   bottom: 79px;
+  font-size: 10pt;
+  font-family: 'Nunito';
+  font-weight: 300;
 }
 
 .infowindow-internal {
@@ -1065,11 +1126,23 @@ hr.dropdown-separator {
 }
 
 .infowindow .comments-section .one-comment {
-  padding-top: 5px;
+  margin: 5px 0px;
 }
 
-.infowindow .comments-section .author-name {
-  font-weight: bold;
+.infowindow .comments-section .one-comment .comment-sidebar {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.infowindow .comments-section .one-comment .comment-timestamp {
+  display: inline-block;
+  color: #666666;
+  font-size: 0.8em;
+}
+
+.infowindow .comments-section .one-comment .comment-details {
+  display: inline-block;
+  width: calc(100% - 24px);
 }
 
 .infowindow .comments-section .one-comment .text {
@@ -1115,7 +1188,7 @@ hr.dropdown-separator {
 
 .marker-tools {
   background-color: #fff;
-  font-size: 11pt;
+  font-size: 14pt;
   padding: 5px;
   min-width: 130px;
 }
@@ -1646,6 +1719,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .sharing-settings-editor .collaborator:hover .remove-link {
   display: inline;
+}
+
+.sharing-settings-editor .share-url {
+  cursor: text;
 }
 
 .reclip-confirmation-modal {
