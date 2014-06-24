@@ -95,6 +95,7 @@
     <ul class="account-dropdown dropdown-menu" ng-controller="AccountDropdownCtrl">
       <li class="account-dropdown-login-info" ng-click="$event.stopPropagation()">
         <div ng-show="accountInfo.loggedIn && !showLoginForm">
+          <span tc-user-icon email="accountInfo['email']"></span>
           <span class="logged-in-email">[[accountInfo['email'] ]]</span>
           <span class="logout-link">
             <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
@@ -207,8 +208,12 @@
         </div>
         <div class="comments-section" ng-if="ed['comments'] && ed['comments'].length">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
-            <div class="author-name">
-              [[comment['author'] ]]
+            <div>
+              <span tc-user-icon email="comment['author']">
+              </span>
+              <span>
+                [[comment['last_modified'] | date: 'short']]
+              </span>
             </div>
             <div>
               <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
@@ -218,7 +223,8 @@
         <div class="workspace-section" ng-if="workspaceActive()">
           <div ng-if="inlineEditMode == InlineEditMode.COMMENTS" class="inline-comment-editor">
             <div class="author-name">
-              [[accountInfo['email'] ]]
+              <span tc-user-icon email="accountInfo['email']">
+              </span>
             </div>
             <textarea class="form-control" placeholder="Add a comment"
               tc-focus-on="inlineEditMode"
@@ -880,24 +886,24 @@
         </div>
         <div class="comments-body">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
-            <span class="author-icon">
-              <!-- Temporary image -->
-              <img ng-src="https://ssl.gstatic.com/s2/profiles/images/silhouette96.png">
+            <span tc-user-icon email="comment['author']">
             </span>
             <span class="comment-details">
-              <div class="author-name">
-                [[comment['author'] ]]
-              </div>
               <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
-                <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
-                <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
-                  href="javascript:void(0)" class="color-link comment-edit-link">
-                  <span class="glyphicon glyphicon-pencil"></span>
-                </a>
-                <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
-                  href="javascript:void(0)" class="color-link comment-edit-link">
-                  <span class="glyphicon glyphicon-trash"></span>
-                </a>
+                <div>
+                  <span ng-bind-html="comment['text'] | linky:'_blank'" class="text comment-content"></span>
+                  <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
+                    href="javascript:void(0)" class="color-link comment-edit-link">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                  </a>
+                  <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
+                    href="javascript:void(0)" class="color-link comment-edit-link">
+                    <span class="glyphicon glyphicon-trash"></span>
+                  </a>
+                </div>
+                <div class="comment-timestamp">
+                  [[comment['last_modified'] | date: 'short']]
+                </div>
               </div>
               <div ng-show="editingComment && editingComment['comment_id'] == comment['comment_id']">
                 <textarea class="form-control" ng-model="editingComment['text']"
@@ -907,10 +913,17 @@
                   <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
                   <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
                 </div>
-              </div>
-              <div class="comment-timestamp">
-                <!-- Temporary timestamp -->
-                June 26, 2014 at 7:32pm
+                <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
+                  <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
+                  <a ng-click="openCommentEdit(comment)" ng-if="comment['author'] == accountInfo['email']"
+                    href="javascript:void(0)" class="color-link comment-edit-link">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                  </a>
+                  <a ng-click="deleteComment(comment)" ng-if="comment['author'] == accountInfo['email']"
+                    href="javascript:void(0)" class="color-link comment-edit-link">
+                    <span class="glyphicon glyphicon-trash"></span>
+                  </a>
+                </div>
               </div>
             </span>
           </div>
@@ -919,7 +932,8 @@
       {% if allow_editing %}
       <div class="inline-comment-editor inline-editor" ng-if="inlineEditMode == InlineEditMode.COMMENTS">
         <div class="author-name">
-          [[accountInfo['email'] ]]
+          <span tc-user-icon email="accountInfo['email']">
+          </span>
         </div>
         <textarea class="form-control" placeholder="Add a comment"
           tc-focus-on="inlineEditMode"
@@ -1740,6 +1754,15 @@
     </div>
   </script>
   {% endif %}
+
+  <script type="text/ng-template" id="user-icon-template">
+    <a href="javascript:void(0)" tooltip="[[email]]" tooltip-append-to-body="true">
+      <span class="user-icon"
+        ng-class="'user-' + userStyleIdentifier(email)">
+        [[email.substring(0, 1) ]]
+      </span>
+    </a>
+  </script>
 
   {% include 'widgets.html' %}
   {% include 'map_markers.html' %}

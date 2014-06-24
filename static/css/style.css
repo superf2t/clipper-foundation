@@ -131,6 +131,37 @@ a:hover .tc-icon svg {
   border-bottom: 4px solid;
 }
 
+.user-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  vertical-align: top;
+  color: #fff;
+}
+
+.user-1 {
+  background-color: #7738FF;
+}
+
+.user-2 {
+  background-color: #E8160C;
+}
+
+.user-3 {
+  background-color: #FFB300;
+}
+
+.user-4 {
+  background-color: #56E80C
+}
+
+.user-5 {
+  background-color: #1CEAFF;
+}
+
 /* Navigation */
 
 .navbar {
@@ -580,10 +611,10 @@ hr.dropdown-separator {
   max-width: 100%;
 }
 
-.one-entity-guideview .metadata,
+/*.one-entity-guideview .metadata,
 .one-entity-search-result .metadata {
   margin: 15px 0;
-}
+}*/
 
 .one-entity-guideview .metadata .source-text,
 .one-entity-search-result .metadata .source-text  {
@@ -597,35 +628,22 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview .comments .one-comment {
-  margin-top: 5px;
+  margin: 10px 0px;
 }
 
-.one-entity-guideview .comments .one-comment .author-icon {
-  position: relative;
-  top: 5px;
+.one-entity-guideview .comments .one-comment .comment-timestamp {
   display: inline-block;
-  width: 30px;
-  height: 30px;
-  vertical-align: top;
-}
-
-.one-entity-guideview .comments .one-comment .author-icon img {
-  width: 100%;
+  color: #666666;
+  font-size: 0.8em;
 }
 
 .one-entity-guideview .comments .one-comment .comment-details {
   display: inline-block;
-  max-width: calc(100% - 34px)
+  width: calc(100% - 24px);
 }
 
+.one-entity-guideview .comments .one-comment .comment-content {
 
-.one-entity-guideview .comments .one-comment .author-name {
-  font-weight: 400;
-}
-
-.one-entity-guideview .comments .one-comment .comment-timestamp {
-  color: #666666;
-  font-size: 0.9em;
 }
 
 .one-entity-guideview .comments .one-comment .text {
@@ -656,39 +674,18 @@ hr.dropdown-separator {
 }
 
 .one-entity-guideview .inline-editor {
-  background-color: #eee;
   padding: 10px;
+  background-color: #eee;  
 }
 
-.one-entity-guideview .inline-editor.ng-hide-add, .one-entity-guideview .inline-editor.ng-hide-remove {
-  -webkit-transition: all linear 0.5s;
-  transition: all linear 0.5s;
+.one-entity-guideview .inline-editor.ng-enter {
+  -webkit-transition: all linear 1s;
+  transition: all linear 1s;
+  background-color: #ccc;
 }
 
-.one-entity-guideview .inline-editor.ng-hide-add-active,
-.one-entity-guideview .inline-editor.ng-hide-remove-active {
-  -webkit-transition: all linear 0.3s;
-  transition: all linear 0.3s;
-}
-
-/*.one-entity-guideview .inline-editor.ng-hide-remove-active { 
-  background-color: blue;
-}
-*/
-.one-entity-guideview .inline-editor.ng-hide-remove { 
-  background-color: blue;
-}
-
-.one-entity-guideview .inline-editor.ng-hide-add.ng-hide-add-active {
-  background-color: blue;
-}
-
-.one-entity-guideview .inline-editor.ng-hide-remove {
-  background-color: blue;
-}
-
-.one-entity-guideview .inline-editor.ng-hide-remove.ng-hide-remove-active {
-  background-color: blue;
+.one-entity-guideview .inline-editor.ng-enter-active { 
+  background-color: #eee;
 }
 
 .one-entity-search-result .header-bar {
@@ -884,7 +881,7 @@ hr.dropdown-separator {
 }
 
 .account-dropdown {
-  width: 300px;
+  width: 400px;
   padding: 20px;
   background-color: rgba(255, 255, 255, 0.9);
   top: 93%;
