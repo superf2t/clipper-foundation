@@ -665,7 +665,8 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     if ($scope.ed['entity_id'] != entityId) {
       return;
     }
-    $scope.inlineEditMode = inlineEditMode;
+    $scope.inlineEditMode = null;
+    $scope.toggleInlineEdit(inlineEditMode);
   });
 
   $scope.$on('closeallcontrols', function() {
