@@ -155,32 +155,16 @@
         {% endif %}
       </div>
       {% if allow_editing %}
-      <div class="right-buttons dropdown" ng-show="!inTutorial()">
-        <button class="btn settings-btn dropdown-toggle">
-          <span class="glyphicon glyphicon-cog"></span>
+      <div class="right-buttons" ng-show="!inTutorial()">
+        <button class="btn btn-primary share-btn" ng-click="openSharingSettings('sharing-settings-modal')">
+          Sharing
         </button>
-        <ul class="dropdown-menu right-top-dropdown-menu">
-          <li>
-            <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
-          </li>
-          <li>
-            <a ng-click="openSharingSettings('sharing-settings-modal')" href="javascript:void(0)">Sharing</a>
-          </li>
-          <li>
-            <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
-          </li>
-          <li>
-            <a ng-click="startGmapsImport()" href="javascript:void(0)">Import Google Custom Map</a>
-          </li>
-          <li>
-            <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">Delete Trip</a>
-          </li>
-        </ul>
       </div>
       {% endif %}
     </div>
   </script>
 
+  {% if allow_editing %}
   <script type="text/ng-template" id="add-place-mode-dropdown-template">
     <ul class="dropdown-menu add-place-options-dropdown"
       ng-controller="AddPlaceOptionsCtrl">
@@ -191,6 +175,24 @@
       </li>
     </ul>
   </script>
+
+  <script type="text/ng-template" id="trip-plan-settings-dropdown-template">
+    <ul class="dropdown-menu right-top-dropdown-menu">
+      <li>
+        <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
+      </li>
+      <li>
+        <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
+      </li>
+      <li>
+        <a ng-click="startGmapsImport()" href="javascript:void(0)">Import Google Custom Map</a>
+      </li>
+      <li>
+        <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">Delete Trip</a>
+      </li>
+    </ul>
+  </script>
+  {% endif %}
 
   <script type="text/ng-template" id="infowindow-template">
     <div class="infowindow" ng-controller="InfowindowCtrl">
@@ -1007,8 +1009,18 @@
   <script type="text/ng-template" id="trip-plan-header-template">
     <div id="trip-plan-header">
       <div class="trip-plan-info">
-        <div class="title">
-          [[planModel.tripPlanName()]]
+        <div class="title-section">
+          <div class="title">
+            [[planModel.tripPlanName()]]
+          </div>
+          {% if allow_editing %}
+          <div class="settings-control dropdown" ng-show="!inTutorial()">
+            <a href="javascript:void(0)" class="dropdown-toggle white-link">
+              <span class="glyphicon glyphicon-cog"></span>
+            </a>
+            <ul tc-include-and-replace="trip-plan-settings-dropdown-template"></ul>
+          </div>
+          {% endif %}
         </div>
         <div class="creator-info">
           <span ng-if="planModel.hasSource()">

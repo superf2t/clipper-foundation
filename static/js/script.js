@@ -2033,7 +2033,7 @@ function createMap(tripPlanData) {
       position: google.maps.ControlPosition.RIGHT_BOTTOM
     },
     zoomControlOptions: {
-      position: google.maps.ControlPosition.RIGHT_CENTER
+      position: google.maps.ControlPosition.RIGHT_TOP
     }
   };
   var map = new google.maps.Map($('#map')[0], mapOptions);
