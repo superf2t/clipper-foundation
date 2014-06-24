@@ -2,6 +2,7 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Nunito';
+  font-weight: 300;
   background-color: #EAEAEA;
   color: #666666;
 }
@@ -371,6 +372,11 @@ hr.dropdown-separator {
   font-size: 0.9em;
 }
 
+.one-entity-leftnav .entity-info .details svg,
+.one-entity-listing .entity-info .details svg {
+  fill: #FFFFFF;
+}
+
 .one-entity-leftnav .entity-info .day,
 .one-entity-listing .entity-info .day {
   color: #ccc;
@@ -590,16 +596,36 @@ hr.dropdown-separator {
   text-align: justify;
 }
 
-.one-entity-guideview .comments .comments-body {
-  margin: 0 5px;
-}
-
 .one-entity-guideview .comments .one-comment {
   margin-top: 5px;
 }
 
-.one-entity-guideview .comments .author-name {
-  font-weight: bold;
+.one-entity-guideview .comments .one-comment .author-icon {
+  position: relative;
+  top: 5px;
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  vertical-align: top;
+}
+
+.one-entity-guideview .comments .one-comment .author-icon img {
+  width: 100%;
+}
+
+.one-entity-guideview .comments .one-comment .comment-details {
+  display: inline-block;
+  max-width: calc(100% - 44px)
+}
+
+
+.one-entity-guideview .comments .one-comment .author-name {
+  font-weight: 400;
+}
+
+.one-entity-guideview .comments .one-comment .comment-timestamp {
+  color: #666666;
+  font-size: 0.9em;
 }
 
 .one-entity-guideview .comments .one-comment .text {
