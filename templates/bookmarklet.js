@@ -304,6 +304,11 @@
       iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
     });
 
+    var clipperToMapMessageQueue = [];
+    var mapToClipperMessageQueue = [];
+    var clipperReady = false;
+    var mapReady = false;
+
     $(window).on('message', function(event) {
       var data = event.originalEvent.data;
       if (data == 'tc-close-clipper') {
@@ -319,10 +324,24 @@
         photoEditingActive = true;
       } else if (data == 'tc-photo-editing-inactive') {
         photoEditingActive = false;
+      } else if (data['message'] && data['message'] == 'tc-clipper-ready') {
+        clipperReady = true;
+        $.each(mapToClipperMessageQueue, function(i, message) {
+          iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+        });
+        mapToClipperMessageQueue = [];
       } else if (data['message'] && data['message'] == 'tc-map-ready') {
-        iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+        mapReady = true;
+        $.each(clipperToMapMessageQueue, function(i, message) {
+          mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+        });
+        clipperToMapMessageQueue = [];
       } else if (data.message && data.message.indexOf('tc-map') == 0) {
-        mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+        if (mapReady) {
+          mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);         
+        } else {
+          clipperToMapMessageQueue.push(data);
+        }
       }
     });
 

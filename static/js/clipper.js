@@ -179,8 +179,6 @@ function TripPlanPanelCtrl($scope, $tripPlanState, $mapProxy, $tripPlanService, 
 
 function MapProxy($window) {
   var me = this;
-  this.mapReady = false;
-  this.messageQueue = [];
 
   this.plotTripPlanEntities = function(entities) {
     this.sendMessage('tc-map-plot-trip-plan-entities', {entities: entities});
@@ -190,23 +188,12 @@ function MapProxy($window) {
     this.sendMessage('tc-map-plot-result-entities', {entities: entities});
   };
 
-  $($window).on('message', function(event) {
-    if (event.originalEvent.data['message'] == 'tc-map-ready') {
-      me.mapReady = true;
-      $.each(me.messageQueue, function(i, message) {
-        $window.parent.postMessage(message, '*');
-      });
-    }
-  });
-
   this.sendMessage = function(messageName, data) {
     var message = _.extend({message: messageName}, data);
-    if (!this.mapReady) {
-      this.messageQueue.push(message);
-    } else {
-      $window.parent.postMessage(message, '*');
-    }
+    $window.parent.postMessage(message, '*');
   };
+
+  this.sendMessage('tc-clipper-ready');
 }
 
 function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {

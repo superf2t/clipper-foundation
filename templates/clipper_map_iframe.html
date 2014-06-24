@@ -133,27 +133,25 @@
   <div id="map" tc-google-map map="mapState.map" map-options="mapOptions"
     after-creation="mapReady($map)">
   </div>
-  <div style="display: none" ng-repeat="entity in tripPlanEntities">
-    <div ng-controller="MapEntityCtrl">
-      <tc-entity-marker ng-if="markerState.position"
-        map="mapState.map" marker="markerState.marker"
-        position="markerState.position"
-        category-name="ed['category'] && ed['category']['name']"
-        icon-template-name="iconTemplateName()"
-        precise="ed['address_precision'] == 'Precise'"
-        deemphasized="true">
-      </tc-entity-marker>
-    </div>
+  <div style="display: none" ng-repeat="entity in tripPlanEntities"
+    ng-controller="MapEntityCtrl">
+    <tc-entity-marker ng-if="markerState.position"
+      map="mapState.map" marker="markerState.marker"
+      position="markerState.position"
+      category-name="ed['category'] && ed['category']['name']"
+      icon-template-name="iconTemplateName()"
+      precise="ed['address_precision'] == 'Precise'"
+      deemphasized="true">
+    </tc-entity-marker>
   </div>
-  <div style="display: none" ng-repeat="entity in resultEntities">
-    <div ng-controller="MapResultEntityCtrl">
-      <tc-search-result-marker ng-if="markerState.position"
-          marker="markerState.marker" position="markerState.position" map="mapState.map"
-          precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
-          selected="isSelected()"
-          on-click="markerClicked($event)">
-      </tc-search-result-marker>
-    </div>
+  <div style="display: none" ng-repeat="entity in resultEntities"
+    ng-controller="MapResultEntityCtrl">
+    <tc-search-result-marker ng-if="markerState.position"
+        marker="markerState.marker" position="markerState.position" map="mapState.map"
+        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
+        selected="isSelected()"
+        on-click="markerClicked($event)">
+    </tc-search-result-marker>
   </div>
 
   {% include 'map_markers.html' %}
