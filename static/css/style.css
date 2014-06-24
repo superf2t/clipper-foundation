@@ -611,11 +611,6 @@ hr.dropdown-separator {
   max-width: 100%;
 }
 
-/*.one-entity-guideview .metadata,
-.one-entity-search-result .metadata {
-  margin: 15px 0;
-}*/
-
 .one-entity-guideview .metadata .source-text,
 .one-entity-search-result .metadata .source-text  {
   text-decoration: underline;
