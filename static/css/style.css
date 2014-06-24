@@ -604,8 +604,8 @@ hr.dropdown-separator {
   position: relative;
   top: 5px;
   display: inline-block;
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
   vertical-align: top;
 }
 
@@ -615,7 +615,7 @@ hr.dropdown-separator {
 
 .one-entity-guideview .comments .one-comment .comment-details {
   display: inline-block;
-  max-width: calc(100% - 44px)
+  max-width: calc(100% - 34px)
 }
 
 
@@ -658,6 +658,37 @@ hr.dropdown-separator {
 .one-entity-guideview .inline-editor {
   background-color: #eee;
   padding: 10px;
+}
+
+.one-entity-guideview .inline-editor.ng-hide-add, .one-entity-guideview .inline-editor.ng-hide-remove {
+  -webkit-transition: all linear 0.5s;
+  transition: all linear 0.5s;
+}
+
+.one-entity-guideview .inline-editor.ng-hide-add-active,
+.one-entity-guideview .inline-editor.ng-hide-remove-active {
+  -webkit-transition: all linear 0.3s;
+  transition: all linear 0.3s;
+}
+
+/*.one-entity-guideview .inline-editor.ng-hide-remove-active { 
+  background-color: blue;
+}
+*/
+.one-entity-guideview .inline-editor.ng-hide-remove { 
+  background-color: blue;
+}
+
+.one-entity-guideview .inline-editor.ng-hide-add.ng-hide-add-active {
+  background-color: blue;
+}
+
+.one-entity-guideview .inline-editor.ng-hide-remove {
+  background-color: blue;
+}
+
+.one-entity-guideview .inline-editor.ng-hide-remove.ng-hide-remove-active {
+  background-color: blue;
 }
 
 .one-entity-search-result .header-bar {
@@ -1672,6 +1703,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .sharing-settings-editor .collaborator:hover .remove-link {
   display: inline;
+}
+
+.sharing-settings-editor .share-url {
+  cursor: text;
 }
 
 .reclip-confirmation-modal {
