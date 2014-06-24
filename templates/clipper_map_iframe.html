@@ -16,7 +16,7 @@
     }
   </style>
   <script>
-    function ClipperMapCtrl($scope, $window) {
+    function ClipperMapCtrl($scope, $clipperStateModel, $window) {
       var me = this;
       $scope.tripPlanEntities = null;
       $scope.resultEntities = null;
@@ -64,9 +64,14 @@
         }
       };
 
+      this.stateChanged = function(data) {
+        _.extend($clipperStateModel, data['clipperStateModel']);
+      };
+
       var handlers = {
         'tc-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
-        'tc-map-plot-result-entities': _.bind(this.plotResultEntities, this)
+        'tc-map-plot-result-entities': _.bind(this.plotResultEntities, this),
+        'tc-map-state-changed': _.bind(this.stateChanged, this)
       };
 
       $($window).on('message', function(event) {
@@ -83,7 +88,7 @@
       };
     }
 
-    function MapEntityCtrl($scope) {
+    function MapEntityCtrl($scope, $clipperStateModel) {
       $scope.ed = $scope.entity;
       var entityModel = new EntityModel($scope.ed);
       $scope.markerState = {
@@ -100,9 +105,14 @@
         }
         return null;
       };
+
+      $scope.isSelected = function() {
+        return $clipperStateModel.selectedEntityId &&
+          $scope.ed['entity_id'] == $clipperStateModel.selectedEntityId;
+      };
     }
 
-    function MapResultEntityCtrl($scope) {
+    function MapResultEntityCtrl($scope, $clipperStateModel) {
       $scope.ed = $scope.entity;
       var entityModel = new EntityModel($scope.ed);
       $scope.markerState = {
@@ -113,6 +123,11 @@
       $scope.resultLetter = function() {
         return String.fromCharCode(65 + $scope.$index);
       };
+
+      $scope.isSelected = function() {
+        return $clipperStateModel.selectedResultIndex &&
+          $clipperStateModel.selectedResultIndex == $scope.$index;
+      };
     }
 
     angular.module('clipperMapModule',
@@ -122,7 +137,8 @@
       .controller('MapEntityCtrl', MapEntityCtrl)
       .controller('MapResultEntityCtrl', MapResultEntityCtrl)
       .directive('tcEntityMarker', tcEntityMarker)
-      .directive('tcSearchResultMarker', tcSearchResultMarker);
+      .directive('tcSearchResultMarker', tcSearchResultMarker)
+      .value('$clipperStateModel', new ClipperStateModel());
 
     angular.element(document).ready(function() {
       angular.bootstrap(document, ['clipperMapModule']);
@@ -141,6 +157,7 @@
       category-name="ed['category'] && ed['category']['name']"
       icon-template-name="iconTemplateName()"
       precise="ed['address_precision'] == 'Precise'"
+      selected="isSelected()"
       deemphasized="true">
     </tc-entity-marker>
   </div>

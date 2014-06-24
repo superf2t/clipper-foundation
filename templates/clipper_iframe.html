@@ -133,7 +133,7 @@
         class="trip-plan-dropdown">
       </div> 
       <tc-entity-listing ng-repeat="entity in tripPlanState.entities"
-        entity-data="entity" should-show-day="true">
+        entity-data="entity" should-show-day="true" on-select="entitySelected(entity)">
       </tc-entity-listing>
     </div>
   </script>

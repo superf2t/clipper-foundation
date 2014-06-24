@@ -327,3 +327,11 @@ a:hover {
   width: 100%;
   height: 100%;
 }
+
+.one-entity-listing {
+  cursor: pointer;
+}
+
+.one-entity-listing:hover {
+  background-color: #ccc;
+}

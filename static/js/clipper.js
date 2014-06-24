@@ -19,6 +19,11 @@ function TripPlanState(opt_tripPlan, opt_entities) {
   };
 }
 
+function ClipperStateModel() {
+  this.selectedEntityId = null;
+  this.selectedResultIndex = null;
+}
+
 function ClipperRootCtrl($scope, $window) {
 
   // TODO: Figure out if this is still needed.
@@ -36,7 +41,7 @@ function ClipperRootCtrl($scope, $window) {
   };
 }
 
-function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $mapProxy,
+function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entityService, $mapProxy,
     $datatypeValues, $window, $timeout) {
   var me = this;
 
@@ -49,6 +54,10 @@ function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $mapProxy,
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
+
+  $scope.$watch(_.constant($clipperStateModel), function(value) {
+    $mapProxy.stateChanged(value);
+  }, true);
 
   $scope.$watch('entities', function(entities, oldEntities) {
     if (entities === oldEntities) {
@@ -158,7 +167,8 @@ function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $mapProxy,
   $window.parent.postMessage('tc-needs-page-source', '*'); 
 }
 
-function TripPlanPanelCtrl($scope, $tripPlanState, $mapProxy, $tripPlanService, $entityService) {
+function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy,
+    $tripPlanService, $entityService) {
   $scope.tripPlanState = $tripPlanState;
   $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
     if (!tripPlan) {
@@ -175,6 +185,10 @@ function TripPlanPanelCtrl($scope, $tripPlanState, $mapProxy, $tripPlanService, 
         }
       });
   });
+
+  $scope.entitySelected = function(entity) {
+    $clipperStateModel.selectedEntityId = entity['entity_id'];
+  };
 }
 
 function MapProxy($window) {
@@ -186,6 +200,10 @@ function MapProxy($window) {
 
   this.plotResultEntities = function(entities) {
     this.sendMessage('tc-map-plot-result-entities', {entities: entities});
+  };
+
+  this.stateChanged = function(clipperStateModel) {
+    this.sendMessage('tc-map-state-changed', {clipperStateModel: clipperStateModel});
   };
 
   this.sendMessage = function(messageName, data) {
@@ -433,7 +451,8 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$allTripPlans', allTripPlans)
     .value('$datatypeValues', datatypeValues)
-    .value('$tripPlanState', new TripPlanState(_.isEmpty(allTripPlans) ? null : allTripPlans[0]));
+    .value('$tripPlanState', new TripPlanState(_.isEmpty(allTripPlans) ? null : allTripPlans[0]))
+    .value('$clipperStateModel', new ClipperStateModel());
 
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule', 'ui.bootstrap'],

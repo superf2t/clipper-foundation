@@ -115,9 +115,14 @@
         height: 66%;
       }
 
+      .__tc-map-iframe-container {
+        width: 100%;
+        height: calc(100% - 19px);
+        position: relative;
+      }
+
       .__tc-map-iframe {
         background-color: #fff;
-        height: calc(100% - 19px);
       }
 
       .__tc-map-header {
@@ -150,6 +155,20 @@
       .__tc-map-resize-icon svg {
         width: 100%;
         height: 100%;
+      }
+
+      .__tc-iframe-dragging-shim {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        background-color: transparent;
+        display: none;
+      }
+
+      .ui-draggable-dragging .__tc-iframe-dragging-shim {
+        display: block;
       }
 
       .__tc-droptarget {
@@ -213,6 +232,8 @@
         <div class="__tc-iframe-container">
           <iframe class="__tc-iframe">
           </iframe>
+          <div class="__tc-iframe-dragging-shim">
+          </div>
         </div>
       </div>
       {% endstrip %}');
@@ -231,8 +252,12 @@
             </a>
           </div>
         </div>
-        <iframe class="__tc-iframe __tc-map-iframe">
-        </iframe>
+        <div class="__tc-map-iframe-container">
+          <iframe class="__tc-iframe __tc-map-iframe">
+          </iframe>
+          <div class="__tc-iframe-dragging-shim">
+          </div>
+        </div>
       </div>
       {% endstrip %}');
     window['__tcNodes'].push(mapWrapper);
