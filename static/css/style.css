@@ -130,6 +130,36 @@ a:hover .tc-icon svg {
   border-bottom: 4px solid;
 }
 
+.user-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  font-weight: bold;
+  text-align: center;
+  color: #fff;
+}
+
+.user-1 {
+  background-color: #7738FF;
+}
+
+.user-2 {
+  background-color: #E8160C;
+}
+
+.user-3 {
+  background-color: #FFB300;
+}
+
+.user-4 {
+  background-color: #56E80C
+}
+
+.user-5 {
+  background-color: #1CEAFF;
+}
+
 /* Navigation */
 
 .navbar {
@@ -598,10 +628,6 @@ hr.dropdown-separator {
   margin-top: 5px;
 }
 
-.one-entity-guideview .comments .author-name {
-  font-weight: bold;
-}
-
 .one-entity-guideview .comments .one-comment .text {
   white-space: pre-wrap;
 }
@@ -827,7 +853,7 @@ hr.dropdown-separator {
 }
 
 .account-dropdown {
-  width: 300px;
+  width: 400px;
   padding: 20px;
   background-color: rgba(255, 255, 255, 0.9);
   top: 93%;

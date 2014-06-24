@@ -304,6 +304,16 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     }
   };
 
+  this.userStyleIdentifier = function(email) {
+    if (this.tripPlanData['creator'] == email) {
+      return 1;
+    }
+    if (this.tripPlanData['editors']) {
+      return 2 + this.tripPlanData['editors'].indexOf(email);
+    }
+    return null;
+  };
+
   this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
 }
 
@@ -1269,6 +1279,21 @@ function tcSearchResultIcon() {
     };
 }
 
+function tcUserIcon() {
+  return {
+    retrict: 'AE',
+    scope: {
+      email: '='
+    },
+    controller: function($scope, $tripPlanModel) {
+      $scope.userStyleIdentifier = function(email) {
+        return $tripPlanModel.userStyleIdentifier(email);
+      };
+    },
+    templateUrl: 'user-icon-template'
+  };
+}
+
 HtmlInfowindow.prototype = new google.maps.OverlayView();
 
 function HtmlInfowindow(marker, contentDiv) {
@@ -1663,7 +1688,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.planModel = $tripPlanModel;
   $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
-  $scope.accountDropdownOpen = false;
   $scope.refreshState = {
     paused: false
   };
@@ -1771,10 +1795,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.selectEntity = function(entityData) {
     $scope.pageStateModel.selectedEntity = entityData;
     $searchResultState.selectedIndex = null;
-  };
-
-  $scope.toggleAccountDropdown = function() {
-    $scope.accountDropdownOpen = !$scope.accountDropdownOpen;
   };
 
   $scope.saveTripPlanSettings = function() {
@@ -4621,6 +4641,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
+    .directive('tcUserIcon', tcUserIcon)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)
