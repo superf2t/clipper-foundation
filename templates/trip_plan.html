@@ -95,7 +95,7 @@
     <ul class="account-dropdown dropdown-menu" ng-controller="AccountDropdownCtrl">
       <li class="account-dropdown-login-info" ng-click="$event.stopPropagation()">
         <div ng-show="accountInfo.loggedIn && !showLoginForm">
-          <span tc-user-icon email="accountInfo['email']"></span>
+          <span tc-user-icon email="accountInfo['email']" no-tooltip="true"></span>
           <span class="logged-in-email">[[accountInfo['email'] ]]</span>
           <span class="logout-link">
             <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
@@ -211,7 +211,9 @@
         <div class="comments-section" ng-if="ed['comments'] && ed['comments'].length">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
             <div>
-              <span tc-user-icon email="comment['author']">
+              <span class="comment-sidebar">
+                <span tc-user-icon email="comment['author']">
+                </span>
               </span>
               <span class="comment-details">
                 <div>
@@ -890,7 +892,9 @@
         </div>
         <div class="comments-body">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
-            <span tc-user-icon email="comment['author']">
+            <span class="comment-sidebar">
+              <span tc-user-icon email="comment['author']">
+              </span>
             </span>
             <span class="comment-details">
               <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
@@ -1577,12 +1581,13 @@
       </div>
       <div class="creator">
         <h4>Creator</h4>
-        [[creator]]
+        <span tc-user-icon email="creator" no-tooltip="true"></span> [[creator]]
         <span ng-show="isCreator">(you)</span>
       </div>
       <div ng-show="hasCollaborators()">
         <h4>Collaborators</h4>
         <p ng-repeat="collaborator in collaborators()" class="collaborator">
+          <span tc-user-icon email="collaborator" no-tooltip="true"></span>
           [[collaborator]]
           <a ng-click="removeCollaborator(collaborator)"
             href="javascript:void(0)" class="remove-link color-link">
@@ -1759,7 +1764,8 @@
   {% endif %}
 
   <script type="text/ng-template" id="user-icon-template">
-    <a href="javascript:void(0)" tooltip="[[email]]" tooltip-append-to-body="true">
+    <a href="javascript:void(0)" tooltip="[[noTooltip ? null : email]]"
+      tooltip-append-to-body="true">
       <span class="user-icon"
         ng-class="'user-' + userStyleIdentifier(email)">
         [[email.substring(0, 1) ]]

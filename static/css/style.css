@@ -637,6 +637,11 @@ hr.dropdown-separator {
   margin: 10px 0px;
 }
 
+.one-entity-guideview .comments .one-comment .comment-sidebar {
+  display: inline-block;
+  vertical-align: top;
+}
+
 .one-entity-guideview .comments .one-comment .comment-timestamp {
   display: inline-block;
   color: #666666;
@@ -1122,6 +1127,11 @@ hr.dropdown-separator {
 
 .infowindow .comments-section .one-comment {
   margin: 5px 0px;
+}
+
+.infowindow .comments-section .one-comment .comment-sidebar {
+  display: inline-block;
+  vertical-align: top;
 }
 
 .infowindow .comments-section .one-comment .comment-timestamp {

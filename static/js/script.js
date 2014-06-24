@@ -1283,7 +1283,8 @@ function tcUserIcon() {
   return {
     retrict: 'AE',
     scope: {
-      email: '='
+      email: '=',
+      noTooltip: '='
     },
     controller: function($scope, $tripPlanModel) {
       $scope.userStyleIdentifier = function(email) {
