@@ -18,6 +18,9 @@
   <script>
     function ClipperMapCtrl($scope, $window) {
       var me = this;
+      $scope.tripPlanEntities = null;
+      $scope.resultEntities = null;
+
       $scope.mapState = {map: null};
       $scope.mapOptions = {
         center: new google.maps.LatLng(0, 0),
@@ -38,10 +41,20 @@
         me.sendMessage('tc-map-ready');
       };
 
-      this.plotEntities = function(data) {
-        $scope.entities = data['entities'];
+      this.plotTripPlanEntities = function(data) {
+        $scope.tripPlanEntities = data['entities'];
+        this.updateMapBounds();
+      };
+
+      this.plotResultEntities = function(data) {
+        $scope.resultEntities = data['entities'];
+        this.updateMapBounds();
+      };
+
+      this.updateMapBounds = function() {
+        var allEntities = ($scope.tripPlanEntities || []).concat($scope.resultEntities || []);
         var bounds = new google.maps.LatLngBounds();
-        $.each($scope.entities, function(i, entity) {
+        $.each(allEntities, function(i, entity) {
           if (!_.isEmpty(entity['latlng'])) {
             bounds.extend(gmapsLatLngFromJson(entity['latlng']));
           }
@@ -52,7 +65,8 @@
       };
 
       var handlers = {
-        'tc-map-plot-entities': _.bind(this.plotEntities, this)
+        'tc-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
+        'tc-map-plot-result-entities': _.bind(this.plotResultEntities, this)
       };
 
       $($window).on('message', function(event) {
@@ -88,12 +102,27 @@
       };
     }
 
+    function MapResultEntityCtrl($scope) {
+      $scope.ed = $scope.entity;
+      var entityModel = new EntityModel($scope.ed);
+      $scope.markerState = {
+        marker: null,
+        position: entityModel.gmapsLatLng()
+      };
+
+      $scope.resultLetter = function() {
+        return String.fromCharCode(65 + $scope.$index);
+      };
+    }
+
     angular.module('clipperMapModule',
         ['directivesModule', 'filtersModule'],
         interpolator)
       .controller('ClipperMapCtrl', ClipperMapCtrl)
       .controller('MapEntityCtrl', MapEntityCtrl)
-      .directive('tcEntityMarker', tcEntityMarker);
+      .controller('MapResultEntityCtrl', MapResultEntityCtrl)
+      .directive('tcEntityMarker', tcEntityMarker)
+      .directive('tcSearchResultMarker', tcSearchResultMarker);
 
     angular.element(document).ready(function() {
       angular.bootstrap(document, ['clipperMapModule']);
@@ -104,14 +133,27 @@
   <div id="map" tc-google-map map="mapState.map" map-options="mapOptions"
     after-creation="mapReady($map)">
   </div>
-  <div style="display: none" ng-repeat="entity in entities" ng-controller="MapEntityCtrl">
-    <tc-entity-marker ng-if="markerState.position"
-      map="mapState.map" marker="markerState.marker"
-      position="markerState.position"
-      category-name="ed['category'] && ed['category']['name']"
-      icon-template-name="iconTemplateName()"
-      precise="ed['address_precision'] == 'Precise'">
-    </tc-entity-marker>
+  <div style="display: none" ng-repeat="entity in tripPlanEntities">
+    <div ng-controller="MapEntityCtrl">
+      <tc-entity-marker ng-if="markerState.position"
+        map="mapState.map" marker="markerState.marker"
+        position="markerState.position"
+        category-name="ed['category'] && ed['category']['name']"
+        icon-template-name="iconTemplateName()"
+        precise="ed['address_precision'] == 'Precise'"
+        deemphasized="true">
+      </tc-entity-marker>
+    </div>
+  </div>
+  <div style="display: none" ng-repeat="entity in resultEntities">
+    <div ng-controller="MapResultEntityCtrl">
+      <tc-search-result-marker ng-if="markerState.position"
+          marker="markerState.marker" position="markerState.position" map="mapState.map"
+          precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
+          selected="isSelected()"
+          on-click="markerClicked($event)">
+      </tc-search-result-marker>
+    </div>
   </div>
 
   {% include 'map_markers.html' %}

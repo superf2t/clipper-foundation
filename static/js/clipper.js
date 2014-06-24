@@ -36,7 +36,8 @@ function ClipperRootCtrl($scope, $window) {
   };
 }
 
-function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $datatypeValues, $window, $timeout) {
+function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $mapProxy,
+    $datatypeValues, $window, $timeout) {
   var me = this;
 
   $scope.entities = [];
@@ -48,6 +49,13 @@ function ClipperPanelCtrl($scope, $tripPlanState, $entityService, $datatypeValue
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
+
+  $scope.$watch('entities', function(entities, oldEntities) {
+    if (entities === oldEntities) {
+      return;
+    }
+    $mapProxy.plotResultEntities(entities);
+  }, true);
 
   this.setupEntityState = function(entities) {
     $scope.entities = entities;
@@ -163,7 +171,7 @@ function TripPlanPanelCtrl($scope, $tripPlanState, $mapProxy, $tripPlanService, 
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.loadingEntities = false;
           $scope.tripPlanState.entities = response['entities'];
-          $mapProxy.plotEntities(response['entities']);
+          $mapProxy.plotTripPlanEntities(response['entities']);
         }
       });
   });
@@ -174,8 +182,12 @@ function MapProxy($window) {
   this.mapReady = false;
   this.messageQueue = [];
 
-  this.plotEntities = function(entities) {
-    this.sendMessage('tc-map-plot-entities', {entities: entities});
+  this.plotTripPlanEntities = function(entities) {
+    this.sendMessage('tc-map-plot-trip-plan-entities', {entities: entities});
+  };
+
+  this.plotResultEntities = function(entities) {
+    this.sendMessage('tc-map-plot-result-entities', {entities: entities});
   };
 
   $($window).on('message', function(event) {

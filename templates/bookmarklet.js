@@ -107,6 +107,7 @@
         left: 340px;
         border: 1px solid #bbbbbb;
         box-shadow: 0px 1px 2px #aaaaaa;
+        z-index: 2147483647;
       }
 
       .__tc-map-container.expanded {
@@ -116,7 +117,7 @@
 
       .__tc-map-iframe {
         background-color: #fff;
-        height: calc(100% - 20px);
+        height: calc(100% - 19px);
       }
 
       .__tc-map-header {
@@ -279,7 +280,12 @@
     }).on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
       event.stopPropagation();
       event.preventDefault();
-    });;
+    });
+
+    mapWrapper.on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
+      event.stopPropagation();
+      event.preventDefault();
+    });
 
     wrapper.on('drop', function(event) {
       if (!dropTarget) {
