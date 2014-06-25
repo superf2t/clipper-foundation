@@ -157,14 +157,21 @@ a:hover {
   margin-left: 10px;
 }
 
+.entity-results .select-info {
+  margin: 0 10px;
+  position: relative;
+}
+
 .entity-results .select-all-link {
-  text-align: right;
-  margin-right: 10px;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .one-entity-result {
   padding: 15px 10px;
   position: relative;
+  cursor: pointer;
 }
 
 .one-entity-result:hover {
@@ -176,7 +183,7 @@ a:hover {
 }
 
 .one-entity-result.selected {
-  background-color: #dedede;
+  background-color: #666;
 }
 
 .one-entity-result .entity-circle-img {
@@ -209,14 +216,20 @@ a:hover {
   position: relative;
 }
 
-.one-entity-result .edit-links {
-  font-size: 10pt;
+.one-entity-result .edit-link,
+.one-entity-result .close-edit-link {
+  display: inline-block;
+  position: absolute;
+  right: 0;
+  top: 7px;
 }
 
-.one-entity-result .select-links {
-  position: absolute;
-  bottom: 3px;
-  right: 10px;
+.one-entity-result .edit-link {
+  display: none;
+}
+
+.one-entity-result:hover .edit-link {
+  display: inline-block;
 }
 
 .one-entity-result .editor {

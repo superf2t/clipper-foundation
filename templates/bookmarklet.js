@@ -112,7 +112,7 @@
         min-height: 200px;
         position: fixed !important;
         bottom: 0;
-        left: 340px;
+        left: 342px;
         border: 1px solid #bbbbbb;
         box-shadow: 0px 1px 2px #aaaaaa;
         z-index: 2147483647;

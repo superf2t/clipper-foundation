@@ -136,6 +136,13 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     return $scope.entities.length == $scope.selectedEntities().length;
   };
 
+  $scope.toggleSelectResult = function(entity) {
+    if ($scope.entities.length == 1) {
+      return;
+    }
+    entity.selected = !entity.selected;
+  };
+
   $scope.selectAll = function() {
     $.each($scope.entities, function(i, entity) {
       entity.selected = true;

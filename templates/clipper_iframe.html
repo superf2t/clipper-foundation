@@ -35,16 +35,18 @@
         </div>
 
         <div class="entity-results">
-          <div ng-show="entities.length > 1" class="select-all-link">
-            Select:
-            <a ng-click="selectAll()" href="javascript:void(0)"
-              class="color-link">
-              All
-            </a>
-            <a ng-click="deselectAll()" href="javascript:void(0)"
-              class="color-link">
-              None
-            </a>
+          <div ng-show="entities.length > 1" class="select-info">
+            Click on results to select
+            <div class="select-all-link">
+              <a ng-click="selectAll()" href="javascript:void(0)"
+                class="color-link">
+                All
+              </a>
+              <a ng-click="deselectAll()" href="javascript:void(0)"
+                class="color-link">
+                None
+              </a>
+            </div>
           </div>
           <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
           </div>
@@ -142,6 +144,7 @@
   <script type="text/ng-template" id="one-entity-result-template">
     <div class="one-entity-result" ng-controller="ClipperEntityCtrl"
       ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing()}"
+      ng-click="toggleSelectResult(ed)"
       ng-mouseenter="highlightResult($index)">
       <div class="summary">
         <span class="entity-circle-img">
@@ -157,26 +160,18 @@
               [[im.categoryDisplayText()]]
             </span>
           </div>
-          <div class="edit-links">
-            <a ng-click="closeAllEditors(); openEditor()" href="javascript:void(0)"
-              class="color-link" ng-show="!isEditing()">
-              <span class="glyphicon glyphicon-pencil"></span> Edit
-            </a>
-            <a ng-click="closeEditor()" href="javascript:void(0)"
-              class="color-link" ng-show="isEditing()">
-              <span class="glyphicon glyphicon-chevron-up"></span> Done
-            </a>
-          </div>
-          <div class="select-links" ng-show="entities.length > 1">
-            <a ng-click="ed.selected = true" href="javascript:void(0)"
-              class="color-link" ng-show="!ed.selected">
-              <span class="glyphicon glyphicon-plus"></span> Select
-            </a>
-            <a ng-click="ed.selected = false" href="javascript:void(0)"
-              class="color-link" ng-show="ed.selected">
-              <span class="glyphicon glyphicon-minus"></span> Deselect
-            </a>
-          </div>
+        </span>
+        <span class="edit-link" ng-show="!isEditing()">
+          <a ng-click="closeAllEditors(); openEditor()" href="javascript:void(0)"
+            class="color-link">
+            <span class="glyphicon glyphicon-pencil"></span>
+          </a>
+        </span>
+        <span class="close-edit-link" ng-show="isEditing()">
+          <a ng-click="closeEditor()" href="javascript:void(0)"
+            class="color-link">
+            <span class="glyphicon glyphicon-chevron-up"></span> Done
+          </a>
         </span>
       </div>
       <div class="editor" ng-if="isEditing()">
