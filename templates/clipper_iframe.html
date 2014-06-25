@@ -150,8 +150,9 @@
       ng-mouseenter="highlightResult()"
       ng-mouseleave="unhighlightResult()">
       <div class="summary">
-        <span class="entity-circle-img">
-          <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
+        <span class="result-letter-icon" tc-search-result-icon
+          precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
+          selected="ed.selected">
         </span>
         <span class="entity-info">
           <div class="name">
@@ -263,7 +264,7 @@
 
   {% include 'widgets.html' %}
   {% include 'icons.html' %}
-
+  {% include 'map_markers.html' %}
 
   <script>
     initClipper(

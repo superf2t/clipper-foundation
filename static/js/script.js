@@ -1277,14 +1277,24 @@ function tcSearchResultMarker() {
 }
 
 function tcSearchResultIcon() {
-    return {
-      restrict: 'AE',
-      scope: {
-        precise: '=',
-        resultLetter: '='
-      },
-      templateUrl: 'search-result-marker-template'
-    };
+  return {
+    restrict: 'AE',
+    scope: {
+      precise: '=',
+      resultLetter: '=',
+      selected: '&'
+    },
+    controller: function($scope) {
+      $scope.getClasses = function() {
+        var classes = [];
+        if ($scope.selected()) {
+          classes.push('selected');
+        }
+        return classes;
+      };
+    },
+    templateUrl: 'search-result-marker-template'
+  };
 }
 
 function tcUserIcon() {

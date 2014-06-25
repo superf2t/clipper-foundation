@@ -190,17 +190,21 @@ a:hover {
   background-color: #666;
 }
 
-.one-entity-result .entity-circle-img {
-  width: 40px;
-  height: 40px;
+.one-entity-result .result-letter-icon {
   display: inline-block;
   vertical-align: top;
 }
 
-.one-entity-result .entity-circle-img img  {
-  width: 100%;
-  height: 100%;
-  border-radius: 20px;
+.one-entity-result .result-letter-icon .map-marker .marker-shape {
+  width: 24px;
+  height: 37px;
+  position: relative;
+  top: -3px;
+}
+
+.one-entity-result .result-letter-icon .search-result-marker .result-letter {
+  font-size: 1.1em;
+  top: 1px;
 }
 
 .one-entity-result .entity-info {
@@ -351,4 +355,9 @@ a:hover {
 
 .one-entity-listing:hover {
   background-color: #ccc;
+}
+
+.map-marker.search-result-marker.selected .marker-shape svg {
+  stroke: #fff;
+  stroke-width: 5px;
 }

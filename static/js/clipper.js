@@ -321,6 +321,10 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
     $clipperStateModel.highlightedResultIndex = null;
   };
 
+  $scope.resultLetter = function() {
+    return String.fromCharCode(65 + $scope.$index);
+  };
+
   $scope.isEditing = function() {
     return _.some(editorStates, function(state) {
       return state.active;
@@ -502,7 +506,8 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
     .service('$mapProxy', MapProxy)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
-    .directive('tcEntityListing', tcEntityListing);
+    .directive('tcEntityListing', tcEntityListing)
+    .directive('tcSearchResultIcon', tcSearchResultIcon);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);
