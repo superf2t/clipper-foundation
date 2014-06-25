@@ -133,14 +133,16 @@
         class="trip-plan-dropdown">
       </div> 
       <tc-entity-listing ng-repeat="entity in tripPlanState.entities"
-        entity-data="entity" should-show-day="true" on-select="entitySelected(entity)">
+        entity-data="entity" should-show-day="true" on-select="entitySelected(entity)"
+        is-selected="isEntitySelected(entity)">
       </tc-entity-listing>
     </div>
   </script>
 
   <script type="text/ng-template" id="one-entity-result-template">
     <div class="one-entity-result" ng-controller="ClipperEntityCtrl"
-      ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing()}">
+      ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing()}"
+      ng-mouseenter="highlightResult($index)">
       <div class="summary">
         <span class="entity-circle-img">
           <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
@@ -260,6 +262,8 @@
   </script>
 
   {% include 'widgets.html' %}
+  {% include 'icons.html' %}
+
 
   <script>
     initClipper(

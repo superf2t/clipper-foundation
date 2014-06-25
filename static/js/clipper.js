@@ -22,6 +22,7 @@ function TripPlanState(opt_tripPlan, opt_entities) {
 function ClipperStateModel() {
   this.selectedEntityId = null;
   this.selectedResultIndex = null;
+  this.highlightedResultIndex = null;
 }
 
 function ClipperRootCtrl($scope, $window) {
@@ -147,6 +148,10 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     });
   };
 
+  $scope.highlightResult = function(index) {
+    $clipperStateModel.highlightedResultIndex = index;
+  };
+
   $($window).on('message', function(event) {
     if (!event.originalEvent.data['message'] == 'tc-page-source') {
       return;
@@ -188,6 +193,10 @@ function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy
 
   $scope.entitySelected = function(entity) {
     $clipperStateModel.selectedEntityId = entity['entity_id'];
+  };
+
+  $scope.isEntitySelected = function(entity) {
+    return entity['entity_id'] == $clipperStateModel.selectedEntityId;
   };
 }
 

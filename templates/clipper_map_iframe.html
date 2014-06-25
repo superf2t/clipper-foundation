@@ -125,8 +125,8 @@
       };
 
       $scope.isSelected = function() {
-        return $clipperStateModel.selectedResultIndex &&
-          $clipperStateModel.selectedResultIndex == $scope.$index;
+        return ($clipperStateModel.selectedResultIndex == $scope.$index)
+          || ($clipperStateModel.highlightedResultIndex == $scope.$index);
       };
     }
 
@@ -172,5 +172,6 @@
   </div>
 
   {% include 'map_markers.html' %}
+  {% include 'icons.html' %}
 </body>
 </html>
