@@ -40,6 +40,7 @@ a:hover {
   top: 50%;
   left: 0;
   overflow-y: auto;
+  box-shadow: 0px -1px 2px #aaaaaa;
 }
 
 .loading-panel {
@@ -61,7 +62,7 @@ a:hover {
 }
 
 .trip-plan-panel .trip-plan-dropdown {
-  margin: 10px;
+  padding: 10px;
 }
 
 .dropdown-menu.right-bottom-dropdown-menu { /* DUPE */
