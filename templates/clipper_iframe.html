@@ -143,9 +143,10 @@
 
   <script type="text/ng-template" id="one-entity-result-template">
     <div class="one-entity-result" ng-controller="ClipperEntityCtrl"
-      ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing()}"
-      ng-click="toggleSelectResult(ed)"
-      ng-mouseenter="highlightResult($index)">
+      ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing(), 'multiple-results': entities.length > 1}"
+      ng-click="toggleSelectResult()"
+      ng-mouseenter="highlightResult()"
+      ng-mouseleave="unhighlightResult()">
       <div class="summary">
         <span class="entity-circle-img">
           <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
@@ -162,13 +163,13 @@
           </div>
         </span>
         <span class="edit-link" ng-show="!isEditing()">
-          <a ng-click="closeAllEditors(); openEditor()" href="javascript:void(0)"
+          <a ng-click="closeAllEditors(); openEditor(); $event.stopPropagation()" href="javascript:void(0)"
             class="color-link">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
         </span>
         <span class="close-edit-link" ng-show="isEditing()">
-          <a ng-click="closeEditor()" href="javascript:void(0)"
+          <a ng-click="closeEditor(); $event.stopPropagation()" href="javascript:void(0)"
             class="color-link">
             <span class="glyphicon glyphicon-chevron-up"></span> Done
           </a>

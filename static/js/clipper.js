@@ -21,7 +21,7 @@ function TripPlanState(opt_tripPlan, opt_entities) {
 
 function ClipperStateModel() {
   this.selectedEntityId = null;
-  this.selectedResultIndex = null;
+  this.selectedResultIndices = [];
   this.highlightedResultIndex = null;
 }
 
@@ -136,27 +136,18 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     return $scope.entities.length == $scope.selectedEntities().length;
   };
 
-  $scope.toggleSelectResult = function(entity) {
-    if ($scope.entities.length == 1) {
-      return;
-    }
-    entity.selected = !entity.selected;
-  };
-
   $scope.selectAll = function() {
     $.each($scope.entities, function(i, entity) {
       entity.selected = true;
+      $clipperStateModel.selectedResultIndices[i] = true;
     });
   };
 
   $scope.deselectAll = function() {
     $.each($scope.entities, function(i, entity) {
       entity.selected = false;
+      $clipperStateModel.selectedResultIndices[i] = false;
     });
-  };
-
-  $scope.highlightResult = function(index) {
-    $clipperStateModel.highlightedResultIndex = index;
   };
 
   $($window).on('message', function(event) {
@@ -290,7 +281,7 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   };
 }
 
-function ClipperEntityCtrl($scope, $window) {
+function ClipperEntityCtrl($scope, $clipperStateModel, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
@@ -300,6 +291,22 @@ function ClipperEntityCtrl($scope, $window) {
   $scope.editPhotosState = {active: false};
   $scope.editLocationState = {active: !$scope.ed['name']};
   var editorStates = [$scope.editNotesState, $scope.editPhotosState, $scope.editLocationState];
+
+  $scope.toggleSelectResult = function() {
+    if ($scope.entities.length == 1) {
+      return;
+    }
+    $scope.ed.selected = !$scope.ed.selected;
+    $clipperStateModel.selectedResultIndices[$scope.$index] = $scope.ed.selected;
+  };
+
+  $scope.highlightResult = function() {
+    $clipperStateModel.highlightedResultIndex = $scope.$index;
+  };
+
+  $scope.unhighlightResult = function() {
+    $clipperStateModel.highlightedResultIndex = null;
+  };
 
   $scope.isEditing = function() {
     return _.some(editorStates, function(state) {

@@ -68,7 +68,8 @@
     fill: #86BBFF;
   }
 
-  .map-marker .marker-shape.selected {
+  .map-marker .marker-shape.selected,
+  .map-marker .marker-shape.emphasized {
     width: 50px;
     height: 79px; 
   }
@@ -87,7 +88,8 @@
     transition: font-size 0.3s;
   }
 
-  .search-result-marker .result-letter.selected {
+  .search-result-marker .result-letter.selected,
+  .search-result-marker .result-letter.emphasized {
     font-size: 1.6em;
   }
 
@@ -138,7 +140,7 @@
 <script type="text/ng-template" id="entity-marker-template">
   <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
     <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
-      class="marker-shape" ng-class="{'selected': selected()}">
+      class="marker-shape" ng-class="{'selected': selected(), 'emphasized': emphasized()}">
     </div>
     <div class="marker-icon">
       <div ng-include="iconTemplateName" ng-if="iconTemplateName">
@@ -158,9 +160,9 @@
 <script type="text/ng-template" id="search-result-marker-template">
   <div class="map-marker search-result-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
     <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
-      class="marker-shape" ng-class="{'selected': selected()}">
+      class="marker-shape" ng-class="{'selected': selected(), 'emphasized': emphasized()}">
     </div>
-    <div class="result-letter" ng-class="{'selected': selected()}">
+    <div class="result-letter" ng-class="{'selected': selected(), 'emphasized': emphasized()}">
       [[resultLetter]]
     </div>
   </div>

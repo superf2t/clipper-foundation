@@ -14,6 +14,11 @@
       width: 100%;
       height: 100%;
     }
+
+    .map-marker.search-result-marker.selected .marker-shape svg {
+      stroke: #fff;
+      stroke-width: 5px;
+    }
   </style>
   <script>
     function ClipperMapCtrl($scope, $clipperStateModel, $window) {
@@ -125,8 +130,11 @@
       };
 
       $scope.isSelected = function() {
-        return ($clipperStateModel.selectedResultIndex == $scope.$index)
-          || ($clipperStateModel.highlightedResultIndex == $scope.$index);
+        return !!$clipperStateModel.selectedResultIndices[$scope.$index];
+      };
+
+      $scope.isEmphasized = function() {
+        return $clipperStateModel.highlightedResultIndex == $scope.$index;
       };
     }
 
@@ -167,6 +175,7 @@
         marker="markerState.marker" position="markerState.position" map="mapState.map"
         precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
         selected="isSelected()"
+        emphasized="isEmphasized()"
         on-click="markerClicked($event)">
     </tc-search-result-marker>
   </div>

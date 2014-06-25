@@ -48,7 +48,7 @@ a:hover {
 }
 
 .clipper-panel .entity-results {
-  margin-bottom: 50px;
+  padding-bottom: 52px;
 }
 
 .clipper-panel .save-button-panel {
@@ -171,6 +171,9 @@ a:hover {
 .one-entity-result {
   padding: 15px 10px;
   position: relative;
+}
+
+.one-entity-result.multiple-results {
   cursor: pointer;
 }
 

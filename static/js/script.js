@@ -1248,6 +1248,7 @@ function tcSearchResultMarker() {
       precise: '=',
       resultLetter: '=',
       selected: '&',
+      emphasized: '&',
       onClick: '&'
     },
     templateUrl: 'search-result-marker-template',
@@ -1256,6 +1257,9 @@ function tcSearchResultMarker() {
         var classes = [];
         if ($scope.selected()) {
           classes.push('selected');
+        }
+        if ($scope.emphasized()) {
+          classes.push('emphasized');
         }
         return classes;
       };
