@@ -138,9 +138,10 @@
 </svg>
 
 <script type="text/ng-template" id="entity-marker-template">
-  <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
+  <div class="map-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})"
+    tc-svg-hack=".marker-shape, svg">
     <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
-      class="marker-shape" ng-class="{'selected': selected(), 'emphasized': emphasized()}">
+      class="marker-shape" ng-class="getClasses()">
     </div>
     <div class="marker-icon">
       <div ng-include="iconTemplateName" ng-if="iconTemplateName">
@@ -158,11 +159,12 @@
 </script>
 
 <script type="text/ng-template" id="search-result-marker-template">
-  <div class="map-marker search-result-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})">
+  <div class="map-marker search-result-marker" ng-class="getClasses()" ng-click="onClick({$event: $event})"
+    tc-svg-hack=".marker-shape, .result-letter, svg">
     <div ng-include="precise ? 'marker-precise-shape-template' : 'marker-imprecise-shape-template'"
-      class="marker-shape" ng-class="{'selected': selected(), 'emphasized': emphasized()}">
+      class="marker-shape" ng-class="getClasses()">
     </div>
-    <div class="result-letter" ng-class="{'selected': selected(), 'emphasized': emphasized()}">
+    <div class="result-letter" ng-class="getClasses()">
       [[resultLetter]]
     </div>
   </div>
