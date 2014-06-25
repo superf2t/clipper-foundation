@@ -21,6 +21,7 @@ function TripPlanState(opt_tripPlan, opt_entities) {
 
 function ClipperStateModel() {
   this.selectedEntityId = null;
+  this.highlightedEntityId = null;
   this.selectedResultIndices = [];
   this.highlightedResultIndex = null;
 }
@@ -188,13 +189,25 @@ function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy
         }
       });
   });
+}
 
-  $scope.entitySelected = function(entity) {
-    $clipperStateModel.selectedEntityId = entity['entity_id'];
+function ClipperTripPlanEntityCtrl($scope, $clipperStateModel) {
+  $scope.ed = $scope.entity;
+
+  $scope.selectEntity = function() {
+    $clipperStateModel.selectedEntityId = $scope.ed['entity_id'];
   };
 
-  $scope.isEntitySelected = function(entity) {
-    return entity['entity_id'] == $clipperStateModel.selectedEntityId;
+  $scope.isSelected = function() {
+    return $scope.ed['entity_id'] == $clipperStateModel.selectedEntityId;
+  };
+
+  $scope.highlightEntity = function() {
+    $clipperStateModel.highlightedEntityId = $scope.ed['entity_id'];
+  };
+
+  $scope.unhighlightEntity = function() {
+    $clipperStateModel.highlightedEntityId = null;
   };
 }
 
@@ -281,7 +294,7 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   };
 }
 
-function ClipperEntityCtrl($scope, $clipperStateModel, $window) {
+function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
@@ -483,8 +496,9 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .controller('ClipperRootCtrl', ClipperRootCtrl)
     .controller('ClipperPanelCtrl', ClipperPanelCtrl)
     .controller('TripPlanPanelCtrl', TripPlanPanelCtrl)
+    .controller('ClipperTripPlanEntityCtrl', ClipperTripPlanEntityCtrl)
     .controller('ClipperOmniboxCtrl', ClipperOmniboxCtrl)
-    .controller('ClipperEntityCtrl', ClipperEntityCtrl)
+    .controller('ClipperResultEntityCtrl', ClipperResultEntityCtrl)
     .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
     .service('$mapProxy', MapProxy)
     .directive('tcStartNewTripInput', tcStartNewTripInput)

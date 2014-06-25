@@ -2690,6 +2690,8 @@ function tcEntityListing() {
       entityData: '=',
       isSelected: '&',
       onSelect: '&',
+      onMouseenter: '&',
+      onMouseleave: '&',
       shouldShowDay: '@'
     },
     templateUrl: 'one-entity-listing-template',

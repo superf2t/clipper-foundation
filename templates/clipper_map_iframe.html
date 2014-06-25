@@ -112,8 +112,8 @@
       };
 
       $scope.isSelected = function() {
-        return $clipperStateModel.selectedEntityId &&
-          $scope.ed['entity_id'] == $clipperStateModel.selectedEntityId;
+        return $clipperStateModel.selectedEntityId == $scope.ed['entity_id']
+          || $clipperStateModel.highlightedEntityId == $scope.ed['entity_id'];
       };
     }
 

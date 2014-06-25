@@ -135,14 +135,16 @@
         class="trip-plan-dropdown">
       </div> 
       <tc-entity-listing ng-repeat="entity in tripPlanState.entities"
-        entity-data="entity" should-show-day="true" on-select="entitySelected(entity)"
-        is-selected="isEntitySelected(entity)">
+        ng-controller="ClipperTripPlanEntityCtrl"
+        entity-data="entity" should-show-day="true" on-select="selectEntity()"
+        is-selected="isSelected()"
+        on-mouseenter="highlightEntity()" on-mouseleave="unhighlightEntity()">
       </tc-entity-listing>
     </div>
   </script>
 
   <script type="text/ng-template" id="one-entity-result-template">
-    <div class="one-entity-result" ng-controller="ClipperEntityCtrl"
+    <div class="one-entity-result" ng-controller="ClipperResultEntityCtrl"
       ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing(), 'multiple-results': entities.length > 1}"
       ng-click="toggleSelectResult()"
       ng-mouseenter="highlightResult()"
@@ -234,7 +236,9 @@
     <div class="one-entity-listing"
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-class="{'selected': isSelected({$entityData: ed})}"
-      ng-click="onSelect({$entityData: ed})">
+      ng-click="onSelect({$entityData: ed})"
+      ng-mouseenter="onMouseenter()"
+      ng-mouseleave="onMouseleave()">
       <span class="entity-circle-img">
         <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
       </span>
