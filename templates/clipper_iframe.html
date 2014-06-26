@@ -70,32 +70,36 @@
 
       <div ng-if="clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
         <div class="intro-text">
-          <span ng-if="entities.length == 0">
-            Uh oh, we couldn't find the place(s) on this page.
-            <br/>
-            Help us help you by tagging this page with a place.
-          </span>
+          Places on this page
+        </div>
+        <div class="no-places-text">
+          We couldn't automatically detect any places on this page.  Search for the
+          name or address of a place to add it manually.
         </div>
         <div class="omnibox-panel" ng-controller="ClipperOmniboxCtrl">
-          <div class="search-prompt-text">Search</div>
           <input class="form-control" ng-model="rawInputText" placeholder="Search for a place name or address"
                 tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
+                tc-focus-on="ready"
                 on-place-change="placeChanged($newPlace)"/>
           <div ng-show="loadingData" class="search-spinner">
             <img src="/static/img/spinner-small.gif"/>
           </div>
           <div class="search-results" ng-show="searchResults">
             <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
-              <img ng-src="[[result['icon'] ]]" class="result-icon"/>
-              [[result['name'] ]]
-              <span class="result-address">[[result['formatted_address'] ]]</span>
+              <span class="result-column">
+                <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+              </span>
+              <span class="result-column result-details">
+                [[result['name'] ]]
+                <div class="result-address">[[result['formatted_address'] ]]</div>
+              </span>
+            </div>
+            <div class="enter-manually-link">
+              <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
+                Still can't find it?  Enter a place manually
+              </a>
             </div>
           </div>
-        </div>
-        <div class="enter-manually-link">
-          <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
-            Or enter place manually
-          </a>
         </div>
       </div>
 

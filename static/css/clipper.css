@@ -49,7 +49,6 @@ a:hover {
 
 .loading-panel {
   height: 100%;
-  padding: 10px;
 }
 
 .clipper-panel .entity-results {
@@ -68,6 +67,10 @@ a:hover {
 .clipper-panel .save-button-panel .save-to-trip-btn {
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.clipper-panel .no-places-text {
+  margin: 0 10px 10px 10px;
 }
 
 .trip-plan-panel .trip-plan-dropdown {
@@ -95,7 +98,7 @@ a:hover {
 }
 
 .intro-text {
-  margin: 10px;
+  padding: 10px;
   font-size: 1.2em;
 }
 
@@ -123,15 +126,9 @@ a:hover {
 }
 
 .omnibox-panel {
-  background-color: #fff;
   width: 100%;
   padding: 10px 10px 30px 10px;
-  overflow: scroll;
-}
-
-.omnibox-panel .search-prompt-text {
-  font-size: 1.2em;
-  padding-bottom: 10px;
+  overflow-y: scroll;
 }
 
 .omnibox-panel .search-spinner {
@@ -141,7 +138,7 @@ a:hover {
 }
 
 .omnibox-panel .search-results {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .omnibox-panel .one-result {
@@ -154,6 +151,15 @@ a:hover {
   background-color: #ccc;
 }
 
+.omnibox-panel .one-result .result-column {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.omnibox-panel .one-result .result-details {
+  max-width: calc(100% - 24px);
+}
+
 .omnibox-panel .result-icon {
   max-width: 20px;
   max-height: 20px;
@@ -164,7 +170,7 @@ a:hover {
 }
 
 .enter-manually-link {
-  margin-left: 10px;
+  margin-top: 10px;
 }
 
 .entity-results .select-info {

@@ -268,6 +268,7 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   $scope.rawInputText = '';
   $scope.searchResults = null;
   $scope.tripPlanState = $tripPlanState;
+  $scope.ready = true;
 
   $scope.placeChanged = function(newPlace) {
     if (!newPlace) {
