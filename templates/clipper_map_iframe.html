@@ -27,6 +27,8 @@
       bottom: 84px;
       background-color: #4A4A4A;
       color: #fff;
+      font-family: 'Nunito';
+      font-weight: 300;
       font-size: 10pt;
       padding: 5px 10px;
       border-radius: 2px;
@@ -93,7 +95,14 @@
 
       this.clipperStateChanged = function(data) {
         remoteChangeInProgress = true;
+        var oldState = angular.copy($clipperStateModel);
         _.extend($clipperStateModel, data['clipperStateModel']);
+        if ($clipperStateModel.selectedEntityId != oldState.selectedEntityId) {
+          $scope.$broadcast('closeallinfowindows');
+          if ($clipperStateModel.selectedEntityId) {
+            $scope.$broadcast('openinfowindow', $clipperStateModel.selectedEntityId);
+          }
+        }
       };
 
       var handlers = {
@@ -181,6 +190,12 @@
 
       $scope.$on('closeallinfowindows', function() {
         $scope.destroyInfowindow();
+      });
+
+      $scope.$on('openinfowindow', function(event, entityId) {
+        if (entityId == $scope.ed['entity_id']) {
+          $scope.openInfowindow();
+        }
       });
     }
 
