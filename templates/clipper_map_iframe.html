@@ -8,16 +8,30 @@
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="/static/js/script.js"></script>
   <script src="/static/js/clipper.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <style>
     html, body, #map {
       width: 100%;
       height: 100%;
+      font-family: 'Nunito';
     }
 
     .map-marker.search-result-marker.selected .marker-shape svg {
       stroke: #fff;
       stroke-width: 5px;
+    }
+
+    .clipper-infowindow {
+      position: relative;
+      bottom: 84px;
+      background-color: #4A4A4A;
+      color: #fff;
+      font-size: 10pt;
+      padding: 5px 10px;
+      border-radius: 2px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
   </style>
   <script>
@@ -44,6 +58,12 @@
 
       $scope.mapReady = function($map) {
         me.sendMessage('tc-map-ready');
+
+        google.maps.event.addListener($map, 'click', function() {
+          $scope.$broadcast('closeallinfowindows');
+          $clipperStateModel.selectedEntityId = null;
+          $scope.$apply();
+        });
       };
 
       this.plotTripPlanEntities = function(data) {
@@ -69,15 +89,30 @@
         }
       };
 
-      this.stateChanged = function(data) {
+      var remoteChangeInProgress = false;
+
+      this.clipperStateChanged = function(data) {
+        remoteChangeInProgress = true;
         _.extend($clipperStateModel, data['clipperStateModel']);
       };
 
       var handlers = {
-        'tc-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
-        'tc-map-plot-result-entities': _.bind(this.plotResultEntities, this),
-        'tc-map-state-changed': _.bind(this.stateChanged, this)
+        'tc-clipper-to-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
+        'tc-clipper-to-map-plot-result-entities': _.bind(this.plotResultEntities, this),
+        'tc-clipper-to-map-state-changed': _.bind(this.clipperStateChanged, this)
       };
+
+      this.mapStateChanged = function(clipperStateModel) {
+        this.sendMessage('tc-map-to-clipper-state-changed', {clipperStateModel: clipperStateModel})
+      };
+
+      $scope.$watch(_.constant($clipperStateModel), function(value) {
+        if (remoteChangeInProgress) {
+          remoteChangeInProgress = false;
+        } else {
+          me.mapStateChanged(value);
+        }
+      }, true);
 
       $($window).on('message', function(event) {
         var messageName = event.originalEvent.data.message;
@@ -91,14 +126,19 @@
       this.sendMessage = function(messageName, data) {
         $window.parent.postMessage(_.extend({message: messageName}, data), '*');
       };
+
+      $scope.$on('asktocloseallinfowindows', function() {
+        $scope.$broadcast('closeallinfowindows');
+      });
     }
 
-    function MapEntityCtrl($scope, $clipperStateModel) {
+    function MapEntityCtrl($scope, $clipperStateModel, $templateToStringRenderer) {
       $scope.ed = $scope.entity;
       var entityModel = new EntityModel($scope.ed);
       $scope.markerState = {
         marker: null,
-        position: entityModel.gmapsLatLng()
+        position: entityModel.gmapsLatLng(),
+        infowindow: null
       };
 
       $scope.iconTemplateName = function() {
@@ -115,6 +155,33 @@
         return $clipperStateModel.selectedEntityId == $scope.ed['entity_id']
           || $clipperStateModel.highlightedEntityId == $scope.ed['entity_id'];
       };
+
+      $scope.selectEntity = function() {
+        $clipperStateModel.selectedEntityId = $scope.ed['entity_id']
+        $scope.openInfowindow();
+      };
+
+      $scope.openInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          return;
+        }
+        $scope.$emit('asktocloseallinfowindows');
+        var contentDiv = $templateToStringRenderer.render(
+          'clipper-infowindow-template', $scope.$new());
+        $scope.markerState.infowindow = new HtmlInfowindow(
+          $scope.markerState.marker, contentDiv);
+      };
+
+      $scope.destroyInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          $scope.markerState.infowindow.setMap(null);
+          $scope.markerState.infowindow = null;          
+        }
+      };
+
+      $scope.$on('closeallinfowindows', function() {
+        $scope.destroyInfowindow();
+      });
     }
 
     function MapResultEntityCtrl($scope, $clipperStateModel) {
@@ -144,6 +211,7 @@
       .controller('ClipperMapCtrl', ClipperMapCtrl)
       .controller('MapEntityCtrl', MapEntityCtrl)
       .controller('MapResultEntityCtrl', MapResultEntityCtrl)
+      .service('$templateToStringRenderer', TemplateToStringRenderer)
       .directive('tcEntityMarker', tcEntityMarker)
       .directive('tcSearchResultMarker', tcSearchResultMarker)
       .value('$clipperStateModel', new ClipperStateModel());
@@ -166,7 +234,8 @@
       icon-template-name="iconTemplateName()"
       precise="ed['address_precision'] == 'Precise'"
       selected="isSelected()"
-      deemphasized="true">
+      deemphasized="true"
+      on-click="selectEntity(); $event.stopPropagation()">
     </tc-entity-marker>
   </div>
   <div style="display: none" ng-repeat="entity in resultEntities"
@@ -179,6 +248,12 @@
         on-click="markerClicked($event)">
     </tc-search-result-marker>
   </div>
+
+  <script type="text/ng-template" id="clipper-infowindow-template">
+    <div class="clipper-infowindow">
+      [[ed['name'] ]]
+    </div>
+  </script>
 
   {% include 'map_markers.html' %}
   {% include 'icons.html' %}

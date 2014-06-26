@@ -57,8 +57,14 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
 
+  var remoteChangeInProgress = false;
+
   $scope.$watch(_.constant($clipperStateModel), function(value) {
-    $mapProxy.stateChanged(value);
+    if (remoteChangeInProgress) {
+      remoteChangeInProgress = false;
+    } else {
+      $mapProxy.clipperStateChanged(value);
+    }
   }, true);
 
   $scope.$watch('entities', function(entities, oldEntities) {
@@ -152,20 +158,23 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   };
 
   $($window).on('message', function(event) {
-    if (!event.originalEvent.data['message'] == 'tc-page-source') {
-      return;
+    if (event.originalEvent.data['message'] == 'tc-page-source') {
+      var pageSource = event.originalEvent.data['pageSource'];
+      if (!pageSource) {
+        // This is really weird, the tc-page-source message is being received
+        // twice, despite it only being sent once by the parent frame.
+        // The duplicate message is missing the page source, so just discard it here.
+        return;
+      }
+      $entityService.pagesourcetoentities(getParameterByName('url'), pageSource)
+        .success(function(response) {
+          me.setupEntityState(response['entities']);
+        });
+    } else if (event.originalEvent.data['message'] == 'tc-map-to-clipper-state-changed') {
+      remoteChangeInProgress = true;
+      _.extend($clipperStateModel, event.originalEvent.data['clipperStateModel']);
+      $scope.$apply();
     }
-    var pageSource = event.originalEvent.data['pageSource'];
-    if (!pageSource) {
-      // This is really weird, the tc-page-source message is being received
-      // twice, despite it only being sent once by the parent frame.
-      // The duplicate message is missing the page source, so just discard it here.
-      return;
-    }
-    $entityService.pagesourcetoentities(getParameterByName('url'), pageSource)
-      .success(function(response) {
-        me.setupEntityState(response['entities']);
-      });
   });
 
   $window.parent.postMessage('tc-needs-page-source', '*'); 
@@ -215,15 +224,15 @@ function MapProxy($window) {
   var me = this;
 
   this.plotTripPlanEntities = function(entities) {
-    this.sendMessage('tc-map-plot-trip-plan-entities', {entities: entities});
+    this.sendMessage('tc-clipper-to-map-plot-trip-plan-entities', {entities: entities});
   };
 
   this.plotResultEntities = function(entities) {
-    this.sendMessage('tc-map-plot-result-entities', {entities: entities});
+    this.sendMessage('tc-clipper-to-map-plot-result-entities', {entities: entities});
   };
 
-  this.stateChanged = function(clipperStateModel) {
-    this.sendMessage('tc-map-state-changed', {clipperStateModel: clipperStateModel});
+  this.clipperStateChanged = function(clipperStateModel) {
+    this.sendMessage('tc-clipper-to-map-state-changed', {clipperStateModel: clipperStateModel});
   };
 
   this.sendMessage = function(messageName, data) {

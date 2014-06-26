@@ -334,11 +334,17 @@
           mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
         });
         clipperToMapMessageQueue = [];
-      } else if (data.message && data.message.indexOf('tc-map') == 0) {
+      } else if (data['message'] && data['message'].indexOf('tc-clipper-to-map') == 0) {
         if (mapReady) {
           mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);         
         } else {
           clipperToMapMessageQueue.push(data);
+        }
+      } else if (data['message'] && data['message'].indexOf('tc-map-to-clipper') == 0) {
+        if (clipperReady) {
+          iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+        } else {
+          mapToClipperMessageQueue.push(data);
         }
       }
     });
