@@ -18,7 +18,10 @@
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body">
 
-  <div class="clipper-panel" ng-include="'clipper-panel-template'">
+  <div class="clipper-panel" ng-include="'clipper-panel-template'"
+    tc-scroll-to-selector scroll-on-changes-to="clipperStateModel.selectedResultIndex"
+    skip-scroll-when-in-view="true"
+    scroll-dest-selector=".one-entity-result[tc-entity-result-id='[[clipperStateModel.selectedResultIndex]]']">
   </div>
 
   <div class="trip-plan-panel" ng-include="'trip-plan-panel-template'"
@@ -39,23 +42,21 @@
 
         <div class="entity-results">
           <div ng-show="entities.length > 1" class="select-info">
-            Click on results to select
-            <div class="select-all-link">
-              <a ng-click="selectAll()" href="javascript:void(0)"
-                class="color-link">
-                All
-              </a>
-              <a ng-click="deselectAll()" href="javascript:void(0)"
-                class="color-link">
-                None
-              </a>
-            </div>
+            <a ng-click="selectAll()" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-plus-sign"></span>
+            </a>
+            <a ng-click="deselectAll()" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-minus-sign"></span>
+            </a>
+            <span class="info-text">
+              Click <span class="glyphicon glyphicon-plus-sign"></span> to select results to save 
+            </span>
           </div>
           <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
           </div>
         </div>
         <div class="save-button-panel">
-          <button class="btn btn-primary" ng-disabled="!saveButtonEnabled()"
+          <button class="btn btn-primary save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
             ng-click="saveEntities()">
             <span ng-if="selectedEntities().length != 1">
               Save [[selectedEntities().length]] places to trip
@@ -148,11 +149,23 @@
 
   <script type="text/ng-template" id="one-entity-result-template">
     <div class="one-entity-result" ng-controller="ClipperResultEntityCtrl"
-      ng-class="{'editing': isEditing(), 'selected': ed.selected && !isEditing(), 'multiple-results': entities.length > 1}"
-      ng-click="toggleSelectResult()"
+      tc-entity-result-id="[[$index]]"
+      ng-class="{
+        'editing': isEditing(),
+        'selected': isSelected() && !isEditing(),
+        'selected-for-saving': isSelectedForSaving() && !isEditing(),
+        'multiple-results': entities.length > 1}"
+      ng-click="selectResult()"
       ng-mouseenter="highlightResult()"
       ng-mouseleave="unhighlightResult()">
       <div class="summary">
+        <span class="select-handle" ng-show="entities.length > 1">
+          <a ng-click="toggleSelectResultForSaving(); $event.stopPropagation()"
+            href="javascript:void(0)">
+            <span class="glyphicon glyphicon-plus-sign" ng-show="!ed.selected"></span>
+            <span class="glyphicon glyphicon-minus-sign" ng-show="ed.selected"></span>
+          </a>
+        </span>
         <span class="result-letter-icon" tc-search-result-icon
           precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
           selected="ed.selected">

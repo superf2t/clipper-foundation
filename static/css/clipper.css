@@ -41,6 +41,10 @@ a:hover {
   left: 0;
   overflow-y: auto;
   box-shadow: 0px -1px 2px #aaaaaa;
+  background-color: #4A4A4A;
+  color: #fff;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .loading-panel {
@@ -59,6 +63,11 @@ a:hover {
   width: 100%;
   padding: 5px;
   background-color: rgba(0, 0, 0, 0.3);
+}
+
+.clipper-panel .save-button-panel .save-to-trip-btn {
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .trip-plan-panel .trip-plan-dropdown {
@@ -163,18 +172,20 @@ a:hover {
   position: relative;
 }
 
-.entity-results .select-all-link {
-  position: absolute;
-  top: 0;
-  right: 0;
+.entity-results .info-text {
+  margin-left: 10px;
+  color: #777;
+  position: relative;
+  top: -2px;
+}
+
+.entity-results .info-text .glyphicon-plus-sign {
+  font-size: 11px;
 }
 
 .one-entity-result {
   padding: 15px 10px;
   position: relative;
-}
-
-.one-entity-result.multiple-results {
   cursor: pointer;
 }
 
@@ -187,7 +198,17 @@ a:hover {
 }
 
 .one-entity-result.selected {
-  background-color: #666;
+  background-color: #aaa;
+}
+
+.one-entity-result.selected-for-saving {
+  background-color: lightblue;
+}
+
+.one-entity-result .select-handle {
+  display: inline-block;
+  vertical-align: top;
+  margin: 6px 3px 0 0;
 }
 
 .one-entity-result .result-letter-icon {
@@ -210,6 +231,10 @@ a:hover {
 .one-entity-result .entity-info {
   display: inline-block;
   max-width: calc(100% - 44px);
+}
+
+.one-entity-result.multiple-results .entity-info {
+  max-width: calc(100% - 56px);
 }
 
 .one-entity-result .entity-info .name  {
@@ -354,10 +379,10 @@ a:hover {
 }
 
 .one-entity-listing:hover {
-  background-color: #ccc;
+  background-color: #444;
 }
 
 .map-marker.search-result-marker.selected .marker-shape svg {
   stroke: #fff;
-  stroke-width: 5px;
+  stroke-width: 10px;
 }

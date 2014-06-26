@@ -65,6 +65,9 @@
         google.maps.event.addListener($map, 'click', function() {
           $scope.$broadcast('closeallinfowindows');
           $clipperStateModel.selectedEntityId = null;
+          $clipperStateModel.selectedResultIndex = null;
+          $clipperStateModel.highlightedEntityId = null;
+          $clipperStateModel.highlightedResultIndex = null;
           $scope.$apply();
         });
       };
@@ -102,6 +105,12 @@
           $scope.$broadcast('closeallinfowindows');
           if ($clipperStateModel.selectedEntityId) {
             $scope.$broadcast('openinfowindow', $clipperStateModel.selectedEntityId);
+          }
+        }
+        if ($clipperStateModel.selectedResultIndex != oldState.selectedResultIndex) {
+          $scope.$broadcast('closeallinfowindows');
+          if ($clipperStateModel.selectedResultIndex != null) {
+            $scope.$broadcast('openresultsinfowindow', $clipperStateModel.selectedResultIndex);
           }
         }
       };
@@ -205,8 +214,8 @@
       var entityModel = new EntityModel($scope.ed);
       $scope.markerState = {
         marker: null,
-        infowindow: null,
-        position: entityModel.gmapsLatLng()
+        position: entityModel.gmapsLatLng(),
+        infowindow: null
       };
 
       $scope.resultLetter = function() {
@@ -214,11 +223,17 @@
       };
 
       $scope.isSelected = function() {
-        return !!$clipperStateModel.selectedResultIndices[$scope.$index];
+        return !!$clipperStateModel.resultIndicesToSave[$scope.$index];
       };
 
       $scope.isEmphasized = function() {
-        return $clipperStateModel.highlightedResultIndex == $scope.$index;
+        return $clipperStateModel.highlightedResultIndex == $scope.$index
+          || $clipperStateModel.selectedResultIndex == $scope.$index;
+      };
+
+      $scope.selectResult = function() {
+        $clipperStateModel.selectedResultIndex = $scope.$index;
+        $scope.openInfowindow();
       };
 
       $scope.openInfowindow = function() {
@@ -241,6 +256,12 @@
 
       $scope.$on('closeallinfowindows', function() {
         $scope.destroyInfowindow();
+      });
+
+      $scope.$on('openresultsinfowindow', function(event, resultIndex) {
+        if (resultIndex == $scope.$index) {
+          $scope.openInfowindow();
+        }
       });
     }
 
@@ -284,7 +305,7 @@
         precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
         selected="isSelected()"
         emphasized="isEmphasized()"
-        on-click="openInfowindow(); $event.stopPropagation()">
+        on-click="selectResult(); $event.stopPropagation()">
     </tc-search-result-marker>
   </div>
 

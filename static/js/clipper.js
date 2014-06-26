@@ -22,8 +22,9 @@ function TripPlanState(opt_tripPlan, opt_entities) {
 function ClipperStateModel() {
   this.selectedEntityId = null;
   this.highlightedEntityId = null;
-  this.selectedResultIndices = [];
+  this.selectedResultIndex = null;
   this.highlightedResultIndex = null;
+  this.resultIndicesToSave = [];
 }
 
 function ClipperRootCtrl($scope, $clipperStateModel, $window) {
@@ -148,14 +149,14 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   $scope.selectAll = function() {
     $.each($scope.entities, function(i, entity) {
       entity.selected = true;
-      $clipperStateModel.selectedResultIndices[i] = true;
+      $clipperStateModel.resultIndicesToSave[i] = true;
     });
   };
 
   $scope.deselectAll = function() {
     $.each($scope.entities, function(i, entity) {
       entity.selected = false;
-      $clipperStateModel.selectedResultIndices[i] = false;
+      $clipperStateModel.resultIndicesToSave[i] = false;
     });
   };
 
@@ -316,12 +317,16 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
   $scope.editLocationState = {active: !$scope.ed['name']};
   var editorStates = [$scope.editNotesState, $scope.editPhotosState, $scope.editLocationState];
 
-  $scope.toggleSelectResult = function() {
+  $scope.toggleSelectResultForSaving = function() {
     if ($scope.entities.length == 1) {
       return;
     }
     $scope.ed.selected = !$scope.ed.selected;
-    $clipperStateModel.selectedResultIndices[$scope.$index] = $scope.ed.selected;
+    $clipperStateModel.resultIndicesToSave[$scope.$index] = $scope.ed.selected;
+  };
+
+  $scope.selectResult = function() {
+    $clipperStateModel.selectedResultIndex = $scope.$index;
   };
 
   $scope.highlightResult = function() {
@@ -334,6 +339,14 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
 
   $scope.resultLetter = function() {
     return String.fromCharCode(65 + $scope.$index);
+  };
+
+  $scope.isSelected = function() {
+    return $clipperStateModel.selectedResultIndex == $scope.$index;
+  };
+
+  $scope.isSelectedForSaving = function() {
+    return !!$clipperStateModel.resultIndicesToSave[$scope.$index];
   };
 
   $scope.isEditing = function() {
