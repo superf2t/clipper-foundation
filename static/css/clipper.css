@@ -364,14 +364,9 @@ a:hover {
   margin-bottom: 10px;
 }
 
-.one-entity-result .map-container {
-  width: 100%;
-  height: 250px;
-}
-
-.one-entity-result .map {
-  width: 100%;
-  height: 100%;
+.one-entity-result .location-editor .tip-text {
+  color: #777;
+  text-align: center;
 }
 
 .one-entity-listing {

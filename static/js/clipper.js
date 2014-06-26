@@ -71,7 +71,7 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   }, true);
 
   $scope.$watch('entities', function(entities, oldEntities) {
-    if (entities === oldEntities) {
+    if (!oldEntities || entities.length == oldEntities.length) {
       return;
     }
     $mapProxy.plotResultEntities(entities);
@@ -81,6 +81,7 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     $scope.entities = entities;
     if (entities.length == 1) {
       $scope.entities[0].selected = true;
+      $clipperStateModel.resultIndicesToSave[0] = true;
     }
     if (entities.length) {
       $scope.clipperState.status = ClipperState.SUMMARY;
@@ -234,6 +235,14 @@ function MapProxy($window) {
     this.sendMessage('tc-clipper-to-map-plot-result-entities', {entities: entities});
   };
 
+  this.resultAddressChanged = function(resultIndex, entity, opt_viewport) {
+    this.sendMessage('tc-clipper-to-map-result-address-changed', {
+      resultIndex: resultIndex,
+      entity: entity,
+      viewport: opt_viewport
+    });
+  };
+
   this.clipperStateChanged = function(clipperStateModel) {
     this.sendMessage('tc-clipper-to-map-state-changed', {clipperStateModel: clipperStateModel});
   };
@@ -306,7 +315,7 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   };
 }
 
-function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
+function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
@@ -376,46 +385,6 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
     $scope.closeEditor();
   });
 
-  this.createMarker = function(latlng, opt_map) {
-    var marker = new google.maps.Marker({
-      draggable: true,
-      position: latlng,
-      icon: '/static/img/map-icons/' + $scope.ed['icon_url'],
-      map: opt_map
-    });
-    google.maps.event.addListener(marker, 'dragend', function() {
-      var entityData = $scope.ed;
-      if (_.isEmpty(entityData['latlng'])) {
-        entityData['latlng'] = {};
-      }
-      entityData['latlng']['lat'] = marker.getPosition().lat();
-      entityData['latlng']['lng'] = marker.getPosition().lng();
-      entityData['address_precision'] = 'Precise';
-      me.updateMarkerIcon();
-    });
-    return marker;
-  };
-
-  $scope.map = null;
-  var center = $scope.em.hasLocation()
-    ? $scope.em.gmapsLatLng()
-    : new google.maps.LatLng(0, 0);
-  var marker = this.createMarker(center);
-  $scope.mapOptions = {
-    center: center,
-    zoom: $scope.em.hasLocation() ? 15 : 2,
-    panControl: false,
-    scaleControl: false,
-    scrollwheel: false,
-    streetViewControl: false,
-    mapTypeControl: false
-  };
-
-  $scope.setupMap = function($map) {
-    $scope.map = $map;
-    marker.setMap($map);
-  };
-
   $scope.addressSelected = function(place) {
     if (place['formatted_address']) {
       // ng-model is set to ed['address'] but the place
@@ -430,23 +399,10 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $window) {
       $scope.ed['latlng']['lat'] = location.lat();
       $scope.ed['latlng']['lng'] = location.lng();
       $scope.ed['address_precision'] = 'Precise';
-      $scope.map.setCenter(location);
-      marker.setPosition(location);
-      me.updateMarkerIcon();
-      if (place['geometry']['viewport']) {
-        $scope.map.fitBounds(place['geometry']['viewport']);
-      }
-    }
-  };
 
-  this.updateMarkerIcon = function() {
-    var data =  $scope.ed;
-    var iconUrl = categoryToIconUrl(
-      data['category'] && data['category']['name'],
-      data['sub_category'] && data['sub_category']['name'],
-      data['address_precision']);
-    data['icon_url'] = iconUrl;
-    marker.setIcon('/static/img/map-icons/' + iconUrl)
+      var viewport = place['geometry']['viewport'] && boundsJsonFromGmapsBounds(place['geometry']['viewport']);
+      $mapProxy.resultAddressChanged($scope.$index, $scope.ed, viewport);
+    }
   };
 }
 

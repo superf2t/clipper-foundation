@@ -115,10 +115,16 @@
         }
       };
 
+      this.resultAddressChanged = function(data) {
+        $scope.$broadcast('resultaddresschanged',
+          data['resultIndex'], data['entity'], data['viewport']);
+      };
+
       var handlers = {
         'tc-clipper-to-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
         'tc-clipper-to-map-plot-result-entities': _.bind(this.plotResultEntities, this),
-        'tc-clipper-to-map-state-changed': _.bind(this.clipperStateChanged, this)
+        'tc-clipper-to-map-state-changed': _.bind(this.clipperStateChanged, this),
+        'tc-clipper-to-map-result-address-changed': _.bind(this.resultAddressChanged, this)
       };
 
       this.mapStateChanged = function(clipperStateModel) {
@@ -261,6 +267,19 @@
       $scope.$on('openresultsinfowindow', function(event, resultIndex) {
         if (resultIndex == $scope.$index) {
           $scope.openInfowindow();
+        }
+      });
+
+      $scope.$on('resultaddresschanged', function(event, resultIndex, entity, viewport) {
+        if (resultIndex != $scope.$index) {
+          return;
+        }
+        $scope.destroyInfowindow();
+        _.extend($scope.ed, entity);
+        $scope.markerState.marker.setPosition(entityModel.gmapsLatLng());
+        $scope.mapState.map.setCenter(entityModel.gmapsLatLng())
+        if (viewport) {
+          $scope.mapState.map.fitBounds(gmapsBoundsFromJson(viewport));
         }
       });
     }
