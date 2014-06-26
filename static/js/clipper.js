@@ -26,7 +26,9 @@ function ClipperStateModel() {
   this.highlightedResultIndex = null;
 }
 
-function ClipperRootCtrl($scope, $window) {
+function ClipperRootCtrl($scope, $clipperStateModel, $window) {
+
+  $scope.clipperStateModel = $clipperStateModel;
 
   // TODO: Figure out if this is still needed.
   // Dummy counter to increment when models have changed

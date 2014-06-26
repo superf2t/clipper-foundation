@@ -21,7 +21,10 @@
   <div class="clipper-panel" ng-include="'clipper-panel-template'">
   </div>
 
-  <div class="trip-plan-panel" ng-include="'trip-plan-panel-template'">
+  <div class="trip-plan-panel" ng-include="'trip-plan-panel-template'"
+    tc-scroll-to-selector scroll-on-changes-to="clipperStateModel.selectedEntityId"
+    skip-scroll-when-in-view="true"
+    scroll-dest-selector=".one-entity-listing[tc-entity-id='[[clipperStateModel.selectedEntityId]]']">
   </div>
 
   <script type="text/ng-template" id="clipper-panel-template">
