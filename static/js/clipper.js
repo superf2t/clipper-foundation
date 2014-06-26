@@ -267,6 +267,7 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   $scope.loadingData = false;
   $scope.rawInputText = '';
   $scope.searchResults = null;
+  $scope.searchComplete = false;
   $scope.tripPlanState = $tripPlanState;
   $scope.ready = true;
 
@@ -299,6 +300,8 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
 
   this.searchForPlace = function(query) {
     $scope.loadingData = true;
+    $scope.searchResults = null;
+    $scope.searchComplete = false;
     var request = {
       query: query,
       bounds: $tripPlanState.bounds()
@@ -310,6 +313,7 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
     searchService.textSearch(request, function(results, status) {
       $scope.$apply(function() {
         $scope.loadingData = false;
+        $scope.searchComplete = true;
         if (status == google.maps.places.PlacesServiceStatus.OK) {
           $scope.searchResults = results;
         }

@@ -84,7 +84,7 @@
           <div ng-show="loadingData" class="search-spinner">
             <img src="/static/img/spinner-small.gif"/>
           </div>
-          <div class="search-results" ng-show="searchResults">
+          <div class="search-results" ng-show="searchComplete">
             <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
               <span class="result-column">
                 <img ng-src="[[result['icon'] ]]" class="result-icon"/>
@@ -93,6 +93,9 @@
                 [[result['name'] ]]
                 <div class="result-address">[[result['formatted_address'] ]]</div>
               </span>
+            </div>
+            <div ng-show="searchComplete && (!searchResults || !searchResults.length)">
+              <div class="no-results-text">No results found</div>
             </div>
             <div class="enter-manually-link">
               <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">

@@ -129,16 +129,22 @@ a:hover {
   width: 100%;
   padding: 10px 10px 30px 10px;
   overflow-y: scroll;
+  position: relative;
 }
 
 .omnibox-panel .search-spinner {
-  position: relative;
-  top: -28px;
-  left: 50%;
+  position: absolute;
+  top: 15px;
+  text-align: center;
+  width: 100%;
 }
 
 .omnibox-panel .search-results {
   margin-top: 10px;
+}
+
+.omnibox-panel .search-results .no-results-text {
+  font-size: 1.2em;
 }
 
 .omnibox-panel .one-result {
