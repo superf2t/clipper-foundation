@@ -989,6 +989,11 @@ HtmlMarker.prototype.getDraggable = function() {
   return this.options.draggable;
 };
 
+HtmlMarker.prototype.setDraggable = function(draggable) {
+  this.options.draggable = draggable;
+  this.draggableChanged();
+};
+
 HtmlMarker.prototype.setCursor_ = function(whichCursor) {
   if (!this.ready_) {
     return;

@@ -243,6 +243,13 @@ function MapProxy($window) {
     });
   };
 
+  this.resultMarkerSetDraggable = function(resultIndex, draggable) {
+    this.sendMessage('tc-clipper-to-map-result-marker-set-draggable', {
+      resultIndex: resultIndex,
+      draggable: draggable
+    });
+  };
+
   this.clipperStateChanged = function(clipperStateModel) {
     this.sendMessage('tc-clipper-to-map-state-changed', {clipperStateModel: clipperStateModel});
   };
@@ -374,11 +381,13 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
 
   $scope.openEditor = function() {
     $scope.editNotesState.active = true;
+    $mapProxy.resultMarkerSetDraggable($scope.$index, true);
   };
 
   $scope.closeEditor = function() {
     $scope.stopEditingPhotos();
     _.each(editorStates, function(state) {state.active = false});
+   $mapProxy.resultMarkerSetDraggable($scope.$index, false);
   };
 
   $scope.$on('closealleditors', function() {

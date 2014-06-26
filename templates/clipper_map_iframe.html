@@ -95,6 +95,11 @@
         }
       };
 
+      this.resultMarkerSetDraggable = function(data) {
+        $scope.$broadcast('resultmarkersetdraggable',
+            data['resultIndex'], data['draggable']);
+      };
+
       var remoteChangeInProgress = false;
 
       this.clipperStateChanged = function(data) {
@@ -123,8 +128,9 @@
       var handlers = {
         'tc-clipper-to-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
         'tc-clipper-to-map-plot-result-entities': _.bind(this.plotResultEntities, this),
-        'tc-clipper-to-map-state-changed': _.bind(this.clipperStateChanged, this),
-        'tc-clipper-to-map-result-address-changed': _.bind(this.resultAddressChanged, this)
+        'tc-clipper-to-map-result-address-changed': _.bind(this.resultAddressChanged, this),
+        'tc-clipper-to-map-result-marker-set-draggable': _.bind(this.resultMarkerSetDraggable, this),
+        'tc-clipper-to-map-state-changed': _.bind(this.clipperStateChanged, this)
       };
 
       this.mapStateChanged = function(clipperStateModel) {
@@ -280,6 +286,30 @@
         $scope.mapState.map.setCenter(entityModel.gmapsLatLng())
         if (viewport) {
           $scope.mapState.map.fitBounds(gmapsBoundsFromJson(viewport));
+        }
+      });
+
+      $scope.$on('resultmarkersetdraggable', function(event, resultIndex, draggable) {
+        if (resultIndex != $scope.$index) {
+          return;
+        }
+        $scope.markerState.marker.setDraggable(draggable);
+        if (draggable) {
+          google.maps.event.addListener($scope.markerState.marker, 'dragstart', function() {
+            $scope.destroyInfowindow();
+            $scope.$apply();
+          });
+          google.maps.event.addListener($scope.markerState.marker, 'dragend', function() {
+            var position = $scope.markerState.marker.getPosition();
+            var entityData = $scope.ed;
+            entityData['latlng']['lat'] = position.lat();
+            entityData['latlng']['lng'] = position.lng();
+            entityData['address_precision'] = 'Precise';
+            $scope.$apply();
+          });
+        } else {
+          google.maps.event.clearListeners($scope.markerState.marker, 'dragstart');
+          google.maps.event.clearListeners($scope.markerState.marker, 'dragend');
         }
       });
     }
