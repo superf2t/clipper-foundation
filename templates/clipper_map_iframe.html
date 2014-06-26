@@ -30,6 +30,7 @@
       font-family: 'Nunito';
       font-weight: 300;
       font-size: 10pt;
+      text-align: center;
       padding: 5px 10px;
       border-radius: 2px;
       -webkit-font-smoothing: antialiased;
@@ -199,11 +200,12 @@
       });
     }
 
-    function MapResultEntityCtrl($scope, $clipperStateModel) {
+    function MapResultEntityCtrl($scope, $clipperStateModel, $templateToStringRenderer) {
       $scope.ed = $scope.entity;
       var entityModel = new EntityModel($scope.ed);
       $scope.markerState = {
         marker: null,
+        infowindow: null,
         position: entityModel.gmapsLatLng()
       };
 
@@ -218,6 +220,28 @@
       $scope.isEmphasized = function() {
         return $clipperStateModel.highlightedResultIndex == $scope.$index;
       };
+
+      $scope.openInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          return;
+        }
+        $scope.$emit('asktocloseallinfowindows');
+        var contentDiv = $templateToStringRenderer.render(
+          'clipper-infowindow-template', $scope.$new());
+        $scope.markerState.infowindow = new HtmlInfowindow(
+          $scope.markerState.marker, contentDiv);
+      };
+
+      $scope.destroyInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          $scope.markerState.infowindow.setMap(null);
+          $scope.markerState.infowindow = null;
+        }
+      };
+
+      $scope.$on('closeallinfowindows', function() {
+        $scope.destroyInfowindow();
+      });
     }
 
     angular.module('clipperMapModule',
@@ -260,7 +284,7 @@
         precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
         selected="isSelected()"
         emphasized="isEmphasized()"
-        on-click="markerClicked($event)">
+        on-click="openInfowindow(); $event.stopPropagation()">
     </tc-search-result-marker>
   </div>
 
