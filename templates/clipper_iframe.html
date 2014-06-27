@@ -152,6 +152,12 @@
         select-trip-plan-to="tripPlanState.tripPlan"
         class="trip-plan-dropdown">
       </div>
+      <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
+        <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
+          target="_blank" class="color-link">
+          <span class="glyphicon glyphicon-new-window"></span>
+        </a>
+      </div>
       <div ng-show="showNoPlacesText()" class="no-places-yet">
         No places yet!  Add some above.
         <div ng-include="'seal-icon-template'" class="filler-icon">

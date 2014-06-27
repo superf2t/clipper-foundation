@@ -77,6 +77,12 @@ a:hover {
   padding: 10px;
 }
 
+.trip-plan-panel .trip-plan-in-new-window {
+  position: absolute;
+  top: 18px;
+  right: 35px;
+}
+
 .trip-plan-panel .no-places-yet {
   text-align: center;
   font-size: 1.2em;
