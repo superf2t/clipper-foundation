@@ -199,8 +199,17 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
 function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy,
     $tripPlanService, $entityService) {
   $scope.tripPlanState = $tripPlanState;
+
+  $scope.loadingEntities = false;
+
+  $scope.showNoPlacesText = function() {
+    return !$scope.loadingEntities
+      && $scope.tripPlanState.tripPlan['trip_plan_id']
+      && (!$scope.tripPlanState.entities || !$scope.tripPlanState.entities.length);
+  };
+
   $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
-    if (!tripPlan) {
+    if (!tripPlan || !tripPlan['trip_plan_id']) {
       return;
     }
     $scope.tripPlanState.entities = null;
