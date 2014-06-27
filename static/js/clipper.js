@@ -2,7 +2,7 @@ var ClipperState = {
   SUMMARY: 1,
   EDIT: 2,
   SUCCESS_CONFIRMATION: 3,
-  NO_AUTO_PLACE_FOUND: 4,
+  SEARCH: 4,
   CLIP_ERROR: 5,
   WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE: 6
 };
@@ -86,7 +86,7 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     if (entities.length) {
       $scope.clipperState.status = ClipperState.SUMMARY;
     } else {
-      $scope.clipperState.status = ClipperState.NO_AUTO_PLACE_FOUND;
+      $scope.clipperState.status = ClipperState.SEARCH;
     }
     $scope.displayState.dirtyCounter++;
   };
@@ -105,6 +105,10 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
       'latlng': $tripPlanState.tripPlan ? $tripPlanState.tripPlan['location_latlng'] : {'lat': 0, 'lng': 0}
     };
     $scope.addEntity(entityData);
+  };
+
+  $scope.openAddOther = function() {
+    $scope.clipperState.status = ClipperState.SEARCH;
   };
 
   $scope.selectedEntities = function() {
@@ -285,6 +289,8 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
 
   this.loadEntityByGooglePlaceReference = function(reference) {
     $scope.loadingData = true;
+    $scope.searchComplete = false;
+    $scope.searchResults = null;
     $entityService.googleplacetoentity(reference)
       .success(function(response) {
         var entity = response['entity'];

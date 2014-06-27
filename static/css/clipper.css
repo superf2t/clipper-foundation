@@ -51,8 +51,8 @@ a:hover {
   height: 100%;
 }
 
-.clipper-panel .entity-results {
-  padding-bottom: 52px;
+.clipper-panel .bottom-spacer {
+  height: 52px;
 }
 
 .clipper-panel .save-button-panel {
@@ -193,6 +193,10 @@ a:hover {
 
 .entity-results .info-text .glyphicon-plus-sign {
   font-size: 11px;
+}
+
+.clipper-panel .add-other-link {
+  margin: 10px;
 }
 
 .one-entity-result {

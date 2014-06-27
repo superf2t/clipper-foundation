@@ -55,6 +55,13 @@
           <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
           </div>
         </div>
+        <div class="add-other-link">
+          <a ng-click="openAddOther()" href="javascript:void(0)" class="color-link">
+            Add another place
+          </a>
+        </div>
+        <div class="bottom-spacer">
+        </div>
         <div class="save-button-panel">
           <button class="btn btn-primary save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
             ng-click="saveEntities()">
@@ -68,11 +75,11 @@
         </div>
       </div>
 
-      <div ng-if="clipperState.status == ClipperState.NO_AUTO_PLACE_FOUND">
+      <div ng-if="clipperState.status == ClipperState.SEARCH">
         <div class="intro-text">
-          Places on this page
+          Search for a place
         </div>
-        <div class="no-places-text">
+        <div class="no-places-text" ng-show="entities.length == 0">
           We couldn't automatically detect any places on this page.  Search for the
           name or address of a place to add it manually.
         </div>
