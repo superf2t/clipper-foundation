@@ -94,14 +94,15 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   $scope.addEntity = function(entityData) {
     $scope.entities.push(entityData);
     entityData.selected = true;
+    $clipperStateModel.resultIndicesToSave[$scope.entities.length - 1] = true;
     $scope.clipperState.status = ClipperState.SUMMARY;
     $scope.displayState.dirtyCounter++;
   };
 
   $scope.startManualEntry = function() {
     var entityData = {
-      'icon_url': DEFAULT_ICON_URL,
-      'source_url': getParameterByName('url')
+      'source_url': getParameterByName('url'),
+      'latlng': $tripPlanState.tripPlan ? $tripPlanState.tripPlan['location_latlng'] : {'lat': 0, 'lng': 0}
     };
     $scope.addEntity(entityData);
   };
@@ -337,6 +338,9 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   $scope.editPhotosState = {active: false};
   $scope.editLocationState = {active: !$scope.ed['name']};
   var editorStates = [$scope.editNotesState, $scope.editPhotosState, $scope.editLocationState];
+  if ($scope.editLocationState.active) {
+    $mapProxy.resultMarkerSetDraggable($scope.$index, true);
+  }
 
   $scope.toggleSelectResultForSaving = function() {
     if ($scope.entities.length == 1) {

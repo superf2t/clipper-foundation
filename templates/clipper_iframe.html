@@ -241,7 +241,7 @@
               <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
                 tc-focus-on="editLocationState.active"/>
               <input class="form-control" ng-model="ed['address']" placeholder="Address"
-                tc-google-place-autocomplete search-bounds-json="activeTripPlan['location_bounds']"
+                tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
                 location-types="geocode" on-place-change="addressSelected($newPlace)"/>
               <div class="tip-text">
                 Tip: drag the marker on the map to adjust the location
