@@ -210,6 +210,7 @@ function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy
 
   $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
     if (!tripPlan || !tripPlan['trip_plan_id']) {
+      $scope.tripPlanState.entities = null;
       return;
     }
     $scope.tripPlanState.entities = null;
