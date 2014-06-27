@@ -38,7 +38,13 @@
     }
   </style>
   <script>
-    function ClipperMapCtrl($scope, $clipperStateModel, $window) {
+    function ClipperProxy($window) {
+      this.sendMessage = function(messageName, data) {
+        $window.parent.postMessage(_.extend({message: messageName}, data), '*');
+      };
+    }
+
+    function ClipperMapCtrl($scope, $clipperStateModel, $clipperProxy, $window) {
       var me = this;
       $scope.tripPlanEntities = null;
       $scope.resultEntities = null;
@@ -60,7 +66,7 @@
       };
 
       $scope.mapReady = function($map) {
-        me.sendMessage('tc-map-ready');
+        $clipperProxy.sendMessage('tc-map-ready');
 
         google.maps.event.addListener($map, 'click', function() {
           $scope.$broadcast('closeallinfowindows');
@@ -134,7 +140,7 @@
       };
 
       this.mapStateChanged = function(clipperStateModel) {
-        this.sendMessage('tc-map-to-clipper-state-changed', {clipperStateModel: clipperStateModel})
+        $clipperProxy.sendMessage('tc-map-to-clipper-state-changed', {clipperStateModel: clipperStateModel})
       };
 
       $scope.$watch(_.constant($clipperStateModel), function(value) {
@@ -153,10 +159,6 @@
         }
         $scope.$apply();
       });
-
-      this.sendMessage = function(messageName, data) {
-        $window.parent.postMessage(_.extend({message: messageName}, data), '*');
-      };
 
       $scope.$on('asktocloseallinfowindows', function() {
         $scope.$broadcast('closeallinfowindows');
@@ -221,7 +223,8 @@
       });
     }
 
-    function MapResultEntityCtrl($scope, $clipperStateModel, $templateToStringRenderer) {
+    function MapResultEntityCtrl($scope, $clipperStateModel,
+        $templateToStringRenderer, $clipperProxy) {
       $scope.ed = $scope.entity;
       var entityModel = new EntityModel($scope.ed);
       $scope.markerState = {
@@ -305,6 +308,12 @@
             entityData['latlng']['lat'] = position.lat();
             entityData['latlng']['lng'] = position.lng();
             entityData['address_precision'] = 'Precise';
+            // TODO: Consider using a general-purpose to sync any changes to the
+            // entity back to the clipper.
+            $clipperProxy.sendMessage('tc-map-to-clipper-result-marker-dragged', {
+              resultIndex: $scope.$index,
+              entity: entityData
+            });
             $scope.$apply();
           });
         } else {
@@ -321,6 +330,7 @@
       .controller('MapEntityCtrl', MapEntityCtrl)
       .controller('MapResultEntityCtrl', MapResultEntityCtrl)
       .service('$templateToStringRenderer', TemplateToStringRenderer)
+      .service('$clipperProxy', ClipperProxy)
       .directive('tcEntityMarker', tcEntityMarker)
       .directive('tcSearchResultMarker', tcSearchResultMarker)
       .value('$clipperStateModel', new ClipperStateModel());

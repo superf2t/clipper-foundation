@@ -167,8 +167,10 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   };
 
   $($window).on('message', function(event) {
-    if (event.originalEvent.data['message'] == 'tc-page-source') {
-      var pageSource = event.originalEvent.data['pageSource'];
+    var data = event.originalEvent.data;
+    var messageName = data['message'];
+    if (messageName == 'tc-page-source') {
+      var pageSource = data['pageSource'];
       if (!pageSource) {
         // This is really weird, the tc-page-source message is being received
         // twice, despite it only being sent once by the parent frame.
@@ -179,11 +181,16 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
         .success(function(response) {
           me.setupEntityState(response['entities']);
         });
-    } else if (event.originalEvent.data['message'] == 'tc-map-to-clipper-state-changed') {
+    } else if (messageName == 'tc-map-to-clipper-state-changed') {
       remoteChangeInProgress = true;
-      _.extend($clipperStateModel, event.originalEvent.data['clipperStateModel']);
+      _.extend($clipperStateModel, data['clipperStateModel']);
       $scope.$apply();
-    }
+    } else if (messageName == 'tc-map-to-clipper-result-marker-dragged') {
+      var entity = $scope.entities[data['resultIndex']];
+      entity['latlng'] = data['entity']['latlng'];
+      entity['address_precision'] = data['entity']['address_precision'];
+      $scope.$apply();
+    };
   });
 
   $window.parent.postMessage('tc-needs-page-source', '*'); 
