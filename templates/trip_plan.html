@@ -618,14 +618,16 @@
           ng-show="pageStateModel.isGroupByDay() &&
             itemGroupModel.groupKey &&
             filterModel.emphasizedDayNumber != itemGroupModel.groupKey"
-          href="javascript:void(0)" class="emphasis-control white-link">
+          href="javascript:void(0)" class="emphasis-control white-link"
+          tooltip="Focus on this day" tooltip-placement="bottom" tooltip-append-to-body="true">
           <span tc-icon="zoom-select" class="emphasis-zoom-icon"></span>
         </a>
         <a ng-click="deemphasizeDay()"
           ng-show="pageStateModel.isGroupByDay() &&
             itemGroupModel.groupKey &&
             filterModel.emphasizedDayNumber == itemGroupModel.groupKey"
-          href="javascript:void(0)" class="deemphasis-control white-link">
+          href="javascript:void(0)" class="deemphasis-control white-link"
+          tooltip="Un-focus on this day" tooltip-placement="bottom" tooltip-append-to-body="true">
           <span tc-icon="zoom-deselect" class="emphasis-zoom-icon"></span>
         </a>
       </div>
@@ -1023,7 +1025,8 @@
           </div>
           {% if allow_editing %}
           <div class="settings-control dropdown" ng-show="!inTutorial()">
-            <a href="javascript:void(0)" class="dropdown-toggle white-link">
+            <a href="javascript:void(0)" class="dropdown-toggle white-link"
+              tooltip="Trip plan settings" tooltip-placement="bottom" tooltip-append-to-body="true">
               <span class="glyphicon glyphicon-cog"></span>
             </a>
             <ul tc-include-and-replace="trip-plan-settings-dropdown-template"></ul>
@@ -1094,7 +1097,8 @@
           </li>
         </ul>
         <div class="reset-control" ng-class="{'emphasis-active': filterModel.emphasizedDayNumber}">
-          <a ng-click="resetMapState()" href="javascript:void(0)" class="white-link">
+          <a ng-click="resetMapState()" href="javascript:void(0)" class="white-link"
+            tooltip="Zoom map to entire trip" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span tc-icon="zoom-select" class="emphasis-zoom-icon"></span>
           </a>
         </div>
