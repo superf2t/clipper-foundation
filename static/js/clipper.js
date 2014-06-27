@@ -97,6 +97,9 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     $clipperStateModel.resultIndicesToSave[$scope.entities.length - 1] = true;
     $scope.clipperState.status = ClipperState.SUMMARY;
     $scope.displayState.dirtyCounter++;
+    $timeout(function() {
+      $clipperStateModel.selectedResultIndex = $scope.entities.length - 1;
+    });
   };
 
   $scope.startManualEntry = function() {
@@ -190,7 +193,9 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
       entity['latlng'] = data['entity']['latlng'];
       entity['address_precision'] = data['entity']['address_precision'];
       $scope.$apply();
-    };
+    } else if (messageName == 'tc-text-selected') {
+      $scope.$broadcast('pagetextselected', data['selection']);
+    }
   });
 
   $window.parent.postMessage('tc-needs-page-source', '*'); 
@@ -349,6 +354,14 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
     $scope.searchResults = null;
     me.loadEntityByGooglePlaceReference(result['reference']);
   };
+
+  $scope.$on('pagetextselected', function(event, text) {
+    if ($scope.clipperState.status != ClipperState.SEARCH) {
+      return;
+    }
+    $scope.rawInputText = text;
+    me.searchForPlace(text);
+  });
 }
 
 function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window) {
@@ -445,6 +458,17 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
       $mapProxy.resultAddressChanged($scope.$index, $scope.ed, viewport);
     }
   };
+
+  $scope.$on('pagetextselected', function(event, text) {
+    if (!$scope.editNotesState.active) {
+      return;
+    }
+    if ($scope.ed['description']) {
+      $scope.ed['description'] += '\n\n' + text;
+    } else {
+      $scope.ed['description'] = text;
+    }
+  });
 }
 
 function ClipperEntityPhotoCtrl($scope, $window) {

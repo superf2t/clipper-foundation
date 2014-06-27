@@ -302,6 +302,21 @@
       iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
     });
 
+    $(document.body).on('mouseup', function(event) {
+      if (wrapper.has(event.target).length || wrapper[0] == event.target
+        || mapWrapper.has(event.target).length || mapWrapper[0] == event.target) {
+        return;
+      }
+      var textSelection = getSelection().toString();
+      if (textSelection) {
+        var message = {
+          message: 'tc-text-selected',
+          selection: textSelection
+        }
+        iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+      }
+    });
+
     var clipperToMapMessageQueue = [];
     var mapToClipperMessageQueue = [];
     var clipperReady = false;

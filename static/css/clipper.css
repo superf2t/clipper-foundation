@@ -73,6 +73,14 @@ a:hover {
   margin: 0 10px 10px 10px;
 }
 
+.clipper-panel .select-text-prompt {
+  margin: 10px 0;
+}
+
+.clipper-panel .select-text-prompt .location-name {
+  color: #777;
+}
+
 .trip-plan-panel .trip-plan-dropdown {
   padding: 10px;
 }
@@ -322,6 +330,12 @@ a:hover {
 
 .one-entity-result .editor .description-input {
   height: 150px;
+}
+
+.one-entity-result .notes-editor .tip-text {
+  color: #777;
+  text-align: center;
+  margin-top: 10px;
 }
 
 .one-entity-result .photo-editor {

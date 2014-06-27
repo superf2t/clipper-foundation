@@ -91,6 +91,10 @@
           <div ng-show="loadingData" class="search-spinner">
             <img src="/static/img/spinner-small.gif"/>
           </div>
+          <div class="select-text-prompt">
+            Or highlight text on the page to search for that place name or address in
+            <span class="location-name">[[tripPlanState.tripPlan['location_name'] ]]</span>.
+          </div>
           <div class="search-results" ng-show="searchComplete">
             <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
               <span class="result-column">
@@ -222,9 +226,14 @@
       <div class="editor" ng-if="isEditing()">
         <tabset>
           <tab heading="Notes" select="stopEditingPhotos()" active="editNotesState.active">
-            <textarea ng-model="ed['description']" class="form-control description-input"
-              tc-focus-on="editNotesState.active" placeholder="Add a note">
-            </textarea>
+            <div class="notes-editor">
+              <textarea ng-model="ed['description']" class="form-control description-input"
+                tc-focus-on="editNotesState.active" placeholder="Add a note">
+              </textarea>
+              <div class="tip-text">
+                Tip: highlight text on the page to copy it here automatically.
+              </div>
+            </div>
           </tab>
           <tab heading="Photos" select="startEditingPhotos()" active="editPhotosState.active">
             <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor">
