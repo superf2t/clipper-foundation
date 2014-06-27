@@ -667,7 +667,7 @@ class TripPlanService(service.Service):
                 continue
             distance = geometry.earth_distance_meters(trip_plan.location_latlng.lat, trip_plan.location_latlng.lng,
                 request.location_latlng.lat, request.location_latlng.lng)
-            if distance < 10000:
+            if distance < 40000:
                 trip_plans.append(trip_plan)
         return FindTripPlansResponse(
             response_code=service.ResponseCode.SUCCESS.name,
