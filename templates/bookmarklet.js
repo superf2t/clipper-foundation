@@ -20,7 +20,8 @@
 
   window['__tc$'] = $;
   var HOST = '{{host}}';
-  window['__tcNodes'] = [];
+  window['__tcNodes'] = window['__tcNodes'] || [];
+  window['__tcListeners'] = window['__tcListeners'] || [];
 
   function absUrl(relativeUrl) {
     return 'https://' + HOST + relativeUrl;
@@ -31,6 +32,19 @@
       node.remove();
     });
     window['__tcNodes'] = [];
+
+    $.each(window['__tcListeners'], function(i, obj) {
+      obj.elem.off(obj.eventName, obj.handler);
+    });
+    window['__tcListeners'] = [];
+  }
+
+  function markListenerForCleanup(elem, eventName, handler) {
+    window['__tcListeners'].push({
+      elem: elem,
+      eventName: eventName,
+      handler: handler
+    });
   }
 
   function createElements() {
@@ -253,7 +267,7 @@
     var dropTarget = null;
     var photoEditingActive = false;
 
-    $(document.body).on('dragstart', function(event) {
+    var handleImgDrag = function(event) {
       if (!wrapper || !iframe || dropTarget || !photoEditingActive) {
         return;
       }
@@ -264,7 +278,12 @@
       var imgUrl = findImgUrl(target);
       event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl || '');
       createDropTarget();
-    }).on('dragend', removeDropTarget);
+    };
+
+    $(document.body).on('dragstart', handleImgDrag);
+    $(document.body).on('dragend', removeDropTarget);
+    markListenerForCleanup($(document.body), 'dragstart', handleImgDrag);
+    markListenerForCleanup($(document.body), 'dragend', removeDropTarget);
 
     wrapper.on('dragenter', function(event) {
       if (!dropTarget) return;
@@ -302,7 +321,7 @@
       iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
     });
 
-    $(document.body).on('mouseup', function(event) {
+    var handleTextSelection = function(event) {
       if (wrapper.has(event.target).length || wrapper[0] == event.target
         || mapWrapper.has(event.target).length || mapWrapper[0] == event.target) {
         return;
@@ -315,14 +334,17 @@
         }
         iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
       }
-    });
+    };
+
+    $(document.body).on('mouseup', handleTextSelection);
+    markListenerForCleanup($(document.body), 'mouseup', handleTextSelection);
 
     var clipperToMapMessageQueue = [];
     var mapToClipperMessageQueue = [];
     var clipperReady = false;
     var mapReady = false;
 
-    $(window).on('message', function(event) {
+    var handleMessages = function(event) {
       var data = event.originalEvent.data;
       if (data == 'tc-close-clipper') {
         clearElements();
@@ -362,7 +384,10 @@
           mapToClipperMessageQueue.push(data);
         }
       }
-    });
+    };
+
+    $(window).on('message', handleMessages);
+    markListenerForCleanup($(window), 'message', handleMessages);
 
     function createDropTarget() {
       dropTarget = $('<div>').addClass('__tc-droptarget');
