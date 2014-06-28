@@ -195,10 +195,23 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
       $scope.$apply();
     } else if (messageName == 'tc-text-selected') {
       $scope.$broadcast('pagetextselected', data['selection']);
+      $scope.$apply();
     }
   });
 
   $window.parent.postMessage('tc-needs-page-source', '*'); 
+
+  $($window).on('keyup', function(event) {
+    if (event.which == 78 /* space */
+      && $scope.clipperState.status == ClipperState.SUMMARY) {
+      var result = {};
+      $scope.$broadcast('askifediting', result);
+      if (!result.editing) {
+        $scope.clipperState.status = ClipperState.SEARCH;
+        $scope.$apply();
+      }
+    }
+  });
 }
 
 function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy,
@@ -437,6 +450,12 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
 
   $scope.$on('closealleditors', function() {
     $scope.closeEditor();
+  });
+
+  $scope.$on('askifediting', function(event, result) {
+    if ($scope.isEditing()) {
+      result.editing = true;
+    }
   });
 
   $scope.addressSelected = function(place) {
