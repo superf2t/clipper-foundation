@@ -76,8 +76,14 @@
       </div>
 
       <div ng-if="clipperState.status == ClipperState.SEARCH">
-        <div class="intro-text">
+        <div class="intro-text search-header">
           Search for a place
+          <div class="back-link" ng-show="entities.length >= 1">
+            <a ng-click="clipperState.status = ClipperState.SUMMARY"
+              href="javascript:void(0)" class="color-link">
+              &laquo; back
+            </a>
+          </div>
         </div>
         <div class="no-places-text" ng-show="entities.length == 0">
           We couldn't automatically detect any places on this page.  Search for the

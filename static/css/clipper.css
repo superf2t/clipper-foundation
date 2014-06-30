@@ -69,6 +69,18 @@ a:hover {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.clipper-panel .search-panel-header {
+  position: relative;
+}
+
+.clipper-panel .back-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 10px;
+  font-size: 11pt;
+}
+
 .clipper-panel .no-places-text {
   margin: 0 10px 10px 10px;
 }
