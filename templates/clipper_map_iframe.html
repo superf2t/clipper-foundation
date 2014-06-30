@@ -1,0 +1,388 @@
+<!doctype html>
+<html>
+<head>
+  <title>Travel Clipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/script.js"></script>
+  <script src="/static/js/clipper.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <style>
+    html, body, #map {
+      width: 100%;
+      height: 100%;
+      font-family: 'Nunito';
+    }
+
+    .map-marker.search-result-marker.selected .marker-shape svg {
+      stroke: #fff;
+      stroke-width: 5px;
+    }
+
+    .clipper-infowindow {
+      position: relative;
+      bottom: 84px;
+      background-color: #4A4A4A;
+      color: #fff;
+      font-family: 'Nunito';
+      font-weight: 300;
+      font-size: 10pt;
+      text-align: center;
+      padding: 5px 10px;
+      border-radius: 2px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+  <script>
+    function ClipperProxy($window) {
+      this.sendMessage = function(messageName, data) {
+        $window.parent.postMessage(_.extend({message: messageName}, data), '*');
+      };
+    }
+
+    function ClipperMapCtrl($scope, $clipperStateModel, $clipperProxy, $window) {
+      var me = this;
+      $scope.tripPlanEntities = null;
+      $scope.resultEntities = null;
+
+      $scope.mapState = {map: null};
+      $scope.mapOptions = {
+        center: new google.maps.LatLng(0, 0),
+        zoom: 1,
+        panControl: false,
+        scaleControl: true,
+        streetViewControl: false,
+        mapTypeControlOptions: {
+          mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
+          position: google.maps.ControlPosition.RIGHT_BOTTOM
+        },
+        zoomControlOptions: {
+          position: google.maps.ControlPosition.RIGHT_TOP
+        }
+      };
+
+      $scope.mapReady = function($map) {
+        $clipperProxy.sendMessage('tc-map-ready');
+
+        google.maps.event.addListener($map, 'click', function() {
+          $scope.$broadcast('closeallinfowindows');
+          $clipperStateModel.selectedEntityId = null;
+          $clipperStateModel.selectedResultIndex = null;
+          $clipperStateModel.highlightedEntityId = null;
+          $clipperStateModel.highlightedResultIndex = null;
+          $scope.$apply();
+        });
+      };
+
+      this.plotTripPlanEntities = function(data) {
+        $scope.tripPlanEntities = data['entities'];
+        this.updateMapBounds();
+      };
+
+      this.plotResultEntities = function(data) {
+        $scope.resultEntities = data['entities'];
+        this.updateMapBounds();
+      };
+
+      this.updateMapBounds = function() {
+        var allEntities = ($scope.tripPlanEntities || []).concat($scope.resultEntities || []);
+        var bounds = new google.maps.LatLngBounds();
+        $.each(allEntities, function(i, entity) {
+          if (!_.isEmpty(entity['latlng'])) {
+            bounds.extend(gmapsLatLngFromJson(entity['latlng']));
+          }
+        });
+        if (!bounds.isEmpty()) {
+          $scope.mapState.map.fitBounds(bounds);
+        }
+      };
+
+      this.resultMarkerSetDraggable = function(data) {
+        $scope.$broadcast('resultmarkersetdraggable',
+            data['resultIndex'], data['draggable']);
+      };
+
+      var remoteChangeInProgress = false;
+
+      this.clipperStateChanged = function(data) {
+        remoteChangeInProgress = true;
+        var oldState = angular.copy($clipperStateModel);
+        _.extend($clipperStateModel, data['clipperStateModel']);
+        if ($clipperStateModel.selectedEntityId != oldState.selectedEntityId) {
+          $scope.$broadcast('closeallinfowindows');
+          if ($clipperStateModel.selectedEntityId) {
+            $scope.$broadcast('openinfowindow', $clipperStateModel.selectedEntityId);
+          }
+        }
+        if ($clipperStateModel.selectedResultIndex != oldState.selectedResultIndex) {
+          $scope.$broadcast('closeallinfowindows');
+          if ($clipperStateModel.selectedResultIndex != null) {
+            $scope.$broadcast('openresultsinfowindow', $clipperStateModel.selectedResultIndex);
+          }
+        }
+      };
+
+      this.resultAddressChanged = function(data) {
+        $scope.$broadcast('resultaddresschanged',
+          data['resultIndex'], data['entity'], data['viewport']);
+      };
+
+      var handlers = {
+        'tc-clipper-to-map-plot-trip-plan-entities': _.bind(this.plotTripPlanEntities, this),
+        'tc-clipper-to-map-plot-result-entities': _.bind(this.plotResultEntities, this),
+        'tc-clipper-to-map-result-address-changed': _.bind(this.resultAddressChanged, this),
+        'tc-clipper-to-map-result-marker-set-draggable': _.bind(this.resultMarkerSetDraggable, this),
+        'tc-clipper-to-map-state-changed': _.bind(this.clipperStateChanged, this)
+      };
+
+      this.mapStateChanged = function(clipperStateModel) {
+        $clipperProxy.sendMessage('tc-map-to-clipper-state-changed', {clipperStateModel: clipperStateModel})
+      };
+
+      $scope.$watch(_.constant($clipperStateModel), function(value) {
+        if (remoteChangeInProgress) {
+          remoteChangeInProgress = false;
+        } else {
+          me.mapStateChanged(value);
+        }
+      }, true);
+
+      $($window).on('message', function(event) {
+        var messageName = event.originalEvent.data.message;
+        var handler = handlers[messageName];
+        if (handler) {
+          handler(event.originalEvent.data);
+        }
+        $scope.$apply();
+      });
+
+      $scope.$on('asktocloseallinfowindows', function() {
+        $scope.$broadcast('closeallinfowindows');
+      });
+    }
+
+    function MapEntityCtrl($scope, $clipperStateModel, $templateToStringRenderer) {
+      $scope.ed = $scope.entity;
+      var entityModel = new EntityModel($scope.ed);
+      $scope.markerState = {
+        marker: null,
+        position: entityModel.gmapsLatLng(),
+        infowindow: null
+      };
+
+      $scope.iconTemplateName = function() {
+        if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
+          return $scope.ed['sub_category']['name'] + '-icon-template';
+        }
+        if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
+          return $scope.ed['category']['name'] + '-icon-template';
+        }
+        return null;
+      };
+
+      $scope.isSelected = function() {
+        return $clipperStateModel.selectedEntityId == $scope.ed['entity_id']
+          || $clipperStateModel.highlightedEntityId == $scope.ed['entity_id'];
+      };
+
+      $scope.selectEntity = function() {
+        $clipperStateModel.selectedEntityId = $scope.ed['entity_id']
+        $scope.openInfowindow();
+      };
+
+      $scope.openInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          return;
+        }
+        $scope.$emit('asktocloseallinfowindows');
+        var contentDiv = $templateToStringRenderer.render(
+          'clipper-infowindow-template', $scope.$new());
+        $scope.markerState.infowindow = new HtmlInfowindow(
+          $scope.markerState.marker, contentDiv);
+      };
+
+      $scope.destroyInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          $scope.markerState.infowindow.setMap(null);
+          $scope.markerState.infowindow = null;          
+        }
+      };
+
+      $scope.$on('closeallinfowindows', function() {
+        $scope.destroyInfowindow();
+      });
+
+      $scope.$on('openinfowindow', function(event, entityId) {
+        if (entityId == $scope.ed['entity_id']) {
+          $scope.openInfowindow();
+        }
+      });
+
+      $scope.$on('$destroy', function() {
+        $scope.destroyInfowindow();
+      });
+    }
+
+    function MapResultEntityCtrl($scope, $clipperStateModel,
+        $templateToStringRenderer, $clipperProxy) {
+      $scope.ed = $scope.entity;
+      var entityModel = new EntityModel($scope.ed);
+      $scope.markerState = {
+        marker: null,
+        position: entityModel.gmapsLatLng(),
+        infowindow: null
+      };
+
+      $scope.resultLetter = function() {
+        return String.fromCharCode(65 + $scope.$index);
+      };
+
+      $scope.isSelected = function() {
+        return !!$clipperStateModel.resultIndicesToSave[$scope.$index];
+      };
+
+      $scope.isEmphasized = function() {
+        return $clipperStateModel.highlightedResultIndex == $scope.$index
+          || $clipperStateModel.selectedResultIndex == $scope.$index;
+      };
+
+      $scope.selectResult = function() {
+        $clipperStateModel.selectedResultIndex = $scope.$index;
+        $scope.openInfowindow();
+      };
+
+      $scope.openInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          return;
+        }
+        $scope.$emit('asktocloseallinfowindows');
+        var contentDiv = $templateToStringRenderer.render(
+          'clipper-infowindow-template', $scope.$new());
+        $scope.markerState.infowindow = new HtmlInfowindow(
+          $scope.markerState.marker, contentDiv);
+      };
+
+      $scope.destroyInfowindow = function() {
+        if ($scope.markerState.infowindow) {
+          $scope.markerState.infowindow.setMap(null);
+          $scope.markerState.infowindow = null;
+        }
+      };
+
+      $scope.$on('closeallinfowindows', function() {
+        $scope.destroyInfowindow();
+      });
+
+      $scope.$on('openresultsinfowindow', function(event, resultIndex) {
+        if (resultIndex == $scope.$index) {
+          $scope.openInfowindow();
+        }
+      });
+
+      $scope.$on('resultaddresschanged', function(event, resultIndex, entity, viewport) {
+        if (resultIndex != $scope.$index) {
+          return;
+        }
+        $scope.destroyInfowindow();
+        _.extend($scope.ed, entity);
+        $scope.markerState.marker.setPosition(entityModel.gmapsLatLng());
+        $scope.mapState.map.setCenter(entityModel.gmapsLatLng())
+        if (viewport) {
+          $scope.mapState.map.fitBounds(gmapsBoundsFromJson(viewport));
+        }
+      });
+
+      $scope.$on('resultmarkersetdraggable', function(event, resultIndex, draggable) {
+        if (resultIndex != $scope.$index) {
+          return;
+        }
+        $scope.markerState.marker.setDraggable(draggable);
+        if (draggable) {
+          google.maps.event.addListener($scope.markerState.marker, 'dragstart', function() {
+            $scope.destroyInfowindow();
+            $scope.$apply();
+          });
+          google.maps.event.addListener($scope.markerState.marker, 'dragend', function() {
+            var position = $scope.markerState.marker.getPosition();
+            var entityData = $scope.ed;
+            entityData['latlng']['lat'] = position.lat();
+            entityData['latlng']['lng'] = position.lng();
+            entityData['address_precision'] = 'Precise';
+            // TODO: Consider using a general-purpose to sync any changes to the
+            // entity back to the clipper.
+            $clipperProxy.sendMessage('tc-map-to-clipper-result-marker-dragged', {
+              resultIndex: $scope.$index,
+              entity: entityData
+            });
+            $scope.$apply();
+          });
+        } else {
+          google.maps.event.clearListeners($scope.markerState.marker, 'dragstart');
+          google.maps.event.clearListeners($scope.markerState.marker, 'dragend');
+        }
+      });
+
+      $scope.$on('$destroy', function() {
+        $scope.destroyInfowindow();
+      });
+    }
+
+    angular.module('clipperMapModule',
+        ['directivesModule', 'filtersModule'],
+        interpolator)
+      .controller('ClipperMapCtrl', ClipperMapCtrl)
+      .controller('MapEntityCtrl', MapEntityCtrl)
+      .controller('MapResultEntityCtrl', MapResultEntityCtrl)
+      .service('$templateToStringRenderer', TemplateToStringRenderer)
+      .service('$clipperProxy', ClipperProxy)
+      .directive('tcEntityMarker', tcEntityMarker)
+      .directive('tcSearchResultMarker', tcSearchResultMarker)
+      .value('$clipperStateModel', new ClipperStateModel());
+
+    angular.element(document).ready(function() {
+      angular.bootstrap(document, ['clipperMapModule']);
+    });
+  </script>
+</head>
+<body ng-controller="ClipperMapCtrl">
+  <div id="map" tc-google-map map="mapState.map" map-options="mapOptions"
+    after-creation="mapReady($map)">
+  </div>
+  <div style="display: none" ng-repeat="entity in tripPlanEntities"
+    ng-controller="MapEntityCtrl">
+    <tc-entity-marker ng-if="markerState.position"
+      map="mapState.map" marker="markerState.marker"
+      position="markerState.position"
+      category-name="ed['category'] && ed['category']['name']"
+      icon-template-name="iconTemplateName()"
+      precise="ed['address_precision'] == 'Precise'"
+      selected="isSelected()"
+      deemphasized="true"
+      on-click="selectEntity(); $event.stopPropagation()">
+    </tc-entity-marker>
+  </div>
+  <div style="display: none" ng-repeat="entity in resultEntities"
+    ng-controller="MapResultEntityCtrl">
+    <tc-search-result-marker ng-if="markerState.position"
+        marker="markerState.marker" position="markerState.position" map="mapState.map"
+        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
+        selected="isSelected()"
+        emphasized="isEmphasized()"
+        on-click="selectResult(); $event.stopPropagation()">
+    </tc-search-result-marker>
+  </div>
+
+  <script type="text/ng-template" id="clipper-infowindow-template">
+    <div class="clipper-infowindow">
+      [[ed['name'] ]]
+    </div>
+  </script>
+
+  {% include 'map_markers.html' %}
+  {% include 'icons.html' %}
+</body>
+</html>

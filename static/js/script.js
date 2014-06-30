@@ -496,7 +496,6 @@ function EntityCtrl($scope, $entityService, $modal,
 
   $scope.$on('$destroy', function() {
     me.destroyInfowindow();
-    $scope.markerState.marker.setMap(null);
   });
 
   this.setMarkerState = function() {
@@ -990,6 +989,11 @@ HtmlMarker.prototype.getDraggable = function() {
   return this.options.draggable;
 };
 
+HtmlMarker.prototype.setDraggable = function(draggable) {
+  this.options.draggable = draggable;
+  this.draggableChanged();
+};
+
 HtmlMarker.prototype.setCursor_ = function(whichCursor) {
   if (!this.ready_) {
     return;
@@ -1231,6 +1235,10 @@ function tcEntityMarker() {
           scope.$apply();
         });
       }
+
+      scope.$on('$destroy', function() {
+        scope.marker.setMap(null);
+      });
     }
   };
 }
@@ -1245,6 +1253,7 @@ function tcSearchResultMarker() {
       precise: '=',
       resultLetter: '=',
       selected: '&',
+      emphasized: '&',
       onClick: '&'
     },
     templateUrl: 'search-result-marker-template',
@@ -1253,6 +1262,9 @@ function tcSearchResultMarker() {
         var classes = [];
         if ($scope.selected()) {
           classes.push('selected');
+        }
+        if ($scope.emphasized()) {
+          classes.push('emphasized');
         }
         return classes;
       };
@@ -1270,19 +1282,29 @@ function tcSearchResultMarker() {
 }
 
 function tcSearchResultIcon() {
-    return {
-      restrict: 'AE',
-      scope: {
-        precise: '=',
-        resultLetter: '='
-      },
-      templateUrl: 'search-result-marker-template'
-    };
+  return {
+    restrict: 'AE',
+    scope: {
+      precise: '=',
+      resultLetter: '=',
+      selected: '&'
+    },
+    controller: function($scope) {
+      $scope.getClasses = function() {
+        var classes = [];
+        if ($scope.selected()) {
+          classes.push('selected');
+        }
+        return classes;
+      };
+    },
+    templateUrl: 'search-result-marker-template'
+  };
 }
 
 function tcUserIcon() {
   return {
-    retrict: 'AE',
+    restrict: 'AE',
     scope: {
       email: '=',
       noTooltip: '='
@@ -1293,6 +1315,41 @@ function tcUserIcon() {
       };
     },
     templateUrl: 'user-icon-template'
+  };
+}
+
+// HACK: Totally disgusting workaround for inexplicable Chrome bug
+// which seems specific to svgs and nearby elements.
+// For certain kinds of css selectors, Chrome seems to fail to render
+// the styles specified by the selector, even though the Chrome debugger
+// recognizes that the selector applies to the given element and recognizes
+// the style rules associated it.  Essentially, the Chrome debugger is
+// showing that Chrome has recognized that it's supposed to render the styles,
+// it just doesn't actually render them.  As soon as you toggle any style
+// in the debugger, the Chrome then draws all elements on the page correctly.
+// So if you poke it, it redraws correctly.
+// So this hack simply attempts to poke the incorrectly-drawn elements so they
+// will appear correct after a redraw.  This only affects, Chrome and not
+// event Safari, so it seems not to be a WebKit bug.
+//
+// To use, just put tc-svg-hack=".selector, other-selector, etc"
+// on a parent element that has rendering issues, where the selectors are
+// children that should be redrawn.  On every changes to the classes
+// of the parent element, the children will be redrawn.
+function tcSvgHack($timeout) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var elem = $(element);
+      var selectors = attrs.tcSvgHack;
+      scope.$watch(function() {
+        return elem[0].className;
+      }, function(newClasses, oldClasses) {
+        var childrenToRedraw = elem.find(selectors);
+        childrenToRedraw.hide();
+        childrenToRedraw.show();
+      }, true);      
+    }
   };
 }
 
@@ -2648,6 +2705,8 @@ function tcEntityListing() {
       entityData: '=',
       isSelected: '&',
       onSelect: '&',
+      onMouseenter: '&',
+      onMouseleave: '&',
       shouldShowDay: '@'
     },
     templateUrl: 'one-entity-listing-template',
@@ -4572,6 +4631,7 @@ angular.module('directivesModule', [])
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcIcon', tcIcon)
+  .directive('tcSvgHack', tcSvgHack)
   .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
 function makeFilter(fn) {

@@ -75,14 +75,25 @@ class ScrapedPage(object):
     HANDLEABLE_URL_PATTERNS = ()
 
     @classmethod
-    def handleable_urls(cls, incoming_url, page_source_tree):
+    def handleable_urls(cls, incoming_url, page_source_tree, allow_expansion=True):
         for regex, expander_fn, ignored, ignored in cls.HANDLEABLE_URL_PATTERNS:
             if regex.match(incoming_url):
                 if expander_fn:
-                    return expander_fn(incoming_url, page_source_tree)
+                    if allow_expansion:
+                        return expander_fn(incoming_url, page_source_tree)
+                    else:
+                        return ()
                 else:
                     return (incoming_url,)
         return ()
+
+    @classmethod
+    def is_url_handleable(cls, incoming_url, allow_expansion=True):
+        for regex, expander_fn, ignored, ignored in cls.HANDLEABLE_URL_PATTERNS:
+            if regex.match(incoming_url):
+                if allow_expansion or not expander_fn:
+                    return True
+        return False
 
     @classmethod
     def url_requires_client_page_source(cls, url):
@@ -1045,14 +1056,14 @@ def htmlparser():
 
 ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, ScrapedPage))
 
-def build_scrapers(url, client_page_source=None, force_fetch_page=False):
+def build_scrapers(url, client_page_source=None, force_fetch_page=False, allow_expansion=True):
     page_source_tree = parse_tree_from_string(client_page_source) if client_page_source else None
     if not page_source_tree and (url_requires_server_page_source(url) or force_fetch_page):
         page_source_tree = parse_tree(url)
 
     scraped_pages = []
     for scraper_class in ALL_SCRAPERS:
-        handleable_urls = scraper_class.handleable_urls(url, page_source_tree)
+        handleable_urls = scraper_class.handleable_urls(url, page_source_tree, allow_expansion)
         if handleable_urls:
             reqs = [urllib2.Request(url, headers={'User-Agent': USER_AGENT}) for url in handleable_urls]
             resps = utils.parallelize(utils.retryable(urllib2.urlopen, 3), [(req,) for req in reqs])
@@ -1079,6 +1090,12 @@ def url_requires_client_page_source(url):
 def url_requires_server_page_source(url):
     for scraper_class in ALL_SCRAPERS:
         if scraper_class.url_requires_server_page_source(url):
+            return True
+    return False
+
+def is_url_handleable(url, allow_expansion=True):
+    for scraper_class in ALL_SCRAPERS:
+        if scraper_class.is_url_handleable(url, allow_expansion):
             return True
     return False
 

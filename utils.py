@@ -8,6 +8,9 @@ def dict_from_attrs(objs, attr_name):
     attrgetter = operator.attrgetter(attr_name)
     return dict((attrgetter(obj), obj) for obj in objs)
 
+def flatten(list_of_lists):
+    return [item for sublist in list_of_lists for item in sublist]
+
 LATLNG_SPLITTER = re.compile('[^\d.NSEW]+')
 
 # Takes inputs of the form:

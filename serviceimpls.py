@@ -392,7 +392,8 @@ class EntityService(service.Service):
 
     def pagesourcetoentities(self, request):
         # TODO: Move unicode encoding into the json deserializer
-        entities = clip_logic.scrape_entities_from_url(request.url, request.page_source.encode('utf-8'))
+        entities = clip_logic.scrape_entities_from_page_source(
+            request.url, request.page_source.encode('utf-8'))
         return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)
