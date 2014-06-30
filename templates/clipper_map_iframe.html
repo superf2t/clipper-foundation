@@ -221,6 +221,10 @@
           $scope.openInfowindow();
         }
       });
+
+      $scope.$on('$destroy', function() {
+        $scope.destroyInfowindow();
+      });
     }
 
     function MapResultEntityCtrl($scope, $clipperStateModel,
@@ -320,6 +324,10 @@
           google.maps.event.clearListeners($scope.markerState.marker, 'dragstart');
           google.maps.event.clearListeners($scope.markerState.marker, 'dragend');
         }
+      });
+
+      $scope.$on('$destroy', function() {
+        $scope.destroyInfowindow();
       });
     }
 
