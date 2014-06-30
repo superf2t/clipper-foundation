@@ -44,6 +44,18 @@ function ClipperRootCtrl($scope, $clipperStateModel, $window) {
   $scope.dismissClipper = function() {
     $window.parent.postMessage('tc-close-clipper', '*');
   };
+
+  // HACK: keyboard events are only sent for elements that have focus,
+  // or on the document/window.  We want to handle shortcut key events
+  // in clipper states that don't have text inputs, so we have to register
+  // them on the document.  Clearly this violates angular best practices,
+  // we so we need to rewrite this as some form of directive.
+  $($window).on('keyup', function(event) {
+    var stateInfo = {};
+    $scope.$broadcast('askifediting', stateInfo);
+    $scope.$broadcast('shortcutkeypressed', event.which, stateInfo);
+    $scope.$apply();
+  });
 }
 
 function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entityService, $mapProxy,
@@ -169,6 +181,14 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     });
   };
 
+  $scope.$on('shortcutkeypressed', function(event, keyCode, stateInfo) {
+    if (keyCode == 78 /* n */
+      && $scope.clipperState.status == ClipperState.SUMMARY
+      && !stateInfo.editing) {
+      $scope.clipperState.status = ClipperState.SEARCH;
+    }
+  });
+
   $($window).on('message', function(event) {
     var data = event.originalEvent.data;
     var messageName = data['message'];
@@ -200,18 +220,6 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   });
 
   $window.parent.postMessage('tc-needs-page-source', '*'); 
-
-  $($window).on('keyup', function(event) {
-    if (event.which == 78 /* space */
-      && $scope.clipperState.status == ClipperState.SUMMARY) {
-      var result = {};
-      $scope.$broadcast('askifediting', result);
-      if (!result.editing) {
-        $scope.clipperState.status = ClipperState.SEARCH;
-        $scope.$apply();
-      }
-    }
-  });
 }
 
 function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy,
@@ -241,6 +249,12 @@ function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy
           $mapProxy.plotTripPlanEntities(response['entities']);
         }
       });
+  });
+
+  $scope.$on('askifediting', function(event, result) {
+    if (!$tripPlanState.tripPlan['trip_plan_id']) {
+      result.editing = true;
+    }
   });
 }
 
