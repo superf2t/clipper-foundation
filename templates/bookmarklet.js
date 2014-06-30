@@ -77,7 +77,7 @@
         background-color: #fff;
         position: fixed;
         top: 0;
-        left: 0;
+        right: 0;
         padding: 0;
         margin: 0;
         opacity: 1.0;
@@ -126,7 +126,7 @@
         min-height: 200px;
         position: fixed !important;
         bottom: 0;
-        left: 342px;
+        right: 342px;
         border: 1px solid #bbbbbb;
         box-shadow: 0px 1px 2px #aaaaaa;
         z-index: 2147483647;
