@@ -76,7 +76,7 @@
       </div>
 
       <div ng-if="clipperState.status == ClipperState.SEARCH">
-        <div class="intro-text search-header">
+        <div class="intro-text search-panel-header">
           Search for a place
           <div class="back-link" ng-show="entities.length >= 1">
             <a ng-click="clipperState.status = ClipperState.SUMMARY"
@@ -87,7 +87,7 @@
         </div>
         <div class="no-places-text" ng-show="entities.length == 0">
           We couldn't automatically detect any places on this page.  Search for the
-          name or address of a place to add it manually.
+          name or address of a place to add it.
         </div>
         <div class="omnibox-panel" ng-controller="ClipperOmniboxCtrl">
           <input class="form-control" ng-model="rawInputText" placeholder="Search for a place name or address"
@@ -158,6 +158,9 @@
   <script type="text/ng-template" id="trip-plan-panel-template">
     <div ng-controller="TripPlanPanelCtrl" class="full-width full-height"
       ng-class="{'full-spinner': loadingEntities}">
+      <div class="current-trip-header">
+        Places in selected trip
+      </div>
       <div tc-trip-plan-select-dropdown
         select-trip-plan-to="tripPlanState.tripPlan"
         class="trip-plan-dropdown">

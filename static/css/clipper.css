@@ -93,13 +93,19 @@ a:hover {
   color: #777;
 }
 
+.trip-plan-panel .current-trip-header {
+  text-align: center;
+  font-size: 1.2em;
+  padding-top: 10px;
+}
+
 .trip-plan-panel .trip-plan-dropdown {
   padding: 10px;
 }
 
 .trip-plan-panel .trip-plan-in-new-window {
   position: absolute;
-  top: 18px;
+  top: 52px;
   right: 35px;
 }
 
