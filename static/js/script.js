@@ -2593,7 +2593,7 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
   };
 
   $scope.urlToVisit = function() {
-    var url = $scope.state.rawInput;
+    var url = $scope.state.rawInput || '';
     if (url.indexOf('//') == 0) {
       url = 'http:' + url;
     }
