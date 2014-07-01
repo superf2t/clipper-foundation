@@ -975,13 +975,13 @@
             tooltip="Add to day" tooltip-placement="bottom">
             <span tc-icon="calendar"><span>
           </a>
-          <a ng-click="saveStarState(false)" href="javascript:void(0)"
-            tooltip="Favorite" tooltip-placement="bottom">
-            <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']"></span>
-          </a>
           <a ng-click="saveStarState(true)" href="javascript:void(0)"
-            tooltip="Un-favorite" tooltip-placement="bottom">
+            tooltip="Favorite" tooltip-placement="bottom">
             <span class="glyphicon glyphicon-star-empty" ng-show="!ed['starred']"></span>
+          </a>
+          <a ng-click="saveStarState(false)" href="javascript:void(0)"
+            tooltip="Un-favorite" tooltip-placement="bottom">
+            <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']"></span>
           </a>
         </span>
         <span class="control-toggle">
