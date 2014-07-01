@@ -201,6 +201,8 @@ Photo urls: %s''' % (
 
     @staticmethod
     def expand_result_page(xpath, url, page_source_tree):
+        if not page_source_tree:
+            return ()
         root = page_source_tree.getroot()
         links = root.xpath(xpath)
         return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
@@ -426,7 +428,7 @@ class AirbnbScraper(ScrapedPage):
     HANDLEABLE_URL_PATTERNS = urlpatterns(
         '^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$',
         ('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/s/.*$',
-            ScrapedPage.result_page_expander('.//div[@class="search-results"]//li[@class="search-result"]//a[@class="listing-quick-info"]'),
+            ScrapedPage.result_page_expander('.//div[contains(@class, "search-results")]//div[contains(@class, "listing")]//div[contains(@class, "listing-info")]//a'),
             False, REQUIRES_CLIENT_PAGE_SOURCE))
 
     NAME_XPATH = 'body//div[@id="listing_name"]'
