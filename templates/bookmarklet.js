@@ -401,13 +401,23 @@
       }
     }
 
+    function makeAbsolute(url) {
+      if (!url) {
+        return url;
+      }
+      if (url.indexOf('/') == 0) {
+        return location.protocol + '//' + location.host + url;
+      }
+      return url;
+    }
+
     function findImgUrl(target) {
       if (target.is('img')) {
-        return target.attr('src');
+        return makeAbsolute(target.attr('src'));
       }
       var childImg = target.find('img');
       if (childImg.length) {
-        return childImg.attr('src');
+        return makeAbsolute(childImg.attr('src'));
       }
       // Now look for sibling elements, in case what was clicked on
       // was a shim.
@@ -417,7 +427,7 @@
       for (var i = 0, I = siblings.length; i < I; i++) {
         var node = $(siblings[i]);
         if (node.is('img') && node.width() == width && node.height() == height) {
-          return node.attr('src');
+          return makeAbsolute(node.attr('src'));
         }
       }
       return null;
