@@ -218,13 +218,13 @@ class TripAdvisorScraper(ScrapedPage):
             ScrapedPage.result_page_expander('.//div[@id="GUIDE_DETAIL"]//div[@class="guideItemInfo"]//a[@class="titleLink"]'),
             REQUIRES_SERVER_PAGE_SOURCE),
         ('^http(s)?://www\.tripadvisor\.com/Attractions-.*\.html$',
-            ScrapedPage.result_page_expander('.//div[@id="ATTRACTION_OVERVIEW"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
+            ScrapedPage.result_page_expander('.//div[@id="ATTRACTION_OVERVIEW"]//div[contains(@class, "listing") and not(contains(@class, "noContent"))]//a[@class="property_title"]'),
             REQUIRES_SERVER_PAGE_SOURCE),
         ('^http(s)?://www\.tripadvisor\.com/Hotels-.*\.html$',
-            ScrapedPage.result_page_expander('.//div[@id="HAC_RESULTS"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
+            ScrapedPage.result_page_expander('.//div[@id="HAC_RESULTS"]//div[contains(@class, "listing") and not(contains(@class, "noContent"))]//a[@class="property_title"]'),
             REQUIRES_SERVER_PAGE_SOURCE),
         ('^http(s)?://www\.tripadvisor\.com/Restaurants-.*\.html$',
-            ScrapedPage.result_page_expander('.//div[@id="EATERY_SEARCH_RESULTS"]//div[contains(@class, "listing")]//a[@class="property_title"]'),
+            ScrapedPage.result_page_expander('.//div[@id="EATERY_SEARCH_RESULTS"]//div[contains(@class, "listing") and not(contains(@class, "noContent"))]//a[@class="property_title"]'),
             REQUIRES_SERVER_PAGE_SOURCE))
 
 
