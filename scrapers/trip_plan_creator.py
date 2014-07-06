@@ -3,7 +3,7 @@ import urlparse
 import data
 import geocode
 import google_places
-import scraper
+from scrapers import html_parsing
 from scrapers import lets_go
 from scrapers import nomadic_matt
 import utils
@@ -66,11 +66,11 @@ def make_article_parser(url, parser_type_name=None):
     if parser_type_name:
         for parser_class in ALL_PARSERS:
             if parser_class.__name__ == parser_type_name:
-                return parser_class(url, scraper.parse_tree(url))
+                return parser_class(url, html_parsing.parse_tree(url))
     else:
         for parser_class in ALL_PARSERS:
             if parser_class.can_parse(url):
-                return parser_class(url, scraper.parse_tree(url))
+                return parser_class(url, html_parsing.parse_tree(url))
     return None
 
 def main(cmd, input):

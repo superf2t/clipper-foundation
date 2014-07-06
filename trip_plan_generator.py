@@ -10,7 +10,7 @@ import clip_logic
 import data
 import google_places
 import geocode
-import scraper
+from scrapers import html_parsing
 import serviceimpls
 
 def parse_tree(url):
@@ -96,11 +96,11 @@ class Nytimes36hours(GoogleBasedAutoTripPlanCreator):
     def run(self):
         entity_datas = []
         for p in self.getroot().findall('.//footer//div[@class="story-info"]//p'):
-            line_text = scraper.tostring(p, with_tail=False)
+            line_text = html_parsing.tostring(p, with_tail=False)
             if self.NUMBERED_LINE_RE.match(line_text):
                 for child in p.iterchildren():
                     tag = child.tag.lower()
-                    text = scraper.tostring(child, with_tail=False)
+                    text = html_parsing.tostring(child, with_tail=False)
                     if tag == 'strong':
                         if self.NUMBERED_LINE_RE.match(text):
                             name = text.split('.')[1]
@@ -119,13 +119,13 @@ class Nytimes36hours(GoogleBasedAutoTripPlanCreator):
         self.build_from_entity_data(entity_datas)
 
     def get_address_context(self):
-        return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]')).split(' in ')[1].strip()
+        return html_parsing.tostring(self.getroot().find('.//h1[@itemprop="headline"]')).split(' in ')[1].strip()
 
     def get_trip_plan_name(self):
         base_name = super(Nytimes36hours, self).get_trip_plan_name()
         if base_name:
             return base_name
-        return scraper.tostring(self.getroot().find('.//h1[@itemprop="headline"]'))
+        return html_parsing.tostring(self.getroot().find('.//h1[@itemprop="headline"]'))
 
 
 class TripAdvisor3Days(object):
@@ -143,7 +143,7 @@ class TripAdvisor3Days(object):
     def get_trip_plan_name(self):
         if self.trip_plan_name:
             return self.trip_plan_name
-        return scraper.tostring(self.getroot().find('.//h1[@id="HEADING"]'))
+        return html_parsing.tostring(self.getroot().find('.//h1[@id="HEADING"]'))
 
     def get_creator(self):
         if self.creator:

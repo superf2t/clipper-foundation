@@ -2,7 +2,7 @@ import re
 
 import article_parser
 import data
-import scraper
+from scrapers import html_parsing
 
 class NomadicMatt(article_parser.ArticleParser):
     URL_REGEX = re.compile('^http://www\.nomadicmatt\.com/travel-guides/.+$')    
@@ -14,7 +14,7 @@ class NomadicMatt(article_parser.ArticleParser):
         return self.get_title()
 
     def get_description(self):
-        guide_text = scraper.tostring(self.root.find(".//div[@id='guides']")).strip()
+        guide_text = html_parsing.tostring(self.root.find(".//div[@id='guides']")).strip()
         summary_text = guide_text[:guide_text.find('Top Things to Do')].strip()
         if summary_text.startswith(self.get_title()):
             summary_text = summary_text[len(self.get_title()):].strip()
@@ -25,7 +25,7 @@ class NomadicMatt(article_parser.ArticleParser):
             ".//div[@id='guides']//h3[text() = 'Top Things to Do' or text() = 'Top Things to See and Do']/following-sibling::ul//li")
         entities = []
         for item in items:
-            raw_text  = scraper.tostring(item).strip()
+            raw_text  = html_parsing.tostring(item).strip()
             name, desc = re.split(u'\s?(?:\u2013|-)\s?', raw_text, 1, re.UNICODE)[:2]
             entities.append(data.Entity(name=name, description=desc))
         return entities

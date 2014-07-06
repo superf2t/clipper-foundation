@@ -1,6 +1,6 @@
 import data
 import geocode
-import scraper
+from scrapers import html_parsing
 
 class ArticleParser(object):
     URL_REGEX = None
@@ -14,7 +14,7 @@ class ArticleParser(object):
         self._queried_for_location = False
 
     def get_title(self):
-        return scraper.tostring(self.root.find(self.TITLE_XPATH))
+        return html_parsing.tostring(self.root.find(self.TITLE_XPATH))
 
     def get_description(self):
         return None
