@@ -1,129 +1,33 @@
 import decimal
-import json
 import re
 import urllib2
 import urlparse
 
 from lxml import etree
 
-import crossreference
 import geocode
 import google_places
 from scrapers import html_parsing
 from scrapers.html_parsing import tostring
 from scrapers.html_parsing import tostring_with_breaks
+from scrapers import scraped_page
 from scrapers.scraped_page import LocationResolutionStrategy
-from scrapers.scraped_page import ScrapedPage
 from scrapers.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
 from scrapers.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
 from scrapers.scraped_page import fail_returns_empty
 from scrapers.scraped_page import fail_returns_none
-from scrapers.scraped_page import urlpatterns
 import utils
 import values
 
 
-class TripAdvisorScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
-        '^http(s)?://www\.tripadvisor\.com/[A-Za-z]+_Review.*\.html.*$',
-        ('^http(s)?://www\.tripadvisor\.com/Guide-.*\.html$', 
-            ScrapedPage.result_page_expander('.//div[@id="GUIDE_DETAIL"]//div[@class="guideItemInfo"]//a[@class="titleLink"]'),
-            REQUIRES_SERVER_PAGE_SOURCE),
-        ('^http(s)?://www\.tripadvisor\.com/Attractions-.*\.html$',
-            ScrapedPage.result_page_expander('.//div[@id="ATTRACTION_OVERVIEW"]//div[contains(@class, "listing") and not(contains(@class, "noContent"))]//a[@class="property_title"]'),
-            REQUIRES_SERVER_PAGE_SOURCE),
-        ('^http(s)?://www\.tripadvisor\.com/Hotels-.*\.html$',
-            ScrapedPage.result_page_expander('.//div[@id="HAC_RESULTS"]//div[contains(@class, "listing") and not(contains(@class, "noContent"))]//a[@class="property_title"]'),
-            REQUIRES_SERVER_PAGE_SOURCE),
-        ('^http(s)?://www\.tripadvisor\.com/Restaurants-.*\.html$',
-            ScrapedPage.result_page_expander('.//div[@id="EATERY_SEARCH_RESULTS"]//div[contains(@class, "listing") and not(contains(@class, "noContent"))]//a[@class="property_title"]'),
-            REQUIRES_SERVER_PAGE_SOURCE))
-
-
-    NAME_XPATH = 'body//h1'
-    ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
-
-    LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
-        LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
-        LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH,
-        LocationResolutionStrategy.ADDRESS)
-
-    def get_category(self):
-        if '/Hotel_Review' in self.url:
-            return values.Category.LODGING
-        elif '/Restaurant_Review' in self.url:
-            return values.Category.FOOD_AND_DRINK
-        elif '/Attraction_Review' in self.url:
-            return values.Category.ATTRACTIONS
-        return None
-
-    # TODO: Make this more specific
-    @fail_returns_none
-    def get_sub_category(self):
-        if '/Hotel_Review' in self.url:
-            return values.SubCategory.HOTEL
-        elif '/Restaurant_Review' in self.url:
-            return values.Category.RESTAURANT
-        elif '/Attraction_Review' in self.url:
-            return None
-        return None
-
-    @fail_returns_none
-    def get_rating(self):
-        return float(self.root.find('body//div[@rel="v:rating"]//img').get('content'))
-
-    @fail_returns_none
-    def get_primary_photo(self):
-        try:
-            img_url = self.root.find('body//img[@class="photo_image"]').get('src')
-        except:
-            img_url = None
-        if img_url:
-            return img_url
-        for script in self.root.findall('body//script'):
-            if 'lazyImgs' in script.text:
-                lines = script.text.split('\n')
-                for line in lines:
-                    if 'HERO_PHOTO' in line:
-                        some_json = json.loads(line)
-                        return some_json['data']
-        return None
-
-    @fail_returns_empty
-    def get_photos(self):
-        urls = []
-        try:
-            url = self.root.find('body//img[@class="photo_image"]').get('src')
-            if url:
-                urls.append(url)
-        except:
-            pass
-        for script in self.root.findall('body//script'):
-            if script.text and 'lazyImgs' in script.text:
-                lines = script.text.split('\n')
-                for line in lines:
-                    for elem_id in ('HERO_PHOTO', 'THUMB_PHOTO'):
-                        if elem_id in line:
-                            line = line.strip().strip(',')
-                            some_json = json.loads(line)
-                            urls.append(some_json['data'])
-                break
-        if self.get_category() == values.Category.LODGING:
-            hotelsdotcom_url = crossreference.find_hotelsdotcom_url(self.get_entity_name())
-            if hotelsdotcom_url:
-                additional_urls = build_scraper(hotelsdotcom_url).get_photos()
-                urls.extend(additional_urls)
-        return urls
-
-
-class YelpScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
+class YelpScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/biz/.*$',
         ('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/search\?.*$',
-            ScrapedPage.result_page_expander('.//div[@class="results-wrapper"]//h3[@class="search-result-title"]//a[@class="biz-name"]'),
+            scraped_page.result_page_expander('.//div[@class="results-wrapper"]//h3[@class="search-result-title"]//a[@class="biz-name"]'),
             False, REQUIRES_CLIENT_PAGE_SOURCE),
         ('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/user_details.*$',
-            ScrapedPage.result_page_expander('.//div[@id="user-details"]//div[@class="biz_info"]//h4//a'),
+            scraped_page.result_page_expander('.//div[@id="user-details"]//div[@class="biz_info"]//h4//a'),
             False, REQUIRES_CLIENT_PAGE_SOURCE))
 
     NAME_XPATH = 'body//h1'
@@ -178,69 +82,11 @@ class YelpScraper(ScrapedPage):
         return path.split('/')[2]
 
 
-class HotelsDotComScraper(ScrapedPage):
-    NAME_XPATH = 'body//h1'
-    PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
-
-    LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
-        LocationResolutionStrategy.ADDRESS, LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH)
-
-    @fail_returns_none
-    def get_address(self):
-        addr_parent = self.root.find('body//div[@class="address-cntr"]/span[@class="adr"]')
-        street_addr = tostring_with_breaks(addr_parent.find('span[@class="street-address"]')).strip()
-        street_addr = re.sub('\s+', ' ', street_addr)
-        postal_addr = tostring_with_breaks(addr_parent.find('span[@class="postal-addr"]')).strip()
-        postal_addr = re.sub('\s+', ' ', postal_addr)
-        country = tostring_with_breaks(addr_parent.find('span[@class="country-name"]')).strip().strip(',')
-        return '%s %s %s' % (street_addr, postal_addr, country)
-
-    def get_category(self):
-        return values.Category.LODGING
-
-    def get_sub_category(self):
-        return values.SubCategory.HOTEL
-
-    @fail_returns_none
-    def get_rating(self):
-        # Looks like "4.5 / 5"
-        rating_fraction_str = etree.tostring(self.root.find('body//div[@class="score-summary"]/span[@class="rating"]'), encoding='unicode', method='text').strip()
-        return float(rating_fraction_str.split('/')[0].strip())
-
-    @fail_returns_empty
-    def get_photos(self):
-        carousel_thumbnails = self.root.findall('body//div[@id="hotel-photos"]//ol[@class="thumbnails"]//li//a')
-        return [thumb.get('href') for thumb in carousel_thumbnails]
-
-    @fail_returns_none
-    def parse_latlng(self):
-        geo_meta = self.root.find('.//meta[@name="geo.position"]')
-        if geo_meta is not None:
-            lat, lng = map(float, geo_meta.get('content').split(','))
-            return {
-                'lat': lat,
-                'lng': lng
-                }
-
-    @staticmethod
-    def expand_using_hotel_id(url, ignored):
-        hotel_id = urlparse.parse_qs(urlparse.urlparse(url.lower()).query)['hotelid'][0]
-        new_url = 'http://www.hotels.com/hotel/details.html?hotelId=%s' % hotel_id
-        return (new_url,)
-
-HotelsDotComScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
-    '^http(s)?://([a-z]{2,3})\.hotels\.com/hotel/details\.html.*$',
-    ('(?i)^http(s)?://([a-z]{2,3})\.hotels\.com/ho\d+/.*hotelid=\d+.*$', HotelsDotComScraper.expand_using_hotel_id),
-    ('^http(s)?://([a-z]{2,3})\.hotels\.com/search\.do\?.*$', 
-        ScrapedPage.result_page_expander('.//li[@class=" hotel"]//h3[@class="hotel-name"]//a'),
-        False, REQUIRES_CLIENT_PAGE_SOURCE))
-
-
-class AirbnbScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
+class AirbnbScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/rooms/\d+.*$',
         ('^http(s)://www\.airbnb\.(com|[a-z]{2})(\.[a-z]{2})?/s/.*$',
-            ScrapedPage.result_page_expander('.//div[contains(@class, "search-results")]//div[contains(@class, "listing")]//div[contains(@class, "listing-info")]//a'),
+            scraped_page.result_page_expander('.//div[contains(@class, "search-results")]//div[contains(@class, "listing")]//div[contains(@class, "listing-info")]//a'),
             False, REQUIRES_CLIENT_PAGE_SOURCE))
 
     NAME_XPATH = 'body//div[@id="listing_name"]'
@@ -267,10 +113,10 @@ class AirbnbScraper(ScrapedPage):
         return [thumb.get('href') for thumb in thumbs]
 
 
-class BookingDotComScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns('^http(s)?://www\.booking\.com/hotel/.*$',
+class BookingDotComScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns('^http(s)?://www\.booking\.com/hotel/.*$',
         ('^http(s)?://www\.booking\.com/(flexiblesr|searchresults).*$',
-            ScrapedPage.result_page_expander('.//div[@class="sr_item_content"]//a[@class="hotel_name_link url "]'),
+            scraped_page.result_page_expander('.//div[@class="sr_item_content"]//a[@class="hotel_name_link url "]'),
             REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = 'body//h1//span[@id="hp_hotel_name"]'
@@ -317,7 +163,7 @@ class BookingDotComScraper(ScrapedPage):
         thumbs = self.root.findall('body//div[@id="photos_distinct"]//a[@data-resized]')
         return [thumb.get('data-resized') for thumb in thumbs]
 
-class HyattScraper(ScrapedPage):
+class HyattScraper(scraped_page.ScrapedPage):
     NAME_XPATH = 'body//h1[@class="homePropertyName"]'
 
     def get_address(self):
@@ -347,13 +193,13 @@ class HyattScraper(ScrapedPage):
         new_url = 'http://%s/en/hotel/home.html' % host
         return (new_url,)
 
-HyattScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+HyattScraper.HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
     '^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/home.html.*$',
     ('^http(s)?://[^/]+\.hyatt.com/hyatt/reservations.*$', HyattScraper.expand_reservation_page, False, REQUIRES_CLIENT_PAGE_SOURCE),
     ('^http(s)?://[^/]+\.hyatt.com/[a-z]+/hotel/(?!home).*$', HyattScraper.expand_deep_info_page))
 
 
-class StarwoodScraper(ScrapedPage):
+class StarwoodScraper(scraped_page.ScrapedPage):
     NAME_XPATH = 'body//div[@id="propertyInformation"]//h1'
 
     def get_address(self):
@@ -405,12 +251,12 @@ class StarwoodScraper(ScrapedPage):
         new_url = 'http://www.starwoodhotels.com/preferredguest/property/overview/index.html?propertyID=%s' % property_id
         return (new_url,)
 
-StarwoodScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+StarwoodScraper.HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
     '^http(s)?://www\.starwoodhotels\.com/preferredguest/property/overview/index\.html\?propertyID=\d+.*$',
     ('(?i)^http(s)?://www\.starwoodhotels\.com/.*propertyid=\d+.*$', StarwoodScraper.expand_using_property_id))
 
 
-class HiltonScraper(ScrapedPage):
+class HiltonScraper(scraped_page.ScrapedPage):
     NAME_XPATH = 'body//h1'
 
     def get_address(self):
@@ -457,14 +303,14 @@ class HiltonScraper(ScrapedPage):
             return (new_url,)
         return ()
 
-HiltonScraper.HANDLEABLE_URL_PATTERNS = urlpatterns(
+HiltonScraper.HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
     '^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/index\.html.*$',
     ('^http(s)?://www(\d)?\.hilton\.com/[a-z]+/hotels/[\w-]+/[\w-]+/[\w-]+/[\w-]+\.html.*$', HiltonScraper.expand_info_page_url),
     ('^http(s)?://secure(\d)?\.hilton\.com/.*$', HiltonScraper.expand_reservation_page, False, REQUIRES_CLIENT_PAGE_SOURCE))
 
 
-class LonelyPlanetScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
+class LonelyPlanetScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/hotels/(?!guesthouse|apartments|rated|hostels-and-budget-hotels).*$',
         '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/shopping/.*$',
         '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/entertainment-nightlife/.*$',
@@ -564,8 +410,8 @@ class LonelyPlanetScraper(ScrapedPage):
         return 'Precise' if self.get_latlng() else 'Imprecise'
 
 # Only supports review pages
-class FodorsScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
+class FodorsScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '^http(s)?://www\.fodors\.com/.*/review-\d+\.html.*$',)
 
     NAME_XPATH = './/h1'
@@ -650,8 +496,8 @@ class FodorsScraper(ScrapedPage):
         return google_place_entity.photo_urls[:] if google_place_entity else []
 
 
-class WikipediaScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
+class WikipediaScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '^http(s)?://[a-z]{2,3}\.wikipedia\.org/wiki/.+$')
 
     NAME_XPATH = './/h1[@id="firstHeading"]//span'
@@ -702,14 +548,14 @@ class WikipediaScraper(ScrapedPage):
                 img_urls.append(largest_src)
         return img_urls
 
-class FoursquareScraper(ScrapedPage):
-    HANDLEABLE_URL_PATTERNS = urlpatterns(
+class FoursquareScraper(scraped_page.ScrapedPage):
+    HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '^http(s)?://foursquare\.com/v/.+$',
         ('^http(s)?://foursquare\.com/explore\?.+$', 
-            ScrapedPage.result_page_expander('.//div[@id="results"]//div[@class="venueBlock"]//div[@class="venueName"]//a'),
+            scraped_page.result_page_expander('.//div[@id="results"]//div[@class="venueBlock"]//div[@class="venueName"]//a'),
             False, REQUIRES_CLIENT_PAGE_SOURCE),
         ('^http(s)?://foursquare\.com/[^/]+/list/.+$',
-            ScrapedPage.result_page_expander('.//div[@id="allItems"]//div[contains(@class, "s-list-item")]//a'),
+            scraped_page.result_page_expander('.//div[@id="allItems"]//div[contains(@class, "s-list-item")]//a'),
             REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = './/h1[@class="venueName"]'
@@ -788,7 +634,11 @@ def contains_any(s, values):
     return False
 
 
-ALL_SCRAPERS = tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, ScrapedPage))
+from scrapers import hotels_dot_com
+from scrapers import tripadvisor
+
+ALL_SCRAPERS = (hotels_dot_com.HotelsDotComScraper, tripadvisor.TripAdvisorScraper) \
+    + tuple(val for val in locals().itervalues() if type(val) == type and issubclass(val, scraped_page.ScrapedPage))
 
 def build_scrapers(url, client_page_source=None, force_fetch_page=False, allow_expansion=True):
     page_source_tree = html_parsing.parse_tree_from_string(client_page_source) if client_page_source else None

@@ -188,17 +188,17 @@ Photo urls: %s''' % (
     self.get_primary_photo(),
     self.get_photos())
 
-    @staticmethod
-    def expand_result_page(xpath, url, page_source_tree):
-        if not page_source_tree:
-            return ()
-        root = page_source_tree.getroot()
-        links = root.xpath(xpath)
-        return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
 
-    @staticmethod
-    def result_page_expander(xpath):
-        return lambda url, page_source_tree: ScrapedPage.expand_result_page(xpath, url, page_source_tree)
+def expand_result_page(xpath, url, page_source_tree):
+    if not page_source_tree:
+        return ()
+    root = page_source_tree.getroot()
+    links = root.xpath(xpath)
+    return [urlparse.urljoin(url, link.get('href')) for link in links if link.get('href')]
+
+def result_page_expander(xpath):
+    return lambda url, page_source_tree: expand_result_page(xpath, url, page_source_tree)
+
 
 def lookup_location(scr):
     locations = []
