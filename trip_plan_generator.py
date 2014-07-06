@@ -10,7 +10,7 @@ import clip_logic
 import data
 import google_places
 import geocode
-from scrapers import html_parsing
+from scraping import html_parsing
 import serviceimpls
 
 def parse_tree(url):

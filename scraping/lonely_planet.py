@@ -1,8 +1,8 @@
 import geocode
 import google_places
 
-from scrapers.html_parsing import tostring
-from scrapers import scraped_page
+from scraping.html_parsing import tostring
+from scraping import scraped_page
 import values
 
 class LonelyPlanetScraper(scraped_page.ScrapedPage):

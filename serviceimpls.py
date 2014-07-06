@@ -12,7 +12,7 @@ import geometry
 import google_places
 import kml_import
 import sample_sites
-from scrapers import trip_plan_creator
+from scraping import trip_plan_creator
 import serializable
 import service
 import utils

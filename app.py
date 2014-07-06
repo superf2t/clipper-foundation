@@ -11,7 +11,7 @@ import constants
 import data
 import page_proxy
 import sample_sites
-from scrapers import trip_plan_creator
+from scraping import trip_plan_creator
 import serializable
 import serviceimpls
 import values

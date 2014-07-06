@@ -2,11 +2,11 @@ import re
 
 import geocode
 import google_places
-from scrapers.html_parsing import tostring
-from scrapers import scraped_page
-from scrapers.scraped_page import LocationResolutionStrategy
-from scrapers.scraped_page import fail_returns_empty
-from scrapers.scraped_page import fail_returns_none
+from scraping.html_parsing import tostring
+from scraping import scraped_page
+from scraping.scraped_page import LocationResolutionStrategy
+from scraping.scraped_page import fail_returns_empty
+from scraping.scraped_page import fail_returns_none
 import values
 
 # Only supports review pages

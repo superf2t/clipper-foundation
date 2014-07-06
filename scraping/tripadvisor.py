@@ -1,13 +1,13 @@
 import json
 
 import crossreference
-from scrapers import hotels_dot_com
-from scrapers import html_parsing
-from scrapers import scraped_page
-from scrapers.scraped_page import LocationResolutionStrategy
-from scrapers.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
-from scrapers.scraped_page import fail_returns_empty
-from scrapers.scraped_page import fail_returns_none
+from scraping import hotels_dot_com
+from scraping import html_parsing
+from scraping import scraped_page
+from scraping.scraped_page import LocationResolutionStrategy
+from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
+from scraping.scraped_page import fail_returns_empty
+from scraping.scraped_page import fail_returns_none
 import values
 
 class TripAdvisorScraper(scraped_page.ScrapedPage):

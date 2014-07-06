@@ -2,7 +2,7 @@ import re
 
 import article_parser
 import data
-from scrapers import html_parsing
+from scraping import html_parsing
 
 class NomadicMatt(article_parser.ArticleParser):
     URL_REGEX = re.compile('^http://www\.nomadicmatt\.com/travel-guides/.+$')    

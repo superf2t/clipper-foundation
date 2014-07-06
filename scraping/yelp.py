@@ -1,11 +1,11 @@
 import urlparse
 
-from scrapers import html_parsing
-from scrapers.html_parsing import tostring
-from scrapers import scraped_page
-from scrapers.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
-from scrapers.scraped_page import fail_returns_empty
-from scrapers.scraped_page import fail_returns_none
+from scraping import html_parsing
+from scraping.html_parsing import tostring
+from scraping import scraped_page
+from scraping.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
+from scraping.scraped_page import fail_returns_empty
+from scraping.scraped_page import fail_returns_none
 import values
 
 class YelpScraper(scraped_page.ScrapedPage):

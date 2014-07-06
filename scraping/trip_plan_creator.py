@@ -3,9 +3,9 @@ import urlparse
 import data
 import geocode
 import google_places
-from scrapers import html_parsing
-from scrapers import lets_go
-from scrapers import nomadic_matt
+from scraping import html_parsing
+from scraping import lets_go
+from scraping import nomadic_matt
 import utils
 
 class TripPlanCreator(object):

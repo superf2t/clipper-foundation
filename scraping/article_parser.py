@@ -1,6 +1,6 @@
 import data
 import geocode
-from scrapers import html_parsing
+from scraping import html_parsing
 
 class ArticleParser(object):
     URL_REGEX = None

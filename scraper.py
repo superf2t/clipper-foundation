@@ -2,21 +2,21 @@ import urllib2
 
 from lxml import etree
 
-from scrapers import html_parsing
+from scraping import html_parsing
 import utils
 
-from scrapers import airbnb
-from scrapers import booking_dot_com
-from scrapers import fodors
-from scrapers import foursquare
-from scrapers import hilton
-from scrapers import hotels_dot_com
-from scrapers import hyatt
-from scrapers import lonely_planet
-from scrapers import starwood
-from scrapers import tripadvisor
-from scrapers import wikipedia
-from scrapers import yelp
+from scraping import airbnb
+from scraping import booking_dot_com
+from scraping import fodors
+from scraping import foursquare
+from scraping import hilton
+from scraping import hotels_dot_com
+from scraping import hyatt
+from scraping import lonely_planet
+from scraping import starwood
+from scraping import tripadvisor
+from scraping import wikipedia
+from scraping import yelp
 
 ALL_SCRAPERS = (
     airbnb.AirbnbScraper,

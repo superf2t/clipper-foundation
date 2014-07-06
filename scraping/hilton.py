@@ -1,8 +1,8 @@
 import re
 
-from scrapers.html_parsing import tostring
-from scrapers import scraped_page
-from scrapers.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
+from scraping.html_parsing import tostring
+from scraping import scraped_page
+from scraping.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
 import values
 
 class HiltonScraper(scraped_page.ScrapedPage):

@@ -1,6 +1,6 @@
-from scrapers.html_parsing import tostring
-from scrapers import scraped_page
-from scrapers.scraped_page import fail_returns_none
+from scraping.html_parsing import tostring
+from scraping import scraped_page
+from scraping.scraped_page import fail_returns_none
 import utils
 import values
 

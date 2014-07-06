@@ -3,7 +3,7 @@ import urlparse
 
 import article_parser
 import data
-from scrapers import html_parsing
+from scraping import html_parsing
 import utils
 
 class LetsGo(article_parser.ArticleParser):

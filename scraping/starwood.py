@@ -1,9 +1,9 @@
 import re
 import urlparse
 
-from scrapers import html_parsing
-from scrapers import scraped_page
-from scrapers.scraped_page import fail_returns_none
+from scraping import html_parsing
+from scraping import scraped_page
+from scraping.scraped_page import fail_returns_none
 import values
 
 class StarwoodScraper(scraped_page.ScrapedPage):
