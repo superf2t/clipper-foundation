@@ -2,7 +2,7 @@ import re
 import urlparse
 
 import data
-import scraper
+import scrape_logic
 import utils
 
 # TODO: Remove url as a param here since it's no longer used.
@@ -18,28 +18,28 @@ def entity_from_scraper(scr, url):
 
 def scrape_entities_from_url(url, page_source=None, force_fetch_page=False,
         max_results=None, allow_expansion=True):
-    scrapers = scraper.build_scrapers(url, page_source, force_fetch_page)
+    scrapers = scrape_logic.build_scrapers(url, page_source, force_fetch_page)
     scrapers = scrapers[:max_results] if max_results else scrapers
     return utils.parallelize(entity_from_scraper, [(scr, url) for scr in scrapers])
 
 def needs_client_page_source_to_scrape(url):
-    return scraper.url_requires_client_page_source(url)
+    return scrape_logic.url_requires_client_page_source(url)
 
 def scrape_entities_from_page_source(url, page_source):
-    if scraper.is_url_handleable(url):
+    if scrape_logic.is_url_handleable(url):
         return scrape_entities_from_url(url, page_source)
     else:
         urls = extract_urls_from_page_source(url, page_source)
-        handleable_urls = set(u for u in urls if scraper.is_url_handleable(u, allow_expansion=False))
+        handleable_urls = set(u for u in urls if scrape_logic.is_url_handleable(u, allow_expansion=False))
         entity_lists = utils.parallelize(scrape_entities_from_url,
             [(u, None, True, None, False) for u in handleable_urls])
         return utils.flatten(entity_lists)
 
 def extract_urls_from_page_source(url, page_source):
     urls = []
-    tree = scraper.parse_tree_from_string(page_source)
+    tree = scrape_logic.parse_tree_from_string(page_source)
     urls.extend(extract_all_links_from_anchors(url, tree))
-    urls.extend(extract_all_links_from_text(scraper.tostring(tree.getroot())))
+    urls.extend(extract_all_links_from_text(scrape_logic.tostring(tree.getroot())))
     return urls
 
 def extract_all_links_from_anchors(url, page_source_tree):
