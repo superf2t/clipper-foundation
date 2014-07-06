@@ -1,8 +1,6 @@
 import re
 import urlparse
 
-from lxml import etree
-
 from scrapers.html_parsing import tostring
 from scrapers.html_parsing import tostring_with_breaks
 from scrapers import scraped_page

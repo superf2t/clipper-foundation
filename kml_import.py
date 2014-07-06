@@ -6,8 +6,8 @@ from lxml import etree
 import data
 import geocode
 import google_places
-from scraper import tostring
-from scraper import tostring_with_breaks
+from scrapers.html_parsing import tostring
+from scrapers.html_parsing import tostring_with_breaks
 import utils
 
 def parse_from_kml_url(kml_url):
