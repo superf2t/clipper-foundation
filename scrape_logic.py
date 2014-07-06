@@ -9,6 +9,7 @@ from scraping import airbnb
 from scraping import booking_dot_com
 from scraping import fodors
 from scraping import foursquare
+from scraping import gogobot
 from scraping import hilton
 from scraping import hotels_dot_com
 from scraping import hyatt
@@ -24,6 +25,7 @@ ALL_SCRAPERS = (
     booking_dot_com.BookingDotComScraper,
     fodors.FodorsScraper,
     foursquare.FoursquareScraper,
+    gogobot.GogobotScraper,
     hilton.HiltonScraper,
     hotels_dot_com.HotelsDotComScraper,
     hyatt.HyattScraper,
@@ -126,6 +128,9 @@ if __name__ == '__main__':
         'https://foursquare.com/v/pacific-catch-9th-ave-san-francisco-ca/49dd5b31f964a520fe5f1fe3',
         'http://www.zagat.com/r/quince-san-francisco',
         'http://www.zagat.com/n/bourbon-branch-san-francisco',
+        'http://www.gogobot.com/eiffel-tower-paris-attraction',
+        'http://www.gogobot.com/hotel-ritz-paris-paris-hotel',
+        'http://www.gogobot.com/paris--things_to_do',
         ):
         scrapers = build_scrapers(url, scraper_page_source.get_page_source(url), force_fetch_page=True)
         for scraper in scrapers:
