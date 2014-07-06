@@ -55,6 +55,6 @@ def tostring(element, normalize_whitespace=False, with_tail=True):
     return s
 
 def join_element_text_using_xpaths(root, xpaths, separator=' '):
-    elems = texts = [root.find(xpath) for xpath in xpaths]
-    texts = [tostring(elem) for elem in elems if elem is not None]
+    elems = [root.find(xpath) for xpath in xpaths]
+    texts = [tostring(elem, with_tail=False) for elem in elems if elem is not None]
     return separator.join(texts)

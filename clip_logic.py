@@ -3,6 +3,7 @@ import urlparse
 
 import data
 import scrape_logic
+from scraping import html_parsing
 import utils
 
 # TODO: Remove url as a param here since it's no longer used.
@@ -37,9 +38,9 @@ def scrape_entities_from_page_source(url, page_source):
 
 def extract_urls_from_page_source(url, page_source):
     urls = []
-    tree = scrape_logic.parse_tree_from_string(page_source)
+    tree = html_parsing.parse_tree_from_string(page_source)
     urls.extend(extract_all_links_from_anchors(url, tree))
-    urls.extend(extract_all_links_from_text(scrape_logic.tostring(tree.getroot())))
+    urls.extend(extract_all_links_from_text(html_parsing.tostring(tree.getroot())))
     return urls
 
 def extract_all_links_from_anchors(url, page_source_tree):

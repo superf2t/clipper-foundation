@@ -17,6 +17,7 @@ from scraping import starwood
 from scraping import tripadvisor
 from scraping import wikipedia
 from scraping import yelp
+from scraping import zagat
 
 ALL_SCRAPERS = (
     airbnb.AirbnbScraper,
@@ -31,6 +32,7 @@ ALL_SCRAPERS = (
     tripadvisor.TripAdvisorScraper,
     wikipedia.WikipediaScraper,
     yelp.YelpScraper,
+    zagat.ZagatScraper,
     )
 
 def build_scrapers(url, client_page_source=None, force_fetch_page=False, allow_expansion=True):
@@ -122,6 +124,8 @@ if __name__ == '__main__':
         'http://en.wikipedia.org/wiki/Eiffel_tower',
         'http://en.wikipedia.org/wiki/Bahnhofstrasse',
         'https://foursquare.com/v/pacific-catch-9th-ave-san-francisco-ca/49dd5b31f964a520fe5f1fe3',
+        'http://www.zagat.com/r/quince-san-francisco',
+        'http://www.zagat.com/n/bourbon-branch-san-francisco',
         ):
         scrapers = build_scrapers(url, scraper_page_source.get_page_source(url), force_fetch_page=True)
         for scraper in scrapers:
