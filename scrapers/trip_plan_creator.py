@@ -1,7 +1,4 @@
 import urlparse
-import urllib2
-
-from lxml import etree
 
 import data
 import geocode
