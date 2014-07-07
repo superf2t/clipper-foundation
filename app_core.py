@@ -40,8 +40,8 @@ class AppConfig(object):
     USER_SEND_REGISTERED_EMAIL       = True
     USER_SEND_PASSWORD_CHANGED_EMAIL = True
     USER_SEND_USERNAME_CHANGED_EMAIL = False
-    USER_LOGIN_TEMPLATE = 'user/login.html'
-    USER_REGISTER_TEMPLATE = 'user/register.html'
+    USER_LOGIN_TEMPLATE = 'flask_user/login.html'
+    USER_REGISTER_TEMPLATE = 'flask_user/register.html'
 
 app = MyFlask(__name__)
 app.config.from_object(__name__+'.AppConfig')
