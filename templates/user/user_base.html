@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+  <title>{% block title %}TravelClipper{% endblock %}</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+  {% include 'analytics.html' %}
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Nunito';
+    }
+  </style>
+</head>
+<body>
+  {% block content %}
+  {% endblock %}
+</body>
+</html>

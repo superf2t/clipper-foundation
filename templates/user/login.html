@@ -1,0 +1,69 @@
+{% extends 'user/user_base.html' %}
+
+{% block content %}
+{% from "flask_user/_macros.html" import render_field, render_submit_field %}
+
+<style type="text/css">
+  body {
+    max-width: 50%;
+    margin: auto;
+  }
+</style>
+<script type="text/javascript">
+  $(function() {
+    $('#email').focus();
+  })
+</script>
+
+<h1>Sign in</h1>
+
+<form action="" method="POST" class="form" role="form">
+  {{ form.hidden_tag() }}
+
+  {# Can change to form.username to swtich to username login #}
+  {% set field = form.email %}
+  <div class="form-group {% if field.errors %}has-error{% endif %}">
+    <div class="row">
+      <div class="col-xs-6">
+        <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
+      </div>
+      <div class="col-xs-6 text-right">
+        <a href="{{ url_for('user.register') }}" tabindex='190'>
+          New here? Register.
+        </a>
+      </div>
+    </div>
+    {{ field(class_='form-control', tabindex=110) }}
+    {% if field.errors %}
+      {% for e in field.errors %}
+        <p class="help-block">{{ e }}</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {# Password #}
+  {% set field = form.password %}
+  <div class="form-group {% if field.errors %}has-error{% endif %}">
+    <div class="row">
+      <div class="col-xs-6">
+        <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
+      </div>
+      <div class="col-xs-6 text-right">
+        <a href="{{ url_for('user.forgot_password') }}" tabindex='195'>
+          Forgot your Password?
+        </a>
+      </div>
+    </div>
+    {{ field(class_='form-control', tabindex=120) }}
+    {% if field.errors %}
+      {% for e in field.errors %}
+        <p class="help-block">{{ e }}</p>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {# Submit button #}
+  {{ render_submit_field(form.submit, tabindex=180) }}
+</form>
+
+{% endblock %}

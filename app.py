@@ -1,14 +1,16 @@
-from flask import Flask
 from flask import json
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask.ext import user as flask_user
 
 import admin
-import clip_logic
+from app_core import app
+from app_core import db
 import constants
 import data
+from database import user
 import page_proxy
 import sample_sites
 from scraping import trip_plan_creator
@@ -16,25 +18,8 @@ import serializable
 import serviceimpls
 import values
 
-class MyFlask(Flask):
-    jinja_options = dict(Flask.jinja_options)
-    jinja_options['extensions'].append('jinja2htmlcompress.SelectiveHTMLCompress')
-
-    def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'js/admin.js',
-            'css/style.css', 'css/clipper.css', 'css/shared.css', 'css/admin.css'):
-            return 0
-        return super(MyFlask, self).get_send_file_max_age(name)
-
-app = MyFlask(__name__)
-
-if not constants.DEBUG:
-    import logging
-    import os
-    projectpath = os.environ.get('PROJECTPATH') or '.'
-    file_handler = logging.FileHandler(projectpath + '/app.log')
-    file_handler.setLevel(logging.WARNING)
-    app.logger.addHandler(file_handler)
+user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
+user_manager = flask_user.UserManager(user_db_adapter, app, register_form=user.TCRegisterForm)
 
 app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
