@@ -1,0 +1,4 @@
+{% block message %}
+{% endblock %}
+
+The TravelClipper Team
