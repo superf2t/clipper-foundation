@@ -9,10 +9,22 @@
     margin: auto;
   }
 </style>
-<script type="text/javascript">
+
+<script>
   $(function() {
-    $('#email').focus();
-  })
+    $('#first_name').change(function() {
+      if (!$('#display_name').val() && $('#first_name').val()) {
+        $('#display_name').val($('#first_name').val());
+      }
+    });
+    $('#last_name').change(function() {
+      if ($('#last_name').val() && $('#display_name').val() && $('#display_name').val() == $('#first_name').val()) {
+        var defaultName = $.trim(
+          $('#first_name').val() + ' ' + $('#last_name').val().substring(0, 1));
+        $('#display_name').val(defaultName);
+      }
+    });
+  });
 </script>
 
 <h1>Register</h1>
@@ -33,7 +45,7 @@
           </a>
       </div>
     </div>
-    {{ field(class_='form-control', tabindex=210) }}
+    {{ field(class_='form-control', autofocus=true, tabindex=210) }}
     {% if field.errors %}
       {% for e in field.errors %}
         <p class="help-block">{{ e }}</p>
@@ -41,7 +53,9 @@
     {% endif %}
   </div>
 
-  {{ render_field(form.display_name, tabindex=220) }}
+  {{ render_field(form.first_name, tabindex=220) }}
+  {{ render_field(form.last_name, tabindex=221) }}
+  {{ render_field(form.display_name, placeholder='e.g. Keyser S', tabindex=222) }}
 
   {{ render_field(form.password, tabindex=230) }}
 

@@ -11,7 +11,11 @@ class User(db.Model, user.UserMixin):
     email = db.Column(db.String(255), nullable=False, unique=True)
     confirmed_at = db.Column(db.DateTime())
     reset_password_token = db.Column(db.String(100), nullable=False, default='')
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
     display_name = db.Column(db.String(50), nullable=False)
 
 class TCRegisterForm(forms.RegisterForm):
-    display_name = wtforms.StringField('Display Name')
+    first_name = wtforms.StringField('First Name')
+    last_name = wtforms.StringField('Last Name')
+    display_name = wtforms.StringField('Display Name - what will be shown on trip plans authored by you')
