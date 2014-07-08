@@ -104,7 +104,7 @@ class Entity(serializable.Serializable):
     @staticmethod
     def chronological_cmp(e1, e2):
         if e1.day == e2.day:
-            return cmp(d1.day_position, d2.day_position)
+            return cmp(e1.day_position, e2.day_position)
         elif e1.day and e2.day:
             return cmp(e1.day, e2.day)
         return -cmp(e1.day, e2.day)
@@ -174,7 +174,7 @@ class TripPlan(serializable.Serializable):
         return False
 
     def editable_by(self, session_info):
-        return (str(self.creator) in (session_info.email, str(session_info.sessionid))
+        return (str(self.creator) in (session_info.email, session_info.old_email, str(session_info.visitor_id))
             or session_info.is_admin()
             or (session_info.email and session_info.email in self.editors))
 
@@ -215,22 +215,17 @@ class TripPlan(serializable.Serializable):
 
 
 class SessionInfo(object):
-    def __init__(self, email=None, sessionid=None, set_on_response=False):
+    def __init__(self, email=None, old_email=None, visitor_id=None):
         self.email = email
-        self.sessionid = sessionid
-        self.set_on_response = set_on_response
-        self.logged_in = False
+        self.old_email = email
+        self.visitor_id = visitor_id
 
     @property
     def user_identifier(self):
-        return self.email or self.sessionid
+        return self.email or self.old_email or self.visitor_id
 
     def is_admin(self):
         return self.email in ('admin@unicyclelabs.com',)
-
-def generate_sessionid():
-    sessionid = uuid.uuid4().bytes[:8]
-    return struct.unpack('Q', sessionid)[0]
 
 
 class InitialPageState(serializable.Serializable):

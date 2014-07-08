@@ -674,6 +674,8 @@ class TripPlanService(service.Service):
             response_code=service.ResponseCode.SUCCESS.name,
             trip_plans=trip_plans)
 
+NoteServiceError = enums.enum('NO_TRIP_PLAN_FOUND')
+
 class NoteGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
 

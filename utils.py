@@ -2,7 +2,6 @@ import operator
 import Queue
 import re
 import threading
-import time
 
 def dict_from_attrs(objs, attr_name):
     attrgetter = operator.attrgetter(attr_name)

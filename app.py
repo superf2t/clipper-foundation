@@ -1,13 +1,16 @@
+from flask import g
 from flask import json
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
 from flask.ext import user as flask_user
+from flask.ext.user import current_user
 
 import admin
 from app_core import app
 from app_core import db
+import cookies
 import constants
 import data
 from database import user
@@ -25,25 +28,21 @@ app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
 @app.route('/')
 def index():
-    session_info = decode_session(request.cookies)
-    return process_response(render_template('index.html'), request, session_info)
+    return render_template('index.html')
 
 @app.route('/get_clipper')
 def get_clipper():
-    session_info = decode_session(request.cookies)
-    response = render_template('get_clipper.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
-    return process_response(response, request, session_info)
+    return render_template('get_clipper.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
 
 @app.route('/clipper_iframe')
 def clipper_iframe():
-    session_info = decode_session(request.cookies)
-    if not session_info.logged_in:
+    if not (g.session_info.visitor_id or g.session_info.email):
         return render_template('clipper_iframe_not_logged_in.html')
-    trip_plan_service = serviceimpls.TripPlanService(session_info)
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     if not all_trip_plans:
         # User is so new she doesn't even have an empty trip plan
-        trip_plan = create_and_save_default_trip_plan(session_info)
+        trip_plan = create_and_save_default_trip_plan(g.session_info)
         all_trip_plans = [trip_plan]
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     return render_template('clipper_iframe.html',
@@ -56,17 +55,15 @@ def clipper_map_iframe():
 
 @app.route('/trip_plan')
 def trip_plan():
-    session_info = decode_session(request.cookies)
-    all_trip_plans = data.load_all_trip_plans(session_info)
+    all_trip_plans = data.load_all_trip_plans(g.session_info)
     if all_trip_plans and not request.values.get('tutorial'):
         trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
     else:
-        trip_plan = create_and_save_default_trip_plan(session_info)
+        trip_plan = create_and_save_default_trip_plan(g.session_info)
     redirect_url = '/trip_plan/%s' % trip_plan.trip_plan_id
     if request.values.get('tutorial'):
         redirect_url += '?tutorial=1'
-    response = redirect(redirect_url)
-    return process_response(response, request, session_info)
+    return redirect(redirect_url)
 
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
@@ -74,18 +71,17 @@ def trip_plan_by_id(trip_plan_id):
     if trip_plan_id > 2**53:
         return redirect('/trip_plan/%s' % str(trip_plan_id)[:15])
 
-    session_info = decode_session(request.cookies)
-    trip_plan_service = serviceimpls.TripPlanService(session_info)
-    entity_service = serviceimpls.EntityService(session_info)
-    note_service = serviceimpls.NoteService(session_info)
-    account_info = data.AccountInfo(session_info.email)
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    entity_service = serviceimpls.EntityService(g.session_info)
+    note_service = serviceimpls.NoteService(g.session_info)
+    account_info = data.AccountInfo(g.session_info.email)
 
     current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
-    allow_editing = current_trip_plan and current_trip_plan.editable_by(session_info)
+    allow_editing = current_trip_plan and current_trip_plan.editable_by(g.session_info)
     needs_tutorial = (allow_editing and len(all_trip_plans) == 1 and not entities) or (
         request.values.get('tutorial') and not entities)
     initial_state = data.InitialPageState(request.values.get('sort'),
@@ -102,7 +98,7 @@ def trip_plan_by_id(trip_plan_id):
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
         initial_state=initial_state)
-    return process_response(response, request, session_info)
+    return response
 
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
@@ -112,38 +108,33 @@ def bookmarklet_js():
 
 @app.route('/entityservice/<method_name>', methods=['POST'])
 def entityservice(method_name):
-    session_info = decode_session(request.cookies)
-    service = serviceimpls.EntityService(session_info)
+    service = serviceimpls.EntityService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
 @app.route('/noteservice/<method_name>', methods=['POST'])
 def noteservice(method_name):
-    session_info = decode_session(request.cookies)
-    service = serviceimpls.NoteService(session_info)
+    service = serviceimpls.NoteService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
 @app.route('/tripplanservice/<method_name>', methods=['POST'])
 def tripplanservice(method_name):
-    session_info = decode_session(request.cookies)
-    service = serviceimpls.TripPlanService(session_info)
+    service = serviceimpls.TripPlanService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
 @app.route('/accountservice/<method_name>', methods=['POST'])
 def accountservice(method_name):
-    session_info = decode_session(request.cookies)
-    service = serviceimpls.AccountService(session_info)
+    service = serviceimpls.AccountService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
-    return process_response(json.jsonify(response), request, session_info)
+    return json.jsonify(response)
 
 @app.route('/adminservice/<method_name>', methods=['POST'])
 def adminservice(method_name):
-    session_info = decode_session(request.cookies)
-    service = serviceimpls.AdminService(session_info)
+    service = serviceimpls.AdminService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
-    return process_response(json.jsonify(response), request, session_info)
+    return json.jsonify(response)
 
 @app.route('/admin')
 def adminpage():
@@ -154,16 +145,15 @@ def adminpage():
 
 @app.route('/admin/editor/<int:trip_plan_id>')
 def admin_editor(trip_plan_id):
-    session_info = decode_session(request.cookies)
-    trip_plan_service = serviceimpls.TripPlanService(session_info)
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
-    entity_service = serviceimpls.EntityService(session_info)
+    entity_service = serviceimpls.EntityService(g.session_info)
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     return render_template('admin_editor.html',
         trip_plan=trip_plan,
         entities_json=serializable.to_json_str(entities),
         all_datatype_values=values.ALL_VALUES,
-        account_info=data.AccountInfo(session_info.email))
+        account_info=data.AccountInfo(g.session_info.email))
 
 @app.route('/admin/scrape')
 def admin_scrape():
@@ -184,31 +174,48 @@ def create_and_save_default_trip_plan(session_info):
     response = serviceimpls.TripPlanService(session_info).mutate(mutate_request)
     return response.trip_plans[0]
 
-def decode_session(cookies):
-    email = cookies.get('email')
+@app.before_request
+def process_cookies():
+    if request.path.startswith('/static/'):
+        return
     try:
-        sessionid = int(cookies.get('sessionid'))
+        old_sessionid = int(request.cookies.get('sessionid'))
     except:
-        sessionid = None
-    session_info = data.SessionInfo(email, sessionid)
-    session_info.logged_in = sessionid or email
-    if not session_info.sessionid:
-        session_info.sessionid = data.generate_sessionid()
-        session_info.set_on_response = True
-    return session_info
+        old_sessionid = None
+    visitor_id = cookies.visitor_id_from_token(request.cookies.get('visitor'))
+    if not visitor_id:
+        visitor_id = old_sessionid or cookies.generate_visitor_id()
+        visitor_token = cookies.make_visitor_token(visitor_id)
+        @after_this_request
+        def set_visitor_cookie(response):
+            set_cookie(response, 'visitor', visitor_token)
+        if old_sessionid:
+            @after_this_request
+            def clear_old_sessionid(response):
+                clear_cookie(response, 'sessionid')
 
-def process_response(response, request=None, session_info=None):
-    response = make_response(response)
-    if session_info and session_info.set_on_response:
-        if session_info.email and session_info.email != request.cookies.get('email'):
-            set_cookie(response, 'email', session_info.email)
-        if session_info.sessionid and session_info.sessionid != request.cookies.get('sessionid'):
-            set_cookie(response, 'sessionid', str(session_info.sessionid))
-    return response
+    old_email = request.cookies.get('email')
+    email = current_user.email if not current_user.is_anonymous() else None
+    g.session_info = data.SessionInfo(email, old_email, visitor_id)
 
 def set_cookie(response, key, value):
     response.set_cookie(key, value, expires=constants.COOKIE_EXPIRATION_TIME, domain=constants.HOST)
 
+def clear_cookie(response, key):
+    response.set_cookie(key, '', expires=0)
+
+# Used as a decorator
+def after_this_request(f):
+    if not hasattr(g, 'after_request_callbacks'):
+        g.after_request_callbacks = []
+    g.after_request_callbacks.append(f)
+    return f
+
+@app.after_request
+def call_after_request_callbacks(response):
+    for callback in getattr(g, 'after_request_callbacks', ()):
+        callback(response)
+    return response
 
 if __name__ == '__main__':
     app.debug = constants.DEBUG
