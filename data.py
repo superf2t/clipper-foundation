@@ -197,7 +197,10 @@ class TripPlan(serializable.Serializable):
                 if session_info.db_user.public_id == editor.public_id:
                     return True
         else:
-            return session_info.public_visitor_id and session_info.public_visitor_id == self.user.public_visitor_id
+            if self.user:
+                return session_info.public_visitor_id and session_info.public_visitor_id == self.user.public_visitor_id
+            else:
+                return session_info.visitor_id and session_info.visitor_id == self.creator
 
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)

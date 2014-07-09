@@ -919,12 +919,24 @@ class AccountService(service.Service):
             raise service.ServiceException.request_error(self.validation_errors)
 
     def migrate(self, request):
-        all_trip_plans = data.load_all_trip_plans_for_creator(self.session_info.visitor_id) or []
-        for trip_plan in all_trip_plans:
+        # Temporarily handle the case of people with old-style email logins;
+        # just populate the proper DisplayUser object on those.
+        old_trip_plans = data.load_all_trip_plans_for_creator(request.email) or []
+        if old_trip_plans:
+            db_user = user.User.query.filter_by(email=request.email).first()
+            for trip_plan in old_trip_plans:
+                if not trip_plan.user or not trip_plan.user.public_id:
+                    trip_plan.user = data.DisplayUser(db_user.public_id, db_user.display_name)
+                    trip_plan.creator = None
+                    data.save_trip_plan(trip_plan)
+
+        all_guest_trip_plans = data.load_all_trip_plans_for_creator(self.session_info.visitor_id) or []
+        for trip_plan in all_guest_trip_plans:
             data.change_creator(trip_plan, request.email)
+
         return MigrateResponse(
             response_code=service.ResponseCode.SUCCESS.name,
-            trip_plans=all_trip_plans)
+            trip_plans=all_guest_trip_plans)
 
 AdminServiceError = enums.enum('INVALID_PARSER_TYPE')
 
