@@ -580,6 +580,10 @@ class TripPlanService(service.Service):
         if not request.include_notes:
             for trip_plan in trip_plans:
                 trip_plan.notes = ()
+
+        self.migrate_creators(trip_plans)
+        self.resolve_display_users(trip_plans)
+
         return TripPlanGetResponse(response_code=service.ResponseCode.SUCCESS.name,
             trip_plans=trip_plans)
 
@@ -642,7 +646,11 @@ class TripPlanService(service.Service):
         for op in operations:
             trip_plan = op.operation.trip_plan
             trip_plan.trip_plan_id = data.generate_trip_plan_id()
-            trip_plan.creator = self.session_info.user_identifier
+            if self.session_info.logged_in():
+                trip_plan.user = data.DisplayUser(self.session_info.db_user.public_id,
+                    self.session_info.db_user.display_name)
+            else:
+                trip_plan.user = data.DisplayUser(public_visitor_id=self.session_info.public_visitor_id)
             op.result = trip_plan
 
     def process_edits(self, operations):
@@ -662,7 +670,13 @@ class TripPlanService(service.Service):
         self.raise_if_errors()
         new_trip_plan = trip_plan.copy()
         new_trip_plan.trip_plan_id = data.generate_trip_plan_id()
-        new_trip_plan.creator = self.session_info.user_identifier
+        if self.session_info.logged_in():
+            new_trip_plan.user = data.DisplayUser(self.session_info.db_user.public_id,
+                self.session_info.db_user.display_name)
+        else:
+            new_trip_plan.user = data.DisplayUser(public_visitor_id=self.session_info.public_visitor_id)
+        new_trip_plan.creator = None
+        new_trip_plan.editors = []
         new_trip_plan.entities = self.clone_entities(trip_plan.entities)
         data.save_trip_plan(new_trip_plan)
         return TripPlanCloneResponse(
@@ -690,6 +704,26 @@ class TripPlanService(service.Service):
             response_code=service.ResponseCode.SUCCESS.name,
             trip_plan=trip_plan)
 
+    def migrate_creators(self, trip_plans):
+        for trip_plan in trip_plans:
+            if trip_plan.creator and (not trip_plan.user or not trip_plan.user.public_id):
+                db_user = user.User.query.filter_by(email=trip_plan.creator).first()
+                if db_user:
+                    trip_plan.user = data.DisplayUser(db_user.public_id, db_user.display_name)
+
+    def resolve_display_users(self, trip_plans):
+        public_ids = set(t.user.public_id for t in trip_plans if t.user and t.user.public_id)
+        # We don't have to resolve editors because we didn't have any editors created
+        # until after accounts were launched.
+        if not public_ids:
+            return
+        db_users = user.User.get_by_public_ids(public_ids)
+        display_users = [data.DisplayUser(u.public_id, u.display_name) for u in db_users]
+        display_user_map = dict((d.public_id, d) for d in display_users)
+        for trip_plan in trip_plans:
+            if trip_plan.user and trip_plan.user.public_id:
+                trip_plan.user.update(display_user_map.get(trip_plan.user.public_id))
+
     FEATURED_TRIP_PLANS_USERS = (
          'admin@nytimes.com', 'admin@nomadicmatt.com', 'admin@letsgo.com',
          'admin@tripadvisor.com', 'admin@frommers.com', 'admin@travelclipper.com',
@@ -708,6 +742,10 @@ class TripPlanService(service.Service):
                 request.location_latlng.lat, request.location_latlng.lng)
             if distance < 40000:
                 trip_plans.append(trip_plan)
+
+        self.migrate_creators(trip_plans)
+        self.resolve_display_users(trip_plans)
+
         return FindTripPlansResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             trip_plans=trip_plans)

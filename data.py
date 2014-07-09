@@ -6,6 +6,7 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 import constants
+import crypto
 import enums
 import serializable
 import struct
@@ -29,11 +30,12 @@ class LatLngBounds(serializable.Serializable):
         self.northeast = northeast
 
 class DisplayUser(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('public_id', 'display_name')
+    PUBLIC_FIELDS = serializable.fields('public_id', 'display_name', 'public_visitor_id')
 
-    def __init__(self, public_id=None, display_name=None):
+    def __init__(self, public_id=None, display_name=None, public_visitor_id=None):
         self.public_id = public_id
         self.display_name = display_name
+        self.public_visitor_id = public_visitor_id
 
 class Comment(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields(
@@ -137,7 +139,8 @@ class TripPlan(serializable.Serializable):
         'description', 'cover_image_url', 'source_url',
         serializable.objlistf('entities', Entity),
         serializable.objlistf('notes', Note),
-        'creator', serializable.listf('editors'),
+        'creator', serializable.objf('user', DisplayUser),
+        serializable.objlistf('editors', DisplayUser),
         'last_modified', 'status')
 
     Status = enums.enum('ACTIVE', 'DELETED')
@@ -146,7 +149,7 @@ class TripPlan(serializable.Serializable):
             location_name=None, location_latlng=None, location_bounds=None,
             description=None, cover_image_url=None, source_url=None,
             entities=(), notes=(),
-            creator=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
+            creator=None, user=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.location_name = location_name
@@ -161,8 +164,10 @@ class TripPlan(serializable.Serializable):
         self.status = status
 
         # TODO: Make these private fields
-        self.creator = creator
+        self.user = user
+        self.creator = creator  # Deprecated in favor of user
         self.editors = editors or []
+        # self.invited_editors = invited_editors or []
 
     def entity_by_source_url(self, source_url):
         for entity in self.entities:
@@ -183,9 +188,16 @@ class TripPlan(serializable.Serializable):
         return False
 
     def editable_by(self, session_info):
-        return (str(self.creator) in (session_info.email, session_info.old_email, str(session_info.visitor_id))
-            or session_info.is_admin()
-            or (session_info.email and session_info.email in self.editors))
+        if session_info.is_admin():
+            return True
+        if session_info.logged_in():
+            if self.user and session_info.db_user.public_id == self.user.public_id:
+                return True
+            for editor in self.editors:
+                if session_info.db_user.public_id == editor.public_id:
+                    return True
+        else:
+            return session_info.public_visitor_id and session_info.public_visitor_id == self.user.public_visitor_id
 
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
@@ -233,6 +245,12 @@ class SessionInfo(object):
     @property
     def user_identifier(self):
         return self.email or self.old_email or self.visitor_id
+
+    @property
+    def public_visitor_id(self):
+        if not hasattr(self, '_cached_public_visitor_id'):
+            self._cached_public_visitor_id = crypto.encrypt_id(self.visitor_id)
+        return self._cached_public_visitor_id
 
     def is_admin(self):
         return self.email in ('admin@unicyclelabs.com',)

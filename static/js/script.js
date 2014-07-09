@@ -56,6 +56,19 @@ function hostToIcon(host) {
   return iconOverride || 'http://' + host + '/favicon.ico';
 }
 
+function creatorDisplayName(tripPlanData) {
+  if (!tripPlanData) {
+    return null;
+  }
+  if (tripPlanData['user'] && tripPlanData['user']['display_name']) {
+    return tripPlanData['user']['display_name'];
+  } else if (tripPlanData['creator']) {
+    return emailPrefix(tripPlanData['creator']);
+  } else {
+    return 'Guest User';
+  }
+}
+
 function EntityModel(entityData, editable) {
   this.data = entityData;
 
@@ -4637,7 +4650,6 @@ function makeFilter(fn) {
 angular.module('filtersModule', [])
   .filter('hostname', makeFilter(hostnameFromUrl))
   .filter('hostNoSuffix', makeFilter(hostNoSuffix))
-  .filter('emailPrefix', makeFilter(emailPrefix))
   .filter('hostToIcon', makeFilter(hostToIcon));
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
@@ -4701,7 +4713,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)
-    .service('$mapManager', MapManager);
+    .service('$mapManager', MapManager)
+    .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['appModule']);

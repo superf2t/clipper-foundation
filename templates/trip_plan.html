@@ -1033,8 +1033,8 @@
           <span ng-if="planModel.hasSource()">
             Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
           </span>
-          <span ng-if="!planModel.hasSource() && planModel.creatorIsUser()">
-            Created by: [[planModel.tripPlanData['creator'] | emailPrefix ]]
+          <span ng-if="!planModel.hasSource()">
+            Created by: [[ planModel.tripPlanData | creatorDisplayName ]]
           </span>
         </div>
       </div>
@@ -1399,7 +1399,7 @@
             ng-click="selectTripPlan(tripPlan)">
             <div class="text">
               <div class="name">[[tripPlan['name'] ]]</div>
-              <div class="creator">[[tripPlan['creator'] ]]</div>
+              <div class="creator">[[tripPlan | creatorDisplayName ]]</div>
             </div>
           </div>
         </div>
@@ -1414,7 +1414,7 @@
           ng-style="{'background-image': selectedTripPlan['cover_image_url'] && 'url(&quot;' + selectedTripPlan['cover_image_url'] + '&quot;)'}">
           <div class="text">
             <div class="name">[[selectedTripPlan['name'] ]]</div>
-            <div class="creator">[[selectedTripPlan['creator'] ]]</div>
+            <div class="creator">[[selectedTripPlan | creatorDisplayName ]]</div>
           </div>
         </div>
         <div class="description" ng-if="selectedTripPlan['description']"><span ng-bind-html="selectedTripPlan['description'] | linky:'_blank'"></span></div>
