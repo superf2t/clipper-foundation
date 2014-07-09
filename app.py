@@ -94,6 +94,7 @@ def trip_plan_by_id(trip_plan_id):
         allow_editing=allow_editing,
         needs_tutorial=needs_tutorial,
         account_info=g.account_info,
+        session_info=g.session_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),

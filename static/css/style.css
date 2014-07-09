@@ -192,6 +192,12 @@ a:hover .tc-icon svg {
   padding: 0px 15px 0px 0px;
 }
 
+.account-cta-for-old-emails {
+  font-size: 10pt;
+  max-width: 400px;
+  padding-top: 3px;
+}
+
 #trip-plan-title {
   width: 206px;
 }

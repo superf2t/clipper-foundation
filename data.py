@@ -249,7 +249,7 @@ class TripPlan(serializable.Serializable):
 class SessionInfo(object):
     def __init__(self, email=None, old_email=None, visitor_id=None, db_user=None):
         self.email = email
-        self.old_email = email
+        self.old_email = old_email
         self.visitor_id = visitor_id
         self.db_user = db_user
 
