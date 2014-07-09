@@ -202,6 +202,14 @@ class TripPlan(serializable.Serializable):
             else:
                 return session_info.visitor_id and session_info.visitor_id == self.creator
 
+    def creator_identifier(self):
+        if self.user and self.user.public_id:
+            return crypto.decrypt_id(self.user.public_id)
+        elif self.user and self.user.public_visitor_id:
+            return crypto.decrypt_id(self.user.public_visitor_id)
+        else:
+            return self.creator
+
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
 
@@ -246,10 +254,6 @@ class SessionInfo(object):
         self.db_user = db_user
 
     @property
-    def user_identifier(self):
-        return self.email or self.old_email or self.visitor_id
-
-    @property
     def public_visitor_id(self):
         if not hasattr(self, '_cached_public_visitor_id'):
             self._cached_public_visitor_id = crypto.encrypt_id(self.visitor_id)
@@ -269,12 +273,12 @@ class InitialPageState(serializable.Serializable):
         self.needs_tutorial = needs_tutorial
 
 class AccountInfo(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('email', 'display_name')
+    PUBLIC_FIELDS = serializable.fields('email', 'display_name', 'logged_in')
 
     def __init__(self, email=None, display_name=None):
         self.email = email
         self.display_name = display_name
-
+        self.logged_in = bool(email)
 
 def generate_entity_id():
     return generate_id()
@@ -293,14 +297,8 @@ def generate_id():
     # Use mod 2**53 so the number can be represented natively in Javascript.
     return struct.unpack('Q', randid)[0] % 2**53    
 
-def trip_plan_filename_from_session_info(session_info):
-    return trip_plan_filename(session_info.user_identifier, session_info.active_trip_plan_id)
-
-def trip_plan_filename(user_identifier, trip_plan_id):
-    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (user_identifier, trip_plan_id))
-
-def load_trip_plan(session_info):
-    return load_trip_plan_from_filename(trip_plan_filename_from_session_info(session_info))
+def trip_plan_filename(creator_identifier, trip_plan_id):
+    return os.path.join(constants.PROJECTPATH, 'local_data', 'trip_plan_%s_%s.json' % (creator_identifier, trip_plan_id))
 
 def load_trip_plan_from_filename(fname, include_deleted=False):
     try:
@@ -327,11 +325,12 @@ def load_trip_plans_by_ids(trip_plan_ids):
     return [load_trip_plan_by_id(id) for id in trip_plan_ids]
 
 def load_all_trip_plans(session_info):
-    return load_all_trip_plans_for_creator(session_info.user_identifier)
+    creator_identifier = session_info.db_user.id if session_info.logged_in() else session_info.visitor_id
+    return load_all_trip_plans_for_creator(creator_identifier)
 
-def load_all_trip_plans_for_creator(creator):
-    trip_plans = []    
-    fname_prefix = 'trip_plan_%s_' % creator
+def load_all_trip_plans_for_creator(creator_identifier):
+    trip_plans = []
+    fname_prefix = 'trip_plan_%s_' % creator_identifier
     data_dir = os.path.join(constants.PROJECTPATH, 'local_data')
     for fname in os.listdir(data_dir):
         if fname.startswith(fname_prefix):
@@ -346,13 +345,14 @@ def save_trip_plan(trip_plan, update_timestamp=True):
         trip_plan.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
     json_obj = trip_plan.to_json_obj()
     json_str = json.dumps(json_obj, sort_keys=True, indent=4, separators=(',', ': '))
-    trip_plan_file = open(trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id), 'w')
+    trip_plan_file = open(trip_plan_filename(trip_plan.creator_identifier(), trip_plan.trip_plan_id), 'w')
     trip_plan_file.write(json_str)
     trip_plan_file.close()
 
-def change_creator(trip_plan, new_creator):
-    old_fname = trip_plan_filename(trip_plan.creator, trip_plan.trip_plan_id)
-    trip_plan.creator = new_creator
+def change_creator(trip_plan, new_creator_db_user):
+    old_fname = trip_plan_filename(trip_plan.creator_identifier(), trip_plan.trip_plan_id)
+    trip_plan.user = DisplayUser(new_creator_db_user.public_id, new_creator_db_user.display_name)
+    trip_plan.creator = None
     save_trip_plan(trip_plan)
     os.remove(old_fname)
     return trip_plan

@@ -572,7 +572,7 @@ var InlineEditMode = {
 };
 
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $filterModel, $modal, $window) {
+    $filterModel, $accountInfo, $modal, $window) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
   $scope.inlineEditMode = null;
@@ -660,6 +660,12 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
     if ($scope.inlineEditMode == inlineEditMode) {
       $scope.inlineEditMode = null;
     } else {
+      if (!$accountInfo['logged_in']
+        && inlineEditMode == InlineEditMode.COMMENTS) {
+        $window.alert('Please log in before making comments.');
+        return;
+      }
+
       $scope.inlineEditMode = inlineEditMode;
       if (inlineEditMode == InlineEditMode.COMMENTS) {
         $scope.closeCommentEdit();
@@ -833,7 +839,8 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope, $tripPlanModel, $entityService, $window, $timeout) {
+function InfowindowCtrl($scope, $tripPlanModel, $entityService,
+    $accountInfo, $window, $timeout) {
   $scope.inlineEditMode = null;
   $scope.InlineEditMode = InlineEditMode;
 
@@ -891,6 +898,12 @@ function InfowindowCtrl($scope, $tripPlanModel, $entityService, $window, $timeou
     if ($scope.inlineEditMode == inlineEditMode) {
       $scope.inlineEditMode = null;
     } else {
+      if (!$accountInfo['logged_in']
+        && inlineEditMode == InlineEditMode.COMMENTS) {
+        $window.alert('Please log in before making comments.');
+        return;
+      }
+
       $scope.inlineEditMode = inlineEditMode;
       if (inlineEditMode == InlineEditMode.COMMENTS) {
         $scope.newComment = {
