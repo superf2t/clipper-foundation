@@ -99,7 +99,7 @@
           <span tc-user-icon email="accountInfo['email']" no-tooltip="true"></span>
           <span class="logged-in-email">[[accountInfo['email'] ]]</span>
           <span class="logout-link">
-            <a href="javascript:void(0)" ng-click="showLoginForm = true">Logout</a>
+            <a href="{{logout_url}}">Logout</a>
           </span>
         </div>
         <div ng-show="showLoginForm">

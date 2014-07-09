@@ -7,6 +7,7 @@ from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask import url_for
 from flask.ext import login as flask_login
 from flask.ext import user as flask_user
 from flask.ext.user import current_user
@@ -217,6 +218,7 @@ def inject_login_urls():
     return {
         'login_iframe_url': flask_login.login_url(
             app.login_manager.login_view, next_url=request.url),
+        'logout_url': url_for('user.logout', next=request.url),
     }
 
 @app.context_processor
@@ -250,7 +252,6 @@ def confirm_email(token):
 @app.route('/registration_complete')
 def registration_complete():
     return render_template('flask_user/registration_complete.html')
-
 
 user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
 user_manager = flask_user.UserManager(user_db_adapter, app,
