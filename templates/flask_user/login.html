@@ -3,13 +3,6 @@
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
 
-<style type="text/css">
-  body {
-    max-width: 50%;
-    margin: auto;
-  }
-</style>
-
 <h1>Sign in</h1>
 
 <form action="" method="POST" class="form" role="form">
@@ -23,7 +16,7 @@
         <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
       </div>
       <div class="col-xs-6 text-right">
-        <a href="{{ url_for('user.register') }}" tabindex='190'>
+        <a href="{{ url_for('user.register', next=request.args.get('next')) }}" tabindex='190'>
           New here? Register.
         </a>
       </div>

@@ -814,27 +814,25 @@ class NoteService(service.Service):
                     break
 
 
-AccountServiceError = enums.enum(
-    INVALID_EMAIL=enums.enumdata(message='Invalid email address'))
-
-class LoginRequest(serializable.Serializable):
+class MigrateRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('email')
 
     def __init__(self, email=None):
         self.email = email
 
-class LoginResponse(service.ServiceResponse):
+class MigrateResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
-        service.ServiceResponse.PUBLIC_FIELDS)
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(
+            serializable.objlistf('trip_plans', data.TripPlan)))
 
-    def __init__(self, **kwargs):
-        super(LoginResponse, self).__init__(**kwargs)
+    def __init__(self, trip_plans, **kwargs):
+        super(MigrateResponse, self).__init__(**kwargs)
+        self.trip_plans = trip_plans
 
 class AccountService(service.Service):
     METHODS = service.servicemethods(
-        ('loginandmigrate', LoginRequest, LoginResponse))
-
-    EMAIL_RE = re.compile("^[a-zA-Z0-9+_-]+(?:\.[a-zA-Z0-9+_-]+)*@(?:[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?\.)+[a-zA-Z0-9](?:[a-zA-Z0-9]*[a-zA-Z0-9])?$")
+        ('migrate', MigrateRequest, MigrateResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -844,23 +842,13 @@ class AccountService(service.Service):
         if self.validation_errors:
             raise service.ServiceException.request_error(self.validation_errors)
 
-    def loginandmigrate(self, request):
-        self.validate_login(request)
-        email = request.email.lower()
-        if not self.session_info.email:
-            all_trip_plans = data.load_all_trip_plans(self.session_info) or []
-            for trip_plan in all_trip_plans:
-                data.change_creator(trip_plan, email)
-        self.session_info.email = email
-        self.session_info.set_on_response = True
-        return LoginResponse(response_code=service.ResponseCode.SUCCESS.name)
-
-    def validate_login(self, request):
-        if not request.email or not self.EMAIL_RE.match(request.email):
-            self.validation_errors.append(service.ServiceError.from_enum(
-                AccountServiceError.INVALID_EMAIL, 'email'))
-        self.raise_if_errors()
-
+    def migrate(self, request):
+        all_trip_plans = data.load_all_trip_plans_for_creator(self.session_info.visitor_id) or []
+        for trip_plan in all_trip_plans:
+            data.change_creator(trip_plan, request.email)
+        return MigrateResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plans=all_trip_plans)
 
 AdminServiceError = enums.enum('INVALID_PARSER_TYPE')
 

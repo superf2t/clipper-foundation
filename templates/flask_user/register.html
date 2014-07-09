@@ -3,10 +3,10 @@
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
 
-<style type="text/css">
+<style>
   body {
-    max-width: 50%;
-    margin: auto;
+    height: 100%;
+    overflow-y: scroll;
   }
 </style>
 
@@ -31,6 +31,13 @@
 
 <form action="" method="POST" novalidate formnovalidate class="form" role="form">
   {{ form.hidden_tag() }}
+
+  {# Would be preferable to make 'next' a hidden field and it would get rendered
+     automatically in hidden_tag(), but it's not clear how to pre-populate it
+     with the value from the url in that case without overriding the view handler. #}
+  <div style="display: none">
+    {{ render_field(form.next, value=request.args.get('next', '')) }}
+  </div>
 
   {# Can change to form.username to swtich to username login #}
   {% set field = form.email %}

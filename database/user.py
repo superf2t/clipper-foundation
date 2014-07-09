@@ -16,6 +16,8 @@ class User(db.Model, user.UserMixin):
     display_name = db.Column(db.String(50), nullable=False)
 
 class TCRegisterForm(forms.RegisterForm):
+    # TODO: Add validators and make required
     first_name = wtforms.StringField('First Name')
     last_name = wtforms.StringField('Last Name')
     display_name = wtforms.StringField('Display Name - what will be shown on trip plans authored by you')
+    next = wtforms.StringField()

@@ -1,9 +1,13 @@
+import urllib
+
+from flask import flash
 from flask import g
 from flask import json
 from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask.ext import login as flask_login
 from flask.ext import user as flask_user
 from flask.ext.user import current_user
 
@@ -20,9 +24,6 @@ from scraping import trip_plan_creator
 import serializable
 import serviceimpls
 import values
-
-user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
-user_manager = flask_user.UserManager(user_db_adapter, app, register_form=user.TCRegisterForm)
 
 app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
@@ -124,12 +125,6 @@ def tripplanservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
-@app.route('/accountservice/<method_name>', methods=['POST'])
-def accountservice(method_name):
-    service = serviceimpls.AccountService(g.session_info)
-    response = service.invoke_with_json(method_name, request.json)
-    return json.jsonify(response)
-
 @app.route('/adminservice/<method_name>', methods=['POST'])
 def adminservice(method_name):
     service = serviceimpls.AdminService(g.session_info)
@@ -216,6 +211,53 @@ def call_after_request_callbacks(response):
     for callback in getattr(g, 'after_request_callbacks', ()):
         callback(response)
     return response
+
+@app.context_processor
+def inject_login_urls():
+    return {
+        'login_iframe_url': flask_login.login_url(
+            app.login_manager.login_view, next_url=request.url),
+    }
+
+@app.context_processor
+def inject_extended_template_builtins():
+    return {
+        'url_quote_plus': urllib.quote_plus,
+    }
+
+def register():
+    response = flask_user.views.register()
+    if hasattr(response, 'status') and response.status == '302 FOUND':
+        return redirect('/registration_complete')
+    return response
+
+def confirm_email(token):
+    def handle_trip_plan_migration(sender, user, **kwargs):
+        account_service = serviceimpls.AccountService(g.session_info)
+        migrate_response = account_service.migrate(serviceimpls.MigrateRequest(user.email))
+        if migrate_response.trip_plans:
+            if len(migrate_response.trip_plans) > 1:
+                msg = ('The trip plans you created before making an account (%s) '
+                    'are now saved in your new account.') % (', '.join(tp.name for tp in migration_response.trip_plans))
+            else:
+                msg = ('The trip plan "%s" you created before making an '
+                 'account is now saved in your new account.') % migrate_response.trip_plans[0].name 
+            flash(msg, 'success')
+    flask_user.signals.user_confirmed_email.connect(handle_trip_plan_migration, app)
+    return flask_user.views.confirm_email(token)
+
+# User has finished the registration form but not yet confirmed their email.
+@app.route('/registration_complete')
+def registration_complete():
+    return render_template('flask_user/registration_complete.html')
+
+
+user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
+user_manager = flask_user.UserManager(user_db_adapter, app,
+    register_form=user.TCRegisterForm,
+    register_view_function=register,
+    confirm_email_view_function=confirm_email)
+
 
 if __name__ == '__main__':
     app.debug = constants.DEBUG

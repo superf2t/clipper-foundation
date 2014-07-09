@@ -1,0 +1,20 @@
+{# This is a custom template that's not an override of a Flask-User template. #}
+
+{% extends 'flask_user/user_base.html' %}
+
+{% block content %}
+{% from "flask_user/_macros.html" import render_field, render_submit_field %}
+
+<script>
+  function closeParentModal() {
+    window.parent['closeLoginModal']();
+  }
+</script>
+
+<h1>Registration Complete</h1>
+
+<div>
+  <button onclick="closeParentModal()">Close</button>
+</div>
+
+{% endblock %}

@@ -103,12 +103,7 @@
           </span>
         </div>
         <div ng-show="showLoginForm">
-          <form role="form" ng-submit="doLogin()">
-            <input type="text" class="form-control email-entry-input"
-              ng-model="accountInfo['email']"
-              placeholder="Enter your email to login"/>
-            <button type="submit()" class="btn btn-default btn-login">Login</button>
-          </form>
+          <a ng-click="openLoginModal('login-modal-window')" href="javascript:void(0)">Log in</a>
         </div>
       </li>
       <li ng-show="allTripPlans">

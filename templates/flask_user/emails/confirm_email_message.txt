@@ -5,7 +5,9 @@ Thanks for registering with TravelClipper!
 
 {% if user_manager.enable_confirm_email -%}
 Visit the link below to complete your registration:
-{{ confirm_email_link }}
+{# This is sort of a hack to get a url param here from the request;
+   the request would not even be defined if this were sent outside of a request context #}
+{{ confirm_email_link }}?next={{ url_quote_plus(request.args.get('next', '')) }}
 
 If you didn't sign up for TravelClipper, you may safely ignore this email.
 

@@ -254,21 +254,7 @@ function NoteService($http) {
   };
 }
 
-function AccountService($http) {
-  this.loginAndMigrate = function(email) {
-    var request = {
-      'email': email
-    };
-    return $http.post('/accountservice/loginandmigrate', request);
-  };
-}
-
-var AccountServiceError = {
-  INVALID_EMAIL: 'INVALID_EMAIL'
-};
-
 angular.module('servicesModule', [])
   .service('$entityService', ['$http', EntityService])
   .service('$noteService', ['$http', NoteService])
-  .service('$tripPlanService', ['$http', TripPlanService])
-  .service('$accountService', ['$http', AccountService]);
+  .service('$tripPlanService', ['$http', TripPlanService]);

@@ -2240,32 +2240,24 @@ function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
   };
 }
 
-function AccountDropdownCtrl($scope, $accountService, $tripPlanService, $accountInfo, $tripPlan, $allTripPlans) {
+function AccountDropdownCtrl($scope, $tripPlanService, $accountInfo,
+    $tripPlan, $allTripPlans, $modal, $window) {
   $scope.accountInfo = $accountInfo;
   $scope.accountInfo.loggedIn = !!$accountInfo['email'];
   $scope.showLoginForm = !$scope.accountInfo.loggedIn;
   $scope.currentTripPlan = $tripPlan;
   $scope.allTripPlans = $allTripPlans;
 
-  $scope.doLogin = function() {
-    if (!$scope.accountInfo['email']) {
-      return;
-    }
-    $accountService.loginAndMigrate($scope.accountInfo['email'])
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          location.href = location.href;
-        } else {
-          var error = extractError(response, AccountServiceError.INVALID_EMAIL);
-          if (error) {
-            alert(error['message']);
-          } else {
-            alert('Login failed');
-          }
-        }
-      }).error(function() {
-        alert('Login failed');
-      });
+  $scope.openLoginModal = function(windowClass) {
+    var modal = $modal.open({
+      templateUrl: 'login-modal-template',
+      windowClass: windowClass,
+      scope: $scope.$new(true)
+    });
+    $window['closeLoginModal'] = function() {
+      modal.close();
+      $window['closeLoginModal'] = null;
+    };
   };
 
   $scope.loadTripPlan = function(tripPlanId) {
