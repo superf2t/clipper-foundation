@@ -28,16 +28,25 @@ class LatLngBounds(serializable.Serializable):
         self.southwest = southwest
         self.northeast = northeast
 
+class DisplayUser(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('public_id', 'display_name')
+
+    def __init__(self, public_id=None, display_name=None):
+        self.public_id = public_id
+        self.display_name = display_name
+
 class Comment(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields(
-        'comment_id', 'entity_id', 'text', 'author', 'last_modified')
+        'comment_id', 'entity_id', 'text', 'author',
+        serializable.objf('user', DisplayUser), 'last_modified')
 
     def __init__(self, comment_id=None, entity_id=None, text=None,
-            author=None, last_modified=None):
+            author=None, user=None, last_modified=None):
         self.comment_id = comment_id
         self.entity_id = entity_id
         self.text = text
-        self.author = author
+        self.author = author  # Deprecated in favor of user
+        self.user = user
         self.last_modified = last_modified
 
     def last_modified_datetime(self):
@@ -215,10 +224,11 @@ class TripPlan(serializable.Serializable):
 
 
 class SessionInfo(object):
-    def __init__(self, email=None, old_email=None, visitor_id=None):
+    def __init__(self, email=None, old_email=None, visitor_id=None, db_user=None):
         self.email = email
         self.old_email = email
         self.visitor_id = visitor_id
+        self.db_user = db_user
 
     @property
     def user_identifier(self):
@@ -227,6 +237,8 @@ class SessionInfo(object):
     def is_admin(self):
         return self.email in ('admin@unicyclelabs.com',)
 
+    def logged_in(self):
+        return bool(self.db_user)
 
 class InitialPageState(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('sort', 'needs_tutorial')
@@ -236,10 +248,11 @@ class InitialPageState(serializable.Serializable):
         self.needs_tutorial = needs_tutorial
 
 class AccountInfo(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('email')
+    PUBLIC_FIELDS = serializable.fields('email', 'display_name')
 
-    def __init__(self, email=None):
+    def __init__(self, email=None, display_name=None):
         self.email = email
+        self.display_name = display_name
 
 
 def generate_entity_id():

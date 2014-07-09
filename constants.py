@@ -11,6 +11,8 @@ COOKIE_EXPIRATION_TIME = 'Wed, 4 Mar 2020 20:00:00 GMT'
 
 FLASK_SECRET_KEY = None  # Set this securely in an override
 
+PUBLIC_ID_ENCRYPTION_KEY = None  # Set this securely in an override
+
 MAIL_USERNAME = 'jamie@unicyclelabs.com'
 MAIL_PASSWORD = None  # Set this securely in an override
 

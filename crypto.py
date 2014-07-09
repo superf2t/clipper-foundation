@@ -33,3 +33,10 @@ def encrypt_with_salt(msg, key=constants.FLASK_SECRET_KEY):
 def decrypt_with_salt(msg, key=constants.FLASK_SECRET_KEY):
     msg_with_salt = decrypt(msg, key)
     return msg_with_salt[SALT_SIZE:]
+
+def encrypt_id(id, key=constants.PUBLIC_ID_ENCRYPTION_KEY):
+    return encrypt(str(id), key)
+
+def decrypt_id(msg, key=constants.PUBLIC_ID_ENCRYPTION_KEY):
+    msg = msg.encode('utf-8')
+    return int(decrypt(msg, key))

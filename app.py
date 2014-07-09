@@ -76,7 +76,6 @@ def trip_plan_by_id(trip_plan_id):
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)
     note_service = serviceimpls.NoteService(g.session_info)
-    account_info = data.AccountInfo(g.session_info.email)
 
     current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
@@ -95,7 +94,7 @@ def trip_plan_by_id(trip_plan_id):
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         allow_editing=allow_editing,
         needs_tutorial=needs_tutorial,
-        account_info=account_info,
+        account_info=g.account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
@@ -149,7 +148,7 @@ def admin_editor(trip_plan_id):
         trip_plan=trip_plan,
         entities_json=serializable.to_json_str(entities),
         all_datatype_values=values.ALL_VALUES,
-        account_info=data.AccountInfo(g.session_info.email))
+        account_info=g.account_info)
 
 @app.route('/admin/scrape')
 def admin_scrape():
@@ -191,8 +190,11 @@ def process_cookies():
                 clear_cookie(response, 'sessionid')
 
     old_email = request.cookies.get('email')
-    email = current_user.email if not current_user.is_anonymous() else None
-    g.session_info = data.SessionInfo(email, old_email, visitor_id)
+    db_user = current_user if not current_user.is_anonymous() else None
+    email = db_user.email if db_user else None
+    display_name = db_user.display_name if db_user else old_email
+    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user)
+    g.account_info = data.AccountInfo(email, display_name)
 
 def set_cookie(response, key, value):
     response.set_cookie(key, value, expires=constants.COOKIE_EXPIRATION_TIME, domain=constants.HOST)

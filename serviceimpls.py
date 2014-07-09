@@ -5,6 +5,7 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 import data
+from database import user
 import clip_logic
 import enums
 import geocode
@@ -23,6 +24,7 @@ CommonError = enums.enum(
     NO_CREDENTIALS=enums.enumdata(message=None),
     NOT_AUTHORIZED_FOR_OPERATION=enums.enumdata(message='The user is not authorized to perform this action'),
     MISSING_FIELD=enums.enumdata(message='A required field is missing'),
+    NOT_LOGGED_IN=enums.enumdata(message='You are required to be logged in to perform this operation'),
     OBJECT_ALREADY_REFERENCED_IN_OPERATION=enums.enumdata(message='This object was already referenced in a previous operation'))
 
 class OperationData(object):
@@ -226,6 +228,11 @@ class EntityService(service.Service):
             response_summary = EntityGetResponse.ResponseSummary.NO_CHANGES_SINCE_LAST_MODIFIED.name
         else:
             entities = trip_plan.entities if trip_plan else ()
+
+        comments = utils.flatten(e.comments for e in entities if e.comments)
+        self.migrate_comment_authors(comments)
+        self.resolve_comment_display_users(comments)
+
         return EntityGetResponse(response_code=service.ResponseCode.SUCCESS.name,
             response_summary=response_summary,
             entities=entities,
@@ -318,6 +325,8 @@ class EntityService(service.Service):
                     break
 
     def mutatecomments(self, request):
+        self.validate_logged_in()
+
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')
         trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids())
         trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id')
@@ -326,17 +335,23 @@ class EntityService(service.Service):
         self.validate_editability(operations)
         self.validate_mutatecomments_fields(operations)
 
+        all_comments = [operation.comment for operation in request.operations]
+        self.migrate_comment_authors(all_comments)
+        self.resolve_comment_display_users(all_comments)
+
         for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
             add_op.operation.comment.comment_id = data.generate_comment_id()
             add_op.operation.comment.set_last_modified_datetime(datetime.datetime.now(tz.tzutc()))
-            add_op.operation.comment.author = self.session_info.user_identifier
+            add_op.operation.comment.user = data.DisplayUser(
+                self.session_info.db_user.public_id, self.session_info.db_user.display_name)
             entity = add_op.trip_plan.entity_by_id(add_op.operation.comment.entity_id)
             entity.append_comment(add_op.operation.comment)
             add_op.result = add_op.operation.comment
         for edit_op in OperationData.filter_by_operator(operations, Operator.EDIT):
             entity = edit_op.trip_plan.entity_by_id(edit_op.operation.comment.entity_id)
             original_comment = entity.comment_by_id(edit_op.operation.comment.comment_id)
-            if original_comment.author != self.session_info.email:
+            self.migrate_comment_authors([original_comment])
+            if original_comment.user.public_id != self.session_info.db_user.public_id:
                 self.validation_errors.append(
                     edit_op.newerror(EntityServiceError.NOT_AUTHORIZED_FOR_OPERATION, field_name='comment.author'))
                 continue
@@ -358,6 +373,11 @@ class EntityService(service.Service):
             # if multiple trip plans are being edited together, since each will be saved
             # at a different time.
             comments=comments, last_modified=trip_plans[0].last_modified)
+
+    def validate_logged_in(self):
+        if not self.session_info.logged_in():
+            self.validation_errors.append(service.ServiceError.from_enum(CommonError.NOT_LOGGED_IN))
+            self.raise_if_errors()
 
     def validate_mutatecomments_fields(self, operations):
         for op in operations:
@@ -425,6 +445,24 @@ class EntityService(service.Service):
         return GenericMultiEntityResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             entities=entities)
+
+    def migrate_comment_authors(self, comments):
+        for comment in comments:
+            if comment.author and (not comment.user or not comment.user.public_id):
+                db_user = user.User.query.filter_by(email=comment.author).first()
+                if db_user:
+                    comment.user = data.DisplayUser(db_user.public_id, db_user.display_name)
+
+    def resolve_comment_display_users(self, comments):
+        public_ids = set(c.user.public_id for c in comments if c.user)
+        if not public_ids:
+            return
+        db_users = user.User.get_by_public_ids(public_ids)
+        display_users = [data.DisplayUser(u.public_id, u.display_name) for u in db_users]
+        display_user_map = dict((d.public_id, d) for d in display_users)
+        for comment in comments:
+            if comment.user and comment.user.public_id:
+                comment.user.update(display_user_map.get(comment.user.public_id))
 
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 
