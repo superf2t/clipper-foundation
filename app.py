@@ -19,7 +19,6 @@ import cookies
 import constants
 import data
 from database import user
-import page_proxy
 import sample_sites
 from scraping import trip_plan_creator
 import serializable
@@ -154,14 +153,6 @@ def admin_editor(trip_plan_id):
 def admin_scrape():
     return render_template('admin_scrape.html',
         all_scrapers=[s.__name__ for s in trip_plan_creator.ALL_PARSERS])
-
-@app.route('/proxy')
-def proxy():
-    url = request.values['url']
-    html, headers = page_proxy.rewrite_page(url, request.headers)
-    response = make_response(html)
-    response.headers['Content-Type'] = headers.get('Content-Type')
-    return response
 
 def create_and_save_default_trip_plan(session_info):
     operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))
