@@ -1,6 +1,7 @@
 from flask.ext import user
 from flask.ext.user import forms
 import wtforms
+from wtforms import validators
 
 from app_core import db
 import crypto
@@ -29,7 +30,10 @@ class User(db.Model, user.UserMixin):
 
 class TCRegisterForm(forms.RegisterForm):
     # TODO: Add validators and make required
-    first_name = wtforms.StringField('First Name')
-    last_name = wtforms.StringField('Last Name')
-    display_name = wtforms.StringField('Display Name - what will be shown on trip plans authored by you')
+    first_name = wtforms.StringField('First Name',
+        [validators.Required('Please enter your first name'), validators.Length(max=50)])
+    last_name = wtforms.StringField('Last Name',
+        [validators.Required('Please enter your last name'), validators.Length(max=50)])
+    display_name = wtforms.StringField('Display Name - what will be shown on trip plans authored by you',
+        [validators.Required('Please enter a display name'), validators.Length(max=50)])
     next = wtforms.StringField()
