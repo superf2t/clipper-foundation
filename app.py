@@ -240,7 +240,7 @@ def confirm_email(token):
         if migrate_response.trip_plans:
             if len(migrate_response.trip_plans) > 1:
                 msg = ('The trip plans you created before making an account (%s) '
-                    'are now saved in your new account.') % (', '.join(tp.name for tp in migration_response.trip_plans))
+                    'are now saved in your new account.') % (', '.join(tp.name for tp in migrate_response.trip_plans))
             else:
                 msg = ('The trip plan "%s" you created before making an '
                  'account is now saved in your new account.') % migrate_response.trip_plans[0].name 
