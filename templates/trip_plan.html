@@ -116,14 +116,17 @@
   <script type="text/ng-template" id="account-dropdown-template">
     <ul class="account-dropdown dropdown-menu" ng-controller="AccountDropdownCtrl">
       <li class="account-dropdown-login-info" ng-click="$event.stopPropagation()">
-        <div ng-show="accountInfo.loggedIn && !showLoginForm">
-          <span tc-user-icon email="accountInfo['display_name']" no-tooltip="true"></span>
-          <span class="logged-in-email">[[accountInfo['display_name'] ]]</span>
+        <div ng-show="accountInfo['logged_in']">
+          <span tc-user-icon user="accountInfo['user']" no-tooltip="true"></span>
+          <span class="logged-in-email">
+            [[accountInfo['user']['display_name'] ]]
+            ([[accountInfo['email'] ]])
+          </span>
           <span class="logout-link">
             <a href="{{logout_url}}">Logout</a>
           </span>
         </div>
-        <div ng-show="showLoginForm">
+        <div ng-show="!accountInfo['logged_in']">
           <a ng-click="openLoginModal('login-modal-window')" href="javascript:void(0)">Log in</a>
         </div>
       </li>
@@ -229,7 +232,7 @@
           <div ng-repeat="comment in ed['comments']" class="one-comment">
             <div>
               <span class="comment-sidebar">
-                <span tc-user-icon email="comment['user']['display_name']">
+                <span tc-user-icon user="comment['user']">
                 </span>
               </span>
               <span class="comment-details">
@@ -246,7 +249,7 @@
         <div class="workspace-section" ng-if="workspaceActive()">
           <div ng-if="inlineEditMode == InlineEditMode.COMMENTS" class="inline-comment-editor">
             <div class="author-name">
-              <span tc-user-icon email="accountInfo['display_name']">
+              <span tc-user-icon user="accountInfo['user']">
               </span>
             </div>
             <textarea class="form-control" placeholder="Add a comment"
@@ -912,18 +915,18 @@
         <div class="comments-body">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
             <span class="comment-sidebar">
-              <span tc-user-icon email="comment['user']['display_name']">
+              <span tc-user-icon user="comment['user']">
               </span>
             </span>
             <span class="comment-details">
               <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
                 <div>
                   <span ng-bind-html="comment['text'] | linky:'_blank'" class="text comment-content"></span>
-                  <a ng-click="openCommentEdit(comment)" ng-if="comment['user']['display_name'] == accountInfo['display_name']"
+                  <a ng-click="openCommentEdit(comment)" ng-if="comment['user']['public_id'] == accountInfo['user']['public_id']"
                     href="javascript:void(0)" class="color-link comment-edit-link">
                     <span class="glyphicon glyphicon-pencil"></span>
                   </a>
-                  <a ng-click="deleteComment(comment)" ng-if="comment['user']['display_name'] == accountInfo['display_name']"
+                  <a ng-click="deleteComment(comment)" ng-if="comment['user']['public_id'] == accountInfo['user']['public_id']"
                     href="javascript:void(0)" class="color-link comment-edit-link">
                     <span class="glyphicon glyphicon-trash"></span>
                   </a>
@@ -948,7 +951,7 @@
       {% if allow_editing %}
       <div class="inline-comment-editor inline-editor" ng-if="inlineEditMode == InlineEditMode.COMMENTS">
         <div class="author-name">
-          <span tc-user-icon email="accountInfo['display_name']">
+          <span tc-user-icon user="accountInfo['user']">
           </span>
         </div>
         <textarea class="form-control" placeholder="Add a comment"
@@ -1602,7 +1605,7 @@
       </div>
       <div class="creator">
         <h4>Creator</h4>
-        <span tc-user-icon email="creator" no-tooltip="true"></span> [[creator]]
+        <span tc-user-icon user="creator" no-tooltip="true"></span> [[creator['display_name'] ]]
         <span ng-show="isCreator">(you)</span>
       </div>
       <div ng-show="hasCollaborators()">
@@ -1785,11 +1788,11 @@
   {% endif %}
 
   <script type="text/ng-template" id="user-icon-template">
-    <a href="javascript:void(0)" tooltip="[[noTooltip ? null : email]]"
+    <a href="javascript:void(0)" tooltip="[[noTooltip ? null : user['display_name'] ]]"
       tooltip-append-to-body="true">
       <span class="user-icon"
-        ng-class="'user-' + userStyleIdentifier(email)">
-        [[email.substring(0, 1) ]]
+        ng-class="'user-' + userStyleIdentifier()">
+        [[user['display_name'].substring(0, 1) ]]
       </span>
     </a>
   </script>

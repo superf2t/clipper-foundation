@@ -191,8 +191,9 @@ def process_cookies():
     email = db_user.email if db_user else None
     display_name = db_user.display_name if db_user else old_email
     g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user)
-    g.account_info = data.AccountInfo(email, display_name)
-
+    display_user = data.DisplayUser(db_user.public_id if db_user else None, display_name, g.session_info.public_visitor_id)
+    g.account_info = data.AccountInfo(email, display_user)
+        
 def set_cookie(response, key, value):
     response.set_cookie(key, value, expires=constants.COOKIE_EXPIRATION_TIME, domain=constants.HOST)
 

@@ -280,11 +280,12 @@ class InitialPageState(serializable.Serializable):
         self.needs_tutorial = needs_tutorial
 
 class AccountInfo(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('email', 'display_name', 'logged_in')
+    PUBLIC_FIELDS = serializable.fields('email',
+        serializable.objf('user', DisplayUser), 'logged_in')
 
-    def __init__(self, email=None, display_name=None):
+    def __init__(self, email=None, user=None):
         self.email = email
-        self.display_name = display_name
+        self.user = user
         self.logged_in = bool(email)
 
 def generate_entity_id():

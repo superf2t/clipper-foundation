@@ -196,12 +196,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return !!this.tripPlanData['source_url'];
   };
 
-  this.creatorIsUser = function() {
-    return this.tripPlanData['creator']
-      && _.isString(this.tripPlanData['creator'])
-      && this.tripPlanData['creator'].indexOf('@') > -1;
-  };
-
   this.locationLatlng = function() {
     return this.tripPlanData['location_latlng'];
   };
@@ -319,13 +313,15 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     }
   };
 
-  this.userStyleIdentifier = function(email) {
-    if (this.tripPlanData['creator'] == email) {
+  this.userStyleIdentifier = function(publicUserId) {
+    if (this.tripPlanData['user']['public_id'] == publicUserId) {
       return 1;
     }
-    if (this.tripPlanData['editors']) {
-      return 2 + this.tripPlanData['editors'].indexOf(email);
-    }
+    $.each(this.tripPlanData['editors'] || [], function(i, editor) {
+      if (editor['public_id'] == publicUserId) {
+        return 2 + i;
+      }
+    });
     return null;
   };
 
@@ -1334,12 +1330,12 @@ function tcUserIcon() {
   return {
     restrict: 'AE',
     scope: {
-      email: '=',
+      user: '=',  // A DisplayUser object
       noTooltip: '='
     },
     controller: function($scope, $tripPlanModel) {
-      $scope.userStyleIdentifier = function(email) {
-        return $tripPlanModel.userStyleIdentifier(email);
+      $scope.userStyleIdentifier = function() {
+        return $tripPlanModel.userStyleIdentifier($scope.user['public_id']);
       };
     },
     templateUrl: 'user-icon-template'
@@ -1767,7 +1763,7 @@ function FilterModel() {
 }
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $pageStateModel, $filterModel, $searchResultState, $entityService, $allowEditing, $sce) {
+    $map, $pageStateModel, $filterModel, $searchResultState, $entityService, $allowEditing, $accountInfo) {
   var me = this;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
@@ -1968,6 +1964,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   };
 
   $scope.openSharingSettings = function(windowClass) {
+    if (!$accountInfo['logged_in']) {
+      alert('Please log in before sharing trip plans');
+      return;
+    }
     $modal.open({
       templateUrl: 'sharing-settings-editor-template',
       scope: $scope.$new(true),
@@ -2269,8 +2269,6 @@ function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
 function AccountDropdownCtrl($scope, $tripPlanService, $accountInfo,
     $tripPlan, $allTripPlans, $modal, $window) {
   $scope.accountInfo = $accountInfo;
-  $scope.accountInfo.loggedIn = !!$accountInfo['email'];
-  $scope.showLoginForm = !$scope.accountInfo.loggedIn;
   $scope.currentTripPlan = $tripPlan;
   $scope.allTripPlans = $allTripPlans;
 
@@ -2291,7 +2289,7 @@ function AccountDropdownCtrl($scope, $tripPlanService, $accountInfo,
   };
 
   $scope.createNewTripPlan = function() {
-    if (!$scope.accountInfo.loggedIn) {
+    if (!$scope.accountInfo['logged_in']) {
       alert('Please log in before creating additional trip plans');
       return;
     }
@@ -3008,8 +3006,8 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
 
 function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanService, $location) {
   $scope.formState = {email: null};
-  $scope.creator = $tripPlanModel.tripPlanData['creator'];
-  $scope.isCreator = $accountInfo['email'] == $tripPlanModel.tripPlanData['creator'];
+  $scope.creator = $tripPlanModel.tripPlanData['user'];
+  $scope.isCreator = $accountInfo['user']['public_id'] == $scope.creator['public_id'];
   $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
 
   $scope.hasCollaborators = function() {
