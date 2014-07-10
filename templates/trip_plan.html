@@ -1610,13 +1610,26 @@
       </div>
       <div ng-show="hasCollaborators()">
         <h4>Collaborators</h4>
-        <p ng-repeat="collaborator in collaborators()" class="collaborator">
-          <span tc-user-icon email="collaborator" no-tooltip="true"></span>
-          [[collaborator]]
-          <a ng-click="removeCollaborator(collaborator)"
+        <p ng-repeat="editor in editors()" class="collaborator">
+          <span tc-user-icon user="editor" no-tooltip="true"></span>
+          [[editor['display_name'] ]]
+          <span ng-show="editor['public_id'] == accountInfo['user']['public_id']">
+            (you)
+          </span>
+          <a ng-click="removeEditor(editor)"
+            ng-show="editor['public_id'] != accountInfo['user']['public_id']"
             href="javascript:void(0)" class="remove-link color-link">
             <span class="glyphicon glyphicon-trash"></span>
           </a>
+        </p>
+        <p ng-repeat="inviteeEmail in inviteeEmails()" class="collaborator">
+          <span>
+            [[inviteeEmail]] (invited)
+            <a ng-click="removeInvitee(inviteeEmail)"
+              href="javascript:void(0)" class="remove-link color-link">
+              <span class="glyphicon glyphicon-trash"></span>
+            </a>
+          </span>
         </p>
       </div>
       <div>
@@ -1624,7 +1637,7 @@
         Collaborators can edit and comment on the trip plan and invite other collaborators.
         <form class="form-inline" role="form" ng-submit="addCollaborator()">
           <div class="form-group">
-            <input type="text" class="form-control email-input" placeholder="Enter an email address" value=""/>
+            <input type="text" class="form-control email-input" placeholder="Enter an email address" ng-model="formState.email"/>
             <button class="btn btn-primary">
               Add
             </button>

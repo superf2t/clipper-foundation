@@ -54,6 +54,14 @@ class OperationData(object):
     def from_input(cls, operations, field_path_prefix=''):
         return [OperationData(op, field_path_prefix=field_path_prefix, index=i) for i, op in enumerate(operations)]
 
+def decorate_with_trip_plans(trip_plan_id_attr_name, ops):
+    trip_plan_ids = set(getattr(op.operation, trip_plan_id_attr_name) for op in ops)
+    trip_plans = data.load_trip_plans_by_ids(trip_plan_ids)
+    trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id')
+    for op in ops:
+        op.trip_plan = trip_plans_by_id.get(getattr(op.operation, trip_plan_id_attr_name))
+    return trip_plans
+
 
 EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS', 'UNKNOWN_SITE')
 
@@ -553,11 +561,49 @@ class FindTripPlansResponse(service.ServiceResponse):
         super(FindTripPlansResponse, self).__init__(**kwargs)
         self.trip_plans = trip_plans
 
+class CollaboratorOperation(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id',
+        'invitee_email', 'collaborator_public_id')
+
+    def __init__(self, operator=None, trip_plan_id=None, invitee_email=None, collaborator_public_id=None):
+        self.operator = operator
+        self.trip_plan_id = trip_plan_id
+        self.invitee_email = invitee_email
+        self.collaborator_public_id = collaborator_public_id
+
+class MutateCollaboratorsRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(serializable.objlistf('operations', CollaboratorOperation))
+
+    def __init__(self, operations=()):
+        self.operations = operations
+
+class TripPlanCollaborators(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.objlistf('editors', data.DisplayUser),
+        serializable.listf('invitee_emails'))
+
+    def __init__(self, editors=None, invitee_emails=None):
+        self.editors = editors or []
+        self.invitee_emails = invitee_emails or []
+
+class MutateCollaboratorsResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(
+            serializable.objlistf('collaborators', TripPlanCollaborators),
+            'last_modified'))
+
+    def __init__(self, collaborators=None, last_modified=None, **kwargs):
+        super(MutateCollaboratorsResponse, self).__init__(**kwargs)
+        self.collaborators = collaborators
+        self.last_modified = last_modified
+
 class TripPlanService(service.Service):
     METHODS = service.servicemethods(
         ('get', TripPlanGetRequest, TripPlanGetResponse),
         ('mutate', TripPlanMutateRequest, TripPlanMutateResponse),
         ('clone', TripPlanCloneRequest, TripPlanCloneResponse),
+        ('mutatecollaborators', MutateCollaboratorsRequest, MutateCollaboratorsResponse),
         ('gmapsimport', GmapsImportRequest, GmapsImportResponse),
         ('findtripplans', FindTripPlansRequest, FindTripPlansResponse))
 
@@ -690,6 +736,63 @@ class TripPlanService(service.Service):
         for entity in new_entities:
             entity.entity_id = data.generate_entity_id()
         return new_entities
+
+    def mutatecollaborators(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        self.validate_collaborator_operations(operations)
+        trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
+        self.validate_mutate_collaborators_editability(operations)
+
+        for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
+            invitee_email = add_op.operation.invitee_email
+            trip_plan = add_op.trip_plan
+            db_user = user.User.get_by_email(invitee_email)
+            if db_user:
+                if not trip_plan.editor_exists(db_user.public_id) and not trip_plan.user.public_id == db_user.public_id:
+                    trip_plan.editors.append(data.DisplayUser(db_user.public_id, db_user.display_name))
+                    # The invitee probably doesn't exist but just in case they invited the
+                    # user before they had an account, clean up.
+                    trip_plan.remove_invitee(invitee_email)
+                    # TODO: Send invitation email
+            else:
+                if not trip_plan.invitee_exists(invitee_email):
+                    trip_plan.invitee_emails.append(invitee_email)
+                    # TODO: Send invitation email
+            add_op.result = TripPlanCollaborators(trip_plan.editors, trip_plan.invitee_emails)
+
+        for delete_op in OperationData.filter_by_operator(operations, Operator.DELETE):
+            trip_plan = delete_op.trip_plan
+            if delete_op.operation.invitee_email:
+                trip_plan.remove_invitee(delete_op.operation.invitee_email)
+            elif delete_op.operation.collaborator_public_id:
+                trip_plan.remove_editor(delete_op.operation.collaborator_public_id)
+            delete_op.result = TripPlanCollaborators(trip_plan.editors, trip_plan.invitee_emails)
+
+        for trip_plan in trip_plans:
+            data.save_trip_plan(trip_plan)
+
+        return MutateCollaboratorsResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            collaborators=[op.result for op in operations],
+            # TODO: This implementation for last_modified is currently insufficient
+            # if multiple trip plans are being edited together, since each will be saved
+            # at a different time.
+            last_modified=trip_plans[0].last_modified)
+
+    def validate_collaborator_operations(self, operations):
+        for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
+            if not add_op.operation.invitee_email:
+                self.validation_errors.append(op.missingfield('invitee_email'))
+        self.raise_if_errors()
+
+    def validate_mutate_collaborators_editability(self, operations):
+        for op in operations:
+            if not op.trip_plan:
+                self.validation_errors.append(op.newerror(TripPlanServiceError.NO_TRIP_PLAN_FOUND, field_name='trip_plan_id'))
+            elif not op.trip_plan.editable_by(self.session_info):
+                self.validation_errors.append(op.newerror(CommonError.NOT_AUTHORIZED_FOR_OPERATION,
+                    'The user is not allowed to edit this trip plan.', 'trip_plan_id'))
+        self.raise_if_errors()
 
     def gmapsimport(self, request):
         kml_url = kml_import.get_kml_url(request.gmaps_url)

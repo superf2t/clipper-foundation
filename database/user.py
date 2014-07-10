@@ -1,5 +1,6 @@
 from flask.ext import user
 from flask.ext.user import forms
+from sqlalchemy import func
 import wtforms
 from wtforms import validators
 
@@ -27,6 +28,11 @@ class User(db.Model, user.UserMixin):
     def get_by_public_ids(cls, public_ids):
         ids = [crypto.decrypt_id(public_id) for public_id in public_ids]
         return cls.query.filter(User.id.in_(ids))
+
+    @classmethod
+    def get_by_email(cls, email):
+        return cls.query.filter(func.lower(cls.email) == func.lower(email)).first()
+
 
 class TCRegisterForm(forms.RegisterForm):
     # TODO: Add validators and make required

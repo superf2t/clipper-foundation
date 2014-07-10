@@ -199,12 +199,49 @@ function TripPlanService($http) {
   this.gmapsimport = function(url) {
     var request = {'gmaps_url': url};
     return $http.post('/tripplanservice/gmapsimport', request);
-  }
+  };
 
   this.findTripPlans = function(locationLatlng) {
     var request = {'location_latlng': locationLatlng};
     return $http.post('/tripplanservice/findtripplans', request);
-  }
+  };
+
+  this.inviteCollaborator = function(tripPlanId, inviteeEmail) {
+    var request = {
+      'operations': [{
+        'operator': Operator.ADD,
+        'trip_plan_id': tripPlanId,
+        'invitee_email': inviteeEmail
+      }]
+    };
+    return this.mutatecollaborators(request);
+  };
+
+  this.removeEditor = function(tripPlanId, collaboratorPublicId) {
+    var request = {
+      'operations': [{
+        'operator': Operator.DELETE,
+        'trip_plan_id': tripPlanId,
+        'collaborator_public_id': collaboratorPublicId
+      }]
+    };
+    return this.mutatecollaborators(request);  
+  };
+
+  this.removeInvitee = function(tripPlanId, inviteeEmail) {
+    var request = {
+      'operations': [{
+        'operator': Operator.DELETE,
+        'trip_plan_id': tripPlanId,
+        'invitee_email': inviteeEmail
+      }]
+    };
+    return this.mutatecollaborators(request);
+  };
+
+  this.mutatecollaborators = function(request) {
+    return $http.post('/tripplanservice/mutatecollaborators', request);
+  };
 }
 
 var TripPlanServiceError = {

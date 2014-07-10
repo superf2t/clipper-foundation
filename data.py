@@ -141,6 +141,7 @@ class TripPlan(serializable.Serializable):
         serializable.objlistf('notes', Note),
         'creator', serializable.objf('user', DisplayUser),
         serializable.objlistf('editors', DisplayUser),
+        serializable.listf('invitee_emails'),
         'last_modified', 'status')
 
     Status = enums.enum('ACTIVE', 'DELETED')
@@ -149,7 +150,8 @@ class TripPlan(serializable.Serializable):
             location_name=None, location_latlng=None, location_bounds=None,
             description=None, cover_image_url=None, source_url=None,
             entities=(), notes=(),
-            creator=None, user=None, editors=(), last_modified=None, status=Status.ACTIVE.name):
+            creator=None, user=None, editors=(), invitee_emails=(),
+            last_modified=None, status=Status.ACTIVE.name):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.location_name = location_name
@@ -167,7 +169,7 @@ class TripPlan(serializable.Serializable):
         self.user = user
         self.creator = creator  # Deprecated in favor of user
         self.editors = editors or []
-        # self.invited_editors = invited_editors or []
+        self.invitee_emails = invitee_emails or []
 
     def entity_by_source_url(self, source_url):
         for entity in self.entities:
@@ -202,6 +204,31 @@ class TripPlan(serializable.Serializable):
             else:
                 return session_info.visitor_id and session_info.visitor_id == self.creator
 
+    def editor_exists(self, editor_public_id):
+        for editor in self.editors:
+            if editor.public_id == editor_public_id:
+                return True
+        return False
+
+    def invitee_exists(self, invitee_email):
+        invitee = invitee_email.lower()
+        for email in self.invitee_emails:
+            if email.lower() == invitee:
+                return True
+        return False
+
+    def remove_editor(self, editor_public_id):
+        for i, editor in enumerate(self.editors):
+            if editor.public_id == editor_public_id:
+                return self.editors.pop(i)
+        return None
+
+    def remove_invitee(self, invitee_email):
+        for i, email in enumerate(self.invitee_emails):
+            if email.lower() == invitee_email.lower():
+                return self.invitee_emails.pop(i)
+        return None
+
     def creator_identifier(self):
         if self.user and self.user.public_id:
             return crypto.decrypt_id(self.user.public_id)
@@ -229,6 +256,8 @@ class TripPlan(serializable.Serializable):
         self.notes = ()
         self.creator = None
         self.last_modified = None
+        self.editors = ()
+        self.invitee_emails = ()
         return self
 
     def strip_child_objects(self):

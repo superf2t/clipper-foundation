@@ -303,6 +303,11 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
   };
 
+  this.updateCollaborators = function(tripPlanCollaborators) {
+    this.tripPlanData['editors'] = tripPlanCollaborators['editors'];
+    this.tripPlanData['invitee_emails'] = tripPlanCollaborators['invitee_emails'];
+  };
+
   this.updateTripPlan = function(tripPlanData) {
     $.extend(this.tripPlanData, tripPlanData);
   };
@@ -317,11 +322,12 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     if (this.tripPlanData['user']['public_id'] == publicUserId) {
       return 1;
     }
-    $.each(this.tripPlanData['editors'] || [], function(i, editor) {
+    for (var i = 0, I = this.tripPlanData['editors'].length; i < I; i++) {
+      var editor = this.tripPlanData['editors'][i];
       if (editor['public_id'] == publicUserId) {
         return 2 + i;
       }
-    });
+    }
     return null;
   };
 
@@ -3006,20 +3012,21 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
 
 function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanService, $location) {
   $scope.formState = {email: null};
+  $scope.accountInfo = $accountInfo;
   $scope.creator = $tripPlanModel.tripPlanData['user'];
   $scope.isCreator = $accountInfo['user']['public_id'] == $scope.creator['public_id'];
   $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
 
-  $scope.hasCollaborators = function() {
-    var collaborators = $scope.collaborators();
-    return collaborators && collaborators.length;
+  $scope.editors = function() {
+    return $tripPlanModel.tripPlanData['editors'] || [];
   };
 
-  $scope.collaborators = function() {
-    var currentUser = $accountInfo['email'].toLowerCase();
-    return _.filter($tripPlanModel.tripPlanData['editors'], function(email) {
-      return currentUser != email.toLowerCase();
-    });
+  $scope.inviteeEmails = function() {
+    return $tripPlanModel.tripPlanData['invitee_emails'] || [];
+  };
+
+  $scope.hasCollaborators = function() {
+    return $scope.editors().length || $scope.inviteeEmails().length;
   };
 
   $scope.addCollaborator = function() {
@@ -3027,34 +3034,28 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
     if (!email) {
       return;
     }
-    if ($tripPlanModel.tripPlanData['editors'].indexOf(email) > -1) {
-      return;
-    }
-    var newEditors = $tripPlanModel.tripPlanData['editors'].slice(0);
-    newEditors.push(email);
-    $tripPlanService.editTripPlan({
-      'trip_plan_id': $tripPlanModel.tripPlanId(),
-      'editors': newEditors
-    }).success(function(response) {
-      if (response['response_code'] == ResponseCode.SUCCESS) {
-        $tripPlanModel.tripPlanData['editors'] = newEditors;
-        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
+    $tripPlanService.inviteCollaborator($tripPlanModel.tripPlanId(), email)
+      .success(function(response) {
+        $scope.handleMutateResponse(response);
         $scope.formState.email = null;
-      }
-    });
+      });
   };
 
-  $scope.removeCollaborator = function(email) {
-    var index = $tripPlanModel.tripPlanData['editors'].indexOf(email);
-    $tripPlanModel.tripPlanData['editors'].splice(index, 1);
-    $tripPlanService.editTripPlan({
-      'trip_plan_id': $tripPlanModel.tripPlanId(),
-      'editors': $tripPlanModel.tripPlanData['editors']
-    }).success(function(response) {
-      if (response['response_code'] == ResponseCode.SUCCESS) {
-        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
-      }
-    });
+  $scope.removeEditor = function(editor) {
+    $tripPlanService.removeEditor($tripPlanModel.tripPlanId(), editor['public_id'])
+      .success($scope.handleMutateResponse);
+  };
+
+  $scope.removeInvitee = function(email) {
+    $tripPlanService.removeInvitee($tripPlanModel.tripPlanId(), email)
+      .success($scope.handleMutateResponse);
+  };
+
+  $scope.handleMutateResponse = function(response) {
+    if (response['response_code'] == ResponseCode.SUCCESS) {
+      $tripPlanModel.updateCollaborators(response['collaborators'][0]);
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    };
   };
 }
 
