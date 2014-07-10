@@ -62,7 +62,7 @@ function creatorDisplayName(tripPlanData) {
   }
   if (tripPlanData['user'] && tripPlanData['user']['display_name']) {
     return tripPlanData['user']['display_name'];
-  } else if (tripPlanData['creator']) {
+  } else if (tripPlanData['creator'] && _.isString(tripPlanData['creator'])) {
     return emailPrefix(tripPlanData['creator']);
   } else {
     return 'Guest User';

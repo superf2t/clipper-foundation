@@ -706,7 +706,7 @@ class TripPlanService(service.Service):
 
     def migrate_creators(self, trip_plans):
         for trip_plan in trip_plans:
-            if trip_plan.creator and (not trip_plan.user or not trip_plan.user.public_id):
+            if trip_plan.creator and isinstance(trip_plan.creator, basestring) and (not trip_plan.user or not trip_plan.user.public_id):
                 db_user = user.User.query.filter_by(email=trip_plan.creator).first()
                 if db_user:
                     trip_plan.user = data.DisplayUser(db_user.public_id, db_user.display_name)
@@ -921,13 +921,10 @@ class AccountService(service.Service):
     def migrate(self, request):
         db_user = user.User.query.filter_by(email=request.email).first()
 
-        # Temporarily handle the case of people with old-style email logins;
-        # just populate the proper DisplayUser object on those.
+        # Temporarily handle the case of people with old-style email logins too.
         for trip_plan in data.load_all_trip_plans_for_creator(request.email) or []:
             if not trip_plan.user or not trip_plan.user.public_id:
-                trip_plan.user = data.DisplayUser(db_user.public_id, db_user.display_name)
-                trip_plan.creator = None
-                data.save_trip_plan(trip_plan)
+                data.change_creator(trip_plan, db_user)
 
         all_guest_trip_plans = data.load_all_trip_plans_for_creator(self.session_info.visitor_id) or []
         for trip_plan in all_guest_trip_plans:
