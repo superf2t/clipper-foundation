@@ -1,20 +1,30 @@
 {# This is a custom template that's not an override of a Flask-User template. #}
 
-{% extends 'flask_user/user_base.html' %}
+{% if request.args.get('iframe') %}
+  {% extends 'flask_user/user_base_iframe.html' %}
+{% else %}
+  {% extends 'flask_user/user_base_standalone.html' %}
+{% endif %}
 
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
 
-<script>
-  function closeParentModal() {
-    window.parent['closeLoginModal']();
-  }
-</script>
-
 <h1>Registration Complete</h1>
 
-<div>
-  <button onclick="closeParentModal()">Close</button>
-</div>
+{% if request.args.get('iframe') %}
+  <script>
+    function closeParentModal() {
+      window.parent['closeLoginModal']();
+    }
+  </script>
+
+  <div>
+    <button onclick="closeParentModal()">Close</button>
+  </div>
+{% else %}
+  <div>
+    <a href="/trip_plan">Go to trip plans</a>
+  </div>
+{% endif %}
 
 {% endblock %}

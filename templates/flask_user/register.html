@@ -1,4 +1,8 @@
-{% extends 'flask_user/user_base.html' %}
+{% if request.args.get('iframe') %}
+  {% extends 'flask_user/user_base_iframe.html' %}
+{% else %}
+  {% extends 'flask_user/user_base_standalone.html' %}
+{% endif %}
 
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
@@ -37,6 +41,7 @@
      with the value from the url in that case without overriding the view handler. #}
   <div style="display: none">
     {{ render_field(form.next, value=request.args.get('next', '')) }}
+    {{ render_field(form.iframe, value=request.args.get('iframe', '')) }}
   </div>
 
   {# Can change to form.username to swtich to username login #}
@@ -47,7 +52,7 @@
         <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
       </div>
       <div class="col-xs-6 text-right">
-          <a href="{{ url_for('user.login', next=request.args.get('next', '')) }}" tabindex='290'>
+          <a href="{{ url_for('user.login', next=request.args.get('next', ''), iframe=request.args.get('iframe')) }}" tabindex='290'>
             Already registered? Sign in.
           </a>
       </div>

@@ -215,8 +215,7 @@ def call_after_request_callbacks(response):
 @app.context_processor
 def inject_login_urls():
     return {
-        'login_iframe_url': flask_login.login_url(
-            app.login_manager.login_view, next_url=request.url),
+        'login_iframe_url': url_for('user.login', next=request.url, iframe='1'),
         'logout_url': url_for('user.logout', next=request.url),
     }
 
@@ -230,7 +229,10 @@ def inject_extended_template_builtins():
 def register():
     response = flask_user.views.register()
     if hasattr(response, 'status') and response.status == '302 FOUND':
-        return redirect('/registration_complete')
+        next_url = '/registration_complete'
+        if request.form.get('iframe'):
+            next_url += '?iframe=1'
+        return redirect(next_url)
     return response
 
 def confirm_email(token):

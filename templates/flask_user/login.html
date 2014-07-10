@@ -1,4 +1,8 @@
-{% extends 'flask_user/user_base.html' %}
+{% if request.args.get('iframe') %}
+  {% extends 'flask_user/user_base_iframe.html' %}
+{% else %}
+  {% extends 'flask_user/user_base_standalone.html' %}
+{% endif %}
 
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
@@ -16,7 +20,7 @@
         <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
       </div>
       <div class="col-xs-6 text-right">
-        <a href="{{ url_for('user.register', next=request.args.get('next')) }}" tabindex='190'>
+        <a href="{{ url_for('user.register', next=request.args.get('next'), iframe=request.args.get('iframe')) }}" tabindex='190'>
           New here? Register.
         </a>
       </div>
@@ -37,7 +41,7 @@
         <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
       </div>
       <div class="col-xs-6 text-right">
-        <a href="{{ url_for('user.forgot_password') }}" tabindex='195'>
+        <a href="{{ url_for('user.forgot_password', iframe=request.args.get('iframe')) }}" tabindex='195'>
           Forgot your Password?
         </a>
       </div>
