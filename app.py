@@ -2,6 +2,7 @@ import urllib
 
 from flask import flash
 from flask import g
+from flask import get_flashed_messages
 from flask import json
 from flask import make_response
 from flask import redirect
@@ -86,6 +87,9 @@ def trip_plan_by_id(trip_plan_id):
         request.values.get('tutorial') and not entities)
     initial_state = data.InitialPageState(request.values.get('sort'),
         needs_tutorial=needs_tutorial)
+
+    flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
+
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
@@ -98,7 +102,8 @@ def trip_plan_by_id(trip_plan_id):
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
-        initial_state=initial_state)
+        initial_state=initial_state,
+        flashed_messages=flashed_messages)
     return response
 
 @app.route('/bookmarklet.js')
@@ -219,6 +224,7 @@ def inject_login_urls():
 def inject_extended_template_builtins():
     return {
         'url_quote_plus': urllib.quote_plus,
+        'to_json_str': serializable.to_json_str,
     }
 
 def register():

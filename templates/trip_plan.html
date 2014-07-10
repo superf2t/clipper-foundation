@@ -46,6 +46,22 @@
     </div>
   </nav>
 
+  <div ng-controller="FlashedMessagesCtrl">
+    <div class="flashed-msgs" ng-if="hasMessages()">
+      <div ng-repeat="msg in messages"
+        ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
+        <div class="flash-msg" ng-class="textClass">
+          <div class="dismiss-link">
+            <a ng-click="dismiss($index)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-remove"></span>
+            </a>
+          </div>
+          [[ msg['message'] ]]
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="left-panel" ng-show="!pageStateModel.inNewTripPlanModal">
     <div id="entity-container" class="entity-container"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
@@ -1792,7 +1808,8 @@
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}},
       {{sample_sites_json|safe}},
-      {{initial_state.to_json_str()|safe}});
+      {{initial_state.to_json_str()|safe}},
+      {{to_json_str(flashed_messages)|safe}});
   </script>
 </body>
 </html>

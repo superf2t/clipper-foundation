@@ -265,6 +265,13 @@ class SessionInfo(object):
     def logged_in(self):
         return bool(self.db_user)
 
+class FlashedMessage(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('message', 'category')
+
+    def __init__(self, message=None, category=None):
+        self.message = message
+        self.category = category
+
 class InitialPageState(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('sort', 'needs_tutorial')
 

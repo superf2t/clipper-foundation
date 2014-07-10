@@ -3723,6 +3723,18 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
   };
 }
 
+function FlashedMessagesCtrl($scope, $flashedMessages) {
+  $scope.messages = $flashedMessages;
+
+  $scope.hasMessages = function() {
+    return !_.isEmpty($scope.messages);
+  };
+
+  $scope.dismiss = function(index) {
+    $scope.messages.splice(index, 1);
+  };
+}
+
 function MapManager($map) {
   this.fitBoundsToEntities = function(entities) {
     if (_.isEmpty(entities)) {
@@ -4666,7 +4678,7 @@ angular.module('filtersModule', [])
   .filter('hostToIcon', makeFilter(hostToIcon));
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
-    accountInfo, datatypeValues, allowEditing, sampleSites, initialState) {
+    accountInfo, datatypeValues, allowEditing, sampleSites, initialState, flashedMessages) {
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
@@ -4677,8 +4689,8 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
-    .value('$sampleSites', sampleSites);
-
+    .value('$sampleSites', sampleSites)
+    .value('$flashedMessages', flashedMessages);
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
@@ -4712,6 +4724,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .controller('DayPlannerCtrl', DayPlannerCtrl)
     .controller('DayPlannerOneDayCtrl', DayPlannerOneDayCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
+    .controller('FlashedMessagesCtrl', FlashedMessagesCtrl)
     .directive('tcItemDropTarget', tcItemDropTarget)
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcStartNewTripInput', tcStartNewTripInput)

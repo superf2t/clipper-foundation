@@ -192,6 +192,29 @@ a:hover .tc-icon svg {
   padding: 0px 15px 0px 0px;
 }
 
+.flashed-msgs {
+  position: fixed;
+  top: 20px;
+  width: 400px;
+  left: calc(50% - 200px);
+  padding: 10px;
+  background-color: #fff;
+  z-index: 2000;
+  border: 1px solid #777;
+  border-radius: 2px;
+  text-align: center;
+}
+
+.flash-msg {
+  position: relative;
+}
+
+.flash-msg .dismiss-link {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
 .account-cta-for-old-emails {
   font-size: 10pt;
   max-width: 400px;
