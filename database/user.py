@@ -44,3 +44,19 @@ class TCRegisterForm(forms.RegisterForm):
         [validators.Required('Please enter a display name'), validators.Length(max=50)])
     next = wtforms.StringField()
     iframe = wtforms.StringField()
+
+class DisplayNameResolver(object):
+    def __init__(self):
+        self.names_by_public_id = {}
+
+    def populate(self, public_ids):
+        if not public_ids:
+            return
+        db_users = User.get_by_public_ids(public_ids)
+        for db_user in db_users:
+            self.names_by_public_id[db_user.public_id] = db_user.display_name
+
+    def resolve(self, public_id):
+        if not self.names_by_public_id.get(public_id):
+            self.populate([public_id])
+        return self.names_by_public_id.get(public_id)

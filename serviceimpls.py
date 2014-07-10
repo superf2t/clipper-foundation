@@ -465,12 +465,11 @@ class EntityService(service.Service):
         public_ids = set(c.user.public_id for c in comments if c.user)
         if not public_ids:
             return
-        db_users = user.User.get_by_public_ids(public_ids)
-        display_users = [data.DisplayUser(u.public_id, u.display_name) for u in db_users]
-        display_user_map = dict((d.public_id, d) for d in display_users)
+        resolver = user.DisplayNameResolver()
+        resolver.populate(public_ids)
         for comment in comments:
             if comment.user and comment.user.public_id:
-                comment.user.update(display_user_map.get(comment.user.public_id))
+                comment.user.display_name = resolver.resolve(comment.user.public_id)
 
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 
@@ -644,6 +643,7 @@ class TripPlanService(service.Service):
         for trip_plan in [op.result for op in operations]:
             data.save_trip_plan(trip_plan)
         results = [op.result.copy().strip_child_objects() for op in operations]
+        self.resolve_display_users(results)
         return TripPlanMutateResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             trip_plans=results)
@@ -771,6 +771,8 @@ class TripPlanService(service.Service):
         for trip_plan in trip_plans:
             data.save_trip_plan(trip_plan)
 
+        self.resolve_display_users(trip_plans)
+
         return MutateCollaboratorsResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             collaborators=[op.result for op in operations],
@@ -815,17 +817,22 @@ class TripPlanService(service.Service):
                     trip_plan.user = data.DisplayUser(db_user.public_id, db_user.display_name)
 
     def resolve_display_users(self, trip_plans):
-        public_ids = set(t.user.public_id for t in trip_plans if t.user and t.user.public_id)
-        # We don't have to resolve editors because we didn't have any editors created
-        # until after accounts were launched.
-        if not public_ids:
-            return
-        db_users = user.User.get_by_public_ids(public_ids)
-        display_users = [data.DisplayUser(u.public_id, u.display_name) for u in db_users]
-        display_user_map = dict((d.public_id, d) for d in display_users)
+        public_ids = set()
         for trip_plan in trip_plans:
             if trip_plan.user and trip_plan.user.public_id:
-                trip_plan.user.update(display_user_map.get(trip_plan.user.public_id))
+                public_ids.add(trip_plan.user.public_id)
+            for editor in trip_plan.editors:
+                public_ids.add(editor.public_id)
+        if not public_ids:
+            return
+
+        resolver = user.DisplayNameResolver()
+        resolver.populate(public_ids)
+        for trip_plan in trip_plans:
+            if trip_plan.user and trip_plan.user.public_id:
+                trip_plan.user.display_name = resolver.resolve(trip_plan.user.public_id)
+            for editor in trip_plan.editors:
+                editor.display_name = resolver.resolve(editor.public_id)
 
     FEATURED_TRIP_PLANS_USERS = (
          'admin@nytimes.com', 'admin@nomadicmatt.com', 'admin@letsgo.com',
