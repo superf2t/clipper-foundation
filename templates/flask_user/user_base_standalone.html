@@ -14,19 +14,57 @@
       font-family: 'Nunito';
       overflow: hidden;
     }
+
+    body {
+      background-attachment: fixed;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-image: url('https://lh5.googleusercontent.com/-OBJkwaugUlQ/U5Y_m73xRLI/AAAAAAAAAEE/k8dZp1R5VVY/s1600/tc-index-bw.jpg');
+    }
+
     h1 {
       margin-top: 0;
       padding-top: 20px;
     }
+
+    .logo {
+      font-family: 'Raleway';
+      font-size: 24pt;
+      text-align: center;
+      color: #777;
+    }
+
     .main-content {
       max-width: 50%;
-      margin: 20px auto;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+    }
+
+    .form-control {
+      border-radius: 2px;
+    }
+
+    input[type=submit] {
+      color: #fff;
+      background-color: #428bca;
+      border: 1px solid #357ebd;
+      padding: 6px 12px;
+      font-size: 14px;
+      line-height: 1.42857143;
+      border-radius: 4px;
+    }
+
+    input[type=submit]:hover {
+      background-color: #3276b1;
+      border-color: #285e8e;
     }
   </style>
 </head>
 <body>
   <div class="main-content">
-    <h1>TravelClipper</h1>
+    <div class="logo">TravelClipper</div>
 
     {% block flash_messages %}
       {%- with messages = get_flashed_messages(with_categories=true) -%}
