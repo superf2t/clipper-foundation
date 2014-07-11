@@ -1,0 +1,12 @@
+{% extends 'emails/base_message.html' %}
+
+{% block message %}
+<p>
+  You've been invited by {{inviter.display_name}} to collaborate
+  on the trip plan <a href="{{trip_plan.trip_plan_url()}}">{{trip_plan.name}}</a>.
+</p>
+
+<p>
+  <a href="{{login_url}}">Click here</a> to log in to view and edit the trip plan.
+</p>
+{% endblock %}

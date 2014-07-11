@@ -3,6 +3,7 @@ import re
 
 from dateutil import parser as date_parser
 from dateutil import tz
+from flask import url_for
 
 import data
 from database import user
@@ -12,6 +13,7 @@ import geocode
 import geometry
 import google_places
 import kml_import
+import mailer
 import sample_sites
 from scraping import trip_plan_creator
 import serializable
@@ -753,11 +755,11 @@ class TripPlanService(service.Service):
                     # The invitee probably doesn't exist but just in case they invited the
                     # user before they had an account, clean up.
                     trip_plan.remove_invitee(invitee_email)
-                    # TODO: Send invitation email
+                    self.send_invitation_email(invitee_user=db_user, trip_plan=trip_plan)
             else:
                 if not trip_plan.invitee_exists(invitee_email):
                     trip_plan.invitee_emails.append(invitee_email)
-                    # TODO: Send invitation email
+                    self.send_invitation_email(invitee_email=invitee_email, trip_plan=trip_plan)
             add_op.result = TripPlanCollaborators(trip_plan.editors, trip_plan.invitee_emails)
 
         for delete_op in OperationData.filter_by_operator(operations, Operator.DELETE):
@@ -795,6 +797,21 @@ class TripPlanService(service.Service):
                 self.validation_errors.append(op.newerror(CommonError.NOT_AUTHORIZED_FOR_OPERATION,
                     'The user is not allowed to edit this trip plan.', 'trip_plan_id'))
         self.raise_if_errors()
+
+    def send_invitation_email(self, trip_plan, invitee_user=None, invitee_email=None):
+        recipient = invitee_email or invitee_user.email
+        inviter = self.session_info.display_user()
+        template_vars = dict(inviter=inviter, trip_plan=trip_plan,
+            login_url=url_for('user.login', _external=True, next=trip_plan.trip_plan_url()),
+            signup_url=url_for('user.register', _external=True, next=trip_plan.trip_plan_url()))
+        subject = '%s has invited you to the trip plan "%s"' % (inviter.display_name, trip_plan.name)
+        if invitee_email:
+            template_prefix = 'emails/invite_new_user'
+        else:
+            template_prefix = 'emails/invite_existing_user'
+        msg = mailer.render_multipart_msg(subject, [recipient], None,
+            template_vars, template_prefix + '.txt', template_prefix + '.html')
+        mailer.send(msg)
 
     def gmapsimport(self, request):
         kml_url = kml_import.get_kml_url(request.gmaps_url)

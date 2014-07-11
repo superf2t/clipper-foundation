@@ -1,0 +1,13 @@
+{% extends 'emails/base_message.html' %}
+
+{% block message %}
+You've been invited by {{inviter.display_name}} to collaborate
+on the trip plan "{{trip_plan.name}}".
+
+{{trip_plan.trip_plan_url()}}
+
+Create an account using this email address to edit the trip.
+
+{{signup_url}}
+
+{% endblock %}

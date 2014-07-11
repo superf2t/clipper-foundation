@@ -294,6 +294,11 @@ class SessionInfo(object):
     def logged_in(self):
         return bool(self.db_user)
 
+    def display_user(self):
+        return DisplayUser(self.db_user.public_id if self.db_user else None,
+            self.db_user.display_name if self.db_user else None,
+            self.public_visitor_id)
+
 class FlashedMessage(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('message', 'category')
 
