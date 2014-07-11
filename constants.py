@@ -13,6 +13,8 @@ FLASK_SECRET_KEY = None  # Set this securely in an override
 
 PUBLIC_ID_ENCRYPTION_KEY = None  # Set this securely in an override
 
+SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/travelclipper'
+
 MAIL_USERNAME = 'jamie@unicyclelabs.com'
 MAIL_PASSWORD = None  # Set this securely in an override
 

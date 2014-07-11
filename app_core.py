@@ -17,7 +17,7 @@ class MyFlask(Flask):
 
 class AppConfig(object):
     SECRET_KEY = constants.FLASK_SECRET_KEY
-    SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/travelclipper'
+    SQLALCHEMY_DATABASE_URI = constants.SQLALCHEMY_DATABASE_URI
     CSRF_ENABLED = True
     USER_ENABLE_EMAIL = False
 
