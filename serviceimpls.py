@@ -631,8 +631,28 @@ class TripPlanService(service.Service):
         self.migrate_creators(trip_plans)
         self.resolve_display_users(trip_plans)
 
+        # HACK: Check if the current user is an invitee to this trip plan, and if so
+        # convert them to an editor.  This should ideally be done when creating an
+        # account, but because we don't index trip plans by invitee/editor, in our
+        # no-database prototype we'd have to load all trip plans every time to figure
+        # out if there are invites to resolve, which is too inefficient.
+        # So we do this hack for now upon viewing a trip plan, but we should move this
+        # to email confirm handler once there's a DB.
+        self.check_invitees(trip_plans)
+
         return TripPlanGetResponse(response_code=service.ResponseCode.SUCCESS.name,
             trip_plans=trip_plans)
+
+    def check_invitees(self, trip_plans):
+        db_user = self.session_info.db_user
+        if not db_user:
+            return
+        for trip_plan in trip_plans:
+            if trip_plan.invitee_exists(db_user.email):
+                if not trip_plan.editor_exists(db_user.public_id):
+                    trip_plan.editors.append(data.DisplayUser(db_user.public_id, db_user.display_name))
+                trip_plan.remove_invitee(db_user.email)
+                data.save_trip_plan(trip_plan, update_timestamp=False)
 
     def mutate(self, request):
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')
