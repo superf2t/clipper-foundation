@@ -237,6 +237,14 @@ class TripPlan(serializable.Serializable):
         else:
             return self.creator
 
+    def creator_name(self):
+        if self.user and self.user.display_name:
+            return self.user.display_name
+        elif self.user and self.user.public_visitor_id:
+            return self.user.public_visitor_id
+        else:
+            return self.creator
+
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
 

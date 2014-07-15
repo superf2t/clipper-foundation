@@ -2,10 +2,11 @@ import os
 
 import constants
 import data
+from database import user
 
 SORTINGS = {
     'name': lambda t1, t2: cmp(t1.name, t2.name),
-    'creator': lambda t1, t2: cmp(t1.creator, t2.creator),
+    'creator': lambda t1, t2: cmp(t1.creator_name(), t2.creator_name()),
     'entity_count': lambda t1, t2: cmp(len(t1.entities), len(t2.entities)),
     'last_modified': lambda t1, t2: t1.compare(t2),
     'status': lambda t1, t2: cmp(t1.status, t2.status),
@@ -24,4 +25,11 @@ def load_all_trip_plans(include_deleted=True):
         full_fname = os.path.join(constants.PROJECTPATH, 'local_data', fname)
         trip_plan = data.load_trip_plan_from_filename(full_fname, include_deleted=include_deleted)
         trip_plans.append(trip_plan)
+
+    resolver = user.DisplayNameResolver()
+    resolver.populate([t.user.public_id for t in trip_plans if t.user and t.user.public_id])
+    for t in trip_plans:
+        if t.user and t.user.public_id:
+            t.user.display_name = resolver.resolve(t.user.public_id)
+
     return trip_plans
