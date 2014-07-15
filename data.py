@@ -59,41 +59,85 @@ class Comment(serializable.Serializable):
     def set_last_modified_datetime(self, d):
         self.last_modified = d.isoformat()
 
+class Tag(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('tag_id', 'text')
+
+    def __init__(self, tag_id=None, text=None):
+        self.tag_id = tag_id
+        self.text = text
+
+class OpeningPeriod(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('day', 'hour_open', 'minute_open',
+        'hour_close', 'minute_close')
+
+    def __init__(self, day=None, hour_open=None, minute_open=None,
+            hour_close=None, minute_close=None):
+        self.day = day
+        self.hour_open = hour_open
+        self.minute_open = minute_open
+        self.hour_close = hour_close
+        self.minute_close = minute_close
+
+class OpeningHours(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('source_text',
+        serializable.objlistf('opening_periods', OpeningPeriod))
+
+    def __init__(self, source_text=None, opening_periods=()):
+        self.source_text = source_text
+        self.opening_periods = opening_periods or []
+
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
+        serializable.objf('latlng', LatLng),
         serializable.objf('category', values.Category),
         serializable.objf('sub_category', values.SubCategory),
-        'address',
-        serializable.objf('latlng', LatLng), 'address_precision',
-        'rating', 'description', 'starred',
-        'primary_photo_url', serializable.listf('photo_urls'),
-        'source_url', 'google_reference', 'day', 'day_position',
-        serializable.objlistf('comments', Comment))
+        'address', 'address_precision',
+        'phone_number', serializable.objf('opening_hours', OpeningHours), 'website',
+        'rating', 'rating_max', 'review_count',
+        'starred', serializable.objlistf('comments', Comment),
+        'description', 'primary_photo_url',
+        serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
+        'source_url', 'origin_trip_plan_id', 'google_reference',
+        'day', 'day_position')
 
-    def __init__(self, entity_id=None, name=None,
+    def __init__(self, entity_id=None, name=None, latlng=None,
             category=None, sub_category=None,
-            address=None, latlng=None, address_precision=None,
-            rating=None, description=None, starred=None,
-            primary_photo_url=None, photo_urls=(), source_url=None,
-            google_reference=None, day=None, day_position=None,
-            comments=None):
+            address=None, address_precision=None,
+            phone_number=None, opening_hours=None, website=None,
+            rating=None, rating_max=None, review_count=None, 
+            starred=None, comments=(),
+            description=None, primary_photo_url=None, photo_urls=(), tags=(),
+            source_url=None, origin_trip_plan_id=None, google_reference=None, 
+            day=None, day_position=None):
         self.entity_id = entity_id
         self.name = name
+        self.latlng = latlng
         self.category = category
         self.sub_category = sub_category
+
         self.address = address
-        self.latlng = latlng
         self.address_precision = address_precision
+        self.phone_number = phone_number
+        self.opening_hours = opening_hours
+        self.website = website
+
         self.rating = rating
-        self.description = description
+        self.rating_max = rating_max
+        self.review_count = review_count
         self.starred = starred
+        self.comments = comments or []
+
+        self.description = description
         self.primary_photo_url = primary_photo_url
         self.photo_urls = photo_urls or []
+        self.tags = tags or []
+
         self.source_url = source_url
+        self.origin_trip_plan_id = origin_trip_plan_id
         self.google_reference = google_reference
-        self.day = day
-        self.day_position = day_position
-        self.comments = comments or []
+
+        self.day = day  # Deprecated
+        self.day_position = day_position  # Deprecated
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:
@@ -132,6 +176,8 @@ class Note(serializable.Serializable):
         self.day_position = day_position
         self.status = status
 
+TripPlanType = enums.enum('GUIDE')
+
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',
         'location_name', serializable.objf('location_latlng', LatLng),
@@ -142,7 +188,9 @@ class TripPlan(serializable.Serializable):
         'creator', serializable.objf('user', DisplayUser),
         serializable.objlistf('editors', DisplayUser),
         serializable.listf('invitee_emails'),
-        'last_modified', 'status')
+        'last_modified', 'status',
+        'trip_plan_type', serializable.objlistf('tags', Tag),
+        'content_date', 'view_count', 'clip_count')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
@@ -151,7 +199,9 @@ class TripPlan(serializable.Serializable):
             description=None, cover_image_url=None, source_url=None,
             entities=(), notes=(),
             creator=None, user=None, editors=(), invitee_emails=(),
-            last_modified=None, status=Status.ACTIVE.name):
+            last_modified=None, status=Status.ACTIVE.name,
+            trip_plan_type=None, tags=(), content_date=None,
+            view_count=0, clip_count=0):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.location_name = location_name
@@ -164,6 +214,11 @@ class TripPlan(serializable.Serializable):
         self.notes = notes or []
         self.last_modified = last_modified
         self.status = status
+        self.trip_plan_type = trip_plan_type
+        self.tags = tags or []
+        self.content_date = content_date
+        self.view_count = view_count
+        self.clip_count = clip_count
 
         # TODO: Make these private fields
         self.user = user
