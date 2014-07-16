@@ -56,7 +56,12 @@ class ScrapedPage(object):
     PAGE_TITLE_XPATH = 'head/title'
     NAME_XPATH = None
     ADDRESS_XPATH = None
+    PHONE_NUMBER_XPATH = None
+    WEBSITE_XPATH = None
+    REVIEW_COUNT_XPATH = None 
     PRIMARY_PHOTO_XPATH = None
+
+    RATING_MAX = None
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
         LocationResolutionStrategy.ADDRESS)
@@ -117,27 +122,29 @@ class ScrapedPage(object):
         addr_elem = self.root.find(self.ADDRESS_XPATH)
         return tostring_with_breaks(addr_elem).strip()
 
-    @fail_returns_none
     def get_category(self):
         return None
 
-    @fail_returns_none
     def get_sub_category(self):
         return None
 
-    @fail_returns_none
     def get_rating(self):
         return None
+
+    def get_rating_max(self):
+        return self.RATING_MAX
+
+    @fail_returns_none
+    def get_review_count(self):
+        return int(self.root.xpath(self.REVIEW_COUNT_XPATH)[0]) if self.REVIEW_COUNT_XPATH else None
 
     @fail_returns_none
     def get_primary_photo(self):
         return self.root.find(self.PRIMARY_PHOTO_XPATH).get('src')
 
-    @fail_returns_empty
     def get_photos(self):
         return ()
 
-    @fail_returns_none
     def get_site_specific_entity_id(self):
         return None
 
@@ -162,7 +169,17 @@ class ScrapedPage(object):
         location = self.lookup_location()
         return 'Precise' if location and location.is_precise() else 'Imprecise'
 
-    def get_url(self):
+    def get_phone_number(self):
+        return self.root.xpath(self.PHONE_NUMBER_XPATH)[0] if self.PHONE_NUMBER_XPATH else None
+
+    def get_opening_hours(self):
+        return None
+
+    @fail_returns_none
+    def get_website(self):
+        return self.root.xpath(self.WEBSITE_XPATH)[0] if self.WEBSITE_XPATH else None
+
+    def get_source_url(self):
         return self.url
 
     def is_base_scraper(self):
@@ -177,14 +194,23 @@ Entity name: %s
 Category: %s
 SubCategory: %s
 Address: %s
-Rating: %s
+Phone number: %s
+Website: %s
+Hours: %s
+Rating: %s/%s
+Review count: %s
 Primary photo url: %s
 Photo urls: %s''' % (
     self.get_entity_name(),
     self.get_category(),
     self.get_sub_category(),
     self.get_address(),
+    self.get_phone_number(),
+    self.get_website(),
+    self.get_opening_hours(),
     self.get_rating(),
+    self.get_rating_max(),
+    self.get_review_count(),
     self.get_primary_photo(),
     self.get_photos())
 

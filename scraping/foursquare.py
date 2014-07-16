@@ -2,6 +2,7 @@ from scraping.html_parsing import tostring
 from scraping import scraped_page
 from scraping.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
 from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
+from scraping.scraped_page import fail_returns_none
 import values
 
 class FoursquareScraper(scraped_page.ScrapedPage):
@@ -15,6 +16,10 @@ class FoursquareScraper(scraped_page.ScrapedPage):
             REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = './/h1[@class="venueName"]'
+    PHONE_NUMBER_XPATH = './/div[@class="venueDetail"]//span[@itemprop="telephone"]/text()'
+    WEBSITE_XPATH = './/div[@class="venueDetail"]//div[contains(@class, "venueWebsite")]//a[@itemprop="url"]/@href'
+
+    RATING_MAX = 10
 
     def get_address(self):
         parts = self.root.xpath('.//div[@class="adr"]//span[@itemprop]/text()')
@@ -82,6 +87,16 @@ class FoursquareScraper(scraped_page.ScrapedPage):
             if 'stadium' in category_str:
                 return values.SubCategory.SPORTS
         return None
+
+    @fail_returns_none
+    def get_rating(self):
+        return float(self.root.xpath('.//div[@class="venueDetail"]//span[@itemprop="ratingValue"]/text()')[0])
+
+    @fail_returns_none
+    def get_review_count(self):
+        # This is technically the number of 'tips'
+        text = self.root.xpath('.//div[@class="venueDetail"]//h3[@class="tipCount"]//text()')[0]
+        return int(text.split()[0])
 
 def contains_any(s, values):
     for value in values:

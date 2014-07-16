@@ -15,6 +15,10 @@ class FodorsScraper(scraped_page.ScrapedPage):
         '^http(s)?://www\.fodors\.com/.*/review-\d+\.html.*$',)
 
     NAME_XPATH = './/h1'
+    PHONE_NUMBER_XPATH = './/div[@id="property-review"]//li[@class="phone"]//span[@itemprop="telephone"]/text()'
+    WEBSITE_XPATH = './/div[@id="property-review"]//li[@class="website"]//a/@href'
+
+    RATING_MAX = 5
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
         LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
@@ -76,9 +80,10 @@ class FodorsScraper(scraped_page.ScrapedPage):
         else:
             return None
 
-    # Convert Fodor's star rating (represented as % of 100%) to normalized scale
+    # Convert Fodor's star rating (represented as % of 100% but render as out of 5 stars)
+    # to normalized scale
     def get_rating(self):
-        rating_value_node = self.root.find('.//span[@class="ratings-value star5"]')
+        rating_value_node = self.root.find('.//div[@class="property-name"]//span[@class="ratings-value star5"]')
         if rating_value_node is not None:
             rating_value_string = rating_value_node.get('style')
             rating_value = re.sub('[^0-9]', '', rating_value_string)
