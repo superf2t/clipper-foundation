@@ -98,6 +98,16 @@ class FoursquareScraper(scraped_page.ScrapedPage):
         text = self.root.xpath('.//div[@class="venueDetail"]//h3[@class="tipCount"]//text()')[0]
         return int(text.split()[0])
 
+    @fail_returns_none
+    def get_opening_hours(self):
+        timeframes = self.root.xpath('.//div[@class="venueDetail"]//div[@class="allHours"]//ul[@class="timeframes"]//li[@class="timeframe"]')
+        timeframes_text = []
+        for t in timeframes:
+            text = '%s\t%s' % (tostring(t.xpath('.//span[@class="timeframeDays"]')[0]),
+                tostring(t.xpath('.//span[@class="timeframeHours"]')[0]))
+            timeframes_text.append(text)
+        return '\n'.join(timeframes_text)
+
 def contains_any(s, values):
     for value in values:
         if value in s:
