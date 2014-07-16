@@ -1,6 +1,6 @@
+import data
 import geocode
 import google_places
-
 from scraping.html_parsing import tostring
 from scraping import scraped_page
 import values
@@ -14,6 +14,8 @@ class LonelyPlanetScraper(scraped_page.ScrapedPage):
         '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/restaurants/.*$',)
 
     NAME_XPATH = './/h1'
+    PHONE_NUMBER_XPATH = './/dl[@class="info-list"]//a[@class="tel"]/text()'
+    WEBSITE_XPATH = './/dl[@class="info-list"]//dt[contains(@class, "icon--mouse")]/following-sibling::dd//a/@href'
 
     def get_address(self):
         city, country = self.get_city_and_country()
@@ -52,9 +54,6 @@ class LonelyPlanetScraper(scraped_page.ScrapedPage):
                 return values.SubCategory.HOTEL
         elif '/restaurants/' in url:
             return values.SubCategory.RESTAURANT
-        return None
-
-    def get_rating(self):
         return None
 
     def get_primary_photo(self):
@@ -104,3 +103,7 @@ class LonelyPlanetScraper(scraped_page.ScrapedPage):
 
     def get_location_precision(self):
         return 'Precise' if self.get_latlng() else 'Imprecise'
+
+    def get_opening_hours(self):
+        source_text = tostring(self.root.xpath('.//dl[@class="info-list"]//dt[contains(@class, "icon--time")]/following-sibling::dd')[0])
+        return data.OpeningHours(source_text=source_text)

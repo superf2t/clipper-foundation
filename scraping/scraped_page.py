@@ -170,7 +170,7 @@ class ScrapedPage(object):
         return 'Precise' if location and location.is_precise() else 'Imprecise'
 
     def get_phone_number(self):
-        return self.root.xpath(self.PHONE_NUMBER_XPATH)[0] if self.PHONE_NUMBER_XPATH else None
+        return self.root.xpath(self.PHONE_NUMBER_XPATH)[0].strip() if self.PHONE_NUMBER_XPATH else None
 
     def get_opening_hours(self):
         return None
