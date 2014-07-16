@@ -1,0 +1,220 @@
+<!doctype html>
+<html>
+<head>
+  <title>{{trip_plan.name}}</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+  {% include 'analytics.html' %}
+  <style>
+    @media print {
+      body {
+        margin: 1in;
+        width: 7.5in;
+      }
+    }
+
+    @media screen {
+      body {
+        margin: 20px;
+        width: 500px;
+      }
+    }
+
+    body {
+      color: #000;
+    }
+
+    .summary {
+      margin-bottom: 20px;
+    }
+
+    .cover-section {
+      min-height: 150px;
+      max-height: 300px;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: 50% 50%;
+      background-image: url('{{trip_plan.cover_image_url or '/static/img/default-cover.jpg'}}');
+      position: relative;
+    }
+
+    .cover-section .trip-title {
+      width: 100%;
+      text-align: center;
+      font-size: 18pt;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+      position: absolute;
+      top: calc(50% - 17px);
+    }
+
+    .cover-section .creator {
+      width: 100%;
+      text-align: center;
+      font-size: 14pt;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+      position: absolute;
+      top: calc(50% + 10px);
+    }
+
+    .summary .description {
+      white-space: pre-line;
+      text-align: justify;
+    }
+
+    .entity {
+      padding: 20px 0;
+    }
+
+    .entity .header {
+      position: relative;
+    }
+
+    .entity .name {
+      font-size: 18pt;
+      font-weight: bold;
+    }
+
+    .entity .star {
+      font-size: 18pt;
+      position: absolute;
+      top: 0;
+      right: 0;
+    }
+
+    .entity .category-and-day {
+      font-style: italic;
+    }
+
+    .entity .main-photo {
+      padding: 10px 0;
+      max-width: 100%;
+    }
+
+    .entity .main-photo img {
+      max-width: 100%;
+    }
+
+    .entity .description {
+      margin: 10px 0;
+    }
+
+    .entity .comments {
+      margin: 10px 0;
+    }
+
+    .entity .comments .comments-header {
+      font-size: 14pt;
+      font-weight: bold;
+    }
+
+    .entity .comments .comment {
+      margin: 5px 0;
+    }
+
+    .entity .comments .author {
+      font-weight: bold;
+    }
+
+    .entity .comments .date {
+      font-style: italic;
+    }
+
+    .entity-separator {
+      margin: 0;
+      border-top: 1px solid #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="summary">
+    <div class="cover-section">
+      <div class="trip-title">
+        {{trip_plan.name}}
+      </div>
+      <div class="creator">
+        {{trip_plan.user.display_name}}
+      </div>
+    </div>
+    {% if trip_plan.description %}
+    <div class="description">
+      {{trip_plan.description}}
+    </div>
+    {% endif %}
+  </div>
+
+  {% for entity in entities %}
+  <div class="entity">
+    <div class="header">
+      <div class="name">{{entity.name}}</div>
+      {% if entity.starred %}
+      <div class="star">
+        <span class="glyphicon glyphicon-star favorite-star"></span>
+      </div>
+      {% endif %}
+    </div>
+    {% if (entity.category and entity.category.category_id) or entity.day %}
+    <div class="category-and-day">
+      {% if entity.category and entity.category.category_id %}
+      <span class="category">
+        {{entity.category.display_name}}
+        {% if entity.sub_category and entity.sub_category.sub_category_id %}
+        > {{entity.sub_category.display_name}}
+        {% endif %}
+      </span>
+      {% endif %}
+      {% if entity.category and entity.category.category_id and entity.day %}
+      |
+      {% endif %}
+      {% if entity.day %}
+      <span class="day">
+        Day {{entity.day}}
+      </span>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% if entity.address %}
+    <div class="address">
+      {{entity.address}}
+    </div>
+    {% endif %}
+    {% if entity.photo_urls %}
+    <div class="main-photo">
+      <img src="{{entity.photo_urls[0]}}"/>
+    </div>
+    {% endif %}
+    {% if entity.description %}
+    <div class="description">
+      {{entity.description}}
+    </div>
+    {% endif %}
+    {% if entity.comments %}
+    <div class="comments">
+      <div class="comments-header">Comments</div>
+      {% for comment in entity.comments %}
+      <div class="comment">
+        <div class="header">
+          <span class="author">{{comment.user.display_name}}</span>
+          <span class="date">
+            {{comment.last_modified_datetime().strftime('%b %d, %Y %I:%M %p')}}
+          </span>
+        </div>
+        <div class="comment-text">
+          {{comment.text}}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% if not loop.last %}
+  <hr class="entity-separator"/>
+  {% endif %}
+  {% endfor %}
+</body>
+</html>

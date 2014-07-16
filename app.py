@@ -106,6 +106,17 @@ def trip_plan_by_id(trip_plan_id):
         flashed_messages=flashed_messages)
     return response
 
+@app.route('/trip_plan/<int:trip_plan_id>/print')
+def print_trip_plan(trip_plan_id):
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    entity_service = serviceimpls.EntityService(g.session_info)
+
+    trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
+    entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
+    sorted_entities = sorted(entities, cmp=data.Entity.chronological_cmp)
+
+    return render_template('print_trip_plan.html', trip_plan=trip_plan, entities=sorted_entities)
+
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
