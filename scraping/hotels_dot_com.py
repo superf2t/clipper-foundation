@@ -14,6 +14,8 @@ class HotelsDotComScraper(scraped_page.ScrapedPage):
     NAME_XPATH = 'body//h1'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="hotel-photos"]//div[@class="slide active"]//img'
 
+    RATING_MAX = 5
+
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
         LocationResolutionStrategy.ADDRESS, LocationResolutionStrategy.ENTITY_NAME_WITH_PLACE_SEARCH)
 
@@ -53,6 +55,17 @@ class HotelsDotComScraper(scraped_page.ScrapedPage):
                 'lat': lat,
                 'lng': lng
                 }
+
+    @fail_returns_none
+    def get_review_count(self):
+        text = tostring(self.root.xpath('.//div[@class="total-reviews"]')[0])
+        # Looks like 'See all 300 hotels.com reviews'
+        return int(text.split()[2])
+
+    @fail_returns_none
+    def get_phone_number(self):
+        text = self.root.xpath('.//div[@class="address-cntr"]//span[@class="phone-number"]/text()')[0]
+        return text.strip().strip(u'\u200E\u200F')
 
     @staticmethod
     def expand_using_hotel_id(url, ignored):

@@ -20,6 +20,16 @@ class WikipediaScraper(scraped_page.ScrapedPage):
                 return tostring(tr.find('.//td'))
         return None
 
+    @fail_returns_none
+    def get_website(self):
+        infocard_cells = self.root.findall('.//table[@class="infobox vcard"]//tr')
+        for tr in infocard_cells:
+            th = tr.find('.//th')
+            if th is not None and th.text == 'Website':
+                return tr.xpath('.//td//a/@href')[0]
+        return None
+
+
     def get_category(self):
         return values.Category.ATTRACTIONS
 

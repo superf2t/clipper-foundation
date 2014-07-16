@@ -1,7 +1,9 @@
 import urlparse
 
+import data
 from scraping import html_parsing
 from scraping.html_parsing import tostring
+from scraping.html_parsing import tostring_with_breaks
 from scraping import scraped_page
 from scraping.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
 from scraping.scraped_page import fail_returns_empty
@@ -20,7 +22,11 @@ class YelpScraper(scraped_page.ScrapedPage):
 
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address[@itemprop="address"]'
+    PHONE_NUMBER_XPATH = './/span[@itemprop="telephone"]/text()'
+    REVIEW_COUNT_XPATH = './/span[@itemprop="reviewCount"]/text()'
     PRIMARY_PHOTO_XPATH = 'body//div[@class="showcase-photos"]//div[@class="showcase-photo-box"]//img'
+
+    RATING_MAX = 5
 
     @fail_returns_none
     def get_category(self):
@@ -63,6 +69,23 @@ class YelpScraper(scraped_page.ScrapedPage):
         for thumb_img in photos_root.findall('body//div[@id="photo-thumbnails"]//a/img'):
             urls.append(thumb_img.get('src').replace('ms.jpg', 'l.jpg'))
         return urls
+
+    @fail_returns_none
+    def get_website(self):
+        redirect_url = self.root.xpath('.//div[@class="biz-website"]//a/@href')[0]
+        params = urlparse.parse_qs(urlparse.urlparse(redirect_url).query)
+        return params['url'][0]
+
+    @fail_returns_none
+    def get_opening_hours(self):
+        hours_nodes = self.root.xpath('.//table[contains(@class, "hours-table")]//tr')
+        texts = []
+        for node in hours_nodes:
+            day = tostring(node.find('th'))
+            times = tostring_with_breaks(node.find('td'))
+            texts.append('%s\t%s' % (day, times))
+        source_text = '\n'.join(texts)
+        return data.OpeningHours(source_text=source_text)
 
     @fail_returns_none
     def get_site_specific_entity_id(self):

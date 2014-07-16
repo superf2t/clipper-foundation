@@ -1,3 +1,4 @@
+import data
 from scraping import html_parsing
 from scraping.html_parsing import tostring
 from scraping import scraped_page
@@ -10,6 +11,8 @@ class ZagatScraper(scraped_page.ScrapedPage):
         '^http(s)?://www\.zagat\.com/(r|n)/.+$')
 
     NAME_XPATH = './/h1'
+    PHONE_NUMBER_XPATH = './/div[@class="place-resume"]//span[@itemprop="postalCode"]/following-sibling::text()'
+    WEBSITE_XPATH = './/div[@class="place-resume"]//a[@class="website"]/@href'
 
     @fail_returns_none
     def get_address(self):
@@ -40,3 +43,14 @@ class ZagatScraper(scraped_page.ScrapedPage):
     def get_photos(self):
         urls = self.root.xpath('.//div[@class="place-wp"]//div[@class="image-box"]//a[contains(@class, "place-slideshow")]/@href')
         return [self.absolute_url(url) for url in urls]
+
+    @fail_returns_none
+    def get_opening_hours(self):
+        hours_nodes = self.root.xpath('.//div[@class="place-resume"]//table[@class="hours-open"]//tr')
+        texts = []
+        for node in hours_nodes:
+            day = tostring(node.xpath('.//td')[0])
+            times = tostring(node.xpath('.//td')[1])
+            texts.append('%s\t%s' % (day, times))
+        source_text = '\n'.join(texts)
+        return data.OpeningHours(source_text=source_text)

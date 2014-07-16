@@ -29,6 +29,9 @@ class TripAdvisorScraper(scraped_page.ScrapedPage):
 
     NAME_XPATH = 'body//h1'
     ADDRESS_XPATH = 'body//address/span[@rel="v:address"]//span[@class="format_address"]'
+    PHONE_NUMBER_XPATH = './/div[@id="HEADING_GROUP"]//div[contains(@class, "phoneNumber")]/text()'
+
+    RATING_MAX = 5
 
     LOCATION_RESOLUTION_STRATEGY = LocationResolutionStrategy.from_options(
         LocationResolutionStrategy.ENTITY_NAME_WITH_GEOCODER,
@@ -58,6 +61,10 @@ class TripAdvisorScraper(scraped_page.ScrapedPage):
     @fail_returns_none
     def get_rating(self):
         return float(self.root.find('body//div[@rel="v:rating"]//img').get('content'))
+
+    @fail_returns_none
+    def get_review_count(self):
+        return int(self.root.xpath('.//div[@id="listing_main"]//div[contains(@class, "rating")]//span[@property="v:count"]/text()')[0].replace(',', ''))
 
     @fail_returns_none
     def get_primary_photo(self):

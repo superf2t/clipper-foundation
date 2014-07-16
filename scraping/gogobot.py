@@ -1,5 +1,6 @@
 import urlparse
 
+import data
 from scraping.html_parsing import tostring
 from scraping import scraped_page
 from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
@@ -16,7 +17,11 @@ class GogobotScraper(scraped_page.ScrapedPage):
 
     NAME_XPATH = './/h1'
     ADDRESS_XPATH = './/div[@class="addressDetails"]'
+    PHONE_NUMBER_XPATH = './/div[@id="topicDetailInfo"]//li[contains(@class, "contact_phone")]//span/text()'
+    WEBSITE_XPATH = './/div[@id="topicDetailInfo"]//li[contains(@class, "website")]//a/text()'
     PRIMARY_PHOTO_XPATH = './/img[@id="initial_image"]'
+
+    RATING_MAX = 5
 
     @fail_returns_none
     def parse_latlng(self):
@@ -64,6 +69,16 @@ class GogobotScraper(scraped_page.ScrapedPage):
     def get_rating(self):
         rating_node = self.root.xpath('.//div[@id="topicAboutDiv"]//span[@class="rating"]//span[@class="average"]')[0]
         return float(tostring(rating_node, with_tail=False))
+
+    @fail_returns_none
+    def get_review_count(self):
+        text = self.root.xpath('.//div[@id="topicDetailInfo"]//span[@itemprop="reviewCount"]/text()')[0]
+        return int(text.split()[0])
+
+    @fail_returns_none
+    def get_opening_hours(self):
+        source_text = self.root.xpath('.//div[@id="topicDetailInfo"]//li[contains(@class, "open_hours")]//span/text()')[0]
+        return data.OpeningHours(source_text=source_text)
 
     @fail_returns_empty
     def get_photos(self):

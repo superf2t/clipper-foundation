@@ -13,7 +13,10 @@ class BookingDotComScraper(scraped_page.ScrapedPage):
 
     NAME_XPATH = 'body//h1//span[@id="hp_hotel_name"]'
     ADDRESS_XPATH = 'body//p[@class="address"]/span'
+    REVIEW_COUNT_XPATH = './/div[@id="hotel_main_content"]//span[contains(@class, "score_from_number_of_reviews")]//strong/text()'
     PRIMARY_PHOTO_XPATH = 'body//div[@class="photo_contrain"]//img[@id="photo_container"]'
+
+    RATING_MAX = 10
 
     def parse_latlng(self):
         coords_span = self.root.find('body//p[@class="address"]/span[@data-coords]')
@@ -47,9 +50,7 @@ class BookingDotComScraper(scraped_page.ScrapedPage):
 
     @fail_returns_none
     def get_rating(self):
-        numerator = float(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="average"]').text)
-        denominator = int(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="best"]').text)
-        return numerator / denominator * 5
+        return float(self.root.find('body//div[@class="hotel_large_photp_score"]//span[@class="average"]').text)
 
     def get_photos(self):
         thumbs = self.root.findall('body//div[@id="photos_distinct"]//a[@data-resized]')

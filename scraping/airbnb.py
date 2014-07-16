@@ -13,7 +13,10 @@ class AirbnbScraper(scraped_page.ScrapedPage):
 
     NAME_XPATH = 'body//div[@id="listing_name"]'
     ADDRESS_XPATH = 'body//div[@id="room"]//span[@id="display-address"]'
+    REVIEW_COUNT_XPATH = './/div[@id="room"]//li[@class="review_count"]//i/text()'
     PRIMARY_PHOTO_XPATH = 'body//div[@id="photos"]//ul[@class="slideshow-images"]//li[@class="active"]//img'
+
+    RATING_MAX = 5
 
     @fail_returns_none
     def get_entity_name(self):

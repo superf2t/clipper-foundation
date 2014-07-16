@@ -1,7 +1,9 @@
+import data
 from scraping.html_parsing import tostring
 from scraping import scraped_page
 from scraping.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
 from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
+from scraping.scraped_page import fail_returns_none
 import values
 
 class FoursquareScraper(scraped_page.ScrapedPage):
@@ -15,6 +17,10 @@ class FoursquareScraper(scraped_page.ScrapedPage):
             REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = './/h1[@class="venueName"]'
+    PHONE_NUMBER_XPATH = './/div[@class="venueDetail"]//span[@itemprop="telephone"]/text()'
+    WEBSITE_XPATH = './/div[@class="venueDetail"]//div[contains(@class, "venueWebsite")]//a[@itemprop="url"]/@href'
+
+    RATING_MAX = 10
 
     def get_address(self):
         parts = self.root.xpath('.//div[@class="adr"]//span[@itemprop]/text()')
@@ -82,6 +88,27 @@ class FoursquareScraper(scraped_page.ScrapedPage):
             if 'stadium' in category_str:
                 return values.SubCategory.SPORTS
         return None
+
+    @fail_returns_none
+    def get_rating(self):
+        return float(self.root.xpath('.//div[@class="venueDetail"]//span[@itemprop="ratingValue"]/text()')[0])
+
+    @fail_returns_none
+    def get_review_count(self):
+        # This is technically the number of 'tips'
+        text = self.root.xpath('.//div[@class="venueDetail"]//h3[@class="tipCount"]//text()')[0]
+        return int(text.split()[0])
+
+    @fail_returns_none
+    def get_opening_hours(self):
+        timeframes = self.root.xpath('.//div[@class="venueDetail"]//div[@class="allHours"]//ul[@class="timeframes"]//li[@class="timeframe"]')
+        timeframes_text = []
+        for t in timeframes:
+            text = '%s\t%s' % (tostring(t.xpath('.//span[@class="timeframeDays"]')[0]),
+                tostring(t.xpath('.//span[@class="timeframeHours"]')[0]))
+            timeframes_text.append(text)
+        source_text = '\n'.join(timeframes_text)
+        return data.OpeningHours(source_text=source_text)
 
 def contains_any(s, values):
     for value in values:
