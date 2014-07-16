@@ -207,7 +207,7 @@ Photo urls: %s''' % (
     self.get_address(),
     self.get_phone_number(),
     self.get_website(),
-    self.get_opening_hours(),
+    self.get_opening_hours().source_text if self.get_opening_hours else None,
     self.get_rating(),
     self.get_rating_max(),
     self.get_review_count(),

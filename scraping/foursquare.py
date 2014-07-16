@@ -1,3 +1,4 @@
+import data
 from scraping.html_parsing import tostring
 from scraping import scraped_page
 from scraping.scraped_page import REQUIRES_CLIENT_PAGE_SOURCE
@@ -106,7 +107,8 @@ class FoursquareScraper(scraped_page.ScrapedPage):
             text = '%s\t%s' % (tostring(t.xpath('.//span[@class="timeframeDays"]')[0]),
                 tostring(t.xpath('.//span[@class="timeframeHours"]')[0]))
             timeframes_text.append(text)
-        return '\n'.join(timeframes_text)
+        source_text = '\n'.join(timeframes_text)
+        return data.OpeningHours(source_text=source_text)
 
 def contains_any(s, values):
     for value in values:
