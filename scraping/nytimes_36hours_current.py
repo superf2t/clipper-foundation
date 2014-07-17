@@ -10,17 +10,18 @@ class Nytimes36HoursCurrent(article_parser.ArticleParser):
     TITLE_XPATH = './/h1[@itemprop="headline"]'
     COVER_IMAGE_URL_XPATH = './/div[@class="lede-container"]//div[@class="image"]/img/@src'
 
-    def get_source_url(self):
-        idx = self.url.find('?')
-        if idx:
-            return self.url[:idx]        
-        return self.url
-
     def get_location_name(self):
-        return self.get_title()
+        return self.get_title().replace('36 Hours in ', '')
 
     def get_description(self):
         return self.root.xpath('.//p[@id="story-continues-1"]/text()')[0]
 
     def get_raw_entities(self):
         return []
+
+    @classmethod
+    def canonicalize(cls, url):
+        idx = url.find('?')
+        if idx > -1:
+            return url[:idx]        
+        return url

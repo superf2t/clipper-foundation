@@ -26,7 +26,7 @@ class ArticleParser(object):
         return None
 
     def get_source_url(self):
-        return self.url
+        return type(self).canonicalize(self.url)
 
     def get_raw_entities(self):
         return ()
@@ -70,3 +70,7 @@ class ArticleParser(object):
     @classmethod
     def can_parse(cls, url):
         return cls.URL_REGEX and cls.URL_REGEX.match(url)
+
+    @classmethod
+    def canonicalize(cls, url):
+        return url

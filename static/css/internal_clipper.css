@@ -1,0 +1,39 @@
+.trip-plan-panel {
+  margin: 10px;  
+}
+
+.trip-plan-panel .control-links {
+  margin-top: 5px;
+}
+
+.trip-plan-panel .control-links a {
+  margin-right: 10px;
+}
+
+.trip-plan-panel .location-section {
+  margin: 5px 0;
+}
+
+.trip-plan-panel .location-name {
+  color: #000;
+}
+
+.description {
+  white-space: pre-line;
+  text-align: justify;
+}
+
+.entity-panel {
+  margin: 10px 0;
+}
+
+.entity-panel .num-entities {
+  margin: 0 10px;
+  color: #000;
+  font-size: 12pt;
+}
+
+.one-entity-listing:hover {
+  background-color: #ccc;
+  cursor: pointer;
+}

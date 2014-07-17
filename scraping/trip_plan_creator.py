@@ -76,6 +76,12 @@ def make_article_parser(url, parser_type_name=None):
                 return parser_class(url, html_parsing.parse_tree(url))
     return None
 
+def canonicalize_url(url):
+    for parser_class in ALL_PARSERS:
+        if parser_class.can_parse(url):
+            return parser_class.canonicalize(url)
+    return url
+
 def main(cmd, input):
     if cmd in ('full', 'candidate'):
         url = input

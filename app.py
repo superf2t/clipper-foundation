@@ -58,28 +58,22 @@ def internal_clipper_iframe():
 
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
-    sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
 
-    source_url = request.values.get('url')
+    source_url = trip_plan_creator.canonicalize_url(request.values.get('url'))
     current_trip_plan = None
-    current_entities = ()
     for trip_plan in all_trip_plans:
         if trip_plan.source_url == source_url:
             current_trip_plan = trip_plan
-            entity_service = serviceimpls.EntityService(g.session_info)
-            current_entities = entity_service.get(serviceimpls.EntityGetRequest(
-                current_trip_plan.trip_plan_id)).entities
             break
     if not current_trip_plan:
         admin_service = serviceimpls.AdminService(g.session_info)
         parse_request = serviceimpls.ParseTripPlanRequest(url=source_url, augment_entities=False)
         parse_response = admin_service.parsetripplan(parse_request)
         current_trip_plan = parse_response.trip_plan
-        current_entities = parse_response.entities
+        all_trip_plans.append(current_trip_plan)
 
+    sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     return render_template('internal_clipper_iframe.html',
-        current_trip_plan=current_trip_plan,
-        current_entities=current_entities,
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)
 
