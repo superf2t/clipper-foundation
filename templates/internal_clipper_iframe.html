@@ -25,7 +25,7 @@
         class="form-control">
       </select>
       <div class="control-links">
-        <a href="javascript:void(0)" class="color-link">
+        <a href="javascript:void(0)" class="color-link" ng-click="openEditTripPlan()">
           <span class="glyphicon glyphicon-pencil"></span> Edit          
         </a>
         <a ng-href="/admin/editor/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="color-link">
@@ -54,11 +54,33 @@
     </div>
   </div>
 
-  <div ng-show="stateModel.state == ClipperState.EDIT_TRIP_PLAN"
+  <div ng-if="s.state == ClipperState.EDIT_TRIP_PLAN" class="edit-trip-plan-panel"
     ng-controller="EditTripPlanCtrl">
+    <div class="controls">
+      <a href="javascript:void(0)" class="color-link" ng-click="closeEditTripPlan()">
+        &laquo; back
+      </a>
+      <span ng-show="saving" class="text-success">saving...</span>
+      <button class="btn btn-primary save-btn" ng-click="saveTripPlan()">
+        Save
+      </button>
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Trip plan name"
+      ng-model="editableTripPlan['name']"/>
+    <input type="text" class="form-control edit-input" placeholder="Trip plan location"
+      ng-model="editableTripPlan['location_name']"
+      tc-google-place-autocomplete location-types="geocode"
+      on-place-change="addressSelected($newPlace)"/>
+    <div class="map-container">
+      <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
+        after-creation="setupMap($map)" resize-when="s.state">
+      </div>
+    </div>
+    <textarea class="form-control edit-input description-input" ng-model="editableTripPlan['description']">
+    </textarea>
   </div>
 
-  <div ng-show="stateModel.state == ClipperState.EDIT_ENTITY"
+  <div ng-show="s.state == ClipperState.EDIT_ENTITY"
     ng-controller="EditEntityCtrl">
   </div>
 
