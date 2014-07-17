@@ -166,20 +166,6 @@
         display: block;
       }
 
-      .__tc-droptarget {
-        width: 100%;
-        height: 100%;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background-color: rgba(126, 173, 224, 0.4);
-        box-shadow: 0px 0px 3px 3px rgba(126, 173, 224, 0.8) !important;
-      }
-
-      .__tc-droptarget.__tc-dragover {
-        background-color: rgba(126, 173, 224, 0.8);
-      }
-
       .__tc-button {
         display: inline-block;
         margin-bottom: 0;
@@ -212,6 +198,11 @@
 
       #__tc-x-button:hover {
         background-color: #777;
+      }
+
+      .__tc-img-select {
+        border: 2px solid red;
+        box-sizing: border-box;
       }
     {% endstrip %}');
     window['__tcNodes'].push(style);
@@ -264,37 +255,39 @@
       clearElements();
     });
 
-    var dropTarget = null;
-    var photoEditingActive = false;
+    var imgSelectActive = false;
 
-    var handleImgDrag = function(event) {
-      if (!wrapper || !iframe || dropTarget || !photoEditingActive) {
-        return;
-      }
-      if (wrapper.has(event.target).length || wrapper[0] == event.target) {
-        return;
-      }
-      var target = $(event.target);
-      var imgUrl = findImgUrl(target);
-      event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl || '');
-      createDropTarget();
+    var handleImgClick = function(event) {
+      if (!imgSelectActive) return;
+      event.preventDefault();
+      event.stopPropagation();
+      var imgUrl = findImgUrl($(event.target));
+      var message = {
+        message: 'tc-img-selected',
+        imgUrl: imgUrl
+      };
+      iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
     };
 
-    $(document.body).on('dragstart', handleImgDrag);
-    $(document.body).on('dragend', removeDropTarget);
-    markListenerForCleanup($(document.body), 'dragstart', handleImgDrag);
-    markListenerForCleanup($(document.body), 'dragend', removeDropTarget);
+    var handleImgMouseenter = function(event) {
+      if (!imgSelectActive) return;
+      $(event.target).addClass('__tc-img-select');
+    };
 
-    wrapper.on('dragenter', function(event) {
-      if (!dropTarget) return;
-      dropTarget.addClass('__tc-dragover');
-    }).on('dragleave', function(event) {
-      if (!dropTarget) return;
-      dropTarget.removeClass('__tc-dragover');
-    }).on('dragover', function(event) {
-      event.preventDefault();
-      return false;
-    }).on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
+    var handleImgMouseleave = function(event) {
+      if (!imgSelectActive) return;
+      $(event.target).removeClass('__tc-img-select');
+    };
+
+    $('img')
+      .on('click', handleImgClick)
+      .on('mouseenter', handleImgMouseenter)
+      .on('mouseleave', handleImgMouseleave);
+    markListenerForCleanup($('img'), 'click', handleImgClick);
+    markListenerForCleanup($('img'), 'mouseenter', handleImgMouseenter);
+    markListenerForCleanup($('img'), 'mouseleave', handleImgMouseleave);
+
+    wrapper.on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
       event.stopPropagation();
       event.preventDefault();
     });
@@ -302,23 +295,6 @@
     mapWrapper.on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
       event.stopPropagation();
       event.preventDefault();
-    });
-
-    wrapper.on('drop', function(event) {
-      if (!dropTarget) {
-        return;
-      }
-      var dataTransfer = event.originalEvent.dataTransfer;
-      var data = {
-        message: 'tc-image-dropped',
-        data: {
-          'tc-drag-image-url': dataTransfer.getData('tc-drag-image-url'),
-          'text/plain': dataTransfer.getData('text/plain'),
-          'text/uri-list': dataTransfer.getData('text/uri-list'),
-          'text/html': dataTransfer.getData('text/html')
-        }
-      };
-      iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
     });
 
     var handleTextSelection = function(event) {
@@ -346,38 +322,32 @@
 
     var handleMessages = function(event) {
       var data = event.originalEvent.data;
-      if (data == 'tc-close-clipper') {
+      var messageName = data ? (data['message'] || '') : '';
+      if (messageName == 'tc-close-clipper') {
         clearElements();
-      } else if (data == 'tc-needs-page-source') {
-        if (!iframe.length) return;
-        var data = {
-          message: 'tc-page-source',
-          pageSource: $('html')[0].innerHTML
-        };
-        iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
-      } else if (data == 'tc-photo-editing-active') {
-        photoEditingActive = true;
-      } else if (data == 'tc-photo-editing-inactive') {
-        photoEditingActive = false;
-      } else if (data['message'] && data['message'] == 'tc-clipper-ready') {
+      } else if (messageName == 'tc-img-select-active') {
+        imgSelectActive = true;
+      } else if (messageName == 'tc-img-select-inactive') {
+        imgSelectActive = false;
+      } else if (messageName == 'tc-clipper-ready') {
         clipperReady = true;
         $.each(mapToClipperMessageQueue, function(i, message) {
           iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
         });
         mapToClipperMessageQueue = [];
-      } else if (data['message'] && data['message'] == 'tc-map-ready') {
+      } else if (messageName == 'tc-map-ready') {
         mapReady = true;
         $.each(clipperToMapMessageQueue, function(i, message) {
           mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
         });
         clipperToMapMessageQueue = [];
-      } else if (data['message'] && data['message'].indexOf('tc-clipper-to-map') == 0) {
+      } else if (messageName.indexOf('tc-clipper-to-map') == 0) {
         if (mapReady) {
           mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);         
         } else {
           clipperToMapMessageQueue.push(data);
         }
-      } else if (data['message'] && data['message'].indexOf('tc-map-to-clipper') == 0) {
+      } else if (messageName.indexOf('tc-map-to-clipper') == 0) {
         if (clipperReady) {
           iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
         } else {
@@ -388,18 +358,6 @@
 
     $(window).on('message', handleMessages);
     markListenerForCleanup($(window), 'message', handleMessages);
-
-    function createDropTarget() {
-      dropTarget = $('<div>').addClass('__tc-droptarget');
-      wrapper.append(dropTarget);
-    }
-
-    function removeDropTarget() {
-      if (dropTarget) {
-        dropTarget.remove();
-        dropTarget = null;
-      }
-    }
 
     function makeAbsolute(url) {
       if (!url) {

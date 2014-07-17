@@ -18,7 +18,14 @@
   color: #000;
 }
 
-.description {
+.trip-plan-panel .cover-image-preview {
+  height: 40px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+.trip-plan-panel .description {
   white-space: pre-line;
   text-align: justify;
 }
@@ -65,6 +72,11 @@
   width: 100%;
   height: 150px;
   margin-bottom: 10px;
+}
+
+.edit-trip-plan-panel .cover-image {
+  max-width: 100%;
+  text-align: center;
 }
 
 .map {

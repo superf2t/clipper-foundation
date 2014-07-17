@@ -11,7 +11,8 @@ function StateModel(selectedTripPlan) {
   this.state = ClipperState.SUMMARY;
 }
 
-function InternalClipperRootCtrl($scope, $stateModel, $allTripPlans, $entityService) {
+function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
+    $allTripPlans, $entityService, $window) {
   $scope.s = $stateModel;
   $scope.ClipperState = ClipperState;
   $scope.allTripPlans = $allTripPlans;
@@ -27,10 +28,12 @@ function InternalClipperRootCtrl($scope, $stateModel, $allTripPlans, $entityServ
   });
 
   $scope.openEditTripPlan = function() {
+    $messageProxy.makeImgSelectActive();
     $stateModel.state = ClipperState.EDIT_TRIP_PLAN;
   };
 
   $scope.closeEditTripPlan = function() {
+    $messageProxy.makeImgSelectInactive();
     $stateModel.state = ClipperState.SUMMARY;
   };
 }
@@ -100,10 +103,46 @@ function EditTripPlanCtrl($scope, $stateModel, $tripPlanService) {
         $scope.saving = false;
       });
   };
+
+  $scope.$on('img-selected', function(event, imgUrl) {
+    if (!$stateModel.state == ClipperState.EDIT_TRIP_PLAN) return;
+    if (imgUrl) {
+      $scope.editableTripPlan['cover_image_url'] = imgUrl;
+    }
+  });
 }
 
 function EditEntityCtrl($scope) {
 
+}
+
+function MessageProxy($window, $rootScope) {
+  this.makeImgSelectActive = function() {
+    this.sendMessage('tc-img-select-active');
+  };
+
+  this.makeImgSelectInactive = function() {
+    this.sendMessage('tc-img-select-inactive');
+  };
+
+  this.sendMessage = function(messageName, data) {
+    var message = _.extend({message: messageName}, data);
+    $window.parent.postMessage(message, '*');
+  };
+
+  this.handleIncomingMessage = function(messageName, data) {
+    if (messageName == 'tc-img-selected') {
+      $rootScope.$broadcast('img-selected', data['imgUrl']);
+    }
+  };
+
+  var me = this;
+  $($window).on('message', function(event) {
+    var data = event.originalEvent.data;
+    var messageName = data['message'];
+    me.handleIncomingMessage(messageName, data);
+    $rootScope.$apply();
+  });
 }
 
 function tcEntityListing() {
@@ -133,6 +172,7 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .controller('TripPlanPanelCtrl', TripPlanPanelCtrl)
     .controller('EditTripPlanCtrl', EditTripPlanCtrl)
     .controller('EditEntityCtrl', EditEntityCtrl)
+    .service('$messageProxy', MessageProxy)
     .directive('tcEntityListing', tcEntityListing);
 
   angular.element(document).ready(function() {

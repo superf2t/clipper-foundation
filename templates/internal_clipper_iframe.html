@@ -44,6 +44,9 @@
           missing
         </span>
       </div>
+      <div class="cover-image-preview" ng-if="s.tripPlan['cover_image_url']"
+        ng-style="{'background-image': 'url(&quot;' + s.tripPlan['cover_image_url'] + '&quot;)'}">
+      </div>
       <div class="description">[[s.tripPlan['description'] ]]</div>
     </div>
 
@@ -78,6 +81,11 @@
     </div>
     <textarea class="form-control edit-input description-input" ng-model="editableTripPlan['description']">
     </textarea>
+    <img class="cover-image" ng-if="editableTripPlan['cover_image_url']"
+      ng-src="[[editableTripPlan['cover_image_url'] ]]"/>
+    <div class="no-cover-image" ng-show="!editableTripPlan['cover_image_url']">
+      No cover image, click an image in the page to select.
+    </div>
   </div>
 
   <div ng-show="s.state == ClipperState.EDIT_ENTITY"
