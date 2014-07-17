@@ -182,6 +182,59 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy) {
   };
 }
 
+function ClipperEntityPhotoCtrl($scope, $stateModel) {
+  if (_.isEmpty($scope.ed['photo_urls'])) {
+    $scope.ed['photo_urls'] = [];
+  }
+  var urls = $scope.ed['photo_urls'];
+  var selectedImgIndex = urls.length ? 0 : null;
+
+  $scope.selectedImg = function() {
+    return urls[selectedImgIndex];
+  };
+
+  $scope.hasImgs = function() {
+    return urls.length > 0;
+  };
+
+  $scope.hasPrevImg = function() {
+    return selectedImgIndex > 0;
+  };
+
+  $scope.hasNextImg = function() {
+    return selectedImgIndex < (urls.length - 1);
+  };
+
+  $scope.prevImg = function() {
+    selectedImgIndex--;
+  };
+
+  $scope.nextImg = function() {
+    if ($scope.hasNextImg()) {
+      selectedImgIndex++;      
+    }
+  };
+
+  $scope.setAsPrimary = function() {
+    var url = urls.splice(selectedImgIndex, 1)[0];
+    urls.splice(0, 0, url);
+    selectedImgIndex = 0;
+  };
+
+  $scope.deletePhoto = function() {
+    urls.splice(selectedImgIndex, 1);
+    if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
+      selectedImgIndex--;
+    }
+  };
+
+  $scope.$on('img-selected', function(event, imgUrl) {
+    if ($stateModel.state != ClipperState.EDIT_ENTITY || !imgUrl) return;
+    urls.push(imgUrl);
+    selectedImgIndex = urls.length - 1;
+  });
+}
+
 function MessageProxy($window, $rootScope) {
   this.makeImgSelectActive = function() {
     this.sendMessage('tc-img-select-active');
@@ -237,6 +290,7 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .controller('InternalClipperRootCtrl', InternalClipperRootCtrl)
     .controller('EditTripPlanCtrl', EditTripPlanCtrl)
     .controller('EditEntityCtrl', EditEntityCtrl)
+    .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
     .service('$messageProxy', MessageProxy)
     .directive('tcEntityListing', tcEntityListing);
 
