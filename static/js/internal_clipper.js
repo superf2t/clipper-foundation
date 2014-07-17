@@ -1,3 +1,10 @@
+// TODOs:
+// -Show source url when editing trip plan settings.
+// -If there is no scraper for an article, create a default trip plan
+//  and fill in the source url and make a best effort on the title and location.
+// -Get extra structure data from Google entity converter
+// -Add tags to entity editor and trip plan editor
+
 var ClipperState = {
   SUMMARY: 1,
   EDIT_TRIP_PLAN: 2,
@@ -36,10 +43,18 @@ function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
     $messageProxy.makeImgSelectInactive();
     $stateModel.state = ClipperState.SUMMARY;
   };
-}
 
-function TripPlanPanelCtrl($scope) {
+  $scope.openEditEntity = function(entity) {
+    $messageProxy.makeImgSelectActive();
+    $stateModel.state = ClipperState.EDIT_ENTITY;
+    $stateModel.editableEntity = angular.copy(entity);
+  }
 
+  $scope.closeEditEntity = function() {
+    $messageProxy.makeImgSelectInactive();
+    $stateModel.state = ClipperState.SUMMARY;
+    $stateModel.editableEntity = null;
+  };
 }
 
 function EditTripPlanCtrl($scope, $stateModel, $tripPlanService) {
@@ -112,8 +127,59 @@ function EditTripPlanCtrl($scope, $stateModel, $tripPlanService) {
   });
 }
 
-function EditEntityCtrl($scope) {
+function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy) {
+  $scope.ed = $stateModel.editableEntity;
+  $scope.em = new EntityModel($stateModel.editableEntity);
+  $scope.saving = false;
 
+  $scope.categories = $taxonomy.allCategories();
+  $scope.getSubCategories = function(categoryId) {
+    return $taxonomy.getSubCategoriesForCategory(categoryId);
+  };
+
+  $scope.mapState = {map: null};
+  var mapCenter = $scope.em.hasLocation() ? $scope.em.gmapsLatLng() : new google.maps.LatLng(0, 0);
+  $scope.mapOptions = {
+    center: mapCenter,
+    zoom: $scope.em.hasLocation() ? 15 : 1,
+    panControl: false,
+    scaleControl: false,
+    scrollwheel: false,
+    streetViewControl: false,
+    mapTypeControl: false
+  };
+
+  $scope.setupMap = function($map) {
+    var marker = new google.maps.Marker({
+      position: mapCenter,
+      map: $map,
+      draggable: true
+    });
+    google.maps.event.addListener(marker, 'dragend', function() {
+      if (!$scope.ed['latlng']) {
+        $scope.ed['latlng'] = {};
+      }
+      var position = marker.getPosition();
+      $scope.ed['latlng']['lat'] = position.lat();
+      $scope.ed['latlng']['lng'] = position.lng();
+    });
+  };
+
+  $scope.saveEntity = function() {
+    $scope.saving = true;
+    $entityService.editEntity($scope.ed, $stateModel.tripPlan['trip_plan_id'])
+      .success(function(response) {
+        var entity = response['entities'][0];
+        $.each($stateModel.entities, function(i, existingEntity) {
+          if (existingEntity['entity_id'] == entity['entity_id']) {
+            _.extend(existingEntity, entity);
+          }
+        });
+        $stateModel.tripPlanModel.updateEntities(response['entities']);
+        $scope.saving = false;
+        $stateModel.state = ClipperState.SUMMARY;
+      });
+  };
 }
 
 function MessageProxy($window, $rootScope) {
@@ -162,14 +228,13 @@ function tcEntityListing() {
 window['initClipper'] = function(allTripPlans, datatypeValues) {
   angular.module('clipperInitialDataModule', [])
     .value('$allTripPlans', allTripPlans)
-    .value('$datatypeValues', datatypeValues)
+    .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$stateModel', new StateModel(allTripPlans[0]));
 
   angular.module('clipperModule',
       ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule', 'ui.bootstrap'],
       interpolator)
     .controller('InternalClipperRootCtrl', InternalClipperRootCtrl)
-    .controller('TripPlanPanelCtrl', TripPlanPanelCtrl)
     .controller('EditTripPlanCtrl', EditTripPlanCtrl)
     .controller('EditEntityCtrl', EditEntityCtrl)
     .service('$messageProxy', MessageProxy)

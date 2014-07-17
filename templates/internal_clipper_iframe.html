@@ -20,7 +20,7 @@
 <body ng-controller="InternalClipperRootCtrl" class="clipper-body">
 
   <div ng-show="s.state == ClipperState.SUMMARY">
-    <div class="trip-plan-panel" ng-controller="TripPlanPanelCtrl">
+    <div class="trip-plan-panel">
       <select ng-model="s.tripPlan" ng-options="t['name'] for t in allTripPlans"
         class="form-control">
       </select>
@@ -52,7 +52,8 @@
 
     <div class="entity-panel">
       <div class="num-entities">[[s.entities.length]] Entities</div>
-      <tc-entity-listing ng-repeat="entity in s.entities" entity="entity">
+      <tc-entity-listing ng-repeat="entity in s.entities" entity="entity"
+        ng-click="openEditEntity(entity)">
       </tc-entity-listing>
     </div>
   </div>
@@ -88,8 +89,67 @@
     </div>
   </div>
 
-  <div ng-show="s.state == ClipperState.EDIT_ENTITY"
+  <div ng-if="s.state == ClipperState.EDIT_ENTITY" class="edit-entity-panel"
     ng-controller="EditEntityCtrl">
+    <div class="controls">
+      <a href="javascript:void(0)" class="color-link" ng-click="closeEditEntity()">
+        &laquo; back
+      </a>
+      <span ng-show="saving" class="text-success">saving...</span>
+      <button class="btn btn-primary save-btn" ng-click="saveEntity()">
+        Save
+      </button>
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Place name"
+      ng-model="ed['name']"/>
+    <input type="text" class="form-control edit-input" placeholder="Address"
+      ng-model="ed['address']"/>
+    <div class="map-container">
+      <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
+        after-creation="setupMap($map)" resize-when="s.state">
+      </div>
+    </div>
+    <textarea class="form-control edit-input description-input" placeholder="Description"
+      ng-model="ed['description']">
+    </textarea>
+    <select class="form-control" ng-model="ed['category']"
+      ng-options="c['display_name'] for c in categories track by c['category_id']"
+      ng-change="categoryChanged()">
+    </select>
+    <select class="form-control edit-input" ng-model="ed['sub_category']"
+      ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']">
+    </select>
+    <div class="form-group edit-input rel-pos">
+      <input type="radio" id="precision-precise" ng-model="ed['address_precision']" value="Precise">
+      <label for="precision-precise">Precise</label>
+      <input type="radio" id="precision-imprecise" ng-model="ed['address_precision']" value="Imprecise">
+      <label for="precision-imprecise">Imprecise</label>
+      <div class="favorite">
+        <a href="javascript:void(0)" ng-click="ed['starred'] = false"> 
+          <span ng-show="ed['starred']" class="glyphicon glyphicon-star favorite-star">
+          </span>
+        </a>
+        <a href="javascript:void(0)" ng-click="ed['starred'] = true">
+          <span ng-show="!ed['starred']" class="glyphicon glyphicon-star-empty">
+          </span>
+        </a>
+      </div>
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Phone number"
+      ng-model="ed['phone_number']"/>
+    <input type="text" class="form-control edit-input" placeholder="Website"
+      ng-model="ed['website']"/>
+    <textarea class="form-control edit-input hours-input" placeholder="Hours"
+      ng-model="ed['opening_hours']">
+    </textarea>
+    <div class="edit-input rating-inputs">
+      Rating:
+      <input type="number" class="form-control" ng-model="ed['rating']"/>
+      out of
+      <input type="number" class="form-control" ng-model="ed['rating_max']"/>
+      Count:
+      <input type="number" class="form-control" ng-model="ed['review_count']"/>
+    </div>
   </div>
 
   <script type="text/ng-template" id="one-entity-listing-template">
