@@ -119,38 +119,6 @@
         background-color: transparent;
       }
 
-      .__tc-map-container {
-        width: 30%;
-        height: 40%;
-        min-width: 200px;
-        min-height: 200px;
-        position: fixed !important;
-        bottom: 0;
-        right: 342px;
-        border: 1px solid #bbbbbb;
-        box-shadow: 0px 1px 2px #aaaaaa;
-        z-index: 2147483647;
-      }
-
-      .__tc-map-iframe-container {
-        width: 100%;
-        height: calc(100% - 19px);
-        position: relative;
-      }
-
-      .__tc-map-iframe {
-        background-color: #fff;
-      }
-
-      .__tc-map-header {
-        width: 100%;
-        height: 20px;
-        background-color: #fff;
-        position: relative;
-        cursor: move;
-        box-shadow: 0px 1px 2px #aaaaaa;
-      }
-
       .__tc-iframe-dragging-shim {
         width: 100%;
         height: 100%;
@@ -225,31 +193,11 @@
       {% endstrip %}');
     window['__tcNodes'].push(wrapper);
 
-    var mapWrapper = $('{% strip %}
-      <div class="__tc-map-container">
-        <div class="__tc-map-header">
-        </div>
-        <div class="__tc-map-iframe-container">
-          <iframe class="__tc-iframe __tc-map-iframe">
-          </iframe>
-          <div class="__tc-iframe-dragging-shim">
-          </div>
-        </div>
-      </div>
-      {% endstrip %}');
-    window['__tcNodes'].push(mapWrapper);
-
     var iframe = wrapper.find('iframe')
     iframe.attr('src', absUrl('/internal_clipper_iframe?url=' + encodeURIComponent(window.location.href)));
     $('head').append(style);
     $(document.body).append(wrapper);
     wrapper.draggable({axis: 'x', iframeFix: true, containment: 'window'});
-
-    var mapIframe = mapWrapper.find('iframe');
-    mapIframe.attr('src', absUrl('/clipper_map_iframe'));
-    $(document.body).append(mapWrapper);
-    mapWrapper.draggable({iframeFix: true, containment: 'window'});
-    mapWrapper.resizable({'handles': 'all', containment: 'document'});
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
@@ -292,14 +240,8 @@
       event.preventDefault();
     });
 
-    mapWrapper.on('mousewheel DOMMouseScroll MozMousePixelScroll', function(event) {
-      event.stopPropagation();
-      event.preventDefault();
-    });
-
     var handleTextSelection = function(event) {
-      if (wrapper.has(event.target).length || wrapper[0] == event.target
-        || mapWrapper.has(event.target).length || mapWrapper[0] == event.target) {
+      if (wrapper.has(event.target).length || wrapper[0] == event.target) {
         return;
       }
       var textSelection = getSelection().toString();
@@ -315,11 +257,6 @@
     $(document.body).on('mouseup', handleTextSelection);
     markListenerForCleanup($(document.body), 'mouseup', handleTextSelection);
 
-    var clipperToMapMessageQueue = [];
-    var mapToClipperMessageQueue = [];
-    var clipperReady = false;
-    var mapReady = false;
-
     var handleMessages = function(event) {
       var data = event.originalEvent.data;
       var messageName = data ? (data['message'] || '') : '';
@@ -329,30 +266,6 @@
         imgSelectActive = true;
       } else if (messageName == 'tc-img-select-inactive') {
         imgSelectActive = false;
-      } else if (messageName == 'tc-clipper-ready') {
-        clipperReady = true;
-        $.each(mapToClipperMessageQueue, function(i, message) {
-          iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
-        });
-        mapToClipperMessageQueue = [];
-      } else if (messageName == 'tc-map-ready') {
-        mapReady = true;
-        $.each(clipperToMapMessageQueue, function(i, message) {
-          mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
-        });
-        clipperToMapMessageQueue = [];
-      } else if (messageName.indexOf('tc-clipper-to-map') == 0) {
-        if (mapReady) {
-          mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);         
-        } else {
-          clipperToMapMessageQueue.push(data);
-        }
-      } else if (messageName.indexOf('tc-map-to-clipper') == 0) {
-        if (clipperReady) {
-          iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
-        } else {
-          mapToClipperMessageQueue.push(data);
-        }
       }
     };
 
