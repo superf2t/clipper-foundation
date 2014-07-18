@@ -2,7 +2,6 @@
 // -Show source url when editing trip plan settings.
 // -If there is no scraper for an article, create a default trip plan
 //  and fill in the source url and make a best effort on the title and location.
-// -Get extra structured data from Google entity converter
 // -Add tags to entity editor and trip plan editor
 
 var ClipperState = {
@@ -168,9 +167,9 @@ function EditTripPlanCtrl($scope, $stateModel, $tripPlanService, $messageProxy) 
     if (key == '1') {
       $scope.setActiveField('name');
     } else if (key == '2') {
-      $scope.setActiveField('description');
-    } else if (key == '3') {
       $scope.setActiveField('location_name');
+    } else if (key == '3') {
+      $scope.setActiveField('description');
     } else if (key == 'S') {
       $scope.saveTripPlan();
     } else if (key == 'X') {
