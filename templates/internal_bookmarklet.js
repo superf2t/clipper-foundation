@@ -213,7 +213,6 @@
 
       #__tc-search-panel {
         position: absolute;
-        width: 120px;
         margin: 0;
         padding: 5px;
         border: none;
@@ -228,8 +227,43 @@
 
       #__tc-search-panel,
       #__tc-place-search,
-      #__tc-geocode-search {
+      #__tc-geocode-search,
+      #__tc-place-search-results {
         display: none;
+      }
+
+      .__tc-search-result {
+        cursor: pointer;
+        text-align: left;
+        padding: 5px;
+        margin: 0 -5px;
+      }
+
+      .__tc-search-result:hover {
+        background-color: #ccc;
+      }
+
+      .__tc-result-col {
+        display: inline-block;
+      }
+
+      .__tc-result-icon {
+        width: 24px;
+        height: 24px;
+      }
+
+      .__tc-result-details {
+        margin-left: 5px;
+      }
+
+      .__tc-result-name {
+        font-size: 10pt;
+        font-weight: bold;
+      }
+
+      .__tc-result-addr {
+        font-size: 9pt;
+        color: #777;
       }
 
       .__tc-img-select {
@@ -277,6 +311,8 @@
             <a href="javascript:void(0)" onclick="__tcSearch(\'yelp\')">
               <img src="//yelp.com/favicon.ico"/>
             </a>
+          </div>
+          <div id="__tc-place-search-results">
           </div>
         </div>
         <div id="__tc-geocode-search">
@@ -384,7 +420,28 @@
     markListenerForCleanup($(document.body), 'keyup', handleKeyup);
 
     function showSearchPanel() {
+      $('#__tc-place-search-results').html('').hide();
       $('#__tc-search-panel').css({left: mouseX - 30, top: mouseY + 10}).show();
+    }
+
+    function showPlaceSearchResults(results) {
+      $('#__tc-search-panel').show();
+      $('#__tc-place-search').show();
+      $('#__tc-geocode-search').hide();
+      var resultsParent = $('#__tc-place-search-results').html('').show();
+      $.each(results, function(i, result) {
+        resultsParent.append($([
+          '<div class="__tc-search-result"' ,
+            'onclick="__tcSelectResult(\'', result['reference'], '\')">',
+            '<span class="__tc-result-col">',
+              '<img class="__tc-result-icon" src="', result['icon'], '"/>',
+            '</span>', 
+            '<span class="__tc-result-col __tc-result-details">',
+              '<div class="__tc-result-name">', result['name'], '</div>',
+              '<div class="__tc-result-addr">', result['formatted_address'], '</div>',
+            '</span>',
+          '</div>'].join('')));
+      });
     }
 
     window['__tcSearch'] = function(siteName) {
@@ -395,6 +452,15 @@
       iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
     };
     window['__tcGlobals'].push('__tcSearch');
+
+    window['__tcSelectResult'] = function(reference) {
+      var message = {
+        message: 'tc-place-result-selected',
+        reference: reference
+      };
+      iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+    };
+    window['__tcGlobals'].push('__tcSelectResult');
 
     var handleMessages = function(event) {
       var data = event.originalEvent.data;
@@ -419,8 +485,8 @@
         showSearchPanel();
         $('#__tc-place-search').hide();
         $('#__tc-geocode-search').show();
-      } else if (messageName == 'tc-show-search-results') {
-
+      } else if (messageName == 'tc-show-place-search-results') {
+        showPlaceSearchResults(data['results']);
       } else if (messageName == 'tc-close-search-panel') {
         $('#__tc-search-panel').hide();
       }

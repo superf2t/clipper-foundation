@@ -83,6 +83,9 @@ class OpeningPeriod(serializable.Serializable):
         self.initialize()
 
     def initialize(self):
+        if not self.day_open:
+            self.as_string = None
+            return
         if self.day_close is None:
             format = '%(day_open)s %(hour_open)02d:%(minute_open)02d'
         elif self.day_open == self.day_close:
@@ -109,7 +112,7 @@ class OpeningHours(serializable.Serializable):
         self.initialize()
 
     def initialize(self):
-        self.as_string = '\n'.join(p.as_string for p in self.opening_periods)
+        self.as_string = '\n'.join(p.as_string for p in self.opening_periods if p.as_string)
 
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',

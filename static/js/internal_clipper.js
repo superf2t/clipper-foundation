@@ -263,6 +263,28 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     });
   };
 
+  $scope.searchByPlaceName = function(placeName) {
+    var request = {
+      query: placeName,
+      bounds: $stateModel.bounds()
+    };
+    var dummyMap = new google.maps.Map($('<div>')[0], {
+      center: new google.maps.LatLng(0, 0)
+    });
+    var searchService = new google.maps.places.PlacesService(dummyMap);
+    searchService.textSearch(request, function(results, status) {
+      if (status != google.maps.places.PlacesServiceStatus.OK) {
+        alert('Search failed, please try again.');
+        return;
+      }
+      var sendableResults = _.map(results, function(result) {
+        return _.pick(result, 'name', 'formatted_address', 'icon', 'reference');
+      });
+      $messageProxy.showPlaceSearchResults(sendableResults);
+      $scope.$apply();
+    });
+  };
+
   $scope.saveEntity = function() {
     if ($scope.ed['entity_id']) {
       $scope.saveExistingEntity();
@@ -354,6 +376,24 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     }
   });
 
+  $scope.$on('place-result-selected', function(event, reference) {
+    $entityService.googleplacetoentity(reference)
+      .success(function(response) {
+        var entityFields = _.pick(response['entity'],
+          'name', 'address', 'address_precision', 'latlng',
+          'phone_number', 'website', 'opening_hours',
+          'category', 'sub_category', 'source_url', 'google_reference');
+        _.extend($scope.ed, entityFields);
+        if (!_.isEmpty($scope.ed['latlng'])) {
+          var latlng = gmapsLatLngFromJson($scope.ed['latlng']);
+          $scope.mapState.marker.setPosition(latlng);
+          $scope.mapState.map.setCenter(latlng);
+          $scope.mapState.map.setZoom(15);
+        }
+        $messageProxy.sendMessage('tc-close-search-panel');
+      });
+  });
+
   $messageProxy.setShortcutMessage(ENTITY_SHORTCUT_KEYS);
 }
 
@@ -427,6 +467,10 @@ function MessageProxy($window, $rootScope) {
     this.sendMessage('tc-set-clip-shortcut-message', {'clipShortcutMessage': msg});
   };
 
+  this.showPlaceSearchResults = function(results) {
+    this.sendMessage('tc-show-place-search-results', {'results': results});
+  };
+
   this.sendMessage = function(messageName, data) {
     var message = _.extend({message: messageName}, data);
     $window.parent.postMessage(message, '*');
@@ -441,6 +485,8 @@ function MessageProxy($window, $rootScope) {
       $rootScope.$broadcast('text-selected', data['selection']);
     } else if (messageName == 'tc-do-entity-search') {
       $rootScope.$broadcast('do-entity-search', data['siteName']);
+    } else if (messageName == 'tc-place-result-selected') {
+      $rootScope.$broadcast('place-result-selected', data['reference']);
     }
   };
 

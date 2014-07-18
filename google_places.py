@@ -122,5 +122,7 @@ class PlaceDetails(object):
                 open_['day'], tohour(open_), tominute(open_),
                 close_ and close_['day'], close_ and tohour(close_), close_ and tominute(close_))
             periods.append(period)
-        return data.OpeningHours(opening_periods=periods)
+        hours = data.OpeningHours(opening_periods=periods)
+        hours.source_text = hours.as_string
+        return hours
 
