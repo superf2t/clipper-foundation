@@ -19,8 +19,8 @@ function StateModel(selectedTripPlan) {
 }
 
 var DEFAULT_SHORTCUT_KEYS = 'n: new place, e: edit trip plan';
-var TRIP_PLAN_SHORTCUT_KEYS = '1: name, 2: location, 3: description, s: save, x: cancel';
-var ENTITY_SHORTCUT_KEYS = 'n: name, a: address, d: description';
+var TRIP_PLAN_SHORTCUT_KEYS = '1: name, 2: location, 3: description<br/>s: save, x: cancel';
+var ENTITY_SHORTCUT_KEYS = '1: name, 2: addr, 3: desc, 4: phone, 5: website, 6 hours<br/>s: save, x: cancel';
 
 function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
     $allTripPlans, $entityService, $window) {
@@ -193,6 +193,9 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
 
+  // Highlighting text in the page will store to this field.
+  $scope.activeFieldName = null;
+
   $scope.mapState = {map: null};
   var mapCenter = $scope.em.hasLocation() ? $scope.em.gmapsLatLng() : new google.maps.LatLng(0, 0);
   $scope.mapOptions = {
@@ -233,9 +236,48 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
         });
         $stateModel.tripPlanModel.updateEntities(response['entities']);
         $scope.saving = false;
-        $stateModel.state = ClipperState.SUMMARY;
+        $scope.closeEditEntity()
       });
   };
+
+  $scope.setActiveField = function(fieldName) {
+    $scope.activeFieldName = fieldName;
+    if (fieldName) {
+      $messageProxy.setStatusMessage('Highlight to select ' + fieldName);
+    } else {
+      $messageProxy.setStatusMessage(null);
+    }
+  };
+
+  $scope.$on('shortcut-keypress', function(event, keyCode) {
+    if (!$stateModel.state == ClipperState.EDIT_ENTITY) return;
+    var key = String.fromCharCode(keyCode);
+    if (key == '1') {
+      $scope.setActiveField('name');
+    } else if (key == '2') {
+      $scope.setActiveField('address');
+    } else if (key == '3') {
+      $scope.setActiveField('description');
+    } else if (key == '4') {
+      $scope.setActiveField('phone_number');
+    } else if (key == '5') {
+      $scope.setActiveField('website');
+    } else if (key == '6') {
+      $scope.setActiveField('opening_hours');
+    } else if (key == 'S') {
+      $scope.saveEntity();
+    } else if (key == 'X') {
+      $scope.closeEditEntity()
+    } else {
+      $scope.activeFieldName = null;
+    }
+  });
+
+  $scope.$on('text-selected', function(event, text) {
+    if (!$stateModel.state == ClipperState.EDIT_ENTITY) return;
+    if (!text || !$scope.activeFieldName) return;
+    $scope.ed[$scope.activeFieldName] = text;
+  });
 
   $messageProxy.setShortcutMessage(ENTITY_SHORTCUT_KEYS);
 }

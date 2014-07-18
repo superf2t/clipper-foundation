@@ -172,7 +172,7 @@
         position: fixed;
         top: 0;
         left: calc(50% - 175px);
-        height: 50px;
+        height: 65px;
         width: 350px;
         cursor: move;
         color: #000;
