@@ -52,6 +52,11 @@
 
     <div class="entity-panel">
       <div class="num-entities">[[s.entities.length]] Entities</div>
+      <div class="create-new-place-link">
+        <a href="javascript:void(0)" class="color-link" ng-click="createNewEntity()">
+          Add new place
+        </a>
+      </div>
       <tc-entity-listing ng-repeat="entity in s.entities" entity="entity"
         ng-click="openEditEntity(entity)">
       </tc-entity-listing>

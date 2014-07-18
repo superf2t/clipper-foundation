@@ -64,11 +64,17 @@ function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
     $messageProxy.setShortcutMessage(DEFAULT_SHORTCUT_KEYS);
   };
 
+  $scope.createNewEntity = function() {
+    $scope.openEditEntity({});
+  };
+
   $scope.$on('shortcut-keypress', function(event, keyCode) {
     if (!$stateModel.state == ClipperState.SUMMARY) return;
     var key = String.fromCharCode(keyCode);
     if (key == 'E') {
       $scope.openEditTripPlan();
+    } else if (key == 'N') {
+      $scope.createNewEntity();
     }
   });
 
@@ -225,6 +231,14 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
   };
 
   $scope.saveEntity = function() {
+    if ($scope.ed['entity_id']) {
+      $scope.saveExistingEntity();
+    } else {
+      $scope.saveNewEntity();
+    }
+  };
+
+  $scope.saveExistingEntity = function() {
     $scope.saving = true;
     $entityService.editEntity($scope.ed, $stateModel.tripPlan['trip_plan_id'])
       .success(function(response) {
@@ -235,6 +249,20 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
           }
         });
         $stateModel.tripPlanModel.updateEntities(response['entities']);
+        $scope.saving = false;
+        $scope.closeEditEntity()
+      });
+  };
+
+  $scope.saveNewEntity = function() {
+    $scope.saving = true;
+    $entityService.saveNewEntity($scope.ed, $stateModel.tripPlan['trip_plan_id'])
+      .success(function(response) {
+        var entity = response['entities'][0];
+        // Right now this is handled by the TripPlanModel, but if we remove
+        // the use of the model we'll need to put this line back.
+        // $stateModel.entities.push(entity);
+        $stateModel.tripPlanModel.addNewEntities(response['entities']);
         $scope.saving = false;
         $scope.closeEditEntity()
       });
