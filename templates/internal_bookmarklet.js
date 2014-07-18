@@ -22,6 +22,7 @@
   var HOST = '{{host}}';
   window['__tcNodes'] = window['__tcNodes'] || [];
   window['__tcListeners'] = window['__tcListeners'] || [];
+  window['__tcGlobals'] = window['__tcGlobals'] || [];
 
   function absUrl(relativeUrl) {
     return 'https://' + HOST + relativeUrl;
@@ -37,6 +38,11 @@
       obj.elem.off(obj.eventName, obj.handler);
     });
     window['__tcListeners'] = [];
+
+    $.each(window['__tcGlobals'], function(i, varName) {
+      window[varName] = null;
+    });
+    window['__tcGlobals'] = [];
   }
 
   function markListenerForCleanup(elem, eventName, handler) {
@@ -205,6 +211,27 @@
         width: 100%
       }
 
+      #__tc-search-panel {
+        position: absolute;
+        width: 120px;
+        margin: 0;
+        padding: 5px;
+        border: none;
+        border-radius: 0;
+        z-index: 2147483647;
+        font-family: Arial, Sans-Serif;
+        font-size: 10pt;
+        text-align: center;
+        background-color: #fff;
+        box-shadow: 0px 1px 2px #aaaaaa;
+      }
+
+      #__tc-search-panel,
+      #__tc-place-search,
+      #__tc-geocode-search {
+        display: none;
+      }
+
       .__tc-img-select {
         border: 2px solid red;
         box-sizing: border-box;
@@ -239,6 +266,31 @@
       {% endstrip %}');
     window['__tcNodes'].push(statusDiv);
 
+    var searchPanelDiv = $('{% strip %}
+      <div id="__tc-search-panel">
+        <div id="__tc-place-search">
+          <div>Search for place:</div>
+          <div>
+            <a href="javascript:void(0)" onclick="__tcSearch(\'google\')">
+              <img src="//maps.gstatic.com/favicon3.ico"/>
+            </a>
+            <a href="javascript:void(0)" onclick="__tcSearch(\'yelp\')">
+              <img src="//yelp.com/favicon.ico"/>
+            </a>
+          </div>
+        </div>
+        <div id="__tc-geocode-search">
+          <div>Search for address:</div>
+          <div>
+            <a href="javascript:void(0)" onclick="__tcSearch(\'google\')">
+              <img src="//maps.gstatic.com/favicon3.ico"/>
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endstrip %}');
+    window['__tcNodes'].push(searchPanelDiv);
+
     var iframe = wrapper.find('iframe')
     iframe.attr('src', absUrl('/internal_clipper_iframe?url=' + encodeURIComponent(window.location.href)));
     $('head').append(style);
@@ -246,6 +298,7 @@
     wrapper.draggable({axis: 'x', iframeFix: true, containment: 'window'});
     $(document.body).append(statusDiv);
     statusDiv.draggable({iframeFix: true, containment: 'window'});
+    $(document.body).append(searchPanelDiv);
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
@@ -255,6 +308,9 @@
 
     var handleImgClick = function(event) {
       if (!imgSelectActive) return;
+      if (wrapper.has(event.target).length || searchPanelDiv.has(event.target).length) {
+        return;
+      }
       event.preventDefault();
       event.stopPropagation();
       var imgUrl = findImgUrl($(event.target));
@@ -267,6 +323,9 @@
 
     var handleImgMouseenter = function(event) {
       if (!imgSelectActive) return;
+      if (wrapper.has(event.target).length || searchPanelDiv.has(event.target).length) {
+        return;
+      }
       $(event.target).addClass('__tc-img-select');
     };
 
@@ -288,12 +347,20 @@
       event.preventDefault();
     });
 
+    var mouseX = null;
+    var mouseY = null;
+    var lastTextSelection = null;
+
     var handleTextSelection = function(event) {
       if (wrapper.has(event.target).length || wrapper[0] == event.target) {
         return;
       }
       var textSelection = getSelection().toString();
-      if (textSelection) {
+      if (textSelection && textSelection != lastTextSelection) {
+        lastTextSelection = textSelection;
+        mouseX = event.pageX;
+        mouseY = event.pageY;
+
         var message = {
           message: 'tc-text-selected',
           selection: textSelection
@@ -316,6 +383,19 @@
     $(document.body).on('keyup', handleKeyup);
     markListenerForCleanup($(document.body), 'keyup', handleKeyup);
 
+    function showSearchPanel() {
+      $('#__tc-search-panel').css({left: mouseX - 30, top: mouseY + 10}).show();
+    }
+
+    window['__tcSearch'] = function(siteName) {
+      var message = {
+        message: 'tc-do-entity-search',
+        siteName: siteName
+      };
+      iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+    };
+    window['__tcGlobals'].push('__tcSearch');
+
     var handleMessages = function(event) {
       var data = event.originalEvent.data;
       var messageName = data ? (data['message'] || '') : '';
@@ -331,6 +411,18 @@
         setClipStatusMessage(data['clipStatusMessage']);
       } else if (messageName == 'tc-set-clip-shortcut-message') {
         setClipShortcutMessage(data['clipShortcutMessage']);
+      } else if (messageName == 'tc-show-place-search-panel') {
+        showSearchPanel();
+        $('#__tc-place-search').show();
+        $('#__tc-geocode-search').hide();
+      } else if (messageName == 'tc-show-geocode-search-panel') {
+        showSearchPanel();
+        $('#__tc-place-search').hide();
+        $('#__tc-geocode-search').show();
+      } else if (messageName == 'tc-show-search-results') {
+
+      } else if (messageName == 'tc-close-search-panel') {
+        $('#__tc-search-panel').hide();
       }
     };
 

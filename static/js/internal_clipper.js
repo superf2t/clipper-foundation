@@ -14,6 +14,13 @@ function StateModel(selectedTripPlan) {
   this.entities = [];
   this.tripPlanModel = new TripPlanModel(selectedTripPlan, this.entities);
   this.state = ClipperState.SUMMARY;
+
+  this.bounds = function() {
+    if (this.tripPlan && !_.isEmpty(this.tripPlan['location_bounds'])) {
+      return gmapsBoundsFromJson(this.tripPlan['location_bounds']);
+    }
+    return null;
+  }
 }
 
 var DEFAULT_SHORTCUT_KEYS = 'n: new place, e: edit trip plan';
@@ -200,7 +207,7 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
   // Highlighting text in the page will store to this field.
   $scope.activeFieldName = null;
 
-  $scope.mapState = {map: null};
+  $scope.mapState = {map: null, marker: null};
   var mapCenter = $scope.em.hasLocation() ? $scope.em.gmapsLatLng() : new google.maps.LatLng(0, 0);
   $scope.mapOptions = {
     center: mapCenter,
@@ -213,7 +220,7 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
   };
 
   $scope.setupMap = function($map) {
-    var marker = new google.maps.Marker({
+    var marker = $scope.mapState.marker = new google.maps.Marker({
       position: mapCenter,
       map: $map,
       draggable: true
@@ -225,6 +232,34 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
       var position = marker.getPosition();
       $scope.ed['latlng']['lat'] = position.lat();
       $scope.ed['latlng']['lng'] = position.lng();
+    });
+  };
+
+  $scope.geocodeAddress = function(address) {
+    var geocoder = new google.maps.Geocoder();
+    var request = {
+      'address': address,
+      'bounds': $stateModel.bounds()
+    };
+    geocoder.geocode(request, function(results, status) {
+      if (status == google.maps.GeocoderStatus.OK) {
+        var result = results[0];
+        $scope.ed['address'] = result['formatted_address'];
+        if (!$scope.ed['latlng']) {
+          $scope.ed['latlng'] = {};
+        }
+        var position = result['geometry']['location'];
+        $scope.ed['latlng']['lat'] = position.lat();
+        $scope.ed['latlng']['lng'] = position.lng();
+        $scope.mapState.marker.setPosition(position);
+        var viewport = result['geometry']['viewport'];
+        if (viewport) {
+          $scope.mapState.map.fitBounds(viewport);
+        }
+
+        $messageProxy.sendMessage('tc-close-search-panel');
+      }
+      $scope.$apply();
     });
   };
 
@@ -303,6 +338,20 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     if (!$stateModel.state == ClipperState.EDIT_ENTITY) return;
     if (!text || !$scope.activeFieldName) return;
     $scope.ed[$scope.activeFieldName] = text;
+
+    if ($scope.activeFieldName == 'name') {
+      $messageProxy.sendMessage('tc-show-place-search-panel');
+    } else if ($scope.activeFieldName == 'address') {
+      $messageProxy.sendMessage('tc-show-geocode-search-panel');
+    }
+  });
+
+  $scope.$on('do-entity-search', function(event, siteName) {
+    if ($scope.activeFieldName == 'name') {
+      $scope.searchByPlaceName($scope.ed['name'], siteName);
+    } else if ($scope.activeFieldName == 'address') {
+      $scope.geocodeAddress($scope.ed['address']);
+    }
   });
 
   $messageProxy.setShortcutMessage(ENTITY_SHORTCUT_KEYS);
@@ -390,6 +439,8 @@ function MessageProxy($window, $rootScope) {
       $rootScope.$broadcast('shortcut-keypress', data['keyCode']);
     } else if (messageName == 'tc-text-selected') {
       $rootScope.$broadcast('text-selected', data['selection']);
+    } else if (messageName == 'tc-do-entity-search') {
+      $rootScope.$broadcast('do-entity-search', data['siteName']);
     }
   };
 
