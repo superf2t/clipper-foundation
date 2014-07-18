@@ -199,13 +199,16 @@
           <span ng-show="im.hasSubCategory()"
             ng-class="'text-' + ed['category']['name']">
             > [[ed['sub_category']['display_name'] ]]
-          </div>
+          </span>
           <span ng-show="im.day()" ng-class="day">
             Day [[im.day()]]
           </span>
           <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
           </span>
-          {# TODO: Add warnings for missing fields. #}
+          <a href="javascript:void(0)" class="text-danger" ng-if="isMissingRequiredFields()"
+            tooltip="Missing fields: [[missingRequiredFields().join(', ')]]">
+            <span class="glyphicon glyphicon-exclamation-sign"></span>
+          </a>
         </div>
       </span>
     </div>

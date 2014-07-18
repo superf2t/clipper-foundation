@@ -2,7 +2,7 @@
 // -Show source url when editing trip plan settings.
 // -If there is no scraper for an article, create a default trip plan
 //  and fill in the source url and make a best effort on the title and location.
-// -Get extra structure data from Google entity converter
+// -Get extra structured data from Google entity converter
 // -Add tags to entity editor and trip plan editor
 
 var ClipperState = {
@@ -414,6 +414,21 @@ function tcEntityListing() {
     controller: function($scope) {
       $scope.ed = $scope.entity;
       $scope.im = new ItemModel($scope.entity);
+
+      $scope.missingRequiredFields = function() {
+        var requiredFieldNames = ['name', 'address', 'latlng', 'photo_urls'];
+        var missingFieldNames = [];
+        $.each(requiredFieldNames, function(i, fieldName) {
+          if (_.isEmpty($scope.ed[fieldName])) {
+            missingFieldNames.push(fieldName);
+          }
+        });
+        return missingFieldNames;
+      };
+
+      $scope.isMissingRequiredFields = function() {
+        return !_.isEmpty($scope.missingRequiredFields());
+      };
     }
   };
 }
