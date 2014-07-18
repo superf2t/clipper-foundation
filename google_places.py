@@ -117,7 +117,7 @@ class PlaceDetails(object):
         periods = []
         for period_json in hours_json.get('periods', ()):
             open_ = period_json['open']
-            close_ = period_json['close']
+            close_ = period_json.get('close')
             period = data.OpeningPeriod(
                 open_['day'], tohour(open_), tominute(open_),
                 close_ and close_['day'], close_ and tohour(close_), close_ and tominute(close_))

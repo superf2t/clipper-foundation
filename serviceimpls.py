@@ -1150,10 +1150,8 @@ class AdminService(service.Service):
     def parsetripplan(self, request):
         tp_creator = trip_plan_creator.TripPlanCreator(request.url,
             self.session_info.db_user.id, request.parser_type)
-        if not tp_creator:
-            self.validation_errors.append(service.ServiceError.from_enum(
-                AdminServiceError.INVALID_PARSER_TYPE, 'parser_type'))
-            self.raise_if_errors()
+
+
         if request.augment_entities:
             trip_plan = tp_creator.parse_full()
         else:

@@ -4,6 +4,7 @@ import data
 from database import user
 import geocode
 import google_places
+from scraping import default_article_parser
 from scraping import html_parsing
 from scraping import lets_go
 from scraping import nomadic_matt
@@ -74,6 +75,7 @@ def make_article_parser(url, parser_type_name=None):
         for parser_class in ALL_PARSERS:
             if parser_class.can_parse(url):
                 return parser_class(url, html_parsing.parse_tree(url))
+        return default_article_parser.DefaultArticleParser(url, html_parsing.parse_tree(url))
     return None
 
 def canonicalize_url(url):
