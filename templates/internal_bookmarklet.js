@@ -168,6 +168,43 @@
         background-color: #777;
       }
 
+      .__tc-status-container {
+        position: fixed;
+        top: 0;
+        left: calc(50% - 175px);
+        height: 50px;
+        width: 350px;
+        cursor: move;
+        color: #000;
+        background-color: #F2F0CE;
+        border: none;
+        border-radius: 0;
+        z-index: 2147483647;
+        font-family: Arial, Sans-Serif;
+        text-align: center;
+        margin: 0;
+        padding: 10px;
+        box-shadow: 0px 1px 2px #aaaaaa;
+      }
+
+      #__tc-status {
+        font-size: 12pt;
+        color: #205A8C;
+      }
+
+      #__tc-img-select-active-msg {
+        font-size: 11pt;
+        color: #2477BF;
+      }
+
+      #__tc-shortcut-keys {
+        font-size: 10pt;
+        position: absolute;
+        left: 0;
+        bottom: 5px;
+        width: 100%
+      }
+
       .__tc-img-select {
         border: 2px solid red;
         box-sizing: border-box;
@@ -193,11 +230,22 @@
       {% endstrip %}');
     window['__tcNodes'].push(wrapper);
 
+    var statusDiv = $('{% strip %}
+      <div class="__tc-status-container">
+        <div id="__tc-status">no active action</div>
+        <div id="__tc-img-select-active-msg" style="display:none">image select active</div>
+        <div id="__tc-shortcut-keys"></div>
+      </div>
+      {% endstrip %}');
+    window['__tcNodes'].push(statusDiv);
+
     var iframe = wrapper.find('iframe')
     iframe.attr('src', absUrl('/internal_clipper_iframe?url=' + encodeURIComponent(window.location.href)));
     $('head').append(style);
     $(document.body).append(wrapper);
     wrapper.draggable({axis: 'x', iframeFix: true, containment: 'window'});
+    $(document.body).append(statusDiv);
+    statusDiv.draggable({iframeFix: true, containment: 'window'});
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
@@ -257,6 +305,17 @@
     $(document.body).on('mouseup', handleTextSelection);
     markListenerForCleanup($(document.body), 'mouseup', handleTextSelection);
 
+    var handleKeyup = function(event) {
+      var message = {
+        message: 'tc-keyup',
+        keyCode: event.which
+      };
+      iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+    };
+
+    $(document.body).on('keyup', handleKeyup);
+    markListenerForCleanup($(document.body), 'keyup', handleKeyup);
+
     var handleMessages = function(event) {
       var data = event.originalEvent.data;
       var messageName = data ? (data['message'] || '') : '';
@@ -264,13 +323,30 @@
         clearElements();
       } else if (messageName == 'tc-img-select-active') {
         imgSelectActive = true;
+        $('#__tc-img-select-active-msg').show();
       } else if (messageName == 'tc-img-select-inactive') {
         imgSelectActive = false;
+        $('#__tc-img-select-active-msg').hide();
+      } else if (messageName == 'tc-set-clip-status-message') {
+        setClipStatusMessage(data['clipStatusMessage']);
+      } else if (messageName == 'tc-set-clip-shortcut-message') {
+        setClipShortcutMessage(data['clipShortcutMessage']);
       }
     };
 
     $(window).on('message', handleMessages);
     markListenerForCleanup($(window), 'message', handleMessages);
+
+    function setClipStatusMessage(clipStatusMessage) {
+      if (!clipStatusMessage) {
+        clipStatusMessage = 'no active action';
+      }
+      $('#__tc-status').html(clipStatusMessage);
+    }
+
+    function setClipShortcutMessage(clipShortcutMessage) {
+      $('#__tc-shortcut-keys').html(clipShortcutMessage);
+    }
 
     function makeAbsolute(url) {
       if (!url) {

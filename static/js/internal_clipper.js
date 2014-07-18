@@ -18,6 +18,10 @@ function StateModel(selectedTripPlan) {
   this.state = ClipperState.SUMMARY;
 }
 
+var DEFAULT_SHORTCUT_KEYS = 'n: new place, e: edit trip plan';
+var TRIP_PLAN_SHORTCUT_KEYS = '1: name, 2: location, 3: description, s: save, x: cancel';
+var ENTITY_SHORTCUT_KEYS = 'n: name, a: address, d: description';
+
 function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
     $allTripPlans, $entityService, $window) {
   $scope.s = $stateModel;
@@ -42,6 +46,8 @@ function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
   $scope.closeEditTripPlan = function() {
     $messageProxy.makeImgSelectInactive();
     $stateModel.state = ClipperState.SUMMARY;
+    $messageProxy.setStatusMessage(null);
+    $messageProxy.setShortcutMessage(DEFAULT_SHORTCUT_KEYS);
   };
 
   $scope.openEditEntity = function(entity) {
@@ -54,12 +60,27 @@ function InternalClipperRootCtrl($scope, $stateModel, $messageProxy,
     $messageProxy.makeImgSelectInactive();
     $stateModel.state = ClipperState.SUMMARY;
     $stateModel.editableEntity = null;
+    $messageProxy.setStatusMessage(null);
+    $messageProxy.setShortcutMessage(DEFAULT_SHORTCUT_KEYS);
   };
+
+  $scope.$on('shortcut-keypress', function(event, keyCode) {
+    if (!$stateModel.state == ClipperState.SUMMARY) return;
+    var key = String.fromCharCode(keyCode);
+    if (key == 'E') {
+      $scope.openEditTripPlan();
+    }
+  });
+
+  $messageProxy.setShortcutMessage(DEFAULT_SHORTCUT_KEYS);
 }
 
-function EditTripPlanCtrl($scope, $stateModel, $tripPlanService) {
+function EditTripPlanCtrl($scope, $stateModel, $tripPlanService, $messageProxy) {
   $scope.editableTripPlan = angular.copy($stateModel.tripPlan);
   $scope.saving = false;
+
+  // Highlighting text in the page will store to this field.
+  $scope.activeFieldName = null;
 
   $scope.mapState = {map: null};
   $scope.mapOptions = {
@@ -114,9 +135,18 @@ function EditTripPlanCtrl($scope, $stateModel, $tripPlanService) {
     $tripPlanService.editTripPlan($scope.editableTripPlan)
       .success(function(response) {
         _.extend($stateModel.tripPlan, response['trip_plans'][0]);
-        $stateModel.state = ClipperState.SUMMARY;
         $scope.saving = false;
+        $scope.closeEditTripPlan();
       });
+  };
+
+  $scope.setActiveField = function(fieldName) {
+    $scope.activeFieldName = fieldName;
+    if (fieldName) {
+      $messageProxy.setStatusMessage('Highlight to select ' + fieldName);
+    } else {
+      $messageProxy.setStatusMessage(null);
+    }
   };
 
   $scope.$on('img-selected', function(event, imgUrl) {
@@ -125,9 +155,35 @@ function EditTripPlanCtrl($scope, $stateModel, $tripPlanService) {
       $scope.editableTripPlan['cover_image_url'] = imgUrl;
     }
   });
+
+  $scope.$on('shortcut-keypress', function(event, keyCode) {
+    if (!$stateModel.state == ClipperState.EDIT_TRIP_PLAN) return;
+    var key = String.fromCharCode(keyCode);
+    if (key == '1') {
+      $scope.setActiveField('name');
+    } else if (key == '2') {
+      $scope.setActiveField('description');
+    } else if (key == '3') {
+      $scope.setActiveField('location_name');
+    } else if (key == 'S') {
+      $scope.saveTripPlan();
+    } else if (key == 'X') {
+      $scope.closeEditTripPlan()
+    } else {
+      $scope.activeFieldName = null;
+    }
+  });
+
+  $scope.$on('text-selected', function(event, text) {
+    if (!$stateModel.state == ClipperState.EDIT_TRIP_PLAN) return;
+    if (!text || !$scope.activeFieldName) return;
+    $scope.editableTripPlan[$scope.activeFieldName] = text;
+  });
+
+  $messageProxy.setShortcutMessage(TRIP_PLAN_SHORTCUT_KEYS);
 }
 
-function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy) {
+function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $messageProxy) {
   $scope.ed = $stateModel.editableEntity;
   $scope.em = new EntityModel($stateModel.editableEntity);
   $scope.saving = false;
@@ -180,6 +236,8 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy) {
         $stateModel.state = ClipperState.SUMMARY;
       });
   };
+
+  $messageProxy.setShortcutMessage(ENTITY_SHORTCUT_KEYS);
 }
 
 function ClipperEntityPhotoCtrl($scope, $stateModel) {
@@ -244,6 +302,14 @@ function MessageProxy($window, $rootScope) {
     this.sendMessage('tc-img-select-inactive');
   };
 
+  this.setStatusMessage = function(msg) {
+    this.sendMessage('tc-set-clip-status-message', {'clipStatusMessage': msg});
+  };
+
+  this.setShortcutMessage = function(msg) {
+    this.sendMessage('tc-set-clip-shortcut-message', {'clipShortcutMessage': msg});
+  };
+
   this.sendMessage = function(messageName, data) {
     var message = _.extend({message: messageName}, data);
     $window.parent.postMessage(message, '*');
@@ -252,6 +318,10 @@ function MessageProxy($window, $rootScope) {
   this.handleIncomingMessage = function(messageName, data) {
     if (messageName == 'tc-img-selected') {
       $rootScope.$broadcast('img-selected', data['imgUrl']);
+    } else if (messageName == 'tc-keyup') {
+      $rootScope.$broadcast('shortcut-keypress', data['keyCode']);
+    } else if (messageName == 'tc-text-selected') {
+      $rootScope.$broadcast('text-selected', data['selection']);
     }
   };
 
