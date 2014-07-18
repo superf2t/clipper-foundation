@@ -83,6 +83,11 @@
   text-align: center;
 }
 
+.edit-trip-plan-panel .cover-image,
+.edit-trip-plan-panel .no-cover-image {
+  margin-bottom: 10px;
+}
+
 .edit-entity-panel {
   margin: 10px;
 }

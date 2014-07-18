@@ -1,5 +1,4 @@
 // TODOs:
-// -Show source url when editing trip plan settings.
 // -If there is no scraper for an article, create a default trip plan
 //  and fill in the source url and make a best effort on the title and location.
 // -Add tags to entity editor and trip plan editor

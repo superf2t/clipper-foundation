@@ -92,6 +92,8 @@
     <div class="no-cover-image" ng-show="!editableTripPlan['cover_image_url']">
       No cover image, click an image in the page to select.
     </div>
+    <input type="text" class="form-control edit-input" placeholder="Source url"
+      ng-model="editableTripPlan['source_url']"/>
   </div>
 
   <div ng-if="s.state == ClipperState.EDIT_ENTITY" class="edit-entity-panel"
