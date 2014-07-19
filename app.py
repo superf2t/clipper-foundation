@@ -18,6 +18,7 @@ from app_core import app
 from app_core import db
 import cookies
 import constants
+import csv_export
 import data
 from database import user
 import sample_sites
@@ -116,6 +117,20 @@ def print_trip_plan(trip_plan_id):
     sorted_entities = sorted(entities, cmp=data.Entity.chronological_cmp)
 
     return render_template('print_trip_plan.html', trip_plan=trip_plan, entities=sorted_entities)
+
+@app.route('/trip_plan/<int:trip_plan_id>/csv')
+def csv_trip_plan(trip_plan_id):
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    entity_service = serviceimpls.EntityService(g.session_info)
+
+    trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
+    entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
+    sorted_entities = sorted(entities, cmp=data.Entity.chronological_cmp)
+
+    response = make_response(csv_export.create_csv(sorted_entities))
+    response.headers['Content-Type'] = 'application/csv'
+    response.headers['Content-Disposition'] = 'attachment; filename=%s.csv' % trip_plan.name
+    return response
 
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
