@@ -5,7 +5,7 @@ import data
 from scraping import html_parsing
 
 class Nytimes36HoursCurrent(article_parser.ArticleParser):
-    URL_REGEX = re.compile('http://www.nytimes.com/2014/\d+/\d+/travel/36-hours-.+')    
+    URL_REGEX = re.compile('http://www\.nytimes\.com/2014/\d+/\d+/travel/36-hours-.+')
 
     TITLE_XPATH = './/h1[@itemprop="headline"]'
     COVER_IMAGE_URL_XPATH = './/div[@class="lede-container"]//div[@class="image"]/img/@src'

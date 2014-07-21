@@ -12,6 +12,7 @@ from scraping import lets_go
 from scraping import nomadic_matt
 from scraping import nytimes_36hours_current
 from scraping import nytimes_36hours_old
+from scraping import united_hemispheres
 import utils
 
 class TripPlanCreator(object):
@@ -73,7 +74,8 @@ ALL_PARSERS = (
     lets_go.LetsGo,
     nomadic_matt.NomadicMatt,
     nytimes_36hours_current.Nytimes36HoursCurrent,
-    nytimes_36hours_old.Nytimes36HoursOld)
+    nytimes_36hours_old.Nytimes36HoursOld,
+    united_hemispheres.UnitedHemispheres)
 
 def make_article_parser(url, parser_type_name=None):
     if parser_type_name:

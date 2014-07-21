@@ -5,7 +5,7 @@ import data
 from scraping import html_parsing
 
 class FrommersGuide(article_parser.ArticleParser):
-    URL_REGEX = re.compile('(http://www.frommers.com/destinations/[^/]+/\d+).*$')    
+    URL_REGEX = re.compile('(http://www\.frommers\.com/destinations/[^/]+/\d+).*$')
 
     TITLE_XPATH = './/h1[contains(@class, "articleTitle")]'
 
