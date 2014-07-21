@@ -37,7 +37,8 @@ ALL_SCRAPERS = (
     zagat.ZagatScraper,
     )
 
-def build_scrapers(url, client_page_source=None, force_fetch_page=False, allow_expansion=True):
+def build_scrapers(url, client_page_source=None, force_fetch_page=False,
+        allow_expansion=True, for_guide=False):
     page_source_tree = html_parsing.parse_tree_from_string(client_page_source) if client_page_source else None
     if not page_source_tree and (url_requires_server_page_source(url) or force_fetch_page):
         page_source_tree = html_parsing.parse_tree(url)
@@ -53,7 +54,7 @@ def build_scrapers(url, client_page_source=None, force_fetch_page=False, allow_e
                     print 'Failed to fetch url: %s' % url
                     continue
                 tree = etree.parse(resp, html_parsing.htmlparser())
-                scraper = scraper_class(url, tree)
+                scraper = scraper_class(url, tree, for_guide)
                 scraped_pages.append(scraper)
             break
     return scraped_pages

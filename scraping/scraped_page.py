@@ -103,10 +103,11 @@ class ScrapedPage(object):
                 return True
         return False
 
-    def __init__(self, url, tree):
+    def __init__(self, url, tree, for_guide=False):
         self.url = url
         self.tree = tree
         self.root = tree.getroot()
+        self.for_guide = for_guide
         self._location = None
 
     @fail_returns_none
@@ -140,6 +141,9 @@ class ScrapedPage(object):
     @fail_returns_none
     def get_review_count(self):
         return int(self.root.xpath(self.REVIEW_COUNT_XPATH)[0]) if self.REVIEW_COUNT_XPATH else None
+
+    def get_starred(self):
+        return None
 
     @fail_returns_none
     def get_primary_photo(self):

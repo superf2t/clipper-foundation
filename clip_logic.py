@@ -25,6 +25,7 @@ def entity_from_scraper(scr, url):
         rating=scr.get_rating(),
         rating_max=scr.get_rating_max(),
         review_count=scr.get_review_count(),
+        starred=scr.get_starred(),
         description=scr.get_description(),
         primary_photo_url=scr.get_primary_photo(),
         photo_urls=scr.get_photos(),
@@ -32,8 +33,8 @@ def entity_from_scraper(scr, url):
         last_access_datetime=datetime.datetime.now(tz.tzutc()))
 
 def scrape_entities_from_url(url, page_source=None, force_fetch_page=False,
-        max_results=None, allow_expansion=True):
-    scrapers = scrape_logic.build_scrapers(url, page_source, force_fetch_page)
+        max_results=None, allow_expansion=True, for_guide=False):
+    scrapers = scrape_logic.build_scrapers(url, page_source, force_fetch_page, for_guide=for_guide)
     scrapers = scrapers[:max_results] if max_results else scrapers
     return utils.parallelize(entity_from_scraper, [(scr, url) for scr in scrapers])
 

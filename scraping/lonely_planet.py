@@ -1,17 +1,24 @@
 import data
 import geocode
 import google_places
+from scraping.html_parsing import join_element_text_using_xpaths
 from scraping.html_parsing import tostring
 from scraping import scraped_page
+from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
+from scraping.scraped_page import fail_returns_empty
+from scraping.scraped_page import fail_returns_none
 import values
 
 class LonelyPlanetScraper(scraped_page.ScrapedPage):
     HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
-        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/hotels/(?!guesthouse|apartments|rated|hostels-and-budget-hotels).*$',
-        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/shopping/.*$',
-        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/entertainment-nightlife/.*$',
-        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/sights/.*$',
-        '(?i)^http(s)?://www\.lonelyplanet\.com/[^/]+/[^/]+/restaurants/.*$',)
+        '(?i)^http(s)?://www\.lonelyplanet\.com/.+/hotels/(?!guesthouse|apartments|rated|hostels-and-budget-hotels).*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/.+/shopping/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/.+/entertainment-nightlife/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/.+/sights/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/.+/restaurants/.*$',
+        '(?i)^http(s)?://www\.lonelyplanet\.com/.+/activities/.*$',
+        ('(?i)^http(s)?://www\.lonelyplanet\.com/.+/things-to-do.*$', 
+            scraped_page.result_page_expander('.//article/a'), REQUIRES_SERVER_PAGE_SOURCE),)
 
     NAME_XPATH = './/h1'
     PHONE_NUMBER_XPATH = './/dl[@class="info-list"]//a[@class="tel"]/text()'
@@ -80,20 +87,10 @@ class LonelyPlanetScraper(scraped_page.ScrapedPage):
 
         return self._google_place
 
+    @fail_returns_empty
     def get_photos(self):
-        urls = []
-        try:
-            for img in self.root.findall('.//img[@class="media-gallery__img"]'):
-                urls.append(img.get('src'))
-            for img in self.root.findall('.//img[@data-class="media-gallery__img"]'):
-                urls.append(img.get('data-src'))
-        except:
-            pass
-        if not urls:
-            google_place_entity = self.lookup_google_place()
-            if google_place_entity:
-                urls.extend(google_place_entity.photo_urls)
-        return urls
+        return self.root.xpath('.//img[contains(@class, "slider__img")]/@src') + \
+            self.root.xpath('.//img[contains(@data-class, "slider__img")]//@data-src')
 
     def get_latlng(self):
         google_place_entity = self.lookup_google_place()
@@ -104,6 +101,19 @@ class LonelyPlanetScraper(scraped_page.ScrapedPage):
     def get_location_precision(self):
         return 'Precise' if self.get_latlng() else 'Imprecise'
 
+    @fail_returns_none
     def get_opening_hours(self):
         source_text = tostring(self.root.xpath('.//dl[@class="info-list"]//dt[contains(@class, "icon--time")]/following-sibling::dd')[0])
         return data.OpeningHours(source_text=source_text)
+
+    def get_starred(self):
+        if not self.for_guide:
+            return False
+        top_choice_elem = self.root.xpath('.//div[@role="main" and contains(@class, "card--top-choice")]')
+        return bool(top_choice_elem)
+
+    @fail_returns_none
+    def get_description(self):
+        return join_element_text_using_xpaths(self.root,
+            ['.//div[contains(@class, "ttd__section--description")]//p'], '\n\n').strip()
+

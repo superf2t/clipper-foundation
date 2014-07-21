@@ -9,6 +9,7 @@ from scraping import fodors_guide
 from scraping import frommers_guide
 from scraping import html_parsing
 from scraping import lets_go
+from scraping import lonely_planet_top_things
 from scraping import nomadic_matt
 from scraping import nytimes_36hours_current
 from scraping import nytimes_36hours_old
@@ -73,6 +74,7 @@ ALL_PARSERS = (
     fodors_guide.FodorsGuide,
     frommers_guide.FrommersGuide,
     lets_go.LetsGo,
+    lonely_planet_top_things.LonelyPlanetTopThings,
     nomadic_matt.NomadicMatt,
     nytimes_36hours_current.Nytimes36HoursCurrent,
     nytimes_36hours_old.Nytimes36HoursOld,
