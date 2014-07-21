@@ -128,6 +128,9 @@ class ScrapedPage(object):
     def get_sub_category(self):
         return None
 
+    def get_description(self):
+        return None
+
     def get_rating(self):
         return None
 
@@ -194,6 +197,7 @@ Entity name: %s
 Category: %s
 SubCategory: %s
 Address: %s
+Description: %s
 Phone number: %s
 Website: %s
 Hours: %s
@@ -205,6 +209,7 @@ Photo urls: %s''' % (
     self.get_category(),
     self.get_sub_category(),
     self.get_address(),
+    self.get_description(),
     self.get_phone_number(),
     self.get_website(),
     self.get_opening_hours().source_text if self.get_opening_hours() else None,

@@ -6,6 +6,8 @@ import urllib2
 
 from lxml import etree
 
+import utils
+
 USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.116 Safari/537.36'
 
 def make_request(url):
@@ -58,6 +60,6 @@ def tostring(element, normalize_whitespace=False, with_tail=True):
     return s
 
 def join_element_text_using_xpaths(root, xpaths, separator=' '):
-    elems = [root.find(xpath) for xpath in xpaths]
+    elems = utils.flatten([root.xpath(xpath) for xpath in xpaths])
     texts = [tostring(elem, with_tail=False) for elem in elems if elem is not None]
     return separator.join(texts)

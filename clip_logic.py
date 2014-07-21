@@ -15,6 +15,7 @@ def entity_from_scraper(scr, url):
     latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
     return data.Entity(name=scr.get_entity_name(),
         category=scr.get_category(), sub_category=scr.get_sub_category(),
+        description=scr.get_description(),
         address=scr.get_address(), latlng=latlng, 
         address_precision=scr.get_location_precision(), rating=scr.get_rating(),
         primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),

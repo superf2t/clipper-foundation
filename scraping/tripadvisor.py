@@ -59,6 +59,21 @@ class TripAdvisorScraper(scraped_page.ScrapedPage):
         return None
 
     @fail_returns_none
+    def get_description(self):
+        desc_nodes = self.root.xpath('.//div[@id="listing_main"]//div[@class="listing_description"]')
+        if not desc_nodes:
+            return None
+        desc_node = desc_nodes[0]
+        details_link = desc_node.xpath('.//a/@href')
+        if details_link:
+            url = self.absolute_url(details_link[0])
+            details_page_tree = html_parsing.parse_tree(url)
+            details_node = details_page_tree.getroot().xpath('.//div[@class="articleBody"]')[0]
+            return html_parsing.join_element_text_using_xpaths(details_node, ['.//p'], '\n\n')
+        else:
+            return ''.join(desc_node.xpath('text()')).strip()
+
+    @fail_returns_none
     def get_rating(self):
         return float(self.root.find('body//div[@rel="v:rating"]//img').get('content'))
 
