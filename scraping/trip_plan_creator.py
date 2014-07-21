@@ -11,6 +11,7 @@ from scraping import html_parsing
 from scraping import lets_go
 from scraping import nomadic_matt
 from scraping import nytimes_36hours_current
+from scraping import nytimes_36hours_old
 import utils
 
 class TripPlanCreator(object):
@@ -71,7 +72,8 @@ ALL_PARSERS = (
     frommers_guide.FrommersGuide,
     lets_go.LetsGo,
     nomadic_matt.NomadicMatt,
-    nytimes_36hours_current.Nytimes36HoursCurrent)
+    nytimes_36hours_current.Nytimes36HoursCurrent,
+    nytimes_36hours_old.Nytimes36HoursOld)
 
 def make_article_parser(url, parser_type_name=None):
     if parser_type_name:
