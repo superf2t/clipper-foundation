@@ -3767,9 +3767,13 @@ function tcScrollToSelector($interpolate) {
       scope.$watch(attrs.scrollOnChangesTo, function(value) {
         if (value != undefined || value != null) {
           var selector = $interpolate(attrs.scrollDestSelector)(scope);
-          var dest = $(selector);
+          var destOffset = $(selector).offset();
+          if (!destOffset) {
+            // The element could be hidden right now.
+            return;
+          }
           var oldScrollTop = elem.scrollTop();
-          var newScrollTop = oldScrollTop + dest.offset().top - elem.offset().top;
+          var newScrollTop = oldScrollTop + destOffset.top - elem.offset().top;
           if (attrs.skipScrollWhenInView && newScrollTop >= oldScrollTop && newScrollTop < (oldScrollTop + elem.height())) {
             return;
           }

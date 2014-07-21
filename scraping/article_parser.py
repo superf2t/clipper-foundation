@@ -6,6 +6,7 @@ class ArticleParser(object):
     URL_REGEX = None
 
     TITLE_XPATH = ''
+    COVER_IMAGE_URL_XPATH = None
 
     def __init__(self, url, tree):
         self.url = url
@@ -20,13 +21,14 @@ class ArticleParser(object):
         return None
 
     def get_cover_image_url(self):
-        img_elem = self.root.xpath(self.COVER_IMAGE_URL_XPATH)
-        if img_elem:
-            return img_elem[0]
+        if self.COVER_IMAGE_URL_XPATH:
+            img_elem = self.root.xpath(self.COVER_IMAGE_URL_XPATH)
+            if img_elem:
+                return img_elem[0]
         return None
 
     def get_source_url(self):
-        return self.url
+        return type(self).canonicalize(self.url)
 
     def get_raw_entities(self):
         return ()
@@ -70,3 +72,7 @@ class ArticleParser(object):
     @classmethod
     def can_parse(cls, url):
         return cls.URL_REGEX and cls.URL_REGEX.match(url)
+
+    @classmethod
+    def canonicalize(cls, url):
+        return url

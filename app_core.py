@@ -10,8 +10,8 @@ class MyFlask(Flask):
     jinja_options['extensions'].append('jinja2htmlcompress.SelectiveHTMLCompress')
 
     def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'js/admin.js',
-            'css/style.css', 'css/clipper.css', 'css/shared.css', 'css/admin.css'):
+        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'js/admin.js', 'js/internal_clipper.js',
+            'css/style.css', 'css/clipper.css', 'css/shared.css', 'css/admin.css', 'css/internal_clipper.css'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 

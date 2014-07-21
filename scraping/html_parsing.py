@@ -1,4 +1,5 @@
 import cStringIO
+import cookielib
 import re
 import string
 import urllib2
@@ -12,7 +13,9 @@ def make_request(url):
 
 def parse_tree(url):
     req = make_request(url)
-    html = urllib2.urlopen(req)
+    cj = cookielib.CookieJar()
+    opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+    html = opener.open(req)
     parser = htmlparser()
     tree = etree.parse(html, parser)
     return tree

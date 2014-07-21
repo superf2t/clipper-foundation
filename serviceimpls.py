@@ -1100,16 +1100,12 @@ class AugmentEntitiesResponse(service.ServiceResponse):
         self.entities = entities
 
 class ParseTripPlanRequest(service.ServiceRequest):
-    PUBLIC_FIELDS = serializable.fields('url', 'augment_entities',
-        'parser_type', 'creator', 'trip_plan_name')
+    PUBLIC_FIELDS = serializable.fields('url', 'augment_entities', 'parser_type')
 
-    def __init__(self, url=None, augment_entities=None,
-            parser_type=None, creator=None, trip_plan_name=None):
+    def __init__(self, url=None, augment_entities=None, parser_type=None):
         self.url = url
         self.augment_entities = augment_entities
         self.parser_type = parser_type
-        self.creator = creator
-        self.trip_plan_name = trip_plan_name
 
 class ParseTripPlanResponse(service.ServiceResponse):
     PUBLIC_FIELDS = serializable.compositefields(
@@ -1153,11 +1149,9 @@ class AdminService(service.Service):
 
     def parsetripplan(self, request):
         tp_creator = trip_plan_creator.TripPlanCreator(request.url,
-            request.creator, request.trip_plan_name, request.parser_type)
-        if not tp_creator:
-            self.validation_errors.append(service.ServiceError.from_enum(
-                AdminServiceError.INVALID_PARSER_TYPE, 'parser_type'))
-            self.raise_if_errors()
+            self.session_info.db_user.id, request.parser_type)
+
+
         if request.augment_entities:
             trip_plan = tp_creator.parse_full()
         else:

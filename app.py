@@ -52,6 +52,32 @@ def clipper_iframe():
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)
 
+@app.route('/internal_clipper_iframe')
+def internal_clipper_iframe():
+    if not (g.session_info.visitor_id or g.session_info.email):
+        return render_template('clipper_iframe_not_logged_in.html')
+
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+
+    source_url = trip_plan_creator.canonicalize_url(request.values.get('url'))
+    current_trip_plan = None
+    for trip_plan in all_trip_plans:
+        if trip_plan.source_url == source_url:
+            current_trip_plan = trip_plan
+            break
+    if not current_trip_plan:
+        admin_service = serviceimpls.AdminService(g.session_info)
+        parse_request = serviceimpls.ParseTripPlanRequest(url=source_url, augment_entities=False)
+        parse_response = admin_service.parsetripplan(parse_request)
+        current_trip_plan = parse_response.trip_plan
+        all_trip_plans.append(current_trip_plan)
+
+    sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    return render_template('internal_clipper_iframe.html',
+        all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
+        all_datatype_values=values.ALL_VALUES)
+
 @app.route('/clipper_map_iframe')
 def clipper_map_iframe():
     return render_template('clipper_map_iframe.html')
@@ -135,6 +161,12 @@ def csv_trip_plan(trip_plan_id):
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
+    response.headers['Content-Type'] = 'application/javascript'
+    return response 
+
+@app.route('/internal_bookmarklet.js')
+def internal_bookmarklet_js():
+    response = make_response(render_template('internal_bookmarklet.js', host=constants.HOST))
     response.headers['Content-Type'] = 'application/javascript'
     return response 
 

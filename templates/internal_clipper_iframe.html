@@ -1,0 +1,225 @@
+<!doctype html>
+<html>
+<head>
+  <title>Travel Clipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/services.js"></script>
+  <script src="/static/js/script.js"></script>
+  <script src="/static/js/internal_clipper.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/internal_clipper.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+  {% include 'analytics.html' %}
+</head>
+<body ng-controller="InternalClipperRootCtrl" class="clipper-body">
+
+  <div ng-show="s.state == ClipperState.SUMMARY">
+    <div class="trip-plan-panel">
+      <select ng-model="s.tripPlan" ng-options="t['name'] for t in allTripPlans"
+        class="form-control">
+      </select>
+      <div class="control-links">
+        <a href="javascript:void(0)" class="color-link" ng-click="openEditTripPlan()">
+          <span class="glyphicon glyphicon-pencil"></span> Edit          
+        </a>
+        <a ng-href="/admin/editor/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="color-link">
+          <span class="glyphicon glyphicon-wrench"></span> Admin editor
+        </a>
+        <a ng-href="/trip_plan/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="color-link">
+          <span class="glyphicon glyphicon-new-window"></span> View trip
+        </a>
+      </div>
+      <div class="location-section">
+        Location:
+        <span class="location-name" ng-show="s.tripPlanModel.hasLocation()">
+          [[s.tripPlan['location_name'] ]]
+        </span>
+        <span class="text-danger" ng-show="!s.tripPlanModel.hasLocation()">
+          missing
+        </span>
+      </div>
+      <div class="cover-image-preview" ng-if="s.tripPlan['cover_image_url']"
+        ng-style="{'background-image': 'url(&quot;' + s.tripPlan['cover_image_url'] + '&quot;)'}">
+      </div>
+      <div class="description">[[s.tripPlan['description'] ]]</div>
+    </div>
+
+    <div class="entity-panel">
+      <div class="num-entities">[[s.entities.length]] Entities</div>
+      <div class="create-new-place-link">
+        <a href="javascript:void(0)" class="color-link" ng-click="createNewEntity()">
+          Add new place
+        </a>
+      </div>
+      <tc-entity-listing ng-repeat="entity in s.entities" entity="entity"
+        ng-click="openEditEntity(entity)">
+      </tc-entity-listing>
+    </div>
+  </div>
+
+  <div ng-if="s.state == ClipperState.EDIT_TRIP_PLAN" class="edit-trip-plan-panel"
+    ng-controller="EditTripPlanCtrl">
+    <div class="controls">
+      <a href="javascript:void(0)" class="color-link" ng-click="closeEditTripPlan()">
+        &laquo; back
+      </a>
+      <span ng-show="saving" class="text-success">saving...</span>
+      <button class="btn btn-primary save-btn" ng-click="saveTripPlan()">
+        Save
+      </button>
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Trip plan name"
+      ng-model="editableTripPlan['name']"/>
+    <input type="text" class="form-control edit-input" placeholder="Trip plan location"
+      ng-model="editableTripPlan['location_name']"
+      tc-google-place-autocomplete location-types="geocode"
+      on-place-change="addressSelected($newPlace)"/>
+    <div class="map-container">
+      <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
+        after-creation="setupMap($map)" resize-when="s.state">
+      </div>
+    </div>
+    <textarea class="form-control edit-input description-input" ng-model="editableTripPlan['description']">
+    </textarea>
+    <img class="cover-image" ng-if="editableTripPlan['cover_image_url']"
+      ng-src="[[editableTripPlan['cover_image_url'] ]]"/>
+    <div class="no-cover-image" ng-show="!editableTripPlan['cover_image_url']">
+      No cover image, click an image in the page to select.
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Source url"
+      ng-model="editableTripPlan['source_url']"/>
+  </div>
+
+  <div ng-if="s.state == ClipperState.EDIT_ENTITY" class="edit-entity-panel"
+    ng-controller="EditEntityCtrl">
+    <div class="controls">
+      <a href="javascript:void(0)" class="color-link" ng-click="closeEditEntity()">
+        &laquo; back
+      </a>
+      <span ng-show="saving" class="text-success">saving...</span>
+      <button class="btn btn-primary save-btn" ng-click="saveEntity()">
+        Save
+      </button>
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Place name"
+      ng-model="ed['name']"/>
+    <input type="text" class="form-control edit-input" placeholder="Address"
+      ng-model="ed['address']"/>
+    <div class="map-container">
+      <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
+        after-creation="setupMap($map)" resize-when="s.state">
+      </div>
+    </div>
+
+    <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor">
+      <div ng-if="hasImgs()" class="photo-carousel">
+        <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+        </a>
+        <span class="carousel-img-container">
+          <div class="img-overlay-control top">
+            <a ng-click="setAsPrimary()" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-picture"></span> Set as primary
+            </a>
+          </div>
+          <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+          <div class="img-overlay-control bottom">
+            <a ng-click="deletePhoto()" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-trash"></span> Delete photo
+            </a>
+          </div>
+        </span>
+        <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-chevron-right"></span>
+        </a>
+      </div>
+    </div>
+
+    <textarea class="form-control edit-input description-input" placeholder="Description"
+      ng-model="ed['description']">
+    </textarea>
+    <select class="form-control" ng-model="ed['category']"
+      ng-options="c['display_name'] for c in categories track by c['category_id']"
+      ng-change="categoryChanged()">
+    </select>
+    <select class="form-control edit-input" ng-model="ed['sub_category']"
+      ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']">
+    </select>
+    <div class="form-group edit-input rel-pos">
+      <input type="radio" id="precision-precise" ng-model="ed['address_precision']" value="Precise">
+      <label for="precision-precise">Precise</label>
+      <input type="radio" id="precision-imprecise" ng-model="ed['address_precision']" value="Imprecise">
+      <label for="precision-imprecise">Imprecise</label>
+      <div class="favorite">
+        <a href="javascript:void(0)" ng-click="ed['starred'] = false"> 
+          <span ng-show="ed['starred']" class="glyphicon glyphicon-star favorite-star">
+          </span>
+        </a>
+        <a href="javascript:void(0)" ng-click="ed['starred'] = true">
+          <span ng-show="!ed['starred']" class="glyphicon glyphicon-star-empty">
+          </span>
+        </a>
+      </div>
+    </div>
+    <input type="text" class="form-control edit-input" placeholder="Phone number"
+      ng-model="ed['phone_number']"/>
+    <input type="text" class="form-control edit-input" placeholder="Website"
+      ng-model="ed['website']"/>
+    <textarea class="form-control edit-input hours-input" placeholder="Hours"
+      ng-model="ed['opening_hours']['source_text']">
+    </textarea>
+    <div class="edit-input rating-inputs">
+      Rating:
+      <input type="number" class="form-control" ng-model="ed['rating']"/>
+      out of
+      <input type="number" class="form-control" ng-model="ed['rating_max']"/>
+      Count:
+      <input type="number" class="form-control" ng-model="ed['review_count']"/>
+    </div>
+  </div>
+
+  <script type="text/ng-template" id="one-entity-listing-template">
+    <div class="one-entity-listing">
+      <span class="entity-circle-img">
+        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
+      </span>
+      <span class="entity-info">
+        <div class="name">
+          [[ed['name'] ]]
+        </div>
+        <div class="details">
+          <span ng-show="im.hasCategory()"
+            ng-class="'text-' + ed['category']['name']">
+            [[ed['category']['display_name'] ]]
+          </span>
+          <span ng-show="im.hasSubCategory()"
+            ng-class="'text-' + ed['category']['name']">
+            > [[ed['sub_category']['display_name'] ]]
+          </span>
+          <span ng-show="im.day()" ng-class="day">
+            Day [[im.day()]]
+          </span>
+          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
+          </span>
+          <a href="javascript:void(0)" class="text-danger" ng-if="isMissingRequiredFields()"
+            tooltip="Missing fields: [[missingRequiredFields().join(', ')]]">
+            <span class="glyphicon glyphicon-exclamation-sign"></span>
+          </a>
+        </div>
+      </span>
+    </div>
+  </script>
+
+  <script>
+    initClipper(
+      {{all_trip_plans_json|safe}},
+      {{all_datatype_values.to_json_str()|safe}});
+  </script>
+</body>
+</html>

@@ -44,7 +44,11 @@ class PlaceDetails(object):
             address=js['formatted_address'],
             latlng=data.LatLng(lat=location['lat'], lng=location['lng']),
             address_precision='Precise',  # TODO
+            phone_number=js.get('international_phone_number') or js.get('formatted_phone_number'),
+            website=js.get('website'),
+            opening_hours=PlaceDetails.parse_opening_hours(js.get('opening_hours')),
             rating=js.get('rating'),
+            rating_max=5,
             source_url=js.get('url'),
             photo_urls=PlaceDetails.make_photo_urls(js.get('photos', ())),
             google_reference=js['reference'],
@@ -107,3 +111,22 @@ class PlaceDetails(object):
                 if t in types:
                     return sub_category
         return None
+
+    @staticmethod
+    def parse_opening_hours(hours_json):
+        if not hours_json:
+            return None
+        tohour = lambda p: int(str(p['time'])[:2])
+        tominute = lambda p: int(str(p['time'])[2:])
+        periods = []
+        for period_json in hours_json.get('periods', ()):
+            open_ = period_json['open']
+            close_ = period_json.get('close')
+            period = data.OpeningPeriod(
+                open_['day'], tohour(open_), tominute(open_),
+                close_ and close_['day'], close_ and tohour(close_), close_ and tominute(close_))
+            periods.append(period)
+        hours = data.OpeningHours(opening_periods=periods)
+        hours.source_text = hours.as_string
+        return hours
+

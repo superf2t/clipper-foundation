@@ -67,24 +67,52 @@ class Tag(serializable.Serializable):
         self.text = text
 
 class OpeningPeriod(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('day', 'hour_open', 'minute_open',
-        'hour_close', 'minute_close')
+    PUBLIC_FIELDS = serializable.fields('day_open', 'hour_open', 'minute_open',
+        'day_close', 'hour_close', 'minute_close', 'as_string')
 
-    def __init__(self, day=None, hour_open=None, minute_open=None,
-            hour_close=None, minute_close=None):
-        self.day = day
+    DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+    def __init__(self, day_open=None, hour_open=None, minute_open=None,
+            day_close=None, hour_close=None, minute_close=None):
+        self.day_open = day_open
         self.hour_open = hour_open
         self.minute_open = minute_open
+        self.day_close = day_close
         self.hour_close = hour_close
         self.minute_close = minute_close
+        self.initialize()
+
+    def initialize(self):
+        if not self.day_open:
+            self.as_string = None
+            return
+        if self.day_close is None:
+            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d'
+        elif self.day_open == self.day_close:
+            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d-%(hour_close)02d:%(minute_close)02d'
+        else:
+            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d - %(day_close)s %(hour_close)02d:%(minute_close)02d'
+        self.as_string = format % {
+            'day_open': self.DAY_NAMES[self.day_open],
+            'hour_open': self.hour_open,
+            'minute_open': self.minute_open,
+            'day_close': self.DAY_NAMES[self.day_close] if self.day_close is not None else None,
+            'hour_close': self.hour_close,
+            'minute_close': self.minute_close,
+        }
 
 class OpeningHours(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('source_text',
-        serializable.objlistf('opening_periods', OpeningPeriod))
+        serializable.objlistf('opening_periods', OpeningPeriod),
+        'as_string')
 
     def __init__(self, source_text=None, opening_periods=()):
         self.source_text = source_text
         self.opening_periods = opening_periods or []
+        self.initialize()
+
+    def initialize(self):
+        self.as_string = '\n'.join(p.as_string for p in self.opening_periods if p.as_string)
 
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
@@ -119,7 +147,7 @@ class Entity(serializable.Serializable):
         self.address = address
         self.address_precision = address_precision
         self.phone_number = phone_number
-        self.opening_hours = opening_hours
+        self.opening_hours = opening_hours or OpeningHours()
         self.website = website
 
         self.rating = rating

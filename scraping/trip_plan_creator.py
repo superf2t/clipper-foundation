@@ -1,25 +1,31 @@
 import urlparse
 
 import data
+from database import user
 import geocode
 import google_places
+from scraping import default_article_parser
 from scraping import html_parsing
 from scraping import lets_go
 from scraping import nomadic_matt
+from scraping import nytimes_36hours_current
 import utils
 
 class TripPlanCreator(object):
-    def __init__(self, url, creator=None, trip_plan_name=None, parser_type_name=None):
+    def __init__(self, url, creator_id=None, parser_type_name=None):
         self.url = url
-        self.creator = creator
-        self.trip_plan_name = trip_plan_name
+        self.creator_id = creator_id
         self.parser_type_name = parser_type_name
 
     def get_creator(self):
-        if self.creator:
-            return self.creator
-        host = urlparse.urlparse(self.url).netloc.lower().lstrip('www.')
-        return 'admin@%s' % host
+        if self.creator_id:
+            db_user = user.User.query.get(self.creator_id)
+        else:
+            host = urlparse.urlparse(self.url).netloc.lower().lstrip('www.')
+            creator_email = 'admin@%s' % host
+            db_user = user.User.get_by_email(creator_email)
+        assert db_user
+        return data.DisplayUser(db_user.public_id, db_user.display_name)
 
     def parse_full(self):
         trip_plan = self.parse_candidate()
@@ -28,9 +34,7 @@ class TripPlanCreator(object):
     def parse_candidate(self):
         parser = make_article_parser(self.url, self.parser_type_name)
         trip_plan = parser.make_raw_trip_plan()
-        trip_plan.creator = self.get_creator()
-        if self.trip_plan_name:
-            trip_plan.trip_plan_name = self.trip_plan_name
+        trip_plan.user = self.get_creator()
         return trip_plan
 
 def augment_trip_plan(raw_trip_plan):
@@ -60,7 +64,7 @@ def augment_entity(entity, latlng_dict=None):
     else:
         return entity.copy()
 
-ALL_PARSERS = (lets_go.LetsGo, nomadic_matt.NomadicMatt)
+ALL_PARSERS = (lets_go.LetsGo, nomadic_matt.NomadicMatt, nytimes_36hours_current.Nytimes36HoursCurrent)
 
 def make_article_parser(url, parser_type_name=None):
     if parser_type_name:
@@ -71,7 +75,14 @@ def make_article_parser(url, parser_type_name=None):
         for parser_class in ALL_PARSERS:
             if parser_class.can_parse(url):
                 return parser_class(url, html_parsing.parse_tree(url))
+        return default_article_parser.DefaultArticleParser(url, html_parsing.parse_tree(url))
     return None
+
+def canonicalize_url(url):
+    for parser_class in ALL_PARSERS:
+        if parser_class.can_parse(url):
+            return parser_class.canonicalize(url)
+    return url
 
 def main(cmd, input):
     if cmd in ('full', 'candidate'):

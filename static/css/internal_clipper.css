@@ -1,0 +1,196 @@
+.trip-plan-panel {
+  margin: 10px;  
+}
+
+.trip-plan-panel .control-links {
+  margin-top: 5px;
+}
+
+.trip-plan-panel .control-links a {
+  margin-right: 10px;
+}
+
+.trip-plan-panel .location-section {
+  margin: 5px 0;
+}
+
+.trip-plan-panel .location-name {
+  color: #000;
+}
+
+.trip-plan-panel .cover-image-preview {
+  height: 40px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: 50% 50%;
+}
+
+.trip-plan-panel .description {
+  white-space: pre-line;
+  text-align: justify;
+}
+
+.entity-panel {
+  margin: 10px 0;
+}
+
+.entity-panel .create-new-place-link {
+  margin: 5px 10px;
+}
+
+.entity-panel .num-entities {
+  margin: 0 10px;
+  color: #000;
+  font-size: 12pt;
+}
+
+.one-entity-listing:hover {
+  background-color: #ccc;
+  cursor: pointer;
+}
+
+.edit-trip-plan-panel {
+  margin: 10px;
+}
+
+.edit-trip-plan-panel .controls {
+  position: relative;
+  height: 40px;
+}
+
+.edit-trip-plan-panel .save-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.edit-trip-plan-panel .edit-input {
+  margin-bottom: 10px;
+}
+
+.edit-trip-plan-panel .description-input {
+  height: 200px;
+}
+
+.edit-trip-plan-panel .map-container {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 10px;
+}
+
+.edit-trip-plan-panel .cover-image {
+  max-width: 100%;
+  text-align: center;
+}
+
+.edit-trip-plan-panel .cover-image,
+.edit-trip-plan-panel .no-cover-image {
+  margin-bottom: 10px;
+}
+
+.edit-entity-panel {
+  margin: 10px;
+}
+
+.edit-entity-panel .map-container {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 10px;
+}
+
+.edit-entity-panel .controls {
+  position: relative;
+  height: 40px;
+}
+
+.edit-entity-panel .save-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.edit-entity-panel .edit-input {
+  margin-bottom: 10px;
+}
+
+.edit-entity-panel .description-input {
+  height: 150px;
+}
+
+.edit-entity-panel .favorite {
+  position: absolute;
+  top: 4px;
+  right: 0;
+}
+
+.edit-entity-panel .rating-inputs input[type=number] {
+  width: 50px;
+  padding: 3px;
+  display: inline-block;
+}
+
+.edit-entity-panel .photo-carousel {
+  width: 100%;
+  height: 150px;
+  text-align: center;
+  margin: 10px 0;
+  position: relative;
+}
+
+.edit-entity-panel .photo-carousel .carousel-img-container {
+  width: calc(100% - 30px);
+  height: 100%;
+  position: relative;
+  display: inline-block;
+}
+
+.edit-entity-panel .carousel-img-container .img-overlay-control {
+  position: absolute;
+  width: 100%;
+}
+
+.edit-entity-panel .carousel-img-container .img-overlay-control a {
+  color: #fff;
+}
+
+.edit-entity-panel .carousel-img-container .img-overlay-control a:hover {
+  color: #2D73A0;
+}
+
+.edit-entity-panel .carousel-img-container .img-overlay-control.top {
+  top: 5px;
+}
+
+.edit-entity-panel .carousel-img-container .img-overlay-control.bottom {
+  bottom: 5px;
+}
+
+.edit-entity-panel .photo-carousel .carousel-img-container img {
+  max-width: 100%;
+  max-height: 100%;
+  cursor: pointer;
+  vertical-align: top;
+}
+
+.edit-entity-panel .photo-carousel .img-carousel-control {
+  position: absolute;
+  vertical-align: middle;
+  top: 50%;
+}
+
+.edit-entity-panel .photo-carousel .img-carousel-control.left {
+  left: 0;
+}
+
+.edit-entity-panel .photo-carousel .img-carousel-control.right {
+  right: 0;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+.rel-pos {
+  position: relative;
+}
