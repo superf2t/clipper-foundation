@@ -75,8 +75,14 @@ def internal_clipper_iframe():
         current_trip_plan = parse_response.trip_plan
         all_trip_plans.append(current_trip_plan)
 
-    sorted_trip_plans = sorted(all_trip_plans,
-        cmp=lambda x, y: -1 if x is current_trip_plan else x.compare(y))
+    def comp(x, y):
+        if x is current_trip_plan:
+            return -1
+        if y is current_trip_plan:
+            return 1
+        return x.compare(y)
+
+    sorted_trip_plans = sorted(all_trip_plans, cmp=comp)
     return render_template('internal_clipper_iframe.html',
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
         all_datatype_values=values.ALL_VALUES)
