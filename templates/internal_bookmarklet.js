@@ -427,9 +427,20 @@
     $(document.body).on('keyup', handleKeyup);
     markListenerForCleanup($(document.body), 'keyup', handleKeyup);
 
+    var closeSearchPanelOnBodyClick = function() {
+      hideSearchPanel();
+    };
+
     function showSearchPanel() {
       $('#__tc-place-search-results').html('').hide();
       $('#__tc-search-panel').css({left: mouseX - 30, top: mouseY + 10}).show();
+      $(document.body).one('click', closeSearchPanelOnBodyClick);
+    }
+    markListenerForCleanup($(document.body), 'click', closeSearchPanelOnBodyClick);
+
+    function hideSearchPanel() {
+      $('#__tc-search-panel').hide();
+      $(document.body).off('click', closeSearchPanelOnBodyClick);
     }
 
     function showPlaceSearchResults(results) {
@@ -496,7 +507,7 @@
       } else if (messageName == 'tc-show-place-search-results') {
         showPlaceSearchResults(data['results']);
       } else if (messageName == 'tc-close-search-panel') {
-        $('#__tc-search-panel').hide();
+        hideSearchPanel();
       }
     };
 
