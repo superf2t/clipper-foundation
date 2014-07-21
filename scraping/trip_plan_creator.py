@@ -5,6 +5,7 @@ from database import user
 import geocode
 import google_places
 from scraping import default_article_parser
+from scraping import fodors_guide
 from scraping import frommers_guide
 from scraping import html_parsing
 from scraping import lets_go
@@ -66,6 +67,7 @@ def augment_entity(entity, latlng_dict=None):
         return entity.copy()
 
 ALL_PARSERS = (
+    fodors_guide.FodorsGuide,
     frommers_guide.FrommersGuide,
     lets_go.LetsGo,
     nomadic_matt.NomadicMatt,

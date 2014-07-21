@@ -63,9 +63,11 @@ class ArticleParser(object):
         return self._location
 
     def make_raw_trip_plan(self):
+        self._lookup_location()
         return data.TripPlan(name=self.get_title(), description=self.get_description(),
             cover_image_url=self.get_cover_image_url(), source_url=self.get_source_url(),
-            location_name=self.get_location_name(), location_latlng=self.get_location_latlng(),
+            location_name=self._location.get_name() if self._location else self.get_location_name(),
+            location_latlng=self.get_location_latlng(),
             location_bounds=self.get_location_bounds(),
             entities=self.get_entities())        
 
