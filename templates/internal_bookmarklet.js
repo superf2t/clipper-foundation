@@ -405,8 +405,16 @@
       }
     };
 
+    var clearTextSelectionOnMousedown = function(event) {
+      if (lastTextSelection) {
+        lastTextSelection = null;
+      }
+    };
+
     $(document.body).on('mouseup', handleTextSelection);
+    $(document.body).on('mousedown', clearTextSelectionOnMousedown)
     markListenerForCleanup($(document.body), 'mouseup', handleTextSelection);
+    markListenerForCleanup($(document.body), 'mousedown', clearTextSelectionOnMousedown);
 
     var handleKeyup = function(event) {
       var message = {
