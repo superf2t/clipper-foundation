@@ -64,7 +64,16 @@
       margin: auto;
       text-align: center;
       position: relative;
-      top: 25%;
+      top: 15%;
+    }
+
+    .admin-cta-box {
+      width: 360px;
+      height: 190px;
+      margin: auto;
+      text-align: center;
+      position: relative;
+      top: 20%;
     }
 
     .cta-backdrop {
@@ -140,6 +149,30 @@
         </div>
         <div>
           Click on the bookmark as you browse travel sites around the web to automatically import places to your trip plan.
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-cta-box">
+      <div class="cta-backdrop">
+      </div>
+      <div class="cta-content">
+        <div class="text-main">
+          TravelClipper Admin Bookmark
+        </div>
+        <div>
+          Drag this to your bookmarks bar
+        </div>
+        <div class="bookmark-section">
+          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{internal_bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
+          onclick="event.stopPropagation(); event.preventDefault()">
+            <span class="bookmarklet-link">
+              <span class="glyphicon glyphicon-paperclip"></span> Travel Clipper Admin
+            </span>
+          </a>
+        </div>
+        <div>
+          Use this to clip travel guides and articles.
         </div>
       </div>
     </div>

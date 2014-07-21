@@ -35,7 +35,9 @@ def index():
 
 @app.route('/get_clipper')
 def get_clipper():
-    return render_template('get_clipper.html', bookmarklet_url=constants.BASE_URL + '/bookmarklet.js')
+    return render_template('get_clipper.html',
+        bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
+        internal_bookmarklet_url=constants.BASE_URL  + '/internal_bookmarklet.js')
 
 @app.route('/clipper_iframe')
 def clipper_iframe():
