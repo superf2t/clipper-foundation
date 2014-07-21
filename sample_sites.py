@@ -24,7 +24,7 @@ class SampleSite(serializable.Serializable):
             'location': urllib.quote_plus(location_name) if location_name else None,
             'lat': location_latlng.lat if location_latlng else None,
             'lng': location_latlng.lng if location_latlng else None,
-            'query': urllib.quote_plus(query) if query else None,
+            'query': urllib.quote_plus(query.encode('utf-8')) if query else None,
         }
 
     def resolve_search_url(self, location_name, location_latlng, query=None):
