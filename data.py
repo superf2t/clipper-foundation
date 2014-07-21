@@ -97,7 +97,7 @@ class Entity(serializable.Serializable):
         'starred', serializable.objlistf('comments', Comment),
         'description', 'primary_photo_url',
         serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
-        'source_url', 'origin_trip_plan_id', 'google_reference',
+        'source_url', 'origin_trip_plan_id', 'google_reference', 'last_access',
         'day', 'day_position')
 
     def __init__(self, entity_id=None, name=None, latlng=None,
@@ -107,7 +107,8 @@ class Entity(serializable.Serializable):
             rating=None, rating_max=None, review_count=None, 
             starred=None, comments=(),
             description=None, primary_photo_url=None, photo_urls=(), tags=(),
-            source_url=None, origin_trip_plan_id=None, google_reference=None, 
+            source_url=None, origin_trip_plan_id=None, google_reference=None,
+            last_access=None, last_access_datetime=None,
             day=None, day_position=None):
         self.entity_id = entity_id
         self.name = name
@@ -135,6 +136,9 @@ class Entity(serializable.Serializable):
         self.source_url = source_url
         self.origin_trip_plan_id = origin_trip_plan_id
         self.google_reference = google_reference
+        self.last_access = last_access
+        if last_access_datetime:
+            self.set_last_access_datetime(last_access_datetime)
 
         self.day = day  # Deprecated
         self.day_position = day_position  # Deprecated
@@ -155,6 +159,14 @@ class Entity(serializable.Serializable):
             if comment.comment_id == comment_id:
                 return self.comments.pop(i)
         return None
+
+    def last_access_datetime(self):
+        if not self.last_access:
+            return None
+        return date_parser.parse(self.last_access)
+
+    def set_last_access_datetime(self, d):
+        self.last_access = d.isoformat()
 
     @staticmethod
     def chronological_cmp(e1, e2):

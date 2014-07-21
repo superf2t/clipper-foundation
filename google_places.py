@@ -1,6 +1,9 @@
+import datetime
 import json
 import httplib2
 import urllib2
+
+from dateutil import tz
 
 import constants
 import data
@@ -44,7 +47,8 @@ class PlaceDetails(object):
             rating=js.get('rating'),
             source_url=js.get('url'),
             photo_urls=PlaceDetails.make_photo_urls(js.get('photos', ())),
-            google_reference=js['reference']
+            google_reference=js['reference'],
+            last_access_datetime=datetime.datetime.now(tz.tzutc())
             )
 
     @staticmethod

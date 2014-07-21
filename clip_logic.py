@@ -1,5 +1,8 @@
+import datetime
 import re
 import urlparse
+
+from dateutil import tz
 
 import data
 import scrape_logic
@@ -15,7 +18,7 @@ def entity_from_scraper(scr, url):
         address=scr.get_address(), latlng=latlng, 
         address_precision=scr.get_location_precision(), rating=scr.get_rating(),
         primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
-        source_url=scr.get_source_url())
+        source_url=scr.get_source_url(), last_access_datetime=datetime.datetime.now(tz.tzutc()))
 
 def scrape_entities_from_url(url, page_source=None, force_fetch_page=False,
         max_results=None, allow_expansion=True):
