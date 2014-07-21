@@ -5,6 +5,7 @@ from database import user
 import geocode
 import google_places
 from scraping import default_article_parser
+from scraping import frommers_guide
 from scraping import html_parsing
 from scraping import lets_go
 from scraping import nomadic_matt
@@ -64,7 +65,11 @@ def augment_entity(entity, latlng_dict=None):
     else:
         return entity.copy()
 
-ALL_PARSERS = (lets_go.LetsGo, nomadic_matt.NomadicMatt, nytimes_36hours_current.Nytimes36HoursCurrent)
+ALL_PARSERS = (
+    frommers_guide.FrommersGuide,
+    lets_go.LetsGo,
+    nomadic_matt.NomadicMatt,
+    nytimes_36hours_current.Nytimes36HoursCurrent)
 
 def make_article_parser(url, parser_type_name=None):
     if parser_type_name:

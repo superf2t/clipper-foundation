@@ -15,7 +15,7 @@ class ArticleParser(object):
         self._queried_for_location = False
 
     def get_title(self):
-        return html_parsing.tostring(self.root.find(self.TITLE_XPATH))
+        return html_parsing.tostring(self.root.xpath(self.TITLE_XPATH)[0])
 
     def get_description(self):
         return None
