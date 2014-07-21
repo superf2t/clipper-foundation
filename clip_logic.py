@@ -13,13 +13,23 @@ import utils
 def entity_from_scraper(scr, url):
     latlng_json = scr.get_latlng()
     latlng = data.LatLng.from_json_obj(latlng_json) if latlng_json else None
-    return data.Entity(name=scr.get_entity_name(),
+    return data.Entity(
+        name=scr.get_entity_name(),
+        latlng=latlng,
         category=scr.get_category(), sub_category=scr.get_sub_category(),
+        address=scr.get_address(),  
+        address_precision=scr.get_location_precision(),
+        phone_number=scr.get_phone_number(),
+        opening_hours=scr.get_opening_hours(),
+        website=scr.get_website(),
+        rating=scr.get_rating(),
+        rating_max=scr.get_rating_max(),
+        review_count=scr.get_review_count(),
         description=scr.get_description(),
-        address=scr.get_address(), latlng=latlng, 
-        address_precision=scr.get_location_precision(), rating=scr.get_rating(),
-        primary_photo_url=scr.get_primary_photo(), photo_urls=scr.get_photos(),
-        source_url=scr.get_source_url(), last_access_datetime=datetime.datetime.now(tz.tzutc()))
+        primary_photo_url=scr.get_primary_photo(),
+        photo_urls=scr.get_photos(),
+        source_url=scr.get_source_url(),
+        last_access_datetime=datetime.datetime.now(tz.tzutc()))
 
 def scrape_entities_from_url(url, page_source=None, force_fetch_page=False,
         max_results=None, allow_expansion=True):

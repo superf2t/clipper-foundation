@@ -228,7 +228,8 @@
       #__tc-search-panel,
       #__tc-place-search,
       #__tc-geocode-search,
-      #__tc-place-search-results {
+      #__tc-place-search-results,
+      #__tc-search-spinner {
         display: none;
       }
 
@@ -264,6 +265,10 @@
       .__tc-result-addr {
         font-size: 9pt;
         color: #777;
+      }
+
+      .__tc-result-category {
+        font-style: italic;
       }
 
       .__tc-img-select {
@@ -305,12 +310,15 @@
         <div id="__tc-place-search">
           <div>Search for place:</div>
           <div>
-            <a href="javascript:void(0)" onclick="__tcSearch(\'google\')">
+            <a href="javascript:void(0)" onclick="__tcSearch()">
               <img src="//maps.gstatic.com/favicon3.ico"/>
             </a>
-            <a href="javascript:void(0)" onclick="__tcSearch(\'yelp\')">
+            <a href="javascript:void(0)" onclick="__tcSearch(\'www.yelp.com\')">
               <img src="//yelp.com/favicon.ico"/>
             </a>
+          </div>
+          <div id="__tc-search-spinner">
+            <img src="https://{{host}}/static/img/spinner2.gif"/>
           </div>
           <div id="__tc-place-search-results">
           </div>
@@ -318,7 +326,7 @@
         <div id="__tc-geocode-search">
           <div>Search for address:</div>
           <div>
-            <a href="javascript:void(0)" onclick="__tcSearch(\'google\')">
+            <a href="javascript:void(0)" onclick="__tcSearch()">
               <img src="//maps.gstatic.com/favicon3.ico"/>
             </a>
           </div>
@@ -406,6 +414,10 @@
     };
 
     var clearTextSelectionOnMousedown = function(event) {
+      var searchPanel = $('#__tc-search-panel');
+      if (searchPanel.length && (searchPanel.has(event.target).length || searchPanel[0] == event.target)) {
+        return;
+      }
       if (lastTextSelection) {
         lastTextSelection = null;
       }
@@ -428,6 +440,10 @@
     markListenerForCleanup($(document.body), 'keyup', handleKeyup);
 
     var closeSearchPanelOnBodyClick = function() {
+      var searchPanel = $('#__tc-search-panel');
+      if (searchPanel.length && (searchPanel.has(event.target).length || searchPanel[0] == event.target)) {
+        return;
+      }
       hideSearchPanel();
     };
 
@@ -440,6 +456,7 @@
 
     function hideSearchPanel() {
       $('#__tc-search-panel').hide();
+      entityResults = [];
       $(document.body).off('click', closeSearchPanelOnBodyClick);
     }
 
@@ -447,6 +464,7 @@
       $('#__tc-search-panel').show();
       $('#__tc-place-search').show();
       $('#__tc-geocode-search').hide();
+      $('#__tc-search-spinner').hide();
       var resultsParent = $('#__tc-place-search-results').html('').show();
       $.each(results, function(i, result) {
         resultsParent.append($([
@@ -463,12 +481,38 @@
       });
     }
 
+    var entityResults = [];
+
+    function showEntitySearchResults(entities) {
+      $('#__tc-search-panel').show();
+      $('#__tc-place-search').show();
+      $('#__tc-geocode-search').hide();
+      $('#__tc-search-spinner').hide();
+      entityResults = entities;
+      var resultsParent = $('#__tc-place-search-results').html('').show();
+      $.each(entities, function(i, entity) {
+        resultsParent.append($([
+          '<div class="__tc-search-result"' ,
+            'onclick="__tcSelectEntity(\'', i, '\')">',
+            '<div class="__tc-result-name">', entity['name'], '</div>',
+            '<div>',
+              '<span class="__tc-result-category">',
+                entity['category'] && entity['category']['display_name'],
+              '</span>',
+              ' | ',
+              '<span class="__tc-result-addr">', entity['address'], '</span>',
+            '</div>',
+          '</div>'].join('')));
+      });   
+    }
+
     window['__tcSearch'] = function(siteName) {
       var message = {
         message: 'tc-do-entity-search',
         siteName: siteName
       };
       iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+      $('#__tc-search-spinner').show();
     };
     window['__tcGlobals'].push('__tcSearch');
 
@@ -480,6 +524,15 @@
       iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
     };
     window['__tcGlobals'].push('__tcSelectResult');
+
+    window['__tcSelectEntity'] = function(entityIndex) {
+      var message = {
+        message: 'tc-entity-result-selected',
+        entity: entityResults[entityIndex]
+      };
+      iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+    };
+    window['__tcGlobals'].push('__tcSelectEntity');
 
     var handleMessages = function(event) {
       var data = event.originalEvent.data;
@@ -506,6 +559,8 @@
         $('#__tc-geocode-search').show();
       } else if (messageName == 'tc-show-place-search-results') {
         showPlaceSearchResults(data['results']);
+      } else if (messageName == 'tc-show-entity-search-results') {
+        showEntitySearchResults(data['entities']);
       } else if (messageName == 'tc-close-search-panel') {
         hideSearchPanel();
       }

@@ -261,7 +261,23 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     });
   };
 
-  $scope.searchByPlaceName = function(placeName) {
+  $scope.searchByPlaceName = function(placeName, siteHost) {
+    if (!siteHost) {
+      $scope.googleTextSearch(placeName);
+    } else {
+      $scope.siteSearch(placeName, siteHost);
+    }
+  };
+
+  $scope.siteSearch = function(placeName, siteHost) {
+    $entityService.sitesearchtoentities(siteHost, $stateModel.tripPlan, placeName, 5)
+      .success(function(response) {
+        $messageProxy.showEntitySearchResults(response['entities']);
+      });
+  };
+
+
+  $scope.googleTextSearch = function(placeName) {
     var request = {
       query: placeName,
       bounds: $stateModel.bounds()
@@ -321,6 +337,24 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
       });
   };
 
+  $scope.incorporateEntity = function(entity, opt_includeAllFields) {
+    if (opt_includeAllFields) {
+      _.extend($scope.ed, entity);
+    } else {
+      var entityFields = _.pick(entity,
+        'name', 'address', 'address_precision', 'latlng',
+        'phone_number', 'website', 'opening_hours',
+        'category', 'sub_category', 'source_url', 'google_reference');
+      _.extend($scope.ed, entityFields);      
+    }
+    if (!_.isEmpty($scope.ed['latlng'])) {
+      var latlng = gmapsLatLngFromJson($scope.ed['latlng']);
+      $scope.mapState.marker.setPosition(latlng);
+      $scope.mapState.map.setCenter(latlng);
+      $scope.mapState.map.setZoom(15);
+    }
+  };
+
   $scope.setActiveField = function(fieldName) {
     $scope.activeFieldName = fieldName;
     if (fieldName) {
@@ -377,19 +411,14 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
   $scope.$on('place-result-selected', function(event, reference) {
     $entityService.googleplacetoentity(reference)
       .success(function(response) {
-        var entityFields = _.pick(response['entity'],
-          'name', 'address', 'address_precision', 'latlng',
-          'phone_number', 'website', 'opening_hours',
-          'category', 'sub_category', 'source_url', 'google_reference');
-        _.extend($scope.ed, entityFields);
-        if (!_.isEmpty($scope.ed['latlng'])) {
-          var latlng = gmapsLatLngFromJson($scope.ed['latlng']);
-          $scope.mapState.marker.setPosition(latlng);
-          $scope.mapState.map.setCenter(latlng);
-          $scope.mapState.map.setZoom(15);
-        }
+        $scope.incorporateEntity(response['entity']);
         $messageProxy.sendMessage('tc-close-search-panel');
       });
+  });
+
+  $scope.$on('entity-result-selected', function(event, entity) {
+    $scope.incorporateEntity(entity, true);
+    $messageProxy.sendMessage('tc-close-search-panel');
   });
 
   $messageProxy.setShortcutMessage(ENTITY_SHORTCUT_KEYS);
@@ -469,6 +498,10 @@ function MessageProxy($window, $rootScope) {
     this.sendMessage('tc-show-place-search-results', {'results': results});
   };
 
+  this.showEntitySearchResults = function(entities) {
+    this.sendMessage('tc-show-entity-search-results', {'entities': entities});
+  };
+
   this.sendMessage = function(messageName, data) {
     var message = _.extend({message: messageName}, data);
     $window.parent.postMessage(message, '*');
@@ -485,6 +518,8 @@ function MessageProxy($window, $rootScope) {
       $rootScope.$broadcast('do-entity-search', data['siteName']);
     } else if (messageName == 'tc-place-result-selected') {
       $rootScope.$broadcast('place-result-selected', data['reference']);
+    } else if (messageName == 'tc-entity-result-selected') {
+      $rootScope.$broadcast('entity-result-selected', data['entity']);
     }
   };
 
