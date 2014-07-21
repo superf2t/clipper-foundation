@@ -12,6 +12,7 @@ from scraping import lets_go
 from scraping import nomadic_matt
 from scraping import nytimes_36hours_current
 from scraping import nytimes_36hours_old
+from scraping import tripadvisor_3days
 from scraping import united_hemispheres
 import utils
 
@@ -75,6 +76,7 @@ ALL_PARSERS = (
     nomadic_matt.NomadicMatt,
     nytimes_36hours_current.Nytimes36HoursCurrent,
     nytimes_36hours_old.Nytimes36HoursOld,
+    tripadvisor_3days.TripAdvisor3Days,
     united_hemispheres.UnitedHemispheres)
 
 def make_article_parser(url, parser_type_name=None):
