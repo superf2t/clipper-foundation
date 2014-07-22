@@ -4,6 +4,7 @@ import data
 from database import user
 import geocode
 import google_places
+from scraping import bon_appetit_guide
 from scraping import default_article_parser
 from scraping import fodors_guide
 from scraping import frommers_guide
@@ -73,6 +74,7 @@ def augment_entity(entity, latlng_dict=None):
         return entity.copy()
 
 ALL_PARSERS = (
+    bon_appetit_guide.BonAppetitGuide,
     fodors_guide.FodorsGuide,
     frommers_guide.FrommersGuide,
     lets_go.LetsGo,
