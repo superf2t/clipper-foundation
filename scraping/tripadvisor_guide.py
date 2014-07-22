@@ -7,15 +7,18 @@ import clip_logic
 import data
 from scraping import html_parsing
 
-class TripAdvisor3Days(article_parser.ArticleParser):
+class TripAdvisorGuide(article_parser.ArticleParser):
     URL_REGEX = re.compile('(http://www\.tripadvisor\.com/Guide-.+\.html).*')
 
     TITLE_XPATH = './/h1[@id="HEADING"]'
     COVER_IMAGE_URL_XPATH = './/div[contains(@class, "guideOverview")]//img/@src'
 
     def get_location_name(self):
-        if '3 days in' in self.get_title():
-            return self.get_title().replace('3 days in ', '')
+        page_header_node = self.root.xpath('.//h1[contains(@class, "header")]')
+        if page_header_node:
+            page_header = html_parsing.tostring(page_header_node[0])
+            if 'Travel Guide for' in page_header:
+                return page_header.replace('Travel Guide for ', '')
         return None
 
     def get_description(self):
