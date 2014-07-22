@@ -51,7 +51,19 @@ class ArticleParser(object):
         entities = self.get_raw_entities()
         for entity in entities:
             entity.entity_id = data.generate_entity_id()
+
+        entity_overrides_dict = self.get_entity_overrides()
+        if entity_overrides_dict:
+            entities_by_source_url = dict((e.source_url, e) for e in entities)
+            for source_url, override in entity_overrides_dict.iteritems():
+                entity = entities_by_source_url.get(source_url)
+                if entity and override:
+                    entity.update(override)
+
         return entities
+
+    def get_entity_overrides(self):
+        return {}
 
     def get_location_name(self):
         return None
