@@ -1,3 +1,8 @@
+# Sample usage with a dirty text file of urls,
+# separated by tabs or newlins, possibly
+# with extraneous quotes from the CSV export and empty lines:
+# cat <file> | tr '\t' '\n' | sed 's/"//g' | grep '^http' | python scraping/bulk_guide_creator.py
+
 import datetime
 import fileinput
 import time
@@ -9,7 +14,7 @@ from scraping import trip_plan_creator
 import serviceimpls
 
 GUIDE_USER = 'travel@unicyclelabs.com'
-SLEEP_TIME_SECS = 2
+SLEEP_TIME_SECS = 1
 
 def main(infile):
     db_user = user.User.get_by_email(GUIDE_USER)

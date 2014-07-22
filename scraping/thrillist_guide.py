@@ -1,5 +1,3 @@
-# TODO:
-# Add ability to override entity descriptions with those that come from the guide.
 import re
 
 from dateutil import parser as date_parser
