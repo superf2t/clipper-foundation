@@ -1,5 +1,4 @@
 import datetime
-import re
 
 from dateutil import parser as date_parser
 from dateutil import tz
@@ -806,7 +805,7 @@ class TripPlanService(service.Service):
     def validate_collaborator_operations(self, operations):
         for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
             if not add_op.operation.invitee_email:
-                self.validation_errors.append(op.missingfield('invitee_email'))
+                self.validation_errors.append(add_op.missingfield('invitee_email'))
         self.raise_if_errors()
 
     def validate_mutate_collaborators_editability(self, operations):

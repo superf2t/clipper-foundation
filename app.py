@@ -9,7 +9,6 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import url_for
-from flask.ext import login as flask_login
 from flask.ext import user as flask_user
 from flask.ext.user import current_user
 
