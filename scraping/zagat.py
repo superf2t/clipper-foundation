@@ -2,13 +2,17 @@ import data
 from scraping import html_parsing
 from scraping.html_parsing import tostring
 from scraping import scraped_page
+from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
 from scraping.scraped_page import fail_returns_empty
 from scraping.scraped_page import fail_returns_none
 import values
 
 class ZagatScraper(scraped_page.ScrapedPage):
     HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
-        '^http(s)?://www\.zagat\.com/(r|n)/.+$')
+        '^http(s)?://www\.zagat\.com/(r|n)/.+$',
+        ('^http(s)?://www\.zagat\.com/l/.+/.+$',
+            scraped_page.result_page_expander('.//div[contains(@class, "case")]//div[@class="text"]//a'),
+            REQUIRES_SERVER_PAGE_SOURCE))
 
     NAME_XPATH = './/h1'
     PHONE_NUMBER_XPATH = './/div[@class="place-resume"]//span[@itemprop="postalCode"]/following-sibling::text()'
@@ -34,6 +38,10 @@ class ZagatScraper(scraped_page.ScrapedPage):
         elif 'club' in category_text:
             return values.SubCategory.NIGHTCLUB
         return values.SubCategory.RESTAURANT
+
+    @fail_returns_none
+    def get_description(self):
+        return self.root.xpath('.//p[@itemprop="reviewBody"]/text()')[0].strip()
 
     @fail_returns_none
     def get_primary_photo(self):

@@ -16,6 +16,7 @@ from scraping import nytimes_36hours_old
 from scraping import thrillist_guide
 from scraping import tripadvisor_guide
 from scraping import united_hemispheres
+from scraping import zagat_guide
 import utils
 
 class TripPlanCreator(object):
@@ -81,7 +82,8 @@ ALL_PARSERS = (
     nytimes_36hours_old.Nytimes36HoursOld,
     thrillist_guide.ThrillistGuide,
     tripadvisor_guide.TripAdvisorGuide,
-    united_hemispheres.UnitedHemispheres)
+    united_hemispheres.UnitedHemispheres,
+    zagat_guide.ZagatGuide)
 
 def make_article_parser(url, parser_type_name=None):
     if parser_type_name:
