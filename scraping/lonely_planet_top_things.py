@@ -1,8 +1,6 @@
 import re
 
 import article_parser
-import data
-from scraping import html_parsing
 
 class LonelyPlanetTopThings(article_parser.ArticleParser):
     URL_REGEX = re.compile('(http://www\.lonelyplanet\.com/.+/things-to-do).*')

@@ -1,8 +1,6 @@
 import re
 
 import article_parser
-import data
-from scraping import html_parsing
 
 class Nytimes36HoursCurrent(article_parser.ArticleParser):
     URL_REGEX = re.compile('(http://www\.nytimes\.com/2014/\d+/\d+/travel/36-hours-.+\.html).*')

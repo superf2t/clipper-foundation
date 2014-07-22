@@ -1,8 +1,6 @@
 import re
 
 import article_parser
-import data
-from scraping import html_parsing
 
 class FodorsGuide(article_parser.ArticleParser):
     URL_REGEX = re.compile('(http://www\.fodors\.com/world/.+/feature_\d+\.html).*$')

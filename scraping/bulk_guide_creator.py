@@ -27,7 +27,7 @@ def main(infile):
         req = serviceimpls.ParseTripPlanRequest(url=url)
         try:
             resp = service.parsetripplan(req)
-        except Exception as e:
+        except Exception:
             logprint(lf, 'Error: %s\n%s\n-----' % (url, traceback.format_exc()))
             continue
         logprint(lf, 'Completed parsing (%d): "%s"' % (

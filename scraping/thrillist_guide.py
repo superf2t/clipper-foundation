@@ -6,7 +6,6 @@ from dateutil import parser as date_parser
 from dateutil import tz
 
 import article_parser
-import data
 from scraping import html_parsing
 from scraping.scraped_page import fail_returns_none
 

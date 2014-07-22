@@ -1,6 +1,5 @@
 import urlparse
 
-import data
 from scraping import html_parsing
 from scraping.html_parsing import tostring
 from scraping import scraped_page

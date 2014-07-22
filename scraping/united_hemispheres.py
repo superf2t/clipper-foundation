@@ -1,7 +1,6 @@
 import re
 
 import article_parser
-import data
 from scraping import html_parsing
 
 class UnitedHemispheres(article_parser.ArticleParser):
