@@ -43,8 +43,11 @@ def parallelize(fn, args_list, max_threads=50):
         in_queue.put((args, index))
 
     def target():
-        while not in_queue.empty():
-            args, index = in_queue.get()
+        while True:
+            try:
+                args, index = in_queue.get(block=False)
+            except Queue.Empty:
+                return
             value = fn(*args)
             out_queue.put((value, index))
 
@@ -53,6 +56,7 @@ def parallelize(fn, args_list, max_threads=50):
     for _ in xrange(num_threads):
         thread = threading.Thread(target=target)
         threads.append(thread)
+        thread.daemon = True
         thread.start()
     for thread in threads:
         thread.join()
