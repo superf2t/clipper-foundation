@@ -15,6 +15,7 @@ from scraping import hotels_dot_com
 from scraping import hyatt
 from scraping import lonely_planet
 from scraping import starwood
+from scraping import thrillist
 from scraping import tripadvisor
 from scraping import wikipedia
 from scraping import yelp
@@ -31,6 +32,7 @@ ALL_SCRAPERS = (
     hyatt.HyattScraper,
     lonely_planet.LonelyPlanetScraper,
     starwood.StarwoodScraper,
+    thrillist.Thrillist,
     tripadvisor.TripAdvisorScraper,
     wikipedia.WikipediaScraper,
     yelp.YelpScraper,
