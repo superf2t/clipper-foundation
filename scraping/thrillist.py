@@ -4,13 +4,17 @@ import data
 from scraping import html_parsing
 from scraping.html_parsing import tostring
 from scraping import scraped_page
+from scraping.scraped_page import REQUIRES_SERVER_PAGE_SOURCE
 from scraping.scraped_page import fail_returns_empty
 from scraping.scraped_page import fail_returns_none
 import values
 
 class Thrillist(scraped_page.ScrapedPage):
     HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
-        '^http(s)?://www\.thrillist\.com/venues/.+$')
+        '^http(s)?://www\.thrillist\.com/venues/.+$',
+        ('^http(s)?://www\.thrillist\.com/(eat|drink|entertainment)/.+$',
+            scraped_page.result_page_expander('.//div[contains(@class, "slide")]//div[@class="caption"]//a[1]'),
+            REQUIRES_SERVER_PAGE_SOURCE),)
 
     NAME_XPATH = './/h1[@itemprop="name"]'
     PHONE_NUMBER_XPATH = './/ul[@class="venue-details"]//a[@itemprop="telephone"]/text()'
@@ -21,7 +25,7 @@ class Thrillist(scraped_page.ScrapedPage):
         return html_parsing.join_element_text_using_xpaths(self.root,
             ['.//ul[@class="venue-details"]//li[@itemprop="address"]//a//span'])
 
-    def get_address_precision(self):
+    def get_location_precision(self):
         return 'Precise'
 
     @fail_returns_none

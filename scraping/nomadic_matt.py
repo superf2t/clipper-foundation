@@ -5,7 +5,7 @@ import data
 from scraping import html_parsing
 
 class NomadicMatt(article_parser.ArticleParser):
-    URL_REGEX = re.compile('^http://www\.nomadicmatt\.com/travel-guides/.+$')    
+    URL_REGEX = re.compile('^(http://www\.nomadicmatt\.com/travel-guides/.+)$')    
 
     TITLE_XPATH = './/div[@id="guides"]/h3[@class="page_title"]'
     COVER_IMAGE_URL_XPATH = ".//div[@id='guides']/p[1]/img/@src"
@@ -26,6 +26,6 @@ class NomadicMatt(article_parser.ArticleParser):
         entities = []
         for item in items:
             raw_text  = html_parsing.tostring(item).strip()
-            name, desc = re.split(u'\s?(?:\u2013|-)\s?', raw_text, 1, re.UNICODE)[:2]
+            name, desc = re.split(u'\s?(?:\u2013|-|:)\s?', raw_text, 1, re.UNICODE)[:2]
             entities.append(data.Entity(name=name, description=desc))
         return entities

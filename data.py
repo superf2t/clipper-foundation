@@ -240,7 +240,8 @@ class TripPlan(serializable.Serializable):
             entities=(), notes=(),
             creator=None, user=None, editors=(), invitee_emails=(),
             last_modified=None, status=Status.ACTIVE.name,
-            trip_plan_type=None, tags=(), content_date=None,
+            trip_plan_type=None, tags=(),
+            content_date=None, content_date_datetime=None,
             view_count=0, clip_count=0):
         self.trip_plan_id = trip_plan_id
         self.name = name
@@ -257,6 +258,8 @@ class TripPlan(serializable.Serializable):
         self.trip_plan_type = trip_plan_type
         self.tags = tags or []
         self.content_date = content_date
+        if content_date_datetime:
+            self.set_content_date_datetime(content_date_datetime)
         self.view_count = view_count
         self.clip_count = clip_count
 
@@ -353,6 +356,14 @@ class TripPlan(serializable.Serializable):
 
     def set_last_modified_datetime(self, d):
         self.last_modified = d.isoformat()
+
+    def content_date_datetime(self):
+        if not self.content_date:
+            return None
+        return date_parser.parse(self.content_date)
+
+    def set_content_date_datetime(self, d):
+        self.content_date = d.isoformat()
 
     def strip_readonly_fields(self):
         self.entities = ()

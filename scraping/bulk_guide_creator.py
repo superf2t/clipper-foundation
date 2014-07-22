@@ -5,6 +5,7 @@ import traceback
 
 import data
 from database import user
+from scraping import trip_plan_creator
 import serviceimpls
 
 GUIDE_USER = 'travel@unicyclelabs.com'
@@ -19,6 +20,9 @@ def main(infile):
         datetime.datetime.now().strftime('%Y%m%d-%H-%M-%S'), 'w')
     for line in infile:
         url = line.strip()
+        if not trip_plan_creator.has_parser(url):
+            logprint(lf, 'Unable to find parser: %s' % url)
+            continue
         logprint(lf, 'Beginning parsing on %s' % url)
         req = serviceimpls.ParseTripPlanRequest(url=url)
         try:

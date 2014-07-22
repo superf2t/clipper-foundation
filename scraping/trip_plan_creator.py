@@ -13,6 +13,7 @@ from scraping import lonely_planet_top_things
 from scraping import nomadic_matt
 from scraping import nytimes_36hours_current
 from scraping import nytimes_36hours_old
+from scraping import thrillist_guide
 from scraping import tripadvisor_guide
 from scraping import united_hemispheres
 import utils
@@ -78,6 +79,7 @@ ALL_PARSERS = (
     nomadic_matt.NomadicMatt,
     nytimes_36hours_current.Nytimes36HoursCurrent,
     nytimes_36hours_old.Nytimes36HoursOld,
+    thrillist_guide.ThrillistGuide,
     tripadvisor_guide.TripAdvisorGuide,
     united_hemispheres.UnitedHemispheres)
 
@@ -92,6 +94,12 @@ def make_article_parser(url, parser_type_name=None):
                 return parser_class(url, html_parsing.parse_tree(url))
         return default_article_parser.DefaultArticleParser(url, html_parsing.parse_tree(url))
     return None
+
+def has_parser(url):
+    for parser_class in ALL_PARSERS:
+        if parser_class.can_parse(url):
+            return True
+    return False
 
 def canonicalize_url(url):
     for parser_class in ALL_PARSERS:

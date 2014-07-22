@@ -11,13 +11,3 @@ class FodorsGuide(article_parser.ArticleParser):
 
     def get_location_name(self):
         return self.root.xpath('.//div[contains(@class, "main-content")]//h1/text()')[0]
-
-    def get_description(self):
-        return None
-
-    def get_raw_entities(self):
-        return []
-
-    @classmethod
-    def canonicalize(cls, url):
-        return cls.URL_REGEX.match(url).group(1)

@@ -1,3 +1,8 @@
+import urlparse
+
+from lxml import etree
+
+import clip_logic
 import data
 import geocode
 from scraping import html_parsing
@@ -7,6 +12,8 @@ class ArticleParser(object):
 
     TITLE_XPATH = ''
     COVER_IMAGE_URL_XPATH = None
+
+    ALLOW_ENTITY_SCRAPING = False
 
     def __init__(self, url, tree):
         self.url = url
@@ -30,7 +37,14 @@ class ArticleParser(object):
     def get_source_url(self):
         return type(self).canonicalize(self.url)
 
+    # Return a datetime object in UTC.
+    def get_content_date_datetime(self):
+        return None
+
     def get_raw_entities(self):
+        if self.ALLOW_ENTITY_SCRAPING:
+            return clip_logic.scrape_entities_from_url(self.url,
+                page_source=etree.tostring(self.root), for_guide=True)
         return ()
 
     def get_entities(self):
@@ -69,7 +83,12 @@ class ArticleParser(object):
             location_name=self._location.get_name() if self._location else self.get_location_name(),
             location_latlng=self.get_location_latlng(),
             location_bounds=self.get_location_bounds(),
-            entities=self.get_entities())        
+            entities=self.get_entities(),
+            content_date_datetime=self.get_content_date_datetime(),
+            trip_plan_type=data.TripPlanType.GUIDE.name)        
+
+    def absolute_url(self, relative_url):
+        return urlparse.urljoin(self.url, relative_url)
 
     @classmethod
     def can_parse(cls, url):
@@ -77,4 +96,6 @@ class ArticleParser(object):
 
     @classmethod
     def canonicalize(cls, url):
+        if cls.URL_REGEX:
+            return cls.URL_REGEX.match(url).group(1)
         return url

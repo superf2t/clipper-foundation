@@ -1151,7 +1151,6 @@ class AdminService(service.Service):
         tp_creator = trip_plan_creator.TripPlanCreator(request.url,
             self.session_info.db_user.id, request.parser_type)
 
-
         if request.augment_entities:
             trip_plan = tp_creator.parse_full()
         else:

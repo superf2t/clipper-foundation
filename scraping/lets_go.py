@@ -7,7 +7,7 @@ from scraping import html_parsing
 import utils
 
 class LetsGo(article_parser.ArticleParser):
-    URL_REGEX = re.compile('^http://www\.letsgo\.com/[a-z]+$')    
+    URL_REGEX = re.compile('^(http://www\.letsgo\.com/[a-z]+)$')    
 
     TITLE_XPATH = './/div[@class="title-desc-inner"]//h1'
     COVER_IMAGE_URL_XPATH = ".//div[contains(@class, 'banner-image')]//img/@data-src"

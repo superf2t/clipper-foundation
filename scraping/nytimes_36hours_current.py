@@ -5,7 +5,7 @@ import data
 from scraping import html_parsing
 
 class Nytimes36HoursCurrent(article_parser.ArticleParser):
-    URL_REGEX = re.compile('http://www\.nytimes\.com/2014/\d+/\d+/travel/36-hours-.+')
+    URL_REGEX = re.compile('(http://www\.nytimes\.com/2014/\d+/\d+/travel/36-hours-.+\.html).*')
 
     TITLE_XPATH = './/h1[@itemprop="headline"]'
     COVER_IMAGE_URL_XPATH = './/div[@class="lede-container"]//div[@class="image"]/img/@src'
@@ -17,13 +17,3 @@ class Nytimes36HoursCurrent(article_parser.ArticleParser):
 
     def get_description(self):
         return self.root.xpath('.//p[@id="story-continues-1"]/text()')[0]
-
-    def get_raw_entities(self):
-        return []
-
-    @classmethod
-    def canonicalize(cls, url):
-        idx = url.find('?')
-        if idx > -1:
-            return url[:idx]        
-        return url

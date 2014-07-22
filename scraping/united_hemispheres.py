@@ -18,10 +18,3 @@ class UnitedHemispheres(article_parser.ArticleParser):
     def get_description(self):
         return html_parsing.tostring(
             self.root.xpath('.//div[@class="excerpt"]/p')[0])
-
-    def get_raw_entities(self):
-        return []
-
-    @classmethod
-    def canonicalize(cls, url):
-        return cls.URL_REGEX.match(url).group(1)
