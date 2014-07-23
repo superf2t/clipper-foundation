@@ -167,7 +167,13 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
   };
 }
 
-function AdminEntityCtrl($scope, $taxonomy) {
+function AdminEntityCtrl($scope, $entityService, $taxonomy) {
+  $scope.settings = {
+    placeNameLooksUpMetadata: true,
+    addressLooksUpLatlng: true
+  };
+  $scope.loadingMetadata = false;
+
   this.createMarker = function(latlng, opt_map) {
     var marker = new google.maps.Marker({
       draggable: true,
@@ -221,16 +227,43 @@ function AdminEntityCtrl($scope, $taxonomy) {
     return null;
   };
 
+  $scope.placeChanged = function(place) {
+    if (!place['reference']) {
+      return;
+    }
+    $scope.entity['name'] = place['name'];
+    if ($scope.settings.placeNameLooksUpMetadata) {
+      $scope.loadingMetadata = true;
+      $entityService.googleplacetoentity(place['reference'])
+        .success(function(response) {
+          var entityFields = _.pick(response['entity'],
+            'name', 'address', 'address_precision', 'latlng',
+            'phone_number', 'website', 'opening_hours',
+            'category', 'sub_category', 'source_url', 'google_reference');
+          _.extend($scope.entity, entityFields);  
+          $scope.setMapToGooglePlace(place);  
+          $scope.loadingMetadata = false;
+        });
+    }
+  };
+
   $scope.addressChanged = function(place) {
     if (!place['reference']) {
       return;
     }
+    $scope.entity['address'] = place['formatted_address'];
+    if ($scope.settings.addressLooksUpLatlng) {
+      $scope.setMapToGooglePlace(place);
+    }
+  };
+
+  $scope.setMapToGooglePlace = function(place) {
     var geometry = place['geometry'];
     var location = geometry && geometry['location'];
     $scope.entity['latlng'] = latlngFromGmaps(location);
     marker.setPosition(location);
     $scope.entityMap.setCenter(location);
-    $scope.entity['address'] = place['formatted_address'];
+    $scope.entityMap.setZoom(15);
   };
 
   $scope.markAsDeleted = function() {
@@ -369,12 +402,10 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
   angular.module('adminEditorModule', ['initialDataModule', 'servicesModule',
       'directivesModule', 'filtersModule', 'ui.bootstrap', ],
       interpolator)
-    .controller('AdminEditorCtrl', ['$scope', '$modal', '$tripPlan', '$entities',
-      '$taxonomy', '$tripPlanService', '$entityService', '$adminService',
-      AdminEditorCtrl])
-    .controller('AdminEntityCtrl', ['$scope', '$taxonomy', AdminEntityCtrl])
-    .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl])
-    .service('$adminService', ['$http', AdminService])
+    .controller('AdminEditorCtrl', AdminEditorCtrl)
+    .controller('AdminEntityCtrl', AdminEntityCtrl)
+    .controller('AdminEntityPhotoCtrl', AdminEntityPhotoCtrl)
+    .service('$adminService', AdminService)
     .directive('tcBasicDropTarget', tcBasicDropTarget)
     .directive('tcEntityIcon', tcEntityIcon);
 

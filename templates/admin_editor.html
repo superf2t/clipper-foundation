@@ -121,8 +121,23 @@
         <div class="row full-height">
           <div class="col-md-4">
             <div class="entity-name">
-              <input type="text" class="form-control" ng-model="entity['name']"
-                placeholder="Place name"/>
+              <p class="input-group">
+                <input type="text" class="form-control" ng-model="entity['name']"
+                  placeholder="Place name"
+                  tc-google-place-autocomplete
+                  search-bounds-json="tripPlan['location_bounds']"
+                  on-place-change="placeChanged($newPlace)"/>
+                <span class="input-group-btn">
+                  <button class="btn btn-default" tooltip="Toggle augmentation"
+                    ng-click="settings.placeNameLooksUpMetadata = !settings.placeNameLooksUpMetadata"
+                    ng-class="{'augmentation-active': settings.placeNameLooksUpMetadata}">
+                    <span class="glyphicon glyphicon-download"></span>
+                  </button>
+                </span>
+                <span class="loading-spinner" ng-show="loadingMetadata">
+                  <img src="/static/img/spinner-small.gif"/>
+                </span>
+              </p>
             </div>
             <div class="entity-description">
               <textarea class="form-control" ng-model="entity['description']"
@@ -188,10 +203,20 @@
           </div>
           <div class="col-md-3 full-height">
             <div class="entity-address">
-              <input type="text" class="form-control" ng-model="entity['address']"
-                placeholder="Address"
-                tc-google-place-autocomplete
-                on-place-change="addressChanged($newPlace)"/>
+              <p class="input-group">
+                <input type="text" class="form-control" ng-model="entity['address']"
+                  placeholder="Address"
+                  tc-google-place-autocomplete location-types="geocode"
+                  search-bounds-json="tripPlan['location_bounds']"
+                  on-place-change="addressChanged($newPlace)"/>
+                <span class="input-group-btn">
+                  <button class="btn btn-default" tooltip="Toggle augmentation"
+                    ng-click="settings.addressLooksUpLatlng = !settings.addressLooksUpLatlng"
+                    ng-class="{'augmentation-active': settings.addressLooksUpLatlng}">
+                    <span class="glyphicon glyphicon-download"></span>
+                  </button>
+                </span>
+              </p>
             </div>
             <div class="entity-map-container">
               <div class="entity-map" tc-google-map map="entityMap"
