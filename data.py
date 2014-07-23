@@ -216,7 +216,7 @@ class Note(serializable.Serializable):
         self.day_position = day_position
         self.status = status
 
-TripPlanType = enums.enum('GUIDE')
+TripPlanType = enums.enum('NONE', 'GUIDE')
 
 class TripPlan(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'name',

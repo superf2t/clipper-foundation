@@ -79,6 +79,12 @@
           <div>
             <input type="text" class="form-control" disabled="1" ng-model="tripPlan['content_date']"/>
           </div>
+          <div class="trip-plan-type">
+            <input type="checkbox" id="trip-plan-type-input"
+              ng-model="tripPlan['trip_plan_type']"
+              ng-true-value="GUIDE" ng-false-value="NONE"/>
+            <label for="trip-plan-type-input">Is a featured guide</label>
+          </div>
         </div>
         <div class="col-md-4">
           <h3>Cover Image</h3>
