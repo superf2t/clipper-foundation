@@ -39,8 +39,8 @@ class BonAppetitGuide(article_parser.ArticleParser):
         for obj in parsed_js['relatedContent']:
             item = obj['item']
             img_url = item['body']['photo']['images']['image'][0]['source']
-            desc_html = item['subHeaders']['subHeader']['text']
-            desc_html_no_metadata = re.sub('<em>.*</em>', '', desc_html)
+            desc_html = item['subHeaders']['subHeader']['text'].strip().encode('utf-8')
+            desc_html_no_metadata = re.sub('<em>.*</em>$', '', desc_html)
             desc = html_parsing.tostring(html_parsing.parse_tree_from_string('<foo>%s</foo>' % desc_html_no_metadata))
             entities.append(data.Entity(photo_urls=[img_url], description=desc))
         return entities
