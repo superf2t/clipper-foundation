@@ -8,7 +8,6 @@ import article_parser
 from scraping import html_parsing
 from scraping.scraped_page import fail_returns_none
 
-
 class ZagatGuide(article_parser.ArticleParser):
     URL_REGEX = re.compile('(http://www\.zagat\.com/l/.+/.+)')
 
@@ -16,9 +15,11 @@ class ZagatGuide(article_parser.ArticleParser):
 
     ALLOW_ENTITY_SCRAPING = True
 
+    @fail_returns_none
     def get_location_name(self):
         return urlparse.urlparse(self.url).path.split('/')[2].replace('-', ' ')
 
+    @fail_returns_none
     def get_description(self):
         return html_parsing.tostring(
             self.root.xpath('.//div[@itemprop="description"]')[0])
