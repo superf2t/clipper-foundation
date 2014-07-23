@@ -15,14 +15,12 @@ def make_guide_configs(*args_list):
     return tuple(GuideConfig(*args) for args in args_list)
 
 GUIDES = make_guide_configs(
-    ('London', (51.5073509, -0.1277583), (
-        123,
-        456,
-        )),
-    ('Paris', (48.856614, 2.3522219), (
-        789,
-        012,
-        )),
+    ('London', (51.5073509, -0.1277583), ()),
+    ('Paris', (48.856614, 2.3522219), ()),
+    ('New York City', (40.7127837, -74.0059413), ()),
+    ('Bangkok', (13.7278956, 100.5241235), ()),
+    ('Barcelona', (41.3850639, 2.1734035), ()),
+    ('Rome', (41.8723889, 12.4801802), ()),
     )
 
 GUIDES_BY_CITY = dict((config.city_name, config) for config in GUIDES)
