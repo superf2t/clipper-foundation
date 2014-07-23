@@ -14,7 +14,6 @@ from scraping import lonely_planet_top_things
 from scraping import nomadic_matt
 from scraping import nytimes_36hours_current
 from scraping import nytimes_36hours_old
-from scraping import rick_steves_guide
 from scraping import thrillist_guide
 from scraping import tripadvisor_guide
 from scraping import united_hemispheres
@@ -83,7 +82,6 @@ ALL_PARSERS = (
     nomadic_matt.NomadicMatt,
     nytimes_36hours_current.Nytimes36HoursCurrent,
     nytimes_36hours_old.Nytimes36HoursOld,
-    rick_steves_guide.RickStevesGuide,
     thrillist_guide.ThrillistGuide,
     tripadvisor_guide.TripAdvisorGuide,
     united_hemispheres.UnitedHemispheres,

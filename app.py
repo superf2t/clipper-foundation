@@ -221,10 +221,6 @@ def admin_editor(trip_plan_id):
         all_datatype_values=values.ALL_VALUES,
         account_info=g.account_info)
 
-@app.route('/xadmin/editor/<int:trip_plan_id>')
-def xadmin_editor(trip_plan_id):
-    return admin_editor(trip_plan_id)
-
 @app.route('/admin/scrape')
 def admin_scrape():
     return render_template('admin_scrape.html',
