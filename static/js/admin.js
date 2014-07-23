@@ -15,7 +15,7 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
     }
     var d = new Date($tripPlan['content_date']);
     if (d.getTimezoneOffset()) {
-      d.setDate(d.getDate() + 1);
+      d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
     }
     return d;
   };
@@ -33,7 +33,7 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
     if (newDate && newDate !== oldDate) {
       var d = new Date(newDate);
       if (d.getTimezoneOffset()) {
-        d.setDate(d.getDate() - 1);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
       }
       $tripPlan['content_date'] = d.toISOString();
     }

@@ -134,10 +134,10 @@
                     <span class="glyphicon glyphicon-download"></span>
                   </button>
                 </span>
-                <span class="loading-spinner" ng-show="loadingMetadata">
-                  <img src="/static/img/spinner-small.gif"/>
-                </span>
               </p>
+              <div class="loading-spinner" ng-show="loadingMetadata">
+                <img src="/static/img/spinner-small.gif"/>
+              </div>
             </div>
             <div class="entity-description">
               <textarea class="form-control" ng-model="entity['description']"
