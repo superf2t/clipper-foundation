@@ -3,7 +3,6 @@ import re
 
 from dateutil import parser as date_parser
 from dateutil import tz
-from lxml import etree
 
 import article_parser
 import data
@@ -16,11 +15,11 @@ class BonAppetitGuide(article_parser.ArticleParser):
     TITLE_XPATH = './/h1'
     COVER_IMAGE_URL_XPATH = './/div[@class="start_overlay"]//img/@src'
 
+    @fail_returns_none
     def get_location_name(self):
-        if 'Where to Eat and Drink in' in self.get_title():
-            return self.get_title().replace('Where to Eat and Drink in ', '').strip()
-        return None
+        return self.get_title().split(' in ')[1].strip()
 
+    @fail_returns_none
     def get_description(self):
         return html_parsing.tostring(
             self.root.xpath('.//div[contains(@class, "intro_text")]//p')[0])
@@ -42,6 +41,6 @@ class BonAppetitGuide(article_parser.ArticleParser):
             img_url = item['body']['photo']['images']['image'][0]['source']
             desc_html = item['subHeaders']['subHeader']['text']
             desc_html_no_metadata = re.sub('<em>.*</em>', '', desc_html)
-            desc = html_parsing.tostring(etree.fromstring('<foo>%s</foo>' % desc_html_no_metadata))
+            desc = html_parsing.tostring(html_parsing.parse_tree_from_string('<foo>%s</foo>' % desc_html_no_metadata))
             entities.append(data.Entity(photo_urls=[img_url], description=desc))
         return entities
