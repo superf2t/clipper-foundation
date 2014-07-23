@@ -172,7 +172,6 @@ function AdminEntityCtrl($scope, $taxonomy) {
     var marker = new google.maps.Marker({
       draggable: true,
       position: latlng,
-      icon: '/static/img/map-icons/' + $scope.entity['icon_url'],
       map: opt_map
     });
     google.maps.event.addListener(marker, 'dragend', function() {
@@ -183,7 +182,6 @@ function AdminEntityCtrl($scope, $taxonomy) {
       entityData['latlng']['lat'] = marker.getPosition().lat();
       entityData['latlng']['lng'] = marker.getPosition().lng();
       entityData['address_precision'] = 'Precise';
-      $scope.updateMarkerIcon();
     });
     return marker;
   };
@@ -211,17 +209,16 @@ function AdminEntityCtrl($scope, $taxonomy) {
   $scope.categoryChanged = function() {
     $scope.entity['sub_category'] = $taxonomy.getSubCategoriesForCategory(
       $scope.entity['category']['category_id'])[0];
-    $scope.updateMarkerIcon();
   };
 
-  $scope.updateMarkerIcon = function() {
-    var data =  $scope.entity;
-    var iconUrl = categoryToIconUrl(
-      data['category'] && data['category']['name'],
-      data['sub_category'] && data['sub_category']['name'],
-      data['address_precision']);
-    data['icon_url'] = iconUrl;
-    marker.setIcon('/static/img/map-icons/' + iconUrl)
+  $scope.iconTemplateName = function() {
+    if ($scope.entity['sub_category'] && $scope.entity['sub_category']['sub_category_id']) {
+      return $scope.entity['sub_category']['name'] + '-icon-template';
+    }
+    if ($scope.entity['category'] && $scope.entity['category']['category_id']) {
+      return $scope.entity['category']['name'] + '-icon-template';
+    }
+    return null;
   };
 
   $scope.addressChanged = function(place) {
@@ -378,7 +375,8 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
     .controller('AdminEntityCtrl', ['$scope', '$taxonomy', AdminEntityCtrl])
     .controller('AdminEntityPhotoCtrl', ['$scope', AdminEntityPhotoCtrl])
     .service('$adminService', ['$http', AdminService])
-    .directive('tcBasicDropTarget', tcBasicDropTarget);
+    .directive('tcBasicDropTarget', tcBasicDropTarget)
+    .directive('tcEntityIcon', tcEntityIcon);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['adminEditorModule']);

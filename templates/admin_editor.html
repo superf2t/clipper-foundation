@@ -135,11 +135,24 @@
                 ng-change="categoryChanged()">
               </select>
               <select class="form-control" ng-model="entity['sub_category']"
-                ng-options="s['display_name'] for s in getSubCategories(entity['category']['category_id']) track by s['sub_category_id']"
-                ng-change="updateMarkerIcon()">
+                ng-options="s['display_name'] for s in getSubCategories(entity['category']['category_id']) track by s['sub_category_id']">
               </select>
-              <img ng-src="/static/img/map-icons/[[entity['icon_url'] ]]"/>
+              <span class="marker-icon-container">
+                <tc-entity-icon precise="entity['address_precision'] == 'Precise'"
+                  category-name="entity['category'] && entity['category']['name']"
+                  icon-template-name="iconTemplateName()">
+                </tc-entity-icon>
+              </span>
             </form>
+            <div class="entity-metadata">
+              <input type="text" class="form-control" ng-model="entity['phone_number']"
+                placeholder="Phone number"/>
+              <input type="text" class="form-control" ng-model="entity['website']"
+                placeholder="Website"/>
+              <textarea class="form-control" ng-model="entity['opening_hours']['source_text']"
+                placeholder="Opening hours">
+              </textarea>
+            </div>
             <div class="entity-source">
               <form class="form-inline" role="form">
                 <img class="source-icon" ng-src="[[entity['source_url'] | hostname | hostToIcon ]]" ng-if="entity['source_url']"/>
@@ -185,6 +198,32 @@
                 map-options="entityMapOptions" 
                 after-creation="setupEntityMap($map)">
               </div>
+            </div>
+            <div class="form-group address-precision">
+              <input type="radio" id="precision-precise-[[entity['entity_id'] ]]"
+                ng-model="entity['address_precision']" value="Precise">
+              <label for="precision-precise-[[entity['entity_id'] ]]">Precise</label>
+              <input type="radio" id="precision-imprecise-[[entity['entity_id'] ]]"
+                ng-model="entity['address_precision']" value="Imprecise">
+              <label for="precision-imprecise-[[entity['entity_id'] ]]">Imprecise</label>
+              <div class="favorite">
+                <a href="javascript:void(0)" ng-click="entity['starred'] = false"> 
+                  <span ng-show="entity['starred']" class="glyphicon glyphicon-star favorite-star">
+                  </span>
+                </a>
+                <a href="javascript:void(0)" ng-click="entity['starred'] = true">
+                  <span ng-show="!entity['starred']" class="glyphicon glyphicon-star-empty">
+                  </span>
+                </a>
+              </div>
+            </div>
+            <div class="rating-inputs">
+              Rating:
+              <input type="number" class="form-control" ng-model="entity['rating']"/>
+              out of
+              <input type="number" class="form-control" ng-model="entity['rating_max']"/>
+              Count:
+              <input type="number" class="form-control" ng-model="entity['review_count']"/>
             </div>
           </div>
           <div class="col-md-1">
@@ -237,6 +276,9 @@
       </div>
     </div>
   </script>
+
+  {% include 'map_markers.html' %}
+  {% include 'icons.html' %}
 
   <script>
     initAdminEditor(

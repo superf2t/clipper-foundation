@@ -1273,6 +1273,27 @@ function tcEntityMarker() {
   };
 }
 
+function tcEntityIcon() {
+  return {
+    restrict: 'AE',
+    scope: {
+      precise: '=',
+      categoryName: '=',
+      iconTemplateName: '='
+    },
+    controller: function($scope) {
+      $scope.getClasses = function() {
+        var classes = [];
+        if ($scope.categoryName) {
+          classes.push($scope.categoryName);
+        }
+        return classes;
+      };
+    },
+    templateUrl: 'entity-marker-template'
+  };
+}
+
 function tcSearchResultMarker() {
   return {
     restrict: 'AE',
@@ -4736,6 +4757,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcEntitySearchResult', tcEntitySearchResult)
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
+    .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .directive('tcUserIcon', tcUserIcon)
