@@ -25,6 +25,7 @@ def main(infile):
     service = serviceimpls.AdminService(session_info)
     logfile = lf = open('bulk_guide_creator_%s.log' % \
         datetime.datetime.now().strftime('%Y%m%d-%H-%M-%S'), 'w')
+    all_trip_plans_for_user = data.load_all_trip_plans_for_creator(db_user.id)
     for line in infile:
         url = line.strip()
 
@@ -34,7 +35,6 @@ def main(infile):
 
         if SKIP_IF_GUIDE_EXISTS:
             canonical_url = trip_plan_creator.canonicalize_url(url)
-            all_trip_plans_for_user = data.load_all_trip_plans_for_creator(db_user.id)
             guide_exists = False
             for trip_plan in all_trip_plans_for_user:
                 if trip_plan.source_url == canonical_url:
@@ -54,6 +54,7 @@ def main(infile):
             continue
         logprint(lf, 'Completed parsing %s (%d): "%s"' % (
             url, resp.trip_plan.trip_plan_id, resp.trip_plan.name))
+        all_trip_plans_for_user.append(resp.trip_plan)
         logprint(lf, '-----')
         time.sleep(SLEEP_TIME_SECS)
     logfile.close()
