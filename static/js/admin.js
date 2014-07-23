@@ -1,5 +1,6 @@
 function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
     $taxonomy, $tripPlanService, $entityService, $adminService) {
+  var me = this;
   $scope.tripPlan = $tripPlan;
   $scope.entities = $entities;
 
@@ -7,6 +8,36 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
   $scope.getSubCategories = function(categoryId) {
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
+
+  this.initialDate = function() {
+    if (!$tripPlan['content_date']) {
+      return null;
+    }
+    var d = new Date($tripPlan['content_date']);
+    if (d.getTimezoneOffset()) {
+      d.setDate(d.getDate() + 1);
+    }
+    return d;
+  };
+
+  $scope.contentDateState = {
+    pickerOpen: false,
+    structuredDate: me.initialDate(),
+    openPicker: function($event) {
+      $event.stopPropagation();
+      $event.preventDefault();
+      $scope.contentDateState.pickerOpen = true;
+    }
+  };
+  $scope.$watch('contentDateState.structuredDate', function(newDate, oldDate) {
+    if (newDate && newDate !== oldDate) {
+      var d = new Date(newDate);
+      if (d.getTimezoneOffset()) {
+        d.setDate(d.getDate() - 1);
+      }
+      $tripPlan['content_date'] = d.toISOString();
+    }
+  });
 
   $scope.saveSettings = {
     lookupLocationsOnSave: false

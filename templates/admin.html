@@ -70,11 +70,14 @@
         </a>
       </div>
       <div class="col-md-2">
-        <a onclick="sort('status')" href="javascript:void(0)">
-          Status
+        <a onclick="sort('location_name')" href="javascript:void(0)">
+          Location
         </a>
       </div>
       <div class="col-md-2">
+        <a onclick="sort('status')" href="javascript:void(0)">
+          Status
+        </a>
       </div>
     </div>
 
@@ -93,11 +96,12 @@
           {{trip_plan.last_modified and trip_plan.last_modified_datetime().strftime('%d %B %Y')}}
         </div>
         <div class="col-md-2">
+          {{trip_plan.location_name}}
+        </div>
+        <div class="col-md-2">
           {% if trip_plan.status == 'DELETED' %}
             (deleted)
           {% endif %}
-        </div>
-        <div class="col-md-2">
         </div>
       </div>
     {% endfor %}

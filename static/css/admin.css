@@ -60,6 +60,10 @@ html, body {
   max-width: 16px;
 }
 
+.trip-plan-settings .content-date {
+  margin-top: 15px;
+}
+
 .trip-plan-settings .trip-plan-location input {
   max-width: 600px;
 }

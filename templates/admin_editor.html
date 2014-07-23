@@ -59,12 +59,26 @@
             </textarea>
           </div>
           <div class="source">
-              <form class="form-inline" role="form">
+            <form class="form-inline" role="form">
               <img class="source-icon" ng-src="[[tripPlan['source_url'] | hostname | hostToIcon ]]" ng-if="tripPlan['source_url']"/>
               <input type="text" class="form-control" ng-model="tripPlan['source_url']"
                 placeholder="Source url"/>
             </form>
-        </div>
+          </div>
+          <div class="content-date input-group">
+            <input type="text" class="form-control" placeholder="Content date"
+              datepicker-popup="yyyy-MM-dd" ng-model="contentDateState.structuredDate"
+              is-open="contentDateState.pickerOpen" close-text="Close"/>
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-default"
+                ng-click="contentDateState.openPicker($event)">
+                <i class="glyphicon glyphicon-calendar"></i>
+              </button>
+            </span>
+          </div>
+          <div>
+            <input type="text" class="form-control" disabled="1" ng-model="tripPlan['content_date']"/>
+          </div>
         </div>
         <div class="col-md-4">
           <h3>Cover Image</h3>
