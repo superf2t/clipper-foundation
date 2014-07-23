@@ -14,6 +14,8 @@ from scraping import trip_plan_creator
 import serviceimpls
 
 GUIDE_USER = 'travel@unicyclelabs.com'
+# If a guide for the source url already exists for this user, skip.
+SKIP_IF_GUIDE_EXISTS = True
 SLEEP_TIME_SECS = 2
 
 def main(infile):
@@ -25,9 +27,24 @@ def main(infile):
         datetime.datetime.now().strftime('%Y%m%d-%H-%M-%S'), 'w')
     for line in infile:
         url = line.strip()
+
         if not trip_plan_creator.has_parser(url):
             logprint(lf, 'Unable to find parser: %s\n-----' % url)
             continue
+
+        if SKIP_IF_GUIDE_EXISTS:
+            canonical_url = trip_plan_creator.canonicalize_url(url)
+            all_trip_plans_for_user = data.load_all_trip_plans_for_creator(db_user.id)
+            guide_exists = False
+            for trip_plan in all_trip_plans_for_user:
+                if trip_plan.source_url == canonical_url:
+                    logprint(lf, 'Trip plan already exists (%d): %s' % (
+                        trip_plan.trip_plan_id, url))
+                    guide_exists = True
+                    break
+            if guide_exists:
+                continue
+
         logprint(lf, 'Beginning parsing on %s' % url)
         req = serviceimpls.ParseTripPlanRequest(url=url)
         try:
