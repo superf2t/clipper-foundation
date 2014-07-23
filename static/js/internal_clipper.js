@@ -287,7 +287,8 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     });
     var searchService = new google.maps.places.PlacesService(dummyMap);
     searchService.textSearch(request, function(results, status) {
-      if (status != google.maps.places.PlacesServiceStatus.OK) {
+      if (status != google.maps.places.PlacesServiceStatus.OK
+        && status != google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
         alert('Search failed, please try again.');
         return;
       }
