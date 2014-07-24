@@ -22,7 +22,15 @@
   </div>
   <div class="quick-info-panel">
     <div>(Logged in as <span class="account-email">{{account_info.email}}</span>)</div>
-    <div><a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]" target="_blank">View trip plan</a></div>
+    <div>
+      <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]" target="_blank">
+        View trip plan
+      </a>
+      |
+      <a ng-href="/admin/editor/photos/[[tripPlan['trip_plan_id'] ]]" target="_blank">
+        Open photo editor
+      </a>
+    </div>
   </div>
 
   <div ng-include="'save-panel-template'" onload="saveBarPosition = 'top'">

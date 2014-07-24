@@ -223,6 +223,17 @@ def admin_editor(trip_plan_id):
         all_datatype_values=values.ALL_VALUES,
         account_info=g.account_info)
 
+@app.route('/admin/editor/photos/<int:trip_plan_id>')
+def admin_photo_editor(trip_plan_id):
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
+    entity_service = serviceimpls.EntityService(g.session_info)
+    entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
+    return render_template('admin_photo_editor.html',
+        trip_plan=trip_plan,
+        entities=entities,
+        account_info=g.account_info)
+
 @app.route('/admin/scrape')
 def admin_scrape():
     return render_template('admin_scrape.html',

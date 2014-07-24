@@ -1,0 +1,424 @@
+<!doctype html>
+<html ng-app="photoEditorApp">
+<head>
+  <title>{{trip_plan.name}} - Admin Photo Editor</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/services.js"></script>  
+  <script src="/static/js/admin.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400|Nunito:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/admin.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+  <style>
+    .title {
+      margin: 15px;
+    }
+
+    .quick-links {
+      margin: 0 15px;
+    }
+
+    .one-entity {
+      margin: 15px;
+      padding: 10px;
+      height: 350px;
+      background-color: #fff;
+      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+    }
+
+    .one-entity .name {
+      font-size: 14pt;
+      font-weight: bold;
+    }
+
+    .one-entity .query {
+      font-style: italic;
+    }
+
+    .one-entity .imgs-container {
+      padding: 0;
+      height: calc(100% - 30px);
+    }
+
+    .one-entity .photo-carousel {
+      width: 100%;
+      height: calc(100% - 30px);
+      text-align: center;
+      position: relative;
+    }
+
+    .one-entity .photo-carousel .carousel-img-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      display: inline-block;
+    }
+
+    .one-entity .carousel-img-container .img-overlay-control {
+      position: absolute;
+      width: 100%;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    .one-entity .carousel-img-container .img-overlay-control a {
+      color: #fff;
+    }
+
+    .one-entity .carousel-img-container .img-overlay-control a:hover {
+      color: #2D73A0;
+    }
+
+    .one-entity .carousel-img-container .img-overlay-control.top {
+      top: 5px;
+    }
+
+    .one-entity .carousel-img-container .img-overlay-control.bottom {
+      bottom: 5px;
+    }
+
+    .one-entity .photo-carousel .carousel-img-container img {
+      max-width: 100%;
+      max-height: 100%;
+      cursor: pointer;
+      vertical-align: top;
+    }
+
+    .one-entity .photo-carousel .img-carousel-control {
+      position: absolute;
+      vertical-align: middle;
+      top: 50%;
+      z-index: 1;
+    }
+
+    .one-entity .photo-carousel .img-carousel-control.left {
+      left: 0;
+    }
+
+    .one-entity .photo-carousel .img-carousel-control.right {
+      right: 0;
+    }
+
+    .loading-img-results {
+      background-image: url('/static/img/spinner2.gif');
+      background-repeat: no-repeat;
+      background-position: center center;
+      min-width: 100px;
+      min-height: 100px;
+    }
+
+    .one-img-result {
+      display: inline-block;
+      padding: 5px;
+      max-height: 100%;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .one-img-result img {
+      max-height: 100%;
+    }
+
+    .one-img-result .resolution {
+      display: none;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .one-img-result:hover .resolution {
+      display: block;
+    }
+
+    .img-select-modal {
+      padding: 20px;
+    }
+
+    .img-select-modal .hero-img {
+      max-width: 80%;
+      max-height: 80%;
+      margin: auto;
+      text-align: center;
+    }
+
+    .img-select-modal .hero-img img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .img-select-modal .non-img-section {
+      padding-top: 20px;
+    }
+
+    .img-select-modal .img-title {
+      font-weight: bold;
+      font-size: 11pt;
+    }
+
+    .img-select-modal .resolution {
+      font-style: italic;
+    }
+
+    .img-select-modal .controls {
+      margin-top: 20px;
+      position: relative;
+    }
+
+    .img-select-modal .cancel-link {
+      position: absolute;
+      right: 0;
+      top: 5px;
+    }
+  </style>
+  <script>
+    function PhotoEditorCtrl($scope, $tripPlan, $entities) {
+      $scope.entities = $entities;
+    }
+
+    function EntityPhotoEditorCtrl($scope, $tripPlan, $entityService, $http, $window, $sce, $modal) {
+      $scope.ed = $scope.entity;
+
+      if (_.isEmpty($scope.ed['photo_urls'])) {
+        $scope.ed['photo_urls'] = [];
+      }
+      var urls = $scope.ed['photo_urls'];
+      var selectedImgIndex = urls.length ? 0 : null;
+
+      $scope.selectedImg = function() {
+        return urls[selectedImgIndex];
+      };
+
+      $scope.hasImgs = function() {
+        return urls.length > 0;
+      };
+
+      $scope.hasPrevImg = function() {
+        return selectedImgIndex > 0;
+      };
+
+      $scope.hasNextImg = function() {
+        return selectedImgIndex < (urls.length - 1);
+      };
+
+      $scope.prevImg = function() {
+        selectedImgIndex--;
+      };
+
+      $scope.nextImg = function() {
+        if ($scope.hasNextImg()) {
+          selectedImgIndex++;
+        }
+      };
+
+      $scope.setAsPrimary = function() {
+        var url = urls.splice(selectedImgIndex, 1)[0];
+        urls.splice(0, 0, url);
+        selectedImgIndex = 0;
+        $scope.saveImgs();
+      };
+
+      $scope.deletePhoto = function() {
+        urls.splice(selectedImgIndex, 1);
+        if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
+          selectedImgIndex--;
+        }
+        $scope.saveImgs();
+      };
+
+      $scope.appendPhoto = function(url, skipSave) {
+        urls.push(url);
+        selectedImgIndex = urls.length - 1;
+        if (!skipSave) {
+          $scope.saveImgs();
+        }
+      };
+
+      $scope.addAsPrimary = function(url) {
+        $scope.appendPhoto(url, true);
+        $scope.setAsPrimary();
+      };
+
+      $scope.loadingImgResults = true;
+      $scope.imgResults = [];
+      $scope.resultStart = 1;
+      $scope.imgSizes = [
+         'icon', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'huge'
+      ];
+      $scope.imgSize = {value: 'xlarge'};
+
+      $scope.loadImgResults = function() {
+        $scope.loadingImgResults = true;
+        $scope.imgResults = [];
+        var url = 'https://www.googleapis.com/customsearch/v1?q='
+        + $window.encodeURIComponent($scope.imgQuery())
+        + '&cx=011806488279685692499%3Acfgf9pxdika'
+        + '&imgSize=' + $scope.imgSize.value
+        + '&imgType=photo&searchType=image'
+        + '&start=' + $scope.resultStart
+        + '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ';
+        $http.get(url).success(function(response) {
+          $scope.imgResults = response['items'];
+          $scope.loadingImgResults = false;
+        });
+      };
+
+      $scope.searchMore = function() {
+        $scope.resultStart += 10;
+        $scope.loadImgResults();
+      };
+
+      $scope.imgQuery = function() {
+        return ($scope.ed['name'] + ' ' + $tripPlan['location_name']).trim();
+      };
+
+      $scope.openImgSelectModal = function(result) {
+        var scope = $scope.$new();
+        scope.result = result;
+        scope.trust = $sce.trustAsHtml;
+        $modal.open({
+          templateUrl: 'img-select-modal-template',
+          scope: scope
+        });
+      };
+
+      $scope.saveImgs = function() {
+        $entityService.editEntity({
+          'entity_id': $scope.ed['entity_id'],
+          'photo_urls': urls
+        }, $tripPlan['trip_plan_id'])
+          .error(function(response) {
+            $window.alert('Error while saving photos.');
+          });
+      };
+
+      $scope.loadImgResults();
+    }
+
+    function interpolator($interpolateProvider) {
+      $interpolateProvider.startSymbol('[[');
+      $interpolateProvider.endSymbol(']]');
+    }
+
+    angular.module('photoEditorApp', ['servicesModule', 'ui.bootstrap'], interpolator)
+      .controller('PhotoEditorCtrl', PhotoEditorCtrl)
+      .controller('EntityPhotoEditorCtrl', EntityPhotoEditorCtrl)
+      .value('$tripPlan', {{trip_plan.to_json_str() | safe}})
+      .value('$entities', {{to_json_str(entities) | safe}});
+  </script>
+</head>
+<body ng-controller="PhotoEditorCtrl">
+  <h2 class="title">{{trip_plan.name}} - Photo Editor</h2>
+  <div class="quick-links">
+    <a ng-href="/trip_plan/{{trip_plan.trip_plan_id}}" target="_blank">
+      View trip plan
+    </a>
+    |
+    <a ng-href="/admin/editor/photos/{{trip_plan.trip_plan_id}}" target="_blank">
+      Open admin editor
+    </a>
+  </div>
+  <div ng-repeat="entity in entities" ng-controller="EntityPhotoEditorCtrl"
+    class="one-entity">
+    <div class="container-fluid imgs-container">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="name">[[ed['name'] ]]</div>
+          <div ng-include="'photo-carousel-template'">
+          </div>
+        </div>
+        <div class="col-md-8" ng-class="{'loading-img-results': loadingImgResults}">
+          <div>
+            Results for <span class="query">[[imgQuery()]]</span>
+            <a href="javascript:void(0)" ng-click="searchMore()">
+              More results &raquo;
+            </a>
+            <select ng-model="imgSize.value" ng-change="loadImgResults()"
+              ng-options="size for size in imgSizes">
+            </select>
+          </div>
+          <div ng-include="'img-results-template'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/ng-template" id="photo-carousel-template">
+    <div class="photo-carousel">
+      <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+      <span class="carousel-img-container">
+        <div class="img-overlay-control top">
+          <a ng-click="setAsPrimary()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-picture"></span> Set as primary
+          </a>
+        </div>
+        <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+        <div class="img-overlay-control bottom">
+          <a ng-click="deletePhoto()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-trash"></span> Delete photo
+          </a>
+        </div>
+      </span>
+      <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="img-results-template">
+    <div>
+      <span ng-repeat="result in imgResults" class="one-img-result"
+        ng-click="openImgSelectModal(result)">
+        <img ng-src="[[result['image']['thumbnailLink'] ]]"/>
+        <div class="resolution">
+          [[result['image']['width'] + ' x ' + result['image']['height'] ]]
+        </div>
+      </span>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="img-select-modal-template">
+    <div class="img-select-modal">
+      <div class="hero-img">
+        <img ng-src="[[result['link'] ]]"/>
+      </div>
+      <div class="non-img-section">
+        <div class="metadata">
+          <div class="img-title">[[result['title'] ]]</div>
+          <div ng-bind-html="trust(result['snippet'])"></div>
+          <div class="resolution">
+            [[result['image']['width'] + ' x ' + result['image']['height'] ]]
+          </div>
+          <div>
+            From
+            <a ng-href="[[result['image']['contextLink'] ]]" target="_blank">
+              [[result['image']['contextLink'] ]]
+            </a>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="btn btn-primary"
+            ng-click="addAsPrimary(result['link']); $close()">
+            Set as primary
+          </button>
+          <button class="btn btn-primary"
+            ng-click="appendPhoto(result['link']); $close()">
+            Append to end
+          </button>
+          <a href="javascript:void(0)" class="cancel-link" ng-click="$close()">
+            Cancel
+          </a>
+        </div>
+      </div>
+    </div>
+  </script>
+
+</body>
+</html
