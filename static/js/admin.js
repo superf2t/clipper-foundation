@@ -1,5 +1,6 @@
 function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
-    $taxonomy, $tripPlanService, $entityService, $adminService) {
+    $taxonomy, $tripPlanService, $entityService, $adminService,
+    $photoPickerOpener) {
   var me = this;
   $scope.tripPlan = $tripPlan;
   $scope.entities = $entities;
@@ -109,6 +110,10 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
     }
   };
 
+  $scope.launchCoverPhotoPicker = function() {
+    $photoPickerOpener.open($scope.tripPlan['location_name']);
+  };
+
   $scope.coverImgDropped = function($dataTransfer) {
     var imgUrl = $dataTransfer.getData('text/uri-list');
     if (!imgUrl) {
@@ -167,7 +172,7 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
   };
 }
 
-function AdminEntityCtrl($scope, $entityService, $taxonomy) {
+function AdminEntityCtrl($scope, $entityService, $taxonomy, $timeout) {
   $scope.settings = {
     placeNameLooksUpMetadata: true,
     addressLooksUpLatlng: true
@@ -231,7 +236,6 @@ function AdminEntityCtrl($scope, $entityService, $taxonomy) {
     if (!place['reference']) {
       return;
     }
-    $scope.entity['name'] = place['name'];
     if ($scope.settings.placeNameLooksUpMetadata) {
       $scope.loadingMetadata = true;
       $entityService.googleplacetoentity(place['reference'])
@@ -245,6 +249,9 @@ function AdminEntityCtrl($scope, $entityService, $taxonomy) {
           $scope.loadingMetadata = false;
         });
     }
+    $timeout(function() {
+      $scope.entity['name'] = place['name'];
+    });
   };
 
   $scope.addressChanged = function(place) {
@@ -283,7 +290,7 @@ function AdminEntityCtrl($scope, $entityService, $taxonomy) {
   };
 }
 
-function AdminEntityPhotoCtrl($scope) {
+function AdminEntityPhotoCtrl($scope, $photoPickerOpener) {
   if (_.isEmpty($scope.entity['photo_urls'])) {
     $scope.entity['photo_urls'] = [];
   }
@@ -332,6 +339,20 @@ function AdminEntityPhotoCtrl($scope) {
     if (selectedImgIndex > 0 && selectedImgIndex > (urls.length - 1)) {
       selectedImgIndex--;
     }
+  };
+
+  $scope.launchPhotoPicker = function() {
+    var query = $scope.entity['name'] + ' ' + $scope.tripPlan['location_name'];
+    $photoPickerOpener.open(query);
+  };
+}
+
+function PhotoPickerOpener($window) {
+  this.open = function(query) {
+    var url = 'https://www.google.com/search?q='
+      + $window.encodeURIComponent(query)
+      + '&tbm=isch&tbs=isz:lt,islt:vga,itp:photo,imgo:1&cad=h';
+    $window.open(url, 'photo-picker', 'width=1000, height=500, left=0, top=500');
   };
 }
 
@@ -406,6 +427,7 @@ window['initAdminEditor'] = function(tripPlan, entities, datatypeValues) {
     .controller('AdminEntityCtrl', AdminEntityCtrl)
     .controller('AdminEntityPhotoCtrl', AdminEntityPhotoCtrl)
     .service('$adminService', AdminService)
+    .service('$photoPickerOpener', PhotoPickerOpener)
     .directive('tcBasicDropTarget', tcBasicDropTarget)
     .directive('tcEntityIcon', tcEntityIcon);
 

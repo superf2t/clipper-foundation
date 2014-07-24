@@ -91,6 +91,11 @@
           <div class="cover-img-container">
             <img ng-src="[[tripPlan['cover_image_url'] ]]"/>
           </div>
+          <div class="photo-picker-link">
+            <a href="javascript:void(0)" ng-click="launchCoverPhotoPicker()">
+              Launch photo picker
+            </a>
+          </div>
         </div>
         <div class="col-md-4">
           <h3>Location name, center, and search bounds</h3>
@@ -176,8 +181,8 @@
               </form>
             </div>
           </div>
-          <div class="col-md-4">
-            <div ng-controller="AdminEntityPhotoCtrl">
+          <div class="col-md-4 full-height">
+            <div ng-controller="AdminEntityPhotoCtrl" class="full-height">
               <div ng-if="hasImgs()" class="photo-carousel">
                 <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-chevron-left"></span>
@@ -197,6 +202,11 @@
                 </span>
                 <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
                   <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+              </div>
+              <div class="photo-picker-link">
+                <a href="javascript:void(0)" ng-click="launchPhotoPicker()">
+                  Launch photo picker
                 </a>
               </div>
             </div>

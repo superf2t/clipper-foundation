@@ -1,4 +1,5 @@
 import urllib
+import urlparse
 
 from flask import flash
 from flask import g
@@ -207,7 +208,8 @@ def adminpage():
     reverse = True if request.values.get('reverse') else False
     trip_plans = admin.fetch_trip_plans(
         sorting=request.values.get('sorting'), reverse=reverse)
-    return render_template('admin.html', trip_plans=trip_plans)
+    return render_template('admin.html', trip_plans=trip_plans,
+        source_host=lambda url: urlparse.urlparse(url).netloc.split('.')[-2])
 
 @app.route('/admin/editor/<int:trip_plan_id>')
 def admin_editor(trip_plan_id):
