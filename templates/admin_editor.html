@@ -114,7 +114,7 @@
           <div class="trip-plan-location">
             <input type="text" class="form-control" ng-model="tripPlan['location_name']"
               placeholder="Trip plan location"
-              tc-google-place-autocomplete
+              tc-google-place-autocomplete location-types="geocode"
               on-place-change="locationChanged($newPlace)"/>
             <div class="trip-plan-location-map-container">
               <div class="map" tc-google-map map="locationMap" map-options="tripPlanLocationMapOptions" 
