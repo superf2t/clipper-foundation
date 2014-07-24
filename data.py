@@ -403,7 +403,7 @@ class SessionInfo(object):
         return self._cached_public_visitor_id
 
     def is_admin(self):
-        return self.email in ('admin@unicyclelabs.com',)
+        return self.email in ('admin@unicyclelabs.com', 'travel@unicyclelabs.com')
 
     def logged_in(self):
         return bool(self.db_user)

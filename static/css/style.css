@@ -17,11 +17,11 @@ a:hover {
 }
 
 a.color-link {
-  color: #428bca;
+  color: #428bca !important;
 }
 
 a.color-link:hover {
-  color: #2D73A0;
+  color: #2D73A0 !important;
 }
 
 a.white-link {
@@ -190,6 +190,10 @@ a:hover .tc-icon svg {
 #header-plan-navigation {
   background-color: rgba(240, 240, 255, 0.8);
   padding: 0px 15px 0px 0px;
+}
+
+.navbar .admin-link a {
+  padding: 0;
 }
 
 .flashed-msgs {
