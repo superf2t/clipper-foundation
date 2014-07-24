@@ -36,7 +36,8 @@ class LonelyPlanetScraper(scraped_page.ScrapedPage):
                 street = tostring(street_node, True)
                 return '%s %s %s' % (street, city, country)
             else:
-                return self.lookup_google_place().address
+                google_place = self.lookup_google_place()
+                return google_place.address if google_place else None
 
     def get_category(self):
         url = self.url.lower()
