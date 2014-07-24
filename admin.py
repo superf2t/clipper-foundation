@@ -10,6 +10,7 @@ SORTINGS = {
     'entity_count': lambda t1, t2: cmp(len(t1.entities), len(t2.entities)),
     'last_modified': lambda t1, t2: t1.compare(t2),
     'location_name': lambda t1, t2: cmp(t1.location_name, t2.location_name),
+    'source_url': lambda t1, t2: cmp(t1.source_url, t2.source_url),
     'status': lambda t1, t2: cmp(t1.status, t2.status),
 }
 
