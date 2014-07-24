@@ -85,6 +85,10 @@
               ng-true-value="GUIDE" ng-false-value="NONE"/>
             <label for="trip-plan-type-input">Is a featured guide</label>
           </div>
+          <div class="tags">
+            <input type="text" class="form-control" placeholder="Tags (comma-separated)"
+              ng-model="tagState.rawInput"/>
+          </div>
         </div>
         <div class="col-md-4">
           <h3>Cover Image</h3>
@@ -179,6 +183,10 @@
                 <input type="text" class="form-control" ng-model="entity['source_url']"
                   placeholder="Source url"/>
               </form>
+            </div>
+            <div class="tags">
+              <input type="text" class="form-control" placeholder="Tags (comma-separated)"
+                ng-model="tagState.rawInput"/>
             </div>
           </div>
           <div class="col-md-4 full-height">
@@ -299,15 +307,17 @@
         <div>
           View the saved <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">trip plan</a>
         </div>
-        <div>
-          <a onclick="location.href = location.href" href="javascript:void(0)">Reload</a> the admin editor
-        </div>
       </div>
       <div ng-show="notAuthorized">
         <h3>Not authorized</h3>
         <div class="text-danger">
           You are not authorized to modify this trip plan.  Please sign in as an admin.
         </div>
+      </div>
+      <div class="close-button">
+        <button class="btn btn-default" ng-click="$close()">
+          Close
+        </button>
       </div>
     </div>
   </script>

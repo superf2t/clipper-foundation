@@ -40,6 +40,17 @@ function AdminEditorCtrl($scope, $modal, $tripPlan, $entities,
     }
   });
 
+  $scope.tagState = {
+    rawInput: _.pluck($tripPlan['tags'] || [], 'text').join(', ')
+  };
+  $scope.$watch('tagState.rawInput', function(tagText, oldTagText) {
+    if (tagText && tagText != oldTagText) {
+      $tripPlan['tags'] = _.map(tagText.split(','), function(item) {
+        return {'text': item.trim()};
+      });
+    }
+  });
+
   $scope.saveSettings = {
     lookupLocationsOnSave: false
   };
@@ -178,6 +189,17 @@ function AdminEntityCtrl($scope, $entityService, $taxonomy, $timeout) {
     addressLooksUpLatlng: true
   };
   $scope.loadingMetadata = false;
+
+  $scope.tagState = {
+    rawInput: _.pluck($scope.entity['tags'] || [], 'text').join(', ')
+  };
+  $scope.$watch('tagState.rawInput', function(tagText, oldTagText) {
+    if (tagText && tagText != oldTagText) {
+      $scope.entity['tags'] = _.map(tagText.split(','), function(item) {
+        return {'text': item.trim()};
+      });
+    }
+  });
 
   this.createMarker = function(latlng, opt_map) {
     var marker = new google.maps.Marker({

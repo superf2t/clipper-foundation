@@ -202,6 +202,17 @@ function EditEntityCtrl($scope, $stateModel, $entityService, $taxonomy, $message
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
 
+  $scope.tagState = {
+    rawInput: _.pluck($scope.ed['tags'] || [], 'text').join(', ')
+  };
+  $scope.$watch('tagState.rawInput', function(tagText, oldTagText) {
+    if (tagText && tagText != oldTagText) {
+      $scope.ed['tags'] = _.map(tagText.split(','), function(item) {
+        return {'text': item.trim()};
+      });
+    }
+  });
+
   // Highlighting text in the page will store to this field.
   $scope.activeFieldName = null;
 
