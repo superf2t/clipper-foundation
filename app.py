@@ -114,7 +114,10 @@ def trip_plan_by_id(trip_plan_id):
     note_service = serviceimpls.NoteService(g.session_info)
 
     current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
-    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+    if current_user and not current_user.is_anonymous() and current_user.email == 'travel@unicyclelabs.com':
+        all_trip_plans = [current_trip_plan]
+    else:
+        all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
