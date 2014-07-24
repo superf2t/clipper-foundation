@@ -193,7 +193,7 @@ a:hover .tc-icon svg {
 }
 
 .navbar .admin-link a {
-  padding: 0;
+  padding: 10px 0 0 0;
 }
 
 .flashed-msgs {
