@@ -9,6 +9,7 @@ def main():
         result[config.city_name_url_token] = guide_data = []
         for trip_plan in data.load_trip_plans_by_ids(config.trip_plan_ids):
             guide_data.append({
+                'id': trip_plan.trip_plan_id,
                 'name': trip_plan.name,
                 'cover_image_url': trip_plan.cover_image_url,
                 'source_url': trip_plan.source_url,

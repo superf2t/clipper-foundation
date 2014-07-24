@@ -17,8 +17,11 @@ class TravelAndLeisureGuide(article_parser.ArticleParser):
     ALLOW_ENTITY_SCRAPING = True
 
     def get_description(self):
-        return html_parsing.tostring(
-            self.root.xpath('.//div[@class="dek"]/p')[0])
+        try:
+            return html_parsing.tostring(
+                self.root.xpath('.//div[@class="dek"]/p')[0])
+        except:
+            return self.root.xpath('.//div[@class="dek"]/text()')[0].strip()
 
     @fail_returns_none
     def get_content_date_datetime(self):
