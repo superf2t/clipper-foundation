@@ -69,7 +69,12 @@ class TripAdvisorScraper(scraped_page.ScrapedPage):
             url = self.absolute_url(details_link[0])
             details_page_tree = html_parsing.parse_tree(url)
             details_node = details_page_tree.getroot().xpath('.//div[@class="articleBody"]')[0]
-            return html_parsing.join_element_text_using_xpaths(details_node, ['.//p'], '\n\n')
+            if details_node.xpath('.//p'):
+                return html_parsing.join_element_text_using_xpaths(details_node, ['.//p'], '\n\n')
+            else:
+                return html_parsing.tostring(details_node)
+        elif desc_node.xpath('.//span[@class="onShow"]'):
+            return ''.join(desc_node.xpath('.//span[@class="onShow"]/text()')).strip()
         else:
             return ''.join(desc_node.xpath('text()')).strip()
 

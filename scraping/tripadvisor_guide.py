@@ -35,7 +35,16 @@ class TripAdvisorGuide(article_parser.ArticleParser):
             if node.tag == 'h5':
                 current_day = int(node.text.replace('Day', '').strip())
             elif node.tag == 'div':
+                tags = [data.Tag(text='Day %d' % current_day)]
+
+                desc = None
+                # Items with long descriptions on the entity page will not have 'shortDesc',
+                # node, they'll have an untagged <p> tagged that contains a 'more' link.
+                desc_nodes = node.xpath('.//p[contains(@id, "shortDesc")]')
+                if desc_nodes:
+                    desc = html_parsing.tostring(desc_nodes[0])
+
                 rel_source_url = node.xpath('div[@class="guideItemInfo"]//a[@class="titleLink"]/@href')[0]
-                overrides[self.absolute_url(rel_source_url)] = data.Entity(
-                    tags=[data.Tag(text='Day %d' % current_day)])
+                overrides[self.absolute_url(rel_source_url)] = data.Entity(tags=tags, description=desc)
+
         return overrides
