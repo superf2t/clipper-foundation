@@ -38,6 +38,11 @@
       font-style: italic;
     }
 
+    .one-entity .load-imgs-button {
+      text-align: center;
+      padding-top: 100px;
+    }
+
     .one-entity .imgs-container {
       padding: 0;
       height: calc(100% - 30px);
@@ -244,13 +249,17 @@
         $scope.setAsPrimary();
       };
 
-      $scope.loadingImgResults = true;
+      $scope.loadingImgResults = false;
       $scope.imgResults = [];
       $scope.resultStart = 1;
       $scope.imgSizes = [
          'icon', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'huge'
       ];
       $scope.imgSize = {value: 'xlarge'};
+
+      $scope.hasResults = function() {
+        return $scope.imgResults && $scope.imgResults.length;
+      };
 
       $scope.loadImgResults = function() {
         $scope.loadingImgResults = true;
@@ -297,7 +306,9 @@
           });
       };
 
-      $scope.loadImgResults();
+      if (!urls.length) {
+        $scope.loadImgResults();
+      }
     }
 
     function interpolator($interpolateProvider) {
@@ -341,6 +352,11 @@
             <select ng-model="imgSize.value" ng-change="loadImgResults()"
               ng-options="size for size in imgSizes">
             </select>
+          </div>
+          <div ng-if="hasImgs() && !hasResults()" class="load-imgs-button">
+            <button class="btn btn-default" ng-click="loadImgResults()">
+              Load images
+            </button>
           </div>
           <div ng-include="'img-results-template'"></div>
         </div>
