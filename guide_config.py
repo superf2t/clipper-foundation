@@ -69,6 +69,10 @@ GUIDES = make_guide_configs(
         1234013566976744,
         827469142472552
         )),
+    ('San Francisco', (37.7749295, -122.4194155), (
+        )),
+    ('Las Vegas', (36.1699412,  -115.1398296), (
+        )),
     )
 
 GUIDES_BY_CITY = dict((config.city_name, config) for config in GUIDES)
