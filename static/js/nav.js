@@ -1,6 +1,5 @@
 // TODO:
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
-// -Show search results when creating a new trip plan.
 
 function NavCtrl($scope, $modal, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
@@ -37,20 +36,52 @@ function NavCtrl($scope, $modal, $window) {
 
 function NewTripCtrl($scope, $tripPlanService, $timeout) {
   $scope.newTripPlan = {};
+  $scope.results = null;
+  $scope.saving = false;
 
   $timeout(function() {
     $scope.focusReady = true;
   }, 300);
 
   $scope.placeChanged = function(place) {
-    if (!place['reference']) {
-      return;
+    if (!place['geometry']) {
+      return $scope.searchForPlace(place['name']);
     }
+    $scope.selectResult(place);
+  };
+
+  $scope.selectResult = function(place) {
     var oldTripName = $scope.newTripPlan['name'];
     $scope.newTripPlan = $scope.placeToTripPlanDetails(place);
     if (oldTripName) {
       $scope.newTripPlan['name'] = oldTripName;
     }
+    $scope.results = [];
+  };
+
+  $scope.searchForPlace = function(query) {
+    $scope.results = null;
+    var request = {
+      query: query
+    };
+    var dummyMap = new google.maps.Map($('<div>')[0], {
+      center: new google.maps.LatLng(0, 0)
+    });
+    var searchService = new google.maps.places.PlacesService(dummyMap);
+    searchService.textSearch(request, function(results, status) {
+      $scope.$apply(function() {
+        if (status != google.maps.places.PlacesServiceStatus.OK) {
+          alert('Search failed, please try again.');
+          return;
+        }
+        $.each(results, function(i, result) {
+          if (result['icon'].indexOf('geocode') >= 0) {
+            result['icon'] = '/static/img/place-proximity.svg';
+          }
+        });
+        $scope.results = results;
+      });
+    });
   };
 
   $scope.placeToTripPlanDetails = function(place) {

@@ -220,3 +220,17 @@
   text-align: center;
   top: 8px;
 }
+
+.new-trip-modal .one-result {
+  padding: 5px 0;
+  cursor: pointer;
+}
+
+.new-trip-modal .one-result:hover {
+  background-color: #ccc;
+}
+
+.new-trip-modal .result-icon {
+  max-width: 25px;
+  max-height: 25px;
+}

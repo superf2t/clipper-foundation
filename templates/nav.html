@@ -172,6 +172,13 @@
           tc-google-place-autocomplete location-types="geocode"
           on-place-change="placeChanged($newPlace)"/>
       </div>
+      <div class="search-results" ng-show="results && results.length">
+        <div ng-repeat="result in results" class="one-result"
+          ng-click="selectResult(result)">
+          <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+          [[result['formatted_address'] ]]
+        </div>
+      </div>
       <div ng-show="newTripPlan['location_latlng']" class="trip-name-section">
         <label for="trip-name-input">Trip Name</label>
         <input type="text" class="form-control" ng-model="newTripPlan['name']"/>
