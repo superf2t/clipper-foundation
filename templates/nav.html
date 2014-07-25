@@ -1,0 +1,93 @@
+<link rel="stylesheet" href="/static/css/nav.css"/>
+<script src="/static/js/nav.js"></script>
+
+<script type="text/ng-template" id="nav-template">
+  <nav class="navbar navbar-defaulst navbar-fixed-top main-nav" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand main-logo" href="/">TravelClipper</a>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav navbar-right right-controls">
+          <li>
+            <ul class="nav nav-pills">
+              {% if session_info.logged_in() %}
+              <li class="dropdown">
+                <a class="dropdown-toggle" href="javascript:void(0)">
+                  [[accountInfo['user']['display_name'] ]]
+                  <span class="caret"></span>
+                </a>
+                <tc-account-dropdown></tc-account-dropdown>
+              </li>
+              {% else %}
+              <li>
+                <a ng-click="openLoginModal('{{register_iframe_url}}', 'login-modal-window')"
+                  href="javascript:void(0)">
+                  Join
+                </a>
+              </li>
+              <li class="nav-pill-separator">|</li>
+              <li>
+                <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+                  href="javascript:void(0)">
+                  Log in
+                </a>
+              </li>
+              {% endif %}
+            <ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</script>
+
+<script type="text/ng-template" id="flashed-messages-template">
+  <div ng-controller="FlashedMessagesCtrl" class="ng-cloak">
+    <div class="flashed-msgs" ng-if="hasMessages()">
+      <div ng-repeat="msg in messages"
+        ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
+        <div class="flash-msg" ng-class="textClass">
+          <div class="dismiss-link">
+            <a ng-click="dismiss($index)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-remove"></span>
+            </a>
+          </div>
+          [[ msg['message'] ]]
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/ng-template" id="login-modal-template">
+  <div class="login-modal">
+    <iframe class="login-iframe" ng-src="[[iframeUrl]]">
+    </iframe>
+  </div>
+</script>
+
+<script type="text/ng-template" id="account-dropdown-template">
+  <ul class="account-dropdown dropdown-menu">
+    <li>
+      <a href="javascript:void(0)">
+        Profile
+      </a>
+    </li>
+    <li>
+      <a href="javascript:void(0)">
+        Settings
+      </a>
+    </li>
+    <li>
+      <a href="javascript:void(0)">
+        Give feedback
+      </a>
+    </li>
+    <li class="logout-item">
+      <a href="{{logout_url}}">
+        Log out
+      </a>
+    </li>
+  </ul>
+</script>

@@ -137,7 +137,6 @@ def trip_plan_by_id(trip_plan_id):
         allow_editing=allow_editing,
         needs_tutorial=needs_tutorial,
         account_info=g.account_info,
-        session_info=g.session_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
@@ -296,10 +295,13 @@ def call_after_request_callbacks(response):
     return response
 
 @app.context_processor
-def inject_login_urls():
+def inject_account_info():
     return {
         'login_iframe_url': url_for('user.login', next=request.url, iframe='1'),
+        'register_iframe_url': url_for('user.register', next=request.url, iframe='1'),
         'logout_url': url_for('user.logout', next=request.url),
+        'session_info': g.session_info,
+        'account_info': g.account_info,
     }
 
 @app.context_processor

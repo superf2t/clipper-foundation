@@ -1,0 +1,101 @@
+.navbar {
+  min-height: 40px;
+  margin-bottom: 0;
+}
+
+.navbar-brand {
+  height: 40px;
+  padding: 10px;
+}
+
+.main-logo {
+  font-family: 'Raleway';
+  font-size: 1.4em;
+}
+
+.main-nav {
+  background-color: #FFFFFF;
+  border: none;
+  -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+}
+
+.navbar .right-controls {
+  padding-right: 10px;
+}
+
+.nav-pills > li > a {
+  padding: 10px 5px;
+}
+
+.nav-pill-separator {
+  padding: 10px 0;
+}
+
+.flashed-msgs {
+  position: fixed;
+  top: 20px;
+  width: 400px;
+  left: calc(50% - 200px);
+  padding: 10px;
+  background-color: #fff;
+  z-index: 2000;
+  border: 1px solid #777;
+  border-radius: 2px;
+  text-align: center;
+}
+
+.flash-msg {
+  position: relative;
+}
+
+.flash-msg .dismiss-link {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.login-modal-window {
+  width: 600px;
+  height: 400px;
+  margin: auto;
+  overflow: hidden;
+}
+
+.login-modal-window .modal-dialog {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.login-modal {
+  width: 100%;
+  height: 100%;
+}
+
+.login-modal .login-iframe {
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  border: none;
+}
+
+.account-dropdown > li > a {
+  font-weight: 300;
+}
+
+.account-dropdown {
+  border-radius: 2px;
+  margin: 0;
+}
+
+.account-dropdown .logout-item {
+  text-align: center;
+  border-top: 1px solid black;
+}
+
+.account-dropdown .logout-item > a {
+  font-weight: 400;
+}

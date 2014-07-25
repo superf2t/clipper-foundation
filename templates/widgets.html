@@ -78,32 +78,6 @@
     background-image: none;
     cursor: pointer;
   }
-
-  .login-modal-window {
-    width: 600px;
-    height: 400px;
-    margin: auto;
-    overflow: hidden;
-  }
-
-  .login-modal-window .modal-dialog {
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  .login-modal {
-    width: 100%;
-    height: 100%;
-  }
-
-  .login-modal .login-iframe {
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    border: none;
-  }
 </style>
 
 {# TODO: Replace uses of this with tc-image-carousel directive #}
@@ -203,12 +177,5 @@
         [[result['formatted_address'] ]]
       </div>
     </div>
-  </div>
-</script>
-
-<script type="text/ng-template" id="login-modal-template">
-  <div class="login-modal">
-    <iframe class="login-iframe" ng-src="{{login_iframe_url}}">
-    </iframe>
   </div>
 </script>

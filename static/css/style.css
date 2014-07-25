@@ -162,112 +162,6 @@ a:hover .tc-icon svg {
   background-color: #1CEAFF;
 }
 
-/* Navigation */
-
-.navbar {
-  min-height: 40px;
-  margin-bottom: 0;
-}
-
-.navbar-brand {
-  height: 40px;
-  padding: 10px;
-}
-
-#logo {
-  font-family: 'Raleway';
-  font-size: 1.4em;
-}
-
-#travel-clip-navbar {
-  background-color: #FFFFFF;
-  border: none;
-  -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-}
-
-#header-plan-navigation {
-  background-color: rgba(240, 240, 255, 0.8);
-  padding: 0px 15px 0px 0px;
-}
-
-.navbar .admin-link a {
-  padding: 10px 0 0 0;
-}
-
-.flashed-msgs {
-  position: fixed;
-  top: 20px;
-  width: 400px;
-  left: calc(50% - 200px);
-  padding: 10px;
-  background-color: #fff;
-  z-index: 2000;
-  border: 1px solid #777;
-  border-radius: 2px;
-  text-align: center;
-}
-
-.flash-msg {
-  position: relative;
-}
-
-.flash-msg .dismiss-link {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-.account-cta-for-old-emails {
-  font-size: 10pt;
-  max-width: 400px;
-  padding-top: 3px;
-}
-
-#trip-plan-title {
-  width: 206px;
-}
-
-#trip-plan-title a {
-    color: #000000;
-}
-
-#trip-plan-title a:hover {
-    color: #428bca;
-}
-
-#trip-plan-title-input {
-  position: relative;
-  top: 8px;
-  width: 200px;
-  margin: 0px 3px 0px 3px;
-}
-
-#add-place-to-trip-btn {
-  margin-left: 5px;
-}
-
-#header-globe, #header-picture, #header-user, #header-globe {
-  font-size: 1.2em;
-  color: #000000;
-}
-
-#header-globe:hover, #header-picture:hover,
-#header-user:hover, #header-gear:hover,
-#add-place-to-trip-btn:hover {
-  color: #428bca;
-}
-
-#header-globe {
-  padding-top: 1px;
-}
-
-.active-view-mode #header-globe,
-.active-view-mode #header-picture {
-  color: #428bca;
-}
-
 hr.dropdown-separator {
   margin-top: 5px;
   margin-bottom: 5px;
@@ -920,30 +814,8 @@ hr.dropdown-separator {
   text-align: center;
 }
 
-.account-dropdown {
-  width: 400px;
-  padding: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
-  top: 93%;
-}
-
-.account-dropdown-login-info {
-  padding-bottom: 10px;
-}
-
 .email-entry-input {
   width: 75%;
-}
-
-.logout-link {
-  position: relative;
-  float: right;
-}
-
-.btn-login {
-  position: relative;
-  float: right;
-  top: -34px;
 }
 
 .my-trip-plans-heading {

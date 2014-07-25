@@ -1807,6 +1807,7 @@ function FilterModel() {
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
     $map, $pageStateModel, $filterModel, $searchResultState, $entityService, $allowEditing, $accountInfo) {
   var me = this;
+  $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
   $scope.MidPanelMode = MidPanelMode;
@@ -2305,41 +2306,6 @@ function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
           $scope.saving = false;
           $scope.saved = true;
         }
-      });
-  };
-}
-
-function AccountDropdownCtrl($scope, $tripPlanService, $accountInfo,
-    $tripPlan, $allTripPlans, $modal, $window) {
-  $scope.accountInfo = $accountInfo;
-  $scope.currentTripPlan = $tripPlan;
-  $scope.allTripPlans = $allTripPlans;
-
-  $scope.openLoginModal = function(windowClass) {
-    var modal = $modal.open({
-      templateUrl: 'login-modal-template',
-      windowClass: windowClass,
-      scope: $scope.$new(true)
-    });
-    $window['closeLoginModal'] = function() {
-      modal.close();
-      $window['closeLoginModal'] = null;
-    };
-  };
-
-  $scope.loadTripPlan = function(tripPlanId) {
-    location.href = '/trip_plan/' + tripPlanId;
-  };
-
-  $scope.createNewTripPlan = function() {
-    if (!$scope.accountInfo['logged_in']) {
-      alert('Please log in before creating additional trip plans');
-      return;
-    }
-    $tripPlanService.saveNewTripPlan({'name': 'My Next Trip'})
-      .success(function(response) {
-        var newTripPlanId = response['trip_plans'][0]['trip_plan_id'];
-        $scope.loadTripPlan(newTripPlanId)
       });
   };
 }
@@ -4734,6 +4700,7 @@ angular.module('filtersModule', [])
 
 window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     accountInfo, datatypeValues, allowEditing, sampleSites, initialState, flashedMessages) {
+
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
@@ -4750,14 +4717,13 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
 
-  angular.module('appModule', ['mapModule', 'initialDataModule', 
+  angular.module('appModule', ['navModule', 'mapModule', 'initialDataModule', 
       'servicesModule', 'directivesModule', 'filtersModule',
       'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', RootCtrl)
     .controller('OrganizeMenuCtrl', OrganizeMenuCtrl)
     .controller('BulkClipCtrl', BulkClipCtrl)
-    .controller('AccountDropdownCtrl', AccountDropdownCtrl)
     .controller('ItemGroupCtrl', ItemGroupCtrl)
     .controller('GuideviewItemGroupCtrl', GuideviewItemGroupCtrl)
     .controller('EntityCtrl', EntityCtrl)
