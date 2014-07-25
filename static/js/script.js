@@ -2144,10 +2144,11 @@ function createMap(tripPlanData) {
     streetViewControl: false,
     mapTypeControlOptions: {
       mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
-      position: google.maps.ControlPosition.RIGHT_BOTTOM
+      position: google.maps.ControlPosition.BOTTOM_LEFT
     },
     zoomControlOptions: {
-      position: google.maps.ControlPosition.RIGHT_TOP
+      style: google.maps.ZoomControlStyle.SMALL,
+      position: google.maps.ControlPosition.LEFT_BOTTOM
     }
   };
   var map = new google.maps.Map($('#map')[0], mapOptions);

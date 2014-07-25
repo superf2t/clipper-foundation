@@ -69,7 +69,7 @@
     </div>
   </div>
 
-  <div id="left-panel" ng-show="!pageStateModel.inNewTripPlanModal">
+  <div id="summary-panel" ng-show="!pageStateModel.inNewTripPlanModal">
     <div id="entity-container" class="entity-container"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       skip-scroll-when-in-view="true"
@@ -90,7 +90,7 @@
     </div>
   </div>
 
-  <div id="mid-panel" ng-show="!pageStateModel.inNewTripPlanModal"
+  <div id="details-panel" ng-show="!pageStateModel.inNewTripPlanModal"
     ng-class="{'closed': !pageStateModel.midPanelExpanded}"
     class="closed">
     <div ng-include="'guide-panel-template'" class="full-width full-height"
@@ -105,9 +105,9 @@
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
     tc-transitionend="updateMap()"
-    class-when-true="mid-panel-closed" after-complete="updateMap()"
+    class-when-true="details-panel-closed" after-complete="updateMap()"
     ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
-    class="mid-panel-closed">
+    class="details-panel-closed">
     <div id="map-container">
       <div id="map">
       </div>
@@ -163,31 +163,15 @@
   </script>
 
   <script type="text/ng-template" id="control-buttons-template">
-    <div id="main-control-buttons" ng-show="!pageStateModel.inNewTripPlanModal">
-      <div class="left-buttons">
-        <button class="btn btn-primary view-guide-btn" ng-click="openGuide()"
-          ng-disabled="inTutorial()">
-          <span class="glyphicon glyphicon-picture"></span>
-          Trip Details
-        </button>
-        {% if allow_editing %}
-        <span class="add-place-button-container dropdown">
-          <button class="btn btn-primary add-place-btn dropdown-toggle">
-            <span class="glyphicon glyphicon-plus"></span>
-            Add Places
-          </button>
-          <div tc-include-and-replace="add-place-mode-dropdown-template">
-          </div>
-        </span>
-        {% endif %}
-      </div>
-      {% if allow_editing %}
-      <div class="right-buttons" ng-show="!inTutorial()">
-        <button class="btn btn-primary share-btn" ng-click="openSharingSettings('sharing-settings-modal')">
-          Share
-        </button>
-      </div>
-      {% endif %}
+    <div id="map-buttons" ng-class="{'details-panel-open': pageStateModel.midPanelExpanded}">
+      <button class="btn btn-default" ng-click="openGuide()"
+        ng-show="!pageStateModel.midPanelExpanded">
+        <span class="glyphicon glyphicon-plus"></span>
+      </button>
+      <button class="btn btn-default" ng-click="closeMidPanel()"
+        ng-show="pageStateModel.midPanelExpanded">
+        <span class="glyphicon glyphicon-minus"></span>
+      </button>
     </div>
   </script>
 
