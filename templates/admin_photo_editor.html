@@ -34,13 +34,27 @@
       font-weight: bold;
     }
 
-    .one-entity .query {
-      font-style: italic;
+    .one-entity .search-form {
+      display: inline-block;
+      vertical-align: middle;
     }
 
-    .one-entity .load-imgs-button {
-      text-align: center;
-      padding-top: 100px;
+    .one-entity .search-form .wtf-bootstrap {
+      display: inline-block;
+    }
+
+    .one-entity .query-input {
+      width: 300px;
+    }
+
+    .one-entity .size-select {
+      width: 100px;
+      display: inline-block;
+    }
+
+    .one-entity .pagination {
+      position: relative;
+      left: 25px;
     }
 
     .one-entity .imgs-container {
@@ -256,6 +270,9 @@
          'icon', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'huge'
       ];
       $scope.imgSize = {value: 'xlarge'};
+      $scope.queryState = {
+        query: ($scope.ed['name'] + ' ' + $tripPlan['location_name']).trim()
+      };
 
       $scope.hasResults = function() {
         return $scope.imgResults && $scope.imgResults.length;
@@ -265,7 +282,7 @@
         $scope.loadingImgResults = true;
         $scope.imgResults = [];
         var url = 'https://www.googleapis.com/customsearch/v1?q='
-        + $window.encodeURIComponent($scope.imgQuery())
+        + $window.encodeURIComponent($scope.queryState.query)
         + '&cx=011806488279685692499%3Acfgf9pxdika'
         + '&imgSize=' + $scope.imgSize.value
         + '&imgType=photo&searchType=image'
@@ -277,13 +294,22 @@
         });
       };
 
-      $scope.searchMore = function() {
+      $scope.prevResults = function() {
+        if ($scope.resultStart == 1) {
+          return;
+        }
+        $scope.resultStart -= 10;
+        $scope.loadImgResults();
+      };
+
+      $scope.nextResults = function() {
         $scope.resultStart += 10;
         $scope.loadImgResults();
       };
 
-      $scope.imgQuery = function() {
-        return ($scope.ed['name'] + ' ' + $tripPlan['location_name']).trim();
+      $scope.newSearch = function() {
+        $scope.resultStart = 1;
+        $scope.loadImgResults();
       };
 
       $scope.openImgSelectModal = function(result) {
@@ -345,18 +371,38 @@
         </div>
         <div class="col-md-8" ng-class="{'loading-img-results': loadingImgResults}">
           <div>
-            Results for <span class="query">[[imgQuery()]]</span>
-            <a href="javascript:void(0)" ng-click="searchMore()">
-              More results &raquo;
-            </a>
-            <select ng-model="imgSize.value" ng-change="loadImgResults()"
-              ng-options="size for size in imgSizes">
-            </select>
-          </div>
-          <div ng-if="hasImgs() && !hasResults()" class="load-imgs-button">
-            <button class="btn btn-default" ng-click="loadImgResults()">
-              Load images
-            </button>
+            Results for
+            <form class="form-inline search-form" role="form" ng-submit="newSearch()">
+              <div class="input-group wtf-bootstrap">
+                <span class="input-group query-input">
+                  <input type="text" class="form-control" ng-model="queryState.query"/>
+                  <div class="input-group-btn">
+                    <button class="btn btn-default">
+                      <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                  </div>
+                </span>
+              </div>
+              <div class="input-group wtf-bootstrap">
+                <span class="size-select">
+                  <select class="form-control"
+                    ng-model="imgSize.value" ng-change="loadImgResults()"
+                    ng-options="size for size in imgSizes">
+                  </select>
+                </span>
+              </div>
+            </form>
+            <span class="pagination" ng-show="hasResults()">
+              <span ng-show="resultStart > 1">
+                <a href="javascript:void(0)" ng-click="prevResults()">
+                  &laquo; Prev results
+                </a>
+                |
+              </span>
+              <a href="javascript:void(0)" ng-click="nextResults()">
+                Next results &raquo;
+              </a>
+            </span>
           </div>
           <div ng-include="'img-results-template'"></div>
         </div>
