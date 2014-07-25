@@ -28,7 +28,8 @@
                 <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
               </li>
               <li ng-if="!activeTripPlan" class="new-trip-item">
-                <a href="javascript:void(0)">
+                <a ng-click="openNewTripModal('new-trip-modal-window')"
+                  href="javascript:void(0)">
                   <span tc-icon="trip-plan" class="trip-menu-icon"></span>
                   <span class="new-trip-text">New Trip</span>
                 </a>
@@ -125,10 +126,18 @@
   <ul class="nav-trip-plan-dropdown dropdown-menu">
     <span ng-show="allTripPlans && allTripPlans.length">
       <li class="select-trip-prompt">
-        Select trip to add places
+        <span ng-show="shoppingCartMode">
+          Select trip to add places
+        </span>
+        <span ng-show="!shoppingCartMode">
+          Select trip
+        </span>
       </li>
       <li ng-repeat="tripPlan in allTripPlans">
-        <a href="javascript:void(0)">
+        <a ng-show="shoppingCartMode" class="trip-link" href="javascript:void(0)">
+          [[tripPlan['name'] ]]
+        </a>
+        <a ng-show="!shoppingCartMode" class="trip-link" ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
           [[tripPlan['name'] ]]
         </a>
       </li>
@@ -137,9 +146,46 @@
       </li>
     </span>
     <li class="create-new-trip-link">
-      <a href="javascript:void(0)">
+      <a ng-click="openNewTripModal('new-trip-modal-window')" href="javascript:void(0)">
         Create New Trip
       </a>
     </li>
   </ul>
+</script>
+
+<script type="text/ng-template" id="new-trip-modal-template">
+  <div class="new-trip-modal" ng-controller="NewTripCtrl">
+    <div class="header">
+      Create a New Trip
+      <div class="close-link">
+        <a ng-click="$close()" href="javascript:void(0)">
+          <span class="glyphicon glyphicon-remove"></span>
+        </a>
+      </div>
+    </div>
+    <div class="new-trip-modal-body">
+      <div>
+        <label for="trip-location-input">Location</label>
+        <input type="text" class="form-control" placeholder="e.g. Paris"
+          ng-model="newTripPlan['location_name']"
+          tc-focus-on="focusReady"
+          tc-google-place-autocomplete location-types="geocode"
+          on-place-change="placeChanged($newPlace)"/>
+      </div>
+      <div ng-show="newTripPlan['location_latlng']" class="trip-name-section">
+        <label for="trip-name-input">Trip Name</label>
+        <input type="text" class="form-control" ng-model="newTripPlan['name']"/>
+      </div>
+      <div class="create-trip-button">
+        <button class="btn btn-primary"
+          ng-click="saveNewTripPlan()"
+          ng-disabled="!newTripPlan['location_latlng'] || !newTripPlan['name'] || saving">
+          Create New Trip
+        </button>
+        <div class="save-spinner" ng-show="saving">
+          <img src="/static/img/spinner-small.gif"/>
+        </div>
+      </div>
+    </div>
+  </div>
 </script>

@@ -1804,8 +1804,9 @@ function FilterModel() {
   };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $pageStateModel, $filterModel, $searchResultState, $entityService, $allowEditing, $accountInfo) {
+function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
+    $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
+    $searchResultState, $entityService, $allowEditing, $accountInfo, $allTripPlans) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -1814,6 +1815,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
   $scope.planModel = $tripPlanModel;
   $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
+  $scope.allTripPlans = $allTripPlans;
   $scope.refreshState = {
     paused: false
   };
@@ -4684,8 +4686,7 @@ angular.module('directivesModule', [])
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcIcon', tcIcon)
-  .directive('tcSvgHack', tcSvgHack)
-  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
+  .directive('tcSvgHack', tcSvgHack);
 
 function makeFilter(fn) {
   return function() {
@@ -4758,6 +4759,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .directive('tcSearchResultMarker', tcSearchResultMarker)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .directive('tcUserIcon', tcUserIcon)
+    .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)

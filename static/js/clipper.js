@@ -585,7 +585,8 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .service('$mapProxy', MapProxy)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcEntityListing', tcEntityListing)
-    .directive('tcSearchResultIcon', tcSearchResultIcon);
+    .directive('tcSearchResultIcon', tcSearchResultIcon)
+    .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);

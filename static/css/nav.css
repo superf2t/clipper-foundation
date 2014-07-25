@@ -154,9 +154,69 @@
   text-align: center;
 }
 
+.nav-trip-plan-dropdown .trip-link {
+  padding: 3px 20px;
+}
+
 .nav-trip-plan-dropdown .create-new-trip-link a {
   text-align: center;
   background-color: #4A90E2;
   color: #fff;
   padding: 10px;
+}
+
+.new-trip-modal-window .modal-dialog {
+  width: 600px;
+}
+
+.new-trip-modal {
+  padding: 20px;
+  background-color: #efefef;
+  color: #000;
+}
+
+.new-trip-modal .header {
+  position: relative;
+  font-size: 14pt;
+  font-weight: 400;
+}
+
+.new-trip-modal .header .close-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.new-trip-modal .new-trip-modal-body {
+  width: 400px;
+  margin: 30px auto 0 auto;
+}
+
+.new-trip-modal label {
+  text-align: left;
+}
+
+.new-trip-modal input[type=text] {
+  border-radius: 2px;
+}
+
+.new-trip-modal .trip-name-section {
+  margin-top: 20px;
+}
+
+.new-trip-modal .create-trip-button {
+  margin-top: 30px;
+  text-align: center;
+  position: relative;
+}
+
+.new-trip-modal .create-trip-button button {
+  padding: 10px 30px;
+}
+
+.new-trip-modal .create-trip-button .save-spinner {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  top: 8px;
 }
