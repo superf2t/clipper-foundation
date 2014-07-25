@@ -53,7 +53,7 @@
     </div>
   </nav>
 
-  <div ng-controller="FlashedMessagesCtrl">
+  <div ng-controller="FlashedMessagesCtrl" class="ng-cloak">
     <div class="flashed-msgs" ng-if="hasMessages()">
       <div ng-repeat="msg in messages"
         ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
