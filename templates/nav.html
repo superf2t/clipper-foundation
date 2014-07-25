@@ -134,12 +134,18 @@
         </span>
       </li>
       <li ng-repeat="tripPlan in allTripPlans">
-        <a ng-show="shoppingCartMode" class="trip-link" href="javascript:void(0)">
+        <span ng-if="!isActiveTrip(tripPlan)">
+          <a ng-show="shoppingCartMode" class="trip-link" href="javascript:void(0)">
+            [[tripPlan['name'] ]]
+          </a>
+          <a ng-show="!shoppingCartMode" class="trip-link"
+            ng-href="[[isActiveTrip(tripPlan) ? 'javascript:void(0)' : '/trip_plan/' + tripPlan['trip_plan_id'] ]]">
+            [[tripPlan['name'] ]]
+          </a>
+        </span>
+        <span ng-if="isActiveTrip(tripPlan)" class="active-trip-item">
           [[tripPlan['name'] ]]
-        </a>
-        <a ng-show="!shoppingCartMode" class="trip-link" ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
-          [[tripPlan['name'] ]]
-        </a>
+        </span>
       </li>
       <li class="or-text">
         Or

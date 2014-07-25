@@ -32,6 +32,11 @@ function NavCtrl($scope, $modal, $window) {
       scope: scope
     });
   };
+
+  $scope.isActiveTrip = function(tripPlan) {
+    return tripPlan && $scope.activeTripPlan
+      && tripPlan['trip_plan_id'] == $scope.activeTripPlan['trip_plan_id'];
+  };
 }
 
 function NewTripCtrl($scope, $tripPlanService, $timeout) {

@@ -154,7 +154,8 @@
   text-align: center;
 }
 
-.nav-trip-plan-dropdown .trip-link {
+.nav-trip-plan-dropdown .trip-link,
+.nav-trip-plan-dropdown .active-trip-item {
   padding: 3px 20px;
 }
 

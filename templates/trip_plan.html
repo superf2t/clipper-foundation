@@ -19,7 +19,8 @@
 </head>
 <body ng-controller="RootCtrl">
   <tc-nav account-info="accountInfo" active-trip-plan="planModel.tripPlanData"
-    num-entities="planModel.numEntities()" all-trip-plans="allTripPlans">
+    num-entities="planModel.numEntities()" all-trip-plans="allTripPlans"
+    shopping-cart-mode="!{{allow_editing | jsbool}}">
   </tc-nav>
   <div tc-include-and-replace="flashed-messages-template"></div>
 
