@@ -11,6 +11,35 @@
         <ul class="nav navbar-nav navbar-right right-controls">
           <li>
             <ul class="nav nav-pills">
+              <li ng-if="shoppingCartMode && activeTripPlan" class="trip-plan-name">
+                <a ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank">
+                  [[activeTripPlan['name'] ]]
+                </a>
+              </li>
+              <li ng-if="shoppingCartMode && activeTripPlan" class="place-count">
+                <a href="javascript:void(0)">
+                  [[numEntities()]]
+                </a>
+              </li>
+              <li ng-if="shoppingCartMode && activeTripPlan" class="new-trip-item dropdown">
+                <a href="javascript:void(0)" class="dropdown-toggle">
+                  <span tc-icon="trip-plan" class="trip-menu-icon"></span>
+                </a>
+                <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
+              </li>
+              <li ng-if="!activeTripPlan" class="new-trip-item">
+                <a href="javascript:void(0)">
+                  <span tc-icon="trip-plan" class="trip-menu-icon"></span>
+                  <span class="new-trip-text">New Trip</span>
+                </a>
+              </li>
+              <li ng-if="!shoppingCartMode && activeTripPlan" class="dropdown">
+                <a href="javascript:void(0)" class="dropdown-toggle">
+                  My Trips
+                  <span class="caret"></span>
+                </a>
+                <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
+              </li>
               {% if session_info.logged_in() %}
               <li class="dropdown">
                 <a class="dropdown-toggle" href="javascript:void(0)">
@@ -87,6 +116,29 @@
     <li class="logout-item">
       <a href="{{logout_url}}">
         Log out
+      </a>
+    </li>
+  </ul>
+</script>
+
+<script type="text/ng-template" id="nav-trip-plan-dropdown-template">
+  <ul class="nav-trip-plan-dropdown dropdown-menu">
+    <span ng-show="allTripPlans && allTripPlans.length">
+      <li class="select-trip-prompt">
+        Select trip to add places
+      </li>
+      <li ng-repeat="tripPlan in allTripPlans">
+        <a href="javascript:void(0)">
+          [[tripPlan['name'] ]]
+        </a>
+      </li>
+      <li class="or-text">
+        Or
+      </li>
+    </span>
+    <li class="create-new-trip-link">
+      <a href="javascript:void(0)">
+        Create New Trip
       </a>
     </li>
   </ul>

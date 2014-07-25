@@ -18,7 +18,8 @@
   {% include 'analytics.html' %}
 </head>
 <body ng-controller="RootCtrl">
-  <tc-nav account-info="accountInfo">
+  <tc-nav account-info="accountInfo" active-trip-plan="planModel.tripPlanData"
+    num-entities="planModel.numEntities()">
   </tc-nav>
   <div tc-include-and-replace="flashed-messages-template"></div>
 

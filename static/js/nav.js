@@ -23,7 +23,11 @@ function tcNav() {
     controller: NavCtrl,
     templateUrl: 'nav-template',
     scope: {
-      accountInfo: '='
+      accountInfo: '=',
+      activeTripPlan: '=',
+      numEntities: '&',
+      allTripPlans: '=',
+      shoppingCartMode: '='
     }
   };
 }
@@ -36,6 +40,15 @@ function tcAccountDropdown() {
   };
 }
 
+function tcNavTripPlanDropdown() {
+  return {
+    restrict: 'AE',
+    replace: true,
+    templateUrl: 'nav-trip-plan-dropdown-template'
+  };
+}
+
 angular.module('navModule', ['ui.bootstrap'])
   .directive('tcNav', tcNav)
-  .directive('tcAccountDropdown', tcAccountDropdown);
+  .directive('tcAccountDropdown', tcAccountDropdown)
+  .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown);
