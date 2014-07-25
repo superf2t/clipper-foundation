@@ -46,6 +46,8 @@ function isWhitespace(str) {
   return /^\s+$/.test(str);
 }
 
+var SUMMARY_PANEL_WIDTH_PERCENT = 0.15;
+
 var HOST_TO_ICON = {
   'foursquare.com': 'https://foursquare.com/img/touch-icon-ipad-retina.png'
 };
@@ -386,7 +388,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
 
 function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
-    $timeout, $map, $templateToStringRenderer, $window) {
+    $timeout, $map, $templateToStringRenderer, $sizeHelper, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -497,7 +499,12 @@ function EntityCtrl($scope, $entityService, $modal,
   this.createInfowindow = function() {
     var scope = $scope.$new();
     var contentDiv = $templateToStringRenderer.render('infowindow-template', scope);
-    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
     scope.onSizeChange = function() {
       overlay.draw();
     };
@@ -1406,7 +1413,7 @@ function tcSvgHack($timeout) {
 
 HtmlInfowindow.prototype = new google.maps.OverlayView();
 
-function HtmlInfowindow(marker, contentDiv) {
+function HtmlInfowindow(marker, contentDiv, opt_options) {
   this.marker = marker;
   this.contentDiv = contentDiv;
   this.innerDiv = $('<div>').css({
@@ -1425,6 +1432,13 @@ function HtmlInfowindow(marker, contentDiv) {
   });
 
   marker.map && this.setMap(marker.map);
+
+  var opts = opt_options || {};
+  this.options = {
+    extraPaddingX: opts['extraPaddingX'] || 0,
+    extraPaddingY: opts['extraPaddingY'] || 0
+
+  };
 }
 // Override
 HtmlInfowindow.prototype.onAdd = function() {
@@ -1472,8 +1486,8 @@ HtmlInfowindow.prototype.panMap = function() {
     + this.innerDiv.position().top + this.contentDiv.position().top;
 
   // Padding on the infowindow
-  var padX = 40;
-  var padY = 40;
+  var padX = 40 + this.options.extraPaddingX;
+  var padY = 40 + this.options.extraPaddingY;
 
   // The bounds of the map
   var mapWestLng = bounds.getSouthWest().lng();
@@ -1612,6 +1626,7 @@ var MidPanelMode = {
 
 function PageStateModel(grouping, needsTutorial) {
   this.omniboxOpen = false;
+  this.summaryPanelExpanded = true;
   this.midPanelExpanded = false;
   this.midPanelMode = MidPanelMode.GUIDE;
   this.midPanelModeName = null;
@@ -2381,6 +2396,16 @@ function PagePositionManager($rootScope) {
   };
 }
 
+function SizeHelper($window) {
+  this.widthPercentToPixels = function(percentAsDecimal) {
+    return parseInt($window.innerWidth * percentAsDecimal);
+  };
+
+  this.heightPercentToPixels = function(percentAsDecimal) {
+    return parseInt($window.innerHeight * percentAsDecimal);
+  };
+}
+
 
 function SearchResultState() {
   this.selectedIndex = null;
@@ -2651,7 +2676,7 @@ function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
 }
 
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
-    $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager) {
+    $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager, $sizeHelper) {
   var me = this;
   $scope.ed = $scope.entityData;
   $scope.em = new EntityModel($scope.ed);
@@ -2668,7 +2693,12 @@ function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     var scope = $scope.$new();
     var contentDiv = $templateToStringRenderer.render(
       'results-infowindow-template', scope);
-    infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
   };
 
   this.destroyInfowindow = function() {
@@ -4766,6 +4796,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)
     .service('$mapManager', MapManager)
+    .service('$sizeHelper', SizeHelper)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {
