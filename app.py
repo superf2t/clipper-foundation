@@ -115,13 +115,28 @@ def trip_plan_by_id(trip_plan_id):
 
     current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     if current_user and not current_user.is_anonymous() and current_user.email == 'travel@unicyclelabs.com':
-        all_trip_plans = [current_trip_plan]
+        all_trip_plans = []
     else:
         all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
     notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     allow_editing = current_trip_plan and current_trip_plan.editable_by(g.session_info)
+    if allow_editing:
+        # We have it we won't use it since there's no shopping cart.
+        active_trip_plan = None
+    else:
+        active_trip_plan = sorted_trip_plans[0] if sorted_trip_plans else none
+
+    active_entities = None 
+    if not allow_editing and active_trip_plan:
+        active_entities = entity_service.get(
+            serviceimpls.EntityGetRequest(active_trip_plan.trip_plan_id)).entities     
+    else:
+        # We have them but we won't use them since there's no shopping cart.
+        pass
+
+
     needs_tutorial = (allow_editing and len(all_trip_plans) == 1 and not entities) or (
         request.values.get('tutorial') and not entities)
     initial_state = data.InitialPageState(request.values.get('sort'),
@@ -133,7 +148,9 @@ def trip_plan_by_id(trip_plan_id):
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
         notes_json=serializable.to_json_str(notes),
-        all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
+        all_trip_plans=sorted_trip_plans,
+        active_trip_plan=active_trip_plan,
+        active_trip_plan_entity_count=len(active_entities) if active_entities else 0,
         allow_editing=allow_editing,
         needs_tutorial=needs_tutorial,
         account_info=g.account_info,

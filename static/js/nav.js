@@ -136,7 +136,7 @@ function tcNav() {
     scope: {
       accountInfo: '=',
       activeTripPlan: '=',
-      numEntities: '&',
+      numEntities: '=',
       allTripPlans: '=',
       shoppingCartMode: '='
     }

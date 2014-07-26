@@ -18,8 +18,8 @@
   {% include 'analytics.html' %}
 </head>
 <body ng-controller="RootCtrl">
-  <tc-nav account-info="accountInfo" active-trip-plan="planModel.tripPlanData"
-    num-entities="planModel.numEntities()" all-trip-plans="allTripPlans"
+  <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
+    num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
     shopping-cart-mode="!{{allow_editing | jsbool}}">
   </tc-nav>
   <div tc-include-and-replace="flashed-messages-template"></div>
@@ -1724,7 +1724,9 @@
       {{plan.to_json_str()|safe}},
       {{entities_json|safe}},
       {{notes_json|safe}},
-      {{all_trip_plans_json|safe}},
+      {{to_json_str(all_trip_plans)|safe}},
+      {{to_json_str(active_trip_plan)|safe}},
+      {{active_trip_plan_entity_count}},
       {{account_info.to_json_str()|safe}},
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}},

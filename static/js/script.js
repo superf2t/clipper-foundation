@@ -336,6 +336,11 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
   this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
 }
 
+function ActiveTripPlanStateModel(tripPlan, numEntities) {
+  this.tripPlan = tripPlan;
+  this.numEntities = numEntities || 0;
+}
+
 function TaxonomyTree(categories, subCategories) {
   var me = this;
   this.categories = categories;
@@ -388,7 +393,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
 
 function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
-    $timeout, $map, $templateToStringRenderer, $sizeHelper, $window) {
+    $timeout, $map, $templateToStringRenderer, $sizeHelper, $shoppingCartService, $window) {
   var me = this;
   $scope.ed = $scope.item.data;
   var entityModel = new EntityModel($scope.item.data);
@@ -444,14 +449,7 @@ function EntityCtrl($scope, $entityService, $modal,
   };
 
   $scope.reclipEntity = function() {
-    var scope = $scope.$new(true);
-    scope.entityModel = new EntityModel(angular.copy($scope.item.data));
-    scope.ed = scope.entityModel.data;
-    scope.ed['entity_id'] = null;
-    $modal.open({
-      templateUrl: 'reclip-confirmation-template',
-      scope: scope
-    });
+    $shoppingCartService.clipEntity(scope.item.data);
   };
 
   $scope.deleteEntity = function() {
@@ -581,7 +579,7 @@ var InlineEditMode = {
 };
 
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $filterModel, $accountInfo, $modal, $window) {
+    $filterModel, $accountInfo, $modal, $shoppingCartService, $window) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
   $scope.inlineEditMode = null;
@@ -626,14 +624,7 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
   };
 
   $scope.reclipEntity = function() {
-    var scope = $scope.$new(true);
-    scope.entityModel = new EntityModel(angular.copy($scope.ed));
-    scope.ed = scope.entityModel.data;
-    scope.ed['entity_id'] = null;
-    $modal.open({
-      templateUrl: 'reclip-confirmation-template',
-      scope: scope
-    });
+    $shoppingCartService.clipEntity($scope.ed);
   };
 
   $scope.deleteEntity = function() {
@@ -1806,7 +1797,8 @@ function FilterModel() {
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
-    $searchResultState, $entityService, $allowEditing, $accountInfo, $allTripPlans) {
+    $searchResultState, $entityService, $allowEditing, $accountInfo,
+    $allTripPlans, $activeTripPlanState) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -1816,6 +1808,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
   $scope.allTripPlans = $allTripPlans;
+  $scope.activeTripPlanState = $activeTripPlanState;
   $scope.refreshState = {
     paused: false
   };
@@ -3777,6 +3770,22 @@ function MapManager($map) {
   };
 }
 
+function ShoppingCartService($entityService, $activeTripPlanState) {
+  this.clipEntity = function(entity, opt_success) {
+    var entityToSave = angular.copy(entity);
+    delete entityToSave['entity_id'];
+    delete entityToSave['starred'];
+    delete entityToSave['day'];
+    delete entityToSave['day_position'];
+    delete entityToSave['comments'];
+    $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
+      .success(function(response) {
+        $activeTripPlanState.numEntities += 1;
+        opt_success && opt_success();
+      });
+  };
+}
+
 // Directives
 
 function tcScrollToSelector($interpolate) {
@@ -4699,13 +4708,17 @@ angular.module('filtersModule', [])
   .filter('hostNoSuffix', makeFilter(hostNoSuffix))
   .filter('hostToIcon', makeFilter(hostToIcon));
 
-window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
-    accountInfo, datatypeValues, allowEditing, sampleSites, initialState, flashedMessages) {
+window['initApp'] = function(tripPlan, entities, notes,
+    allTripPlans, activeTripPlan, activeTripPlanEntityCount,
+    accountInfo, datatypeValues, allowEditing, sampleSites,
+    initialState, flashedMessages) {
 
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
     .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
     .value('$allTripPlans', allTripPlans)
+    .value('$activeTripPlanState', new ActiveTripPlanStateModel(
+      allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
     .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
@@ -4765,6 +4778,7 @@ window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
     .service('$pagePositionManager', PagePositionManager)
     .service('$mapManager', MapManager)
     .service('$sizeHelper', SizeHelper)
+    .service('$shoppingCartService', ShoppingCartService)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {
