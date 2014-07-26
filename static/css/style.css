@@ -1091,6 +1091,10 @@ hr.dropdown-separator {
   padding: 0 3px;
 }
 
+.marker-tools a.already-clipped {
+  color: #777;
+}
+
 .results-infowindow .tools-section {
   background-color: #fff;
   font-size: 10pt;

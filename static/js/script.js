@@ -339,6 +339,11 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 function ActiveTripPlanStateModel(tripPlan, numEntities) {
   this.tripPlan = tripPlan;
   this.numEntities = numEntities || 0;
+  this.savedEntityIds = {};
+
+  this.isSaved = function(entity) {
+    return !!this.savedEntityIds[entity['entity_id']];
+  };
 }
 
 function TaxonomyTree(categories, subCategories) {
@@ -449,7 +454,7 @@ function EntityCtrl($scope, $entityService, $modal,
   };
 
   $scope.reclipEntity = function() {
-    $shoppingCartService.clipEntity(scope.item.data);
+    $shoppingCartService.clipEntity($scope.ed);
   };
 
   $scope.deleteEntity = function() {
@@ -3781,6 +3786,7 @@ function ShoppingCartService($entityService, $activeTripPlanState) {
     $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
       .success(function(response) {
         $activeTripPlanState.numEntities += 1;
+        $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
         opt_success && opt_success();
       });
   };
