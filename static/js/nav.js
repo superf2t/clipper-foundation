@@ -1,7 +1,7 @@
 // TODO:
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
 
-function NavCtrl($scope, $entityService, $modal, $window) {
+function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
     var scope = $scope.$new(true);
     scope.iframeUrl = loginUrl;
@@ -16,22 +16,33 @@ function NavCtrl($scope, $entityService, $modal, $window) {
     };
   };
 
-  $scope.openNewTripModal = function(windowClass) {
+  $scope.openNewTripModal = function(opt_callback, opt_clippingEntity) {
     var scope = $scope.$new(true);
+    var modal = null;
     scope.onCreate = function(tripPlan) {
       if ($scope.shoppingCartMode) {
-        $scope.tripPlan = tripPlan;
+        $scope.activeTripPlan = tripPlan;
+        $scope.allTripPlans.unshift(tripPlan);
+        // Allow a digest cycle to happen before calling the callback.
+        $timeout(opt_callback);
+        modal && modal.close();
       } else {
         $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
       }
     };
-    var modal = $modal.open({
+    scope.clippingEntity = opt_clippingEntity;
+
+    modal = $modal.open({
       templateUrl: 'new-trip-modal-template',
-      windowClass: windowClass,
+      windowClass: 'new-trip-modal-window',
       controller: NewTripCtrl,
       scope: scope
     });
   };
+
+  $scope.$on('open-new-trip-modal', function(event, opt_callback, opt_clippingEntity) {
+    $scope.openNewTripModal(opt_callback, opt_clippingEntity);
+  });
 
   $scope.isActiveTrip = function(tripPlan) {
     return tripPlan && $scope.activeTripPlan
@@ -137,6 +148,12 @@ function NewTripCtrl($scope, $tripPlanService, $timeout) {
   };
 }
 
+function TripPlanCreator($rootScope) {
+  this.openNewTripPlanModal = function(opt_callback, opt_clippingEntity) {
+    $rootScope.$broadcast('open-new-trip-modal', opt_callback, opt_clippingEntity);
+  };
+}
+
 function tcNav() {
   return {
     restrict: 'AE',
@@ -169,6 +186,7 @@ function tcNavTripPlanDropdown() {
 }
 
 angular.module('navModule', ['servicesModule', 'directivesModule', 'ui.bootstrap'])
+  .service('$tripPlanCreator', TripPlanCreator)
   .directive('tcNav', tcNav)
   .directive('tcAccountDropdown', tcAccountDropdown)
   .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown);

@@ -3775,20 +3775,25 @@ function MapManager($map) {
   };
 }
 
-function ShoppingCartService($entityService, $activeTripPlanState) {
+function ShoppingCartService($entityService, $tripPlanCreator, $activeTripPlanState) {
   this.clipEntity = function(entity, opt_success) {
     var entityToSave = angular.copy(entity);
-    delete entityToSave['entity_id'];
-    delete entityToSave['starred'];
-    delete entityToSave['day'];
-    delete entityToSave['day_position'];
-    delete entityToSave['comments'];
-    $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
-      .success(function(response) {
-        $activeTripPlanState.numEntities += 1;
-        $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
-        opt_success && opt_success();
-      });
+    $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
+      delete entityToSave[prop];
+    });
+    var doClip = function() {
+      $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
+        .success(function(response) {
+          $activeTripPlanState.numEntities += 1;
+          $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
+          opt_success && opt_success();
+        });
+    };
+    if (!$activeTripPlanState.tripPlan) {
+      $tripPlanCreator.openNewTripPlanModal(doClip, entityToSave);
+    } else {
+      doClip();
+    }
   };
 }
 

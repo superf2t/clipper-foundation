@@ -30,7 +30,7 @@
                 <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
               </li>
               <li ng-if="!activeTripPlan" class="new-trip-item">
-                <a ng-click="openNewTripModal('new-trip-modal-window')"
+                <a ng-click="openNewTripModal()"
                   href="javascript:void(0)">
                   <span tc-icon="trip-plan" class="trip-menu-icon"></span>
                   <span class="new-trip-text">New Trip</span>
@@ -155,7 +155,7 @@
       </li>
     </span>
     <li class="create-new-trip-link">
-      <a ng-click="openNewTripModal('new-trip-modal-window')" href="javascript:void(0)">
+      <a ng-click="openNewTripModal()" href="javascript:void(0)">
         Create New Trip
       </a>
     </li>
@@ -165,7 +165,12 @@
 <script type="text/ng-template" id="new-trip-modal-template">
   <div class="new-trip-modal" ng-controller="NewTripCtrl">
     <div class="header">
-      Create a New Trip
+      <span ng-show="clippingEntity">
+        Create a new trip to add <i>[[clippingEntity['name'] ]]</i>
+      </span>
+      <span ng-show="!clippingEntity">
+        Create a New Trip
+      </span>
       <div class="close-link">
         <a ng-click="$close()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-remove"></span>
