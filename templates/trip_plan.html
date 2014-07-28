@@ -48,14 +48,20 @@
   <div id="details-panel" ng-show="!pageStateModel.inNewTripPlanModal"
     ng-class="{'closed': !pageStateModel.detailsPanelExpanded}"
     class="closed">
-    <div ng-include="'guide-panel-template'" class="full-width full-height"
-      ng-show="!pageStateModel.inAddPlacePanel()">
-    </div>
     {% if allow_editing %}
-    <div ng-include="'add-place-panel-template'" class="full-width full-height"
-      ng-if="pageStateModel.inAddPlacePanel()">
+    <div ng-include="'details-panel-nav-template'">
     </div>
     {% endif %}
+    <div class="details-panel-content {% if allow_editing %}with-nav{% endif %}">
+      <div ng-include="'guide-panel-template'" class="full-width full-height"
+        ng-show="!pageStateModel.inAddPlacePanel()">
+      </div>
+      {% if allow_editing %}
+      <div ng-include="'add-place-panel-template'" class="full-width full-height"
+        ng-if="pageStateModel.inAddPlacePanel()">
+      </div>
+      {% endif %}
+    </div>
   </div>
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.detailsPanelExpanded"
@@ -82,6 +88,36 @@
     on-close="pageStateModel.showAfterNewTripPlanPanel = false">
   </tc-after-new-trip-plan-panel>
   {% endif %}
+
+  <script type="text/ng-template" id="details-panel-nav-template">
+    <div class="details-panel-nav">
+      <span class="details-nav-item" ng-class="{'selected': true}">
+        <a href="javascript:void(0)">
+          <span tc-icon="trip-plan"></span> View Details
+        </a>
+      </span>
+      <span class="details-nav-item">
+        <a href="javascript:void(0)">
+          <span class="glyphicon glyphicon-book"></span> Browse Guides
+        </a>
+      </span>
+      <span class="details-nav-item">
+        <a href="javascript:void(0)">
+          <span class="glyphicon glyphicon-plus"></span> Add Your Own
+        </a>
+      </span>
+      <span class="details-nav-item">
+        <a href="javascript:void(0)">
+          <span class="glyphicon glyphicon-share"></span> Export
+        </a>
+      </span>
+      <span class="more-item">
+        <a href="javascript:void(0)">
+          &hellip;
+        </a>
+      </span>
+    </div>
+  </script>
 
   <script type="text/ng-template" id="control-buttons-template">
     <div id="map-buttons" ng-class="{'details-panel-open': pageStateModel.detailsPanelExpanded}">
@@ -742,16 +778,7 @@
   </script>
 
   <script type="text/ng-template" id="guide-panel-template">
-    <div class="guide-panel">
-      <div class="persistent-header">
-        <div class="header-text">Trip Details</div>
-        <div class="close-control">
-          <a ng-click="closeDetailsPanel()" href="javascript:void(0)" class="white-link">
-            <span class="glyphicon glyphicon-remove-circle"></span>
-          </a>
-        </div>
-      </div>
-      <div class="guide-panel-body"
+    <div class="guide-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-guideview[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <div class="overview">
