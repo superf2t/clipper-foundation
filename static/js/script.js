@@ -4653,7 +4653,9 @@ function tcAnimateOnChangeTo() {
     restrict: 'A',
     link: function(scope, element, attrs) {
       scope.$watch(attrs.tcAnimateOnChangeTo, function(newValue, oldValue) {
-        if (newValue && newValue !== oldValue) {
+        if (newValue != null && newValue != undefined
+          && oldValue != null && newValue != undefined
+          && newValue !== oldValue) {
           element.addClass(attrs.classToAdd);
           if (attrs.removeWhenComplete) {
             element.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',
