@@ -393,19 +393,19 @@ hr.dropdown-separator {
   height: calc(100% - 32px);
 }
 
-.guide-panel {
+.details-panel {
   color: #000;
   width: 100%;
   height: 100%;
   overflow-y: auto;
 }
 
-.guide-panel .overview {
+.details-panel .overview {
   width: 100%;
   position: relative;
 }
 
-.guide-panel .guide-panel-hero-img {
+.details-panel .details-panel-hero-img {
   width: 100%;
   height: 300px;
   background-repeat: no-repeat;
@@ -414,7 +414,7 @@ hr.dropdown-separator {
   margin-bottom: 15px;
 }
 
-.guide-panel .default-hero-img {
+.details-panel .default-hero-img {
   width: 100%;
   height: 140px;
   background-repeat: no-repeat;
@@ -422,7 +422,7 @@ hr.dropdown-separator {
   background-image: url('/static/img/default-cover.jpg');
 }
 
-.guide-panel .title-floater {
+.details-panel .title-floater {
   color: #fff;
   margin: auto;
   font-size: 20pt;
@@ -432,47 +432,47 @@ hr.dropdown-separator {
   text-shadow: 1px 1px 2px #000;
 }
 
-.guide-panel .overview .description {
+.details-panel .overview .description {
   white-space: pre-line;
   text-align: justify;
   margin: 15px;
 }
 
-.guide-panel .overview .clip-cta a {
+.details-panel .overview .clip-cta a {
   color: #428bca;
 }
 
-.guide-panel .overview .clip-cta a:hover {
+.details-panel .overview .clip-cta a:hover {
   color: #2D73A0;
 }
 
-.guide-panel .overview .clip-cta {
+.details-panel .overview .clip-cta {
   margin: 0 15px 15px 15px;
   position: relative;
   font-size: 1.1em;
 }
 
-.guide-panel .overview .clip-control {
+.details-panel .overview .clip-control {
   display: inline-block;
   position: absolute;
   right: 0px;
   top: 0px;
 }
 
-.guide-panel .close-control {
+.details-panel .close-control {
   position: absolute;
   top: 10px;
   right: 10px;
   font-size: 16pt;
 }
 
-.guide-panel .entity-separator,
+.details-panel .entity-separator,
 .add-place-panel .entity-separator {
   border-top: 1px solid #CCCCCC;
   margin: 10px 0;
 }
 
-.guide-panel h4,
+.details-panel h4,
 .results-details-panel h4 {
   font-size: 16px;
 }

@@ -53,7 +53,7 @@
     </div>
     {% endif %}
     <div class="info-panel-content {% if allow_editing %}with-nav{% endif %}">
-      <div ng-include="'guide-panel-template'" class="full-width full-height"
+      <div ng-include="'details-panel-template'" class="full-width full-height"
         ng-show="!pageStateModel.inAddPlacePanel()">
       </div>
       {% if allow_editing %}
@@ -777,12 +777,12 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="guide-panel-template">
-    <div class="guide-panel"
+  <script type="text/ng-template" id="details-panel-template">
+    <div class="details-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-guideview[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <div class="overview">
-        <div class="guide-panel-hero-img" ng-if="planModel.hasCoverImage()"
+        <div class="details-panel-hero-img" ng-if="planModel.hasCoverImage()"
           ng-style="{'background-image': 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)'}">
           <div class="title-floater">
             [[planModel.tripPlanName()]]
@@ -1307,7 +1307,7 @@
           </div>
         </div>
       </div>
-      <div class="one-guide-panel" ng-show="selectedTripPlan">
+      <div ng-show="selectedTripPlan">
         <div>
           <a ng-click="backToListings()" href="javascript:void(0)" class="color-link">
             &laquo; Back to guides
