@@ -2,6 +2,11 @@
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 
+// CLEANUP:
+// -Remove item groups and associated templating.
+// -Delete the item model and put its remaining funcionality in EntityModel,
+//  or just as scope methods.
+
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
     var scope = $scope.$new(true);

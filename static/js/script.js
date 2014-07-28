@@ -1618,7 +1618,9 @@ var InfoPanelMode = {
   DETAILS: 1,
   GUIDES: 2,
   ADD_YOUR_OWN: 3,
-  EXPORT: 4
+  EXPORT: 4,
+  SHARING: 5,
+  SETTINGS: 6
 };
 
 function PageStateModel(grouping, needsTutorial) {
@@ -1626,7 +1628,7 @@ function PageStateModel(grouping, needsTutorial) {
   this.summaryPanelExpanded = true;
   this.infoPanelExpanded = false;
   this.infoPanelMode = InfoPanelMode.DETAILS;
-  this.infoPanelModeName = null;
+  this.infoPanelShowExtendedNavItems = false;
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;

@@ -70,6 +70,14 @@
         class="full-width full-height"
         ng-show="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
       </div>
+      <div ng-include="'sharing-panel-template'"
+        class="full-width full-height"
+        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
+      </div>
+      <div ng-include="'settings-panel-template'"
+        class="full-width full-height"
+        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
+      </div>
       {% endif %}
     </div>
   </div>
@@ -101,32 +109,50 @@
 
   <script type="text/ng-template" id="info-panel-nav-template">
     <div class="info-panel-nav">
-      <span class="info-nav-item"
-        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
-        <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
-          <span tc-icon="trip-plan"></span> View Details
-        </a>
+      <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
+        <span class="info-nav-item"
+          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
+          <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
+            <span tc-icon="trip-plan"></span> View Details
+          </a>
+        </span>
+        <span class="info-nav-item"
+          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}">
+          <a ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-book"></span> Browse Guides
+          </a>
+        </span>
+        <span class="info-nav-item"
+          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}">
+          <a ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"  href="javascript:void(0)">
+            <span class="glyphicon glyphicon-plus"></span> Add Your Own
+          </a>
+        </span>
+        <span class="info-nav-item"
+          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}">
+          <a ng-click="goToInfoPanel(InfoPanelMode.EXPORT)" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-share"></span> Export
+          </a>
+        </span>
       </span>
-      <span class="info-nav-item"
-        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}">
-        <a ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-book"></span> Browse Guides
-        </a>
+      <span ng-show="pageStateModel.infoPanelShowExtendedNavItems">
+        <span class="info-nav-item"
+          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SHARING}">
+          <a ng-click="goToInfoPanel(InfoPanelMode.SHARING)" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-share-alt"></span> Share
+          </a>
+        </span>
+        <span class="info-nav-item"
+          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS}">
+          <a ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-cog"></span> Settings
+          </a>
+        </span>
       </span>
-      <span class="info-nav-item"
-        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}">
-        <a ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"  href="javascript:void(0)">
-          <span class="glyphicon glyphicon-plus"></span> Add Your Own
-        </a>
-      </span>
-      <span class="info-nav-item"
-        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}">
-        <a ng-click="goToInfoPanel(InfoPanelMode.EXPORT)" href="javascript:void(0)">
-          <span class="glyphicon glyphicon-share"></span> Export
-        </a>
-      </span>
+
       <span class="more-item">
-        <a href="javascript:void(0)">
+        <a ng-click="pageStateModel.infoPanelShowExtendedNavItems = !pageStateModel.infoPanelShowExtendedNavItems"
+        href="javascript:void(0)">
           &hellip;
         </a>
       </span>
@@ -1104,6 +1130,22 @@
     <div class="export-panel">
       <div class="header">
         Take your trip plan with you on the road.
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="sharing-panel-template">
+    <div class="export-panel">
+      <div class="header">
+        Share your trip with collaborators and viewers
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="settings-panel-template">
+    <div class="export-panel">
+      <div class="header">
+        Settings
       </div>
     </div>
   </script>
