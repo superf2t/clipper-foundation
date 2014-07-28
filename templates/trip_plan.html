@@ -46,7 +46,7 @@
   </div>
 
   <div id="details-panel" ng-show="!pageStateModel.inNewTripPlanModal"
-    ng-class="{'closed': !pageStateModel.midPanelExpanded}"
+    ng-class="{'closed': !pageStateModel.detailsPanelExpanded}"
     class="closed">
     <div ng-include="'guide-panel-template'" class="full-width full-height"
       ng-show="!pageStateModel.inAddPlacePanel()">
@@ -58,7 +58,7 @@
     {% endif %}
   </div>
 
-  <div id="map-panel" tc-animate-on-bool="!pageStateModel.midPanelExpanded"
+  <div id="map-panel" tc-animate-on-bool="!pageStateModel.detailsPanelExpanded"
     tc-transitionend="updateMap()"
     class-when-true="details-panel-closed" after-complete="updateMap()"
     ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
@@ -84,13 +84,13 @@
   {% endif %}
 
   <script type="text/ng-template" id="control-buttons-template">
-    <div id="map-buttons" ng-class="{'details-panel-open': pageStateModel.midPanelExpanded}">
+    <div id="map-buttons" ng-class="{'details-panel-open': pageStateModel.detailsPanelExpanded}">
       <button class="btn btn-default" ng-click="openGuide()"
-        ng-show="!pageStateModel.midPanelExpanded">
+        ng-show="!pageStateModel.detailsPanelExpanded">
         <span class="glyphicon glyphicon-plus"></span>
       </button>
-      <button class="btn btn-default" ng-click="closeMidPanel()"
-        ng-show="pageStateModel.midPanelExpanded">
+      <button class="btn btn-default" ng-click="closeDetailsPanel()"
+        ng-show="pageStateModel.detailsPanelExpanded">
         <span class="glyphicon glyphicon-minus"></span>
       </button>
     </div>
@@ -746,7 +746,7 @@
       <div class="persistent-header">
         <div class="header-text">Trip Details</div>
         <div class="close-control">
-          <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+          <a ng-click="closeDetailsPanel()" href="javascript:void(0)" class="white-link">
             <span class="glyphicon glyphicon-remove-circle"></span>
           </a>
         </div>
@@ -1057,19 +1057,19 @@
       <div ng-include="'add-place-panel-header-template'">
       </div>
       <div class="panel-body">
-        <div ng-if="pageStateModel.midPanelMode == MidPanelMode.SEARCH_PLACES"
+        <div ng-if="pageStateModel.detailsPanelMode == DetailsPanelMode.SEARCH_PLACES"
           ng-include="'search-panel-template'"
           class="full-width full-height">
         </div>
-        <div ng-if="pageStateModel.midPanelMode == MidPanelMode.WEB_SEARCH_PLACES"
+        <div ng-if="pageStateModel.detailsPanelMode == DetailsPanelMode.WEB_SEARCH_PLACES"
           ng-include="'web-search-panel-template'"
           class="full-width full-height">
         </div>
-        <div ng-if="pageStateModel.midPanelMode == MidPanelMode.TRAVEL_GUIDES"
+        <div ng-if="pageStateModel.detailsPanelMode == DetailsPanelMode.TRAVEL_GUIDES"
           ng-include="'travel-guides-panel-template'"
           class="full-width full-height">
         </div>
-        <div ng-if="pageStateModel.midPanelMode == MidPanelMode.CLIP_MY_OWN"
+        <div ng-if="pageStateModel.detailsPanelMode == DetailsPanelMode.CLIP_MY_OWN"
           ng-include="'clip-my-own-panel-template'"
           class="full-width full-height">
         </div>
@@ -1083,14 +1083,14 @@
       <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
       <span class="header-mode-control dropdown">
         <span class="dropdown-toggle mode-dropdown-control">
-          [[pageStateModel.midPanelModeName]]
+          [[pageStateModel.detailsPanelModeName]]
           <span class="caret"></span>
         </span>
         <div tc-include-and-replace="add-place-mode-dropdown-template">
         </div>
       </span>
       <div class="close-control">
-        <a ng-click="closeMidPanel()" href="javascript:void(0)" class="white-link">
+        <a ng-click="closeDetailsPanel()" href="javascript:void(0)" class="white-link">
           <span class="glyphicon glyphicon-remove-circle"></span>
         </a>
       </div>
@@ -1106,7 +1106,7 @@
         <input type="text" class="form-control"
           placeholder="e.g. 'Eiffel Tower', '123 Main St', or 'Cafes'"
           tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
-          tc-focus-on="pageStateModel.midPanelMode"
+          tc-focus-on="pageStateModel.detailsPanelMode"
           on-place-change="googlePlaceSelected($newPlace)"
           ng-model="queryState.rawQuery"
           ng-disabled="loadingData"/>
@@ -1365,7 +1365,7 @@
           <input type="text" class="form-control"
             placeholder="http://..."
             ng-paste="textPasted()"
-            tc-focus-on="pageStateModel.midPanelMode"
+            tc-focus-on="pageStateModel.detailsPanelMode"
             ng-model="state.rawInput"
             ng-disabled="loadingData"/>
         </form>
@@ -1594,7 +1594,7 @@
     <div class="tutorial-overlay" ng-if="planModel.isEmpty() && !pageStateModel.inNewTripPlanModal">
       <div class="backdrop">
       </div>
-      <div class="content" ng-show="!pageStateModel.midPanelExpanded">
+      <div class="content" ng-show="!pageStateModel.detailsPanelExpanded">
         <div class="connector">
         </div>
         <div class="header">Welcome to your [[planModel.tripPlanName()]] trip plan!</div>
