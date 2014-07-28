@@ -66,7 +66,15 @@ a:hover .tc-icon svg {
   background-color: #4A90E2;
 }
 
-.btn-primary:hover {
+.btn-cta {
+  border-radius: 2px;
+  border: none;
+  background-color: #50B0B2;
+  color: #fff;
+}
+
+.btn-primary:hover,
+.btn-cta:hover {
   background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
   background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
   background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
@@ -2043,4 +2051,58 @@ temporary hack that lines up the arrows a bit better for most pictures */
   height: 40px;
   margin-left: 5px;
   border: 1px dashed #fff;
+}
+
+.after-new-trip-plan-panel {
+  position: fixed;
+  top: 41px;
+  right: 20px;
+}
+
+.after-new-trip-plan-panel .connector {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-bottom: 15px solid #fff;
+  border-right: 10px solid transparent;
+  border-left: 10px solid transparent;
+  -moz-transform: scale(.9999);
+  -webkit-transform: scale(.9999);
+  position: fixed;
+  top: calc(41px + 5px);
+  /* left: computed dynamically; */
+}
+
+.after-new-trip-plan-panel .panel-body {
+  -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  background-color: #fff;
+  padding: 20px;
+  position: relative;
+  top: 20px;
+  width: 350px;
+}
+
+.after-new-trip-plan-panel .close-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+}
+
+.after-new-trip-plan-panel .header {
+  font-weight: bold;
+  font-size: 13pt;
+  text-align: center;
+  color: #000;
+  margin-bottom: 20px;
+}
+
+.after-new-trip-plan-panel .button-panel {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.after-new-trip-plan-panel .button-panel .button-separator {
+  margin-left: 10px;
 }

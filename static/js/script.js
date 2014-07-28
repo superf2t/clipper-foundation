@@ -339,6 +339,7 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 function ActiveTripPlanStateModel(tripPlan, numEntities) {
   this.tripPlan = tripPlan;
   this.numEntities = numEntities || 0;
+  this.lastClippedEntity = null;
   this.savedEntityIds = {};
 
   this.isSaved = function(entity) {
@@ -1630,6 +1631,7 @@ function PageStateModel(grouping, needsTutorial) {
   this.grouping = grouping;
   this.selectedEntity = null;
   this.needsTutorial = needsTutorial;
+  this.showAfterNewTripPlanPanel = false;
 
   this.isMapFullScreen = function() {
     return this.inNewTripPlanModal;
@@ -3775,7 +3777,8 @@ function MapManager($map) {
   };
 }
 
-function ShoppingCartService($entityService, $tripPlanCreator, $activeTripPlanState) {
+function ShoppingCartService($entityService, $tripPlanCreator,
+    $activeTripPlanState, $pageStateModel) {
   this.clipEntity = function(entity, opt_success) {
     var entityToSave = angular.copy(entity);
     $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
@@ -3786,6 +3789,10 @@ function ShoppingCartService($entityService, $tripPlanCreator, $activeTripPlanSt
         .success(function(response) {
           $activeTripPlanState.numEntities += 1;
           $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
+          if ($activeTripPlanState.numEntities == 1) {
+            $activeTripPlanState.lastClippedEntity = response['entities'][0];
+            $pageStateModel.showAfterNewTripPlanPanel = true;            
+          }
           opt_success && opt_success();
         });
     };
@@ -3793,6 +3800,32 @@ function ShoppingCartService($entityService, $tripPlanCreator, $activeTripPlanSt
       $tripPlanCreator.openNewTripPlanModal(doClip, entityToSave);
     } else {
       doClip();
+    }
+  };
+}
+
+function tcAfterNewTripPlanPanel($timeout, $window) {
+  return {
+    restrict: 'AE',
+    scope: {
+      onClose: '&'
+    },
+    templateUrl: 'after-new-trip-plan-panel-template',
+    controller: function($scope, $activeTripPlanState, $window) {
+      $scope.activeTripPlanState = $activeTripPlanState;
+      $scope.goToTripPlan = function() {
+        $window.location.href = '/trip_plan/' + $activeTripPlanState.tripPlan['trip_plan_id'];
+      }
+    },
+    link: function(scope, element, attrs) {
+      $timeout(function() {
+        var connector = $("#after-new-trip-plan-panel .connector");
+        var connectorAlignmentElem = $(attrs.alignConnectorTo);
+        connector.css('left', connectorAlignmentElem.offset().left);
+        $($window).on('resize', function() {
+          connector.css('left', connectorAlignmentElem.offset().left);
+        });
+      });
     }
   };
 }
@@ -4806,6 +4839,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .directive('tcUserIcon', tcUserIcon)
     .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
+    .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)

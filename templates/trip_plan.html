@@ -24,7 +24,7 @@
   </tc-nav>
   <div tc-include-and-replace="flashed-messages-template"></div>
 
-  <div id="summary-panel" ng-show="!pageStateModel.inNewTripPlanModal">
+  <div id="summary-panel" ng-show="{{allow_editing | jsbool}}">
     <div id="entity-container" class="entity-container"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       skip-scroll-when-in-view="true"
@@ -74,6 +74,14 @@
     <div ng-include="'control-buttons-template'">
     </div>
   </div>
+
+  {% if not allow_editing %}
+  <tc-after-new-trip-plan-panel
+    ng-if="pageStateModel.showAfterNewTripPlanPanel"
+    align-connector-to="#place-count"
+    on-close="pageStateModel.showAfterNewTripPlanPanel = false">
+  </tc-after-new-trip-plan-panel>
+  {% endif %}
 
   <script type="text/ng-template" id="control-buttons-template">
     <div id="map-buttons" ng-class="{'details-panel-open': pageStateModel.midPanelExpanded}">
@@ -1719,6 +1727,44 @@
         [[user['display_name'].substring(0, 1) ]]
       </span>
     </a>
+  </script>
+
+  <script type="text/ng-template" id="after-new-trip-plan-panel-template">
+    <div class="after-new-trip-plan-panel" id="after-new-trip-plan-panel">
+      <div class="connector">
+      </div>
+      <div class="panel-body">
+        <div class="close-button">
+          <a ng-click="onClose()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-remove"></span>
+          </a>
+        </div>
+        <div class="header">Created a new trip!</div>
+        <div>
+          <p>
+            <i>[[activeTripPlanState.lastClippedEntity['name'] ]]</i> was added to this trip.
+          </p>
+          <p ng-show="activeTripPlanState.numEntities == 1">
+            You have 1 place in this trip.
+          </p>
+          <p ng-show="activeTripPlanState.numEntities > 1">
+            You have [[activeTripPlanState.numEntities]] places in this trip.
+          </p>
+        </div>
+        <div>
+          Go to your trip plan or add more places while browsing guides.
+        </div>
+        <div class="button-panel">
+          <button ng-click="goToTripPlan()" class="btn btn-primary">
+            View Trip Plan
+          </button>
+          <span class="button-separator"></span>
+          <button class="btn btn-cta" ng-click="onClose()">
+            Keep Browsing
+          </button>
+        </div>
+      </div>
+    </div>
   </script>
 
   {% include 'nav.html' %}
