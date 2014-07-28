@@ -490,8 +490,8 @@ function EntityCtrl($scope, $entityService, $modal,
   };
 
   $scope.openInlineEdit = function(inlineEditMode) {
-    $pageStateModel.detailsPanelExpanded = true;
-    $pageStateModel.detailsPanelMode = DetailsPanelMode.GUIDE;
+    $pageStateModel.infoPanelExpanded = true;
+    $pageStateModel.infoPanelMode = InfoPanelMode.GUIDE;
     $scope.selectEntity($scope.ed);
     $scope.$emit('asktoopeninlineedit', $scope.ed['entity_id'], inlineEditMode);
   };
@@ -1614,7 +1614,7 @@ var Grouping = {
   DAY: 2
 };
 
-var DetailsPanelMode = {
+var InfoPanelMode = {
   GUIDE: 1,
   SEARCH_PLACES: 2,
   WEB_SEARCH_PLACES: 3,
@@ -1625,9 +1625,9 @@ var DetailsPanelMode = {
 function PageStateModel(grouping, needsTutorial) {
   this.omniboxOpen = false;
   this.summaryPanelExpanded = true;
-  this.detailsPanelExpanded = false;
-  this.detailsPanelMode = DetailsPanelMode.GUIDE;
-  this.detailsPanelModeName = null;
+  this.infoPanelExpanded = false;
+  this.infoPanelMode = InfoPanelMode.GUIDE;
+  this.infoPanelModeName = null;
   this.inNewTripPlanModal = false;
   this.grouping = grouping;
   this.selectedEntity = null;
@@ -1639,7 +1639,7 @@ function PageStateModel(grouping, needsTutorial) {
   };
 
   this.inAddPlacePanel = function() {
-    return this.detailsPanelMode != DetailsPanelMode.GUIDE;
+    return this.infoPanelMode != InfoPanelMode.GUIDE;
   };
 
   this.isGroupByCategory = function() {
@@ -1811,7 +1811,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
-  $scope.DetailsPanelMode = DetailsPanelMode;
+  $scope.InfoPanelMode = InfoPanelMode;
   $scope.planModel = $tripPlanModel;
   $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
@@ -1857,21 +1857,21 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $filterModel.emphasizedDayNumber = null;
   };
 
-  $scope.openDetailsPanel = function() {
-    $pageStateModel.detailsPanelExpanded = true;
+  $scope.openInfoPanel = function() {
+    $pageStateModel.infoPanelExpanded = true;
   };
 
-  $scope.closeDetailsPanel = function() {
-    $pageStateModel.detailsPanelExpanded = false;
-    $pageStateModel.detailsPanelMode = DetailsPanelMode.GUIDE;
+  $scope.closeInfoPanel = function() {
+    $pageStateModel.infoPanelExpanded = false;
+    $pageStateModel.infoPanelMode = InfoPanelMode.GUIDE;
     $scope.$broadcast('closeallinfowindows');
     $pageStateModel.selectedEntity = null;
-    $scope.$broadcast('detailspanelclosing');
+    $scope.$broadcast('infopanelclosing');
   };
 
   $scope.openGuide = function() {
-    $pageStateModel.detailsPanelMode = DetailsPanelMode.GUIDE;
-    $scope.openDetailsPanel();
+    $pageStateModel.infoPanelMode = InfoPanelMode.GUIDE;
+    $scope.openInfoPanel();
   };
 
   $scope.inTutorial = function() {
@@ -2390,7 +2390,7 @@ function SearchResultState() {
 }
 
 function AddPlacePanelCtrl($scope, $searchResultState, $filterModel) {
-  $scope.$on('detailspanelclosing', function() {
+  $scope.$on('infopanelclosing', function() {
     $searchResultState.clear();
     $filterModel.searchResultsEmphasized = false;
   });
@@ -2434,21 +2434,22 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
   };
 }
 
+// CLEANUP
 function AddPlaceOptionsCtrl($scope, $pageStateModel,
     $searchResultState, $filterModel) {
   $scope.options = [
-    {name: 'Search', mode: DetailsPanelMode.SEARCH_PLACES},
-    {name: 'Browse the Web', mode: DetailsPanelMode.WEB_SEARCH_PLACES},
-    {name: 'Browse Guides', mode: DetailsPanelMode.TRAVEL_GUIDES},
-    {name: 'Clip My Own', mode: DetailsPanelMode.CLIP_MY_OWN}
+    {name: 'Search', mode: InfoPanelMode.SEARCH_PLACES},
+    {name: 'Browse the Web', mode: InfoPanelMode.WEB_SEARCH_PLACES},
+    {name: 'Browse Guides', mode: InfoPanelMode.TRAVEL_GUIDES},
+    {name: 'Clip My Own', mode: InfoPanelMode.CLIP_MY_OWN}
   ];
 
   $scope.setOption = function(option) {
-    if ($pageStateModel.detailsPanelMode != option.mode) {
+    if ($pageStateModel.infoPanelMode != option.mode) {
       $scope.$emit('asktocloseallinfowindows');
-      $pageStateModel.detailsPanelMode = option.mode;
-      $pageStateModel.detailsPanelModeName = option.name;
-      $pageStateModel.detailsPanelExpanded = true;
+      $pageStateModel.infoPanelMode = option.mode;
+      $pageStateModel.infoPanelModeName = option.name;
+      $pageStateModel.infoPanelExpanded = true;
       $pageStateModel.selectedEntity = null;
       $searchResultState.clear();
       $filterModel.searchResultsEmphasized = false;

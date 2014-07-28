@@ -345,51 +345,51 @@ hr.dropdown-separator {
   margin-top: 7px;
 }
 
-.details-panel-nav {
+.info-panel-nav {
   height: 32px;
   position: relative;
   background-color: #ccc;
 }
 
-.details-panel-nav .details-nav-item {
+.info-panel-nav .info-nav-item {
   display: inline-block;
   padding: 5px;
   font-size: 12pt;
 }
 
-.details-panel-nav .details-nav-item a {
+.info-panel-nav .info-nav-item a {
   color: #428bca;
 }
 
-.details-panel-nav .details-nav-item a:hover {
+.info-panel-nav .info-nav-item a:hover {
   color: #2D73A0;
 }
 
-.details-panel-nav .details-nav-item.selected {
+.info-panel-nav .info-nav-item.selected {
   background-color: #777;
 }
 
-.details-panel-nav .details-nav-item.selected a {
+.info-panel-nav .info-nav-item.selected a {
   color: #fff;
 }
 
-.details-panel-nav .details-nav-item.selected a svg {
+.info-panel-nav .info-nav-item.selected a svg {
   fill: #fff;
 }
 
-.details-panel-nav .more-item {
+.info-panel-nav .more-item {
   margin: 5px;
   padding-left: 5px;
   border-left: 1px solid #000;
   float: right;
 }
 
-#details-panel .details-panel-content {
+#info-panel .info-panel-content {
   width: 100%;
   height: 100%;
 }
 
-#details-panel .details-panel-content.with-nav {
+#info-panel .info-panel-content.with-nav {
   height: calc(100% - 32px);
 }
 
@@ -815,7 +815,7 @@ hr.dropdown-separator {
   z-index: 2;
 }
 
-#details-panel {
+#info-panel {
   position: fixed;
   height: calc(100% - 41px);
   top: 41px;
@@ -830,7 +830,7 @@ hr.dropdown-separator {
   transition: left 0.3s;
 }
 
-#details-panel.closed {
+#info-panel.closed {
   left: -40%;
   transition: left 0.3s;
 }
@@ -844,7 +844,7 @@ hr.dropdown-separator {
   transition: all 0.3s;
 }
 
-#map-panel.details-panel-closed {
+#map-panel.info-panel-closed {
   width: 100%;
   left: 0;
   transition: all 0.3s;
@@ -874,7 +874,7 @@ hr.dropdown-separator {
   transition: left 0.3s;
 }
 
-#map-buttons.details-panel-open {
+#map-buttons.info-panel-open {
   left: calc(40% + 10px);
 }
 
