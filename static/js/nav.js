@@ -1,5 +1,6 @@
 // TODO:
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
+// -Add a prompt to save your work if you aren't logged in but have added multiple places.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {

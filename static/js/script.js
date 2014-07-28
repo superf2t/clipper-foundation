@@ -401,8 +401,9 @@ function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
     $timeout, $map, $templateToStringRenderer, $sizeHelper, $shoppingCartService, $window) {
   var me = this;
-  $scope.ed = $scope.item.data;
-  var entityModel = new EntityModel($scope.item.data);
+  $scope.ed = $scope.entity;
+  $scope.item = new ItemModel($scope.ed);
+  var entityModel = new EntityModel($scope.ed);
   $scope.InlineEditMode = InlineEditMode;
 
   $scope.controlState = {

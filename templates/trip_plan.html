@@ -25,24 +25,24 @@
   <div tc-include-and-replace="flashed-messages-template"></div>
 
   <div id="summary-panel" ng-show="{{allow_editing | jsbool}}">
-    <div id="entity-container" class="entity-container"
+    <div ng-include="'trip-plan-header-template'">
+    </div>
+
+    <div id="entity-container"
+      ng-class="{'expanded': pageStateModel.summaryPanelExpanded}"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       skip-scroll-when-in-view="true"
       scroll-dest-selector=".one-entity-leftnav[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor">
-
-      <div ng-include="'trip-plan-header-template'">
-      </div>
-
-      <div ng-repeat="itemGroupModel in itemGroups">
-        <div ng-include="'item-group-template'">
+      <div ng-repeat="entity in planModel.entities()">
+        <div ng-include="'one-entity-leftnav-template'">
         </div>
       </div>
-
-      {% if needs_tutorial %}
-      <div ng-include="'tutorial-left-panel-template'" ng-if="inTutorial()">
-      </div>
-      {% endif %}
     </div>
+
+    {% if needs_tutorial %}
+    <div ng-include="'tutorial-left-panel-template'" ng-if="inTutorial()">
+    </div>
+    {% endif %}
   </div>
 
   <div id="details-panel" ng-show="!pageStateModel.inNewTripPlanModal"
@@ -956,92 +956,25 @@
   </script>
 
   <script type="text/ng-template" id="trip-plan-header-template">
-    <div id="trip-plan-header">
-      <div class="trip-plan-info">
-        <div class="title-section">
-          <div class="title">
-            [[planModel.tripPlanName()]]
-          </div>
-          {% if allow_editing %}
-          <div class="settings-control dropdown" ng-show="!inTutorial()">
-            <a href="javascript:void(0)" class="dropdown-toggle white-link"
-              tooltip="Trip plan settings" tooltip-placement="bottom" tooltip-append-to-body="true">
-              <span class="glyphicon glyphicon-cog"></span>
-            </a>
-            <ul tc-include-and-replace="trip-plan-settings-dropdown-template"></ul>
-          </div>
-          {% endif %}
-        </div>
-        <div class="creator-info">
-          <span ng-if="planModel.hasSource()">
-            Inspired by: [[planModel.tripPlanData['source_url'] | hostNoSuffix ]]
-          </span>
-          <span ng-if="!planModel.hasSource()">
-            Created by: [[ planModel.tripPlanData | creatorDisplayName ]]
-          </span>
-        </div>
-      </div>
-      <div class="controls dropdown" tc-lock-after-scroll scroll-parent="#entity-container"
-        class-when-fixed="fixed" recompute-spread-on="planModel.tripPlanName()">
-        <a class="dropdown-toggle" href="javascript:void(0)">
-          Organize <span class="caret"></span>
+    <div class="trip-plan-header">
+      <span class="trip-name">
+        [[planModel.tripPlanData['name'] ]]
+      </span>
+      <span class="place-count">
+        [[planModel.numEntities()]]
+      </span>
+      <span class="minimize-link">
+        <a ng-click="pageStateModel.summaryPanelExpanded = false"
+          ng-show="pageStateModel.summaryPanelExpanded"
+          href="javascript:void(0)">
+          <span class="glyphicon glyphicon-minus"></span>
         </a>
-        <ul class="dropdown-menu organize-dropdown" ng-controller="OrganizeMenuCtrl">
-          Sort
-          <li>
-            <a ng-click="groupByCategory()" href="javascript:void(0)">
-              by Type
-              <span ng-if="pageStateModel.isGroupByCategory()" class="glyphicon glyphicon-ok"></span>
-            </a>
-          </li>
-          <li>
-            <a ng-click="groupByDay()" href="javascript:void(0)">
-              by Day
-              <span ng-if="pageStateModel.isGroupByDay()" class="glyphicon glyphicon-ok"></span>
-            </a>
-          </li>
-          <hr class="dropdown-separator"/>
-          Filter
-          <li ng-click="suppress($event)">
-            <a ng-click="typesExpanded = !typesExpanded" href="javascript:void(0)">
-              by Type
-              <span class="glyphicon"
-                ng-class="{'glyphicon-collapse-down': !typesExpanded, 'glyphicon-collapse-up': typesExpanded}">
-              </span>
-            </a>
-            <ul ng-show="typesExpanded">
-              <li ng-repeat="category in categories">
-                <a ng-click="filterModel.toggleCategory(category); broadcastFilters()" href="javascript:void(0)">
-                  [[category['display_name'] ]]
-                  <span ng-show="filterModel.isCategorySelected(category)" class="glyphicon glyphicon-ok"></span>
-                </a>
-              </li>
-            </ul>
-          </li>
-          <li ng-click="suppress($event)">
-            <a ng-click="daysExpanded = !daysExpanded" href="javascript:void(0)">
-              by Day
-              <span class="glyphicon"
-                ng-class="{'glyphicon-collapse-down': !daysExpanded, 'glyphicon-collapse-up': daysExpanded}">
-              </span>
-            </a>
-            <ul ng-show="daysExpanded">
-              <li ng-repeat="dayNumber in dayNumbers">
-                <a ng-click="filterModel.toggleDay(dayNumber); broadcastFilters()" href="javascript:void(0)">
-                  Day [[dayNumber]]
-                  <span ng-show="filterModel.isDaySelected(dayNumber)" class="glyphicon glyphicon-ok"></span>
-                </a>
-              </li>
-            </ul>
-          </li>
-        </ul>
-        <div class="reset-control" ng-class="{'emphasis-active': filterModel.emphasizedDayNumber}">
-          <a ng-click="resetMapState()" href="javascript:void(0)" class="white-link"
-            tooltip="Zoom map to entire trip" tooltip-placement="bottom" tooltip-append-to-body="true">
-            <span tc-icon="zoom-select" class="emphasis-zoom-icon"></span>
-          </a>
-        </div>
-      </div>
+        <a ng-click="pageStateModel.summaryPanelExpanded = true"
+          ng-show="!pageStateModel.summaryPanelExpanded"
+          href="javascript:void(0)">
+          <span class="glyphicon glyphicon-plus"></span>
+        </a>
+      </span>
     </div>
   </script>
 

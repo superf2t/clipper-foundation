@@ -175,89 +175,24 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
-#trip-plan-header {
-  position: relative;
-}
-
-#trip-plan-header .trip-plan-info {
-  margin: 10px;
-}
-
-#trip-plan-header .title-section {
-  position: relative;
-}
-
-#trip-plan-header .title {
-  font-size: 1.2em;
-}
-
-#trip-plan-header .settings-control {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-#trip-plan-header .controls {
-  padding: 5px 10px;
-  background-color: #222;
-  position: relative;
-}
-
-#trip-plan-header .controls.fixed {
-  position: fixed;
-  top: 41px;
-  width: 20%;
-  z-index: 1;
-}
-
-#trip-plan-header .controls .dropdown-toggle {
-  font-size: 1.1em;
-}
-
-#trip-plan-header .organize-dropdown {
-  background-color: #222;
-  font-size: 0.9em;
-  padding: 10px;
-  margin: -1px 0 0 0;
-}
-
-#trip-plan-header .organize-dropdown a {
-  color: #fff;
-}
-
-#trip-plan-header .organize-dropdown a:hover {
-  background-color: #ccc;
-}
-
-#trip-plan-header .controls .reset-control {
-  position: absolute;
-  top: 5px;
-  right: 10px;
-  display: none;
-}
-
-#trip-plan-header .controls .reset-control.emphasis-active {
-  display: block;
-}
-
-#trip-plan-header .controls:hover .reset-control {
-  display: block;
-}
-
 /* Map View */
 
 #entity-container {
-  width: 100%;
-  height: 100%;
+  max-height: 0;
+  transition: max-height 0.3s;
   overflow-y: auto;
-  background-color: #4A4A4A;
+  width: 100%;
+  background-color: #FAFAFA;
+  color: #000;
+  z-index: 1;
+
+  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
-.entity-container,
-.entity-container h3,
-.entity-container h4,
-.entity-container a {
-  color: #fff;
+#entity-container.expanded {
+  max-height: calc(100% - 40px);
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -307,11 +242,11 @@ hr.dropdown-separator {
 
 .one-entity-leftnav.selected,
 .one-entity-listing.selected {
-  background-color: #666666 !important;
+  background-color: #bbb !important;
 }
 
 .one-entity-leftnav:hover {
-  background-color: #444444;
+  background-color: #ddd;
 }
 
 .one-entity-leftnav .entity-circle-img,
@@ -841,17 +776,13 @@ hr.dropdown-separator {
 
 #summary-panel {
   position: fixed;
-  max-height: calc(100% - 41px - 10px - 30px);
-  overflow-y: scroll;
   top: calc(41px + 10px);
   right: 10px;
   width: 15%;
+  height: calc(100% - 41px - 10px - 20px);
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing: grayscale;
   z-index: 2;
-  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 #details-panel {
@@ -915,6 +846,40 @@ hr.dropdown-separator {
 
 #map-buttons.details-panel-open {
   left: calc(40% + 10px);
+}
+
+#summary-panel .trip-plan-header {
+  background-color: #fff;
+  color: #000;
+  position: relative;
+  padding: 10px;
+
+  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
+}
+
+#summary-panel .trip-plan-header .trip-plan-name {
+  font-weight: bold;
+}
+
+#summary-panel .trip-plan-header .place-count {
+  background-color: #4A90E2;
+  color: #fff;
+  padding: 3px 5px;
+  margin-left: 15px;
+  border-radius: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#summary-panel .trip-plan-header .minimize-link {
+  padding-left: 5px;
+  border-left: 1px solid #000;
+  position: absolute;
+  top: 0;
+  right: 0;
+  margin: 10px;
 }
 
 .add-place-options-dropdown {
