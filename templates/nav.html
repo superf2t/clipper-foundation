@@ -135,7 +135,8 @@
       </li>
       <li ng-repeat="tripPlan in allTripPlans">
         <span ng-if="!isActiveTrip(tripPlan)">
-          <a ng-show="shoppingCartMode" class="trip-link" href="javascript:void(0)">
+          <a ng-show="shoppingCartMode" class="trip-link"
+            ng-click="makeTripPlanActive(tripPlan)" href="javascript:void(0)">
             [[tripPlan['name'] ]]
           </a>
           <a ng-show="!shoppingCartMode" class="trip-link"

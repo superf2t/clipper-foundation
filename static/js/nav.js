@@ -1,7 +1,7 @@
 // TODO:
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
 
-function NavCtrl($scope, $modal, $window) {
+function NavCtrl($scope, $entityService, $modal, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
     var scope = $scope.$new(true);
     scope.iframeUrl = loginUrl;
@@ -36,6 +36,15 @@ function NavCtrl($scope, $modal, $window) {
   $scope.isActiveTrip = function(tripPlan) {
     return tripPlan && $scope.activeTripPlan
       && tripPlan['trip_plan_id'] == $scope.activeTripPlan['trip_plan_id'];
+  };
+
+  $scope.makeTripPlanActive = function(tripPlan) {
+    $scope.activeTripPlan = tripPlan;
+    $scope.numEntities = null;
+    $entityService.getByTripPlanId(tripPlan['trip_plan_id'])
+      .success(function(response) {
+        $scope.numEntities = response['entities'].length;
+      });
   };
 }
 

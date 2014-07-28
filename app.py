@@ -126,7 +126,7 @@ def trip_plan_by_id(trip_plan_id):
         # We have it we won't use it since there's no shopping cart.
         active_trip_plan = None
     else:
-        active_trip_plan = sorted_trip_plans[0] if sorted_trip_plans else none
+        active_trip_plan = sorted_trip_plans[0] if sorted_trip_plans else None
 
     active_entities = None 
     if not allow_editing and active_trip_plan:
