@@ -4648,6 +4648,25 @@ function tcTransitionend($parse) {
   };
 }
 
+function tcAnimateOnChangeTo() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcAnimateOnChangeTo, function(newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          element.addClass(attrs.classToAdd);
+          if (attrs.removeWhenComplete) {
+            element.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',
+              function() {
+                element.removeClass(attrs.classToAdd);
+              });
+          }
+        }
+      });
+    }
+  };
+};
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -4701,7 +4720,8 @@ angular.module('directivesModule', [])
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcIcon', tcIcon)
-  .directive('tcSvgHack', tcSvgHack);
+  .directive('tcSvgHack', tcSvgHack)
+  .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo);
 
 function makeFilter(fn) {
   return function() {

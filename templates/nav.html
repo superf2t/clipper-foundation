@@ -16,7 +16,9 @@
                   [[activeTripPlan['name'] ]]
                 </a>
               </li>
-              <li ng-if="shoppingCartMode && activeTripPlan" class="place-count">
+              <li ng-if="shoppingCartMode && activeTripPlan" class="place-count"
+                tc-animate-on-change-to="numEntities" class-to-add="place-count-changed"
+                remove-when-complete="true">
                 <a href="javascript:void(0)">
                   [[numEntities]]
                 </a>

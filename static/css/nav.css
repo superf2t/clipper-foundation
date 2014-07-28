@@ -46,6 +46,11 @@
   border-radius: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.5s;
+}
+
+.navbar .place-count-changed a {
+  background-color: red;
 }
 
 .navbar .new-trip-item > a {
