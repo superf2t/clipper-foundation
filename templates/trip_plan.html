@@ -32,9 +32,9 @@
       ng-class="{'expanded': pageStateModel.summaryPanelExpanded}"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       skip-scroll-when-in-view="true"
-      scroll-dest-selector=".one-entity-leftnav[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor">
+      scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor">
       <div ng-repeat="entity in planModel.entities()">
-        <div ng-include="'one-entity-leftnav-template'">
+        <div ng-include="'one-entity-summary-template'">
         </div>
       </div>
     </div>
@@ -536,7 +536,7 @@
           </div>
         </div>
         <div ng-repeat="item in itemGroupModel.getEntityItems()">
-          <div ng-include="'one-entity-leftnav-template'">
+          <div ng-include="'one-entity-summary-template'">
           </div>
         </div>
       </div>
@@ -595,8 +595,8 @@
     </span>
   </script>
 
-  <script type="text/ng-template" id="one-entity-leftnav-template">
-    <div ng-controller="EntityCtrl" class="one-entity-leftnav"
+  <script type="text/ng-template" id="one-entity-summary-template">
+    <div ng-controller="EntityCtrl" class="one-entity-summary"
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id']),
         'controls-open': controlState.open}"
