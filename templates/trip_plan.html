@@ -53,12 +53,22 @@
     </div>
     {% endif %}
     <div class="info-panel-content {% if allow_editing %}with-nav{% endif %}">
-      <div ng-include="'details-panel-template'" class="full-width full-height"
-        ng-show="!pageStateModel.inAddPlacePanel()">
+      <div ng-include="'details-panel-template'"
+        class="full-width full-height"
+        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.DETAILS">
       </div>
       {% if allow_editing %}
-      <div ng-include="'add-place-panel-template'" class="full-width full-height"
-        ng-if="pageStateModel.inAddPlacePanel()">
+      <div ng-include="'guides-panel-template'"
+        class="full-width full-height"
+        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.GUIDES">
+      </div>
+      <div ng-include="'add-your-own-panel-template'"
+        class="full-width full-height"
+        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN">
+      </div>
+      <div ng-include="'export-panel-template'"
+        class="full-width full-height"
+        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
       </div>
       {% endif %}
     </div>
@@ -91,23 +101,27 @@
 
   <script type="text/ng-template" id="info-panel-nav-template">
     <div class="info-panel-nav">
-      <span class="info-nav-item" ng-class="{'selected': true}">
-        <a href="javascript:void(0)">
+      <span class="info-nav-item"
+        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
+        <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
           <span tc-icon="trip-plan"></span> View Details
         </a>
       </span>
-      <span class="info-nav-item">
-        <a href="javascript:void(0)">
+      <span class="info-nav-item"
+        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}">
+        <a ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)">
           <span class="glyphicon glyphicon-book"></span> Browse Guides
         </a>
       </span>
-      <span class="info-nav-item">
-        <a href="javascript:void(0)">
+      <span class="info-nav-item"
+        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}">
+        <a ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"  href="javascript:void(0)">
           <span class="glyphicon glyphicon-plus"></span> Add Your Own
         </a>
       </span>
-      <span class="info-nav-item">
-        <a href="javascript:void(0)">
+      <span class="info-nav-item"
+        ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}">
+        <a ng-click="goToInfoPanel(InfoPanelMode.EXPORT)" href="javascript:void(0)">
           <span class="glyphicon glyphicon-share"></span> Export
         </a>
       </span>
@@ -121,7 +135,7 @@
 
   <script type="text/ng-template" id="control-buttons-template">
     <div id="map-buttons" ng-class="{'info-panel-open': pageStateModel.infoPanelExpanded}">
-      <button class="btn btn-default" ng-click="openGuide()"
+      <button class="btn btn-default" ng-click="openDetailsPanel()"
         ng-show="!pageStateModel.infoPanelExpanded">
         <span class="glyphicon glyphicon-plus"></span>
       </button>
@@ -133,17 +147,6 @@
   </script>
 
   {% if allow_editing %}
-  <script type="text/ng-template" id="add-place-mode-dropdown-template">
-    <ul class="dropdown-menu add-place-options-dropdown"
-      ng-controller="AddPlaceOptionsCtrl">
-      <li ng-repeat="option in options">
-        <a ng-click="setOption(option)" href="javascript:void(0)">
-          [[option.name]]
-        </a>
-      </li>
-    </ul>
-  </script>
-
   <script type="text/ng-template" id="trip-plan-settings-dropdown-template">
     <ul class="dropdown-menu right-top-dropdown-menu">
       <li>
@@ -1079,47 +1082,28 @@
   {% endif %}
 
   {% if allow_editing %}
-  <script type="text/ng-template" id="add-place-panel-template">
-    <div class="add-place-panel" ng-controller="AddPlacePanelCtrl">
-      <div ng-include="'add-place-panel-header-template'">
-      </div>
-      <div class="panel-body">
-        <div ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SEARCH_PLACES"
-          ng-include="'search-panel-template'"
-          class="full-width full-height">
-        </div>
-        <div ng-if="pageStateModel.infoPanelMode == InfoPanelMode.WEB_SEARCH_PLACES"
-          ng-include="'web-search-panel-template'"
-          class="full-width full-height">
-        </div>
-        <div ng-if="pageStateModel.infoPanelMode == InfoPanelMode.TRAVEL_GUIDES"
-          ng-include="'travel-guides-panel-template'"
-          class="full-width full-height">
-        </div>
-        <div ng-if="pageStateModel.infoPanelMode == InfoPanelMode.CLIP_MY_OWN"
-          ng-include="'clip-my-own-panel-template'"
-          class="full-width full-height">
-        </div>
+  <script type="text/ng-template" id="guides-panel-template">
+    <div class="guides-panel">
+      <div class="header">
+        Browse popular guides for <i>[[planModel.tripPlanData['location_name'] ]]</i>
+        to add to your trip
       </div>
     </div>
   </script>
 
-  <script type="text/ng-template" id="add-place-panel-header-template">
-    <div class="header">
-      Add Places
-      <span class="glyphicon glyphicon-chevron-right breadcrumb-separator"></span>
-      <span class="header-mode-control dropdown">
-        <span class="dropdown-toggle mode-dropdown-control">
-          [[pageStateModel.infoPanelModeName]]
-          <span class="caret"></span>
-        </span>
-        <div tc-include-and-replace="add-place-mode-dropdown-template">
-        </div>
-      </span>
-      <div class="close-control">
-        <a ng-click="closeInfoPanel()" href="javascript:void(0)" class="white-link">
-          <span class="glyphicon glyphicon-remove-circle"></span>
-        </a>
+  <script type="text/ng-template" id="add-your-own-panel-template">
+    <div class="add-your-own-panel">
+      <div class="header">
+        Search for places by name, address, or category in
+        <i>[[planModel.tripPlanData['location_name'] ]]</i>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="export-panel-template">
+    <div class="export-panel">
+      <div class="header">
+        Take your trip plan with you on the road.
       </div>
     </div>
   </script>
