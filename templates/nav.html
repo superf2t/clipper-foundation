@@ -207,6 +207,15 @@
           <img src="/static/img/spinner-small.gif"/>
         </div>
       </div>
+      {% if not account_info.logged_in %}
+      <div class="login-prompt">
+        Already have a trip you're planning?
+        <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+          href="javascript:void(0)">
+          Log in
+        </a>
+      </div>
+      {% endif %}
     </div>
   </div>
 </script>

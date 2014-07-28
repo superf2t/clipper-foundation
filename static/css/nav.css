@@ -240,3 +240,16 @@
   max-width: 25px;
   max-height: 25px;
 }
+
+.new-trip-modal .login-prompt {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.new-trip-modal .login-prompt a {
+  color: #428bca !important;
+}
+
+.new-trip-modal .login-prompt a:hover {
+  color: #2D73A0 !important;
+}

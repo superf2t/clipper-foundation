@@ -17,7 +17,7 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   };
 
   $scope.openNewTripModal = function(opt_callback, opt_clippingEntity) {
-    var scope = $scope.$new(true);
+    var scope = $scope.$new();
     var modal = null;
     scope.onCreate = function(tripPlan) {
       if ($scope.shoppingCartMode) {
