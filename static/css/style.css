@@ -594,7 +594,7 @@ hr.dropdown-separator {
   font-size: 13pt;
   display: inline-block;
   vertical-align: top;
-  padding-top: 5px;
+  padding: 5px 5px 0 0;
 }
 
 .one-entity-details .info-tabs {

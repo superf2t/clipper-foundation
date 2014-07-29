@@ -610,7 +610,7 @@ var InfoTab = {
 };
 
 function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
-    $searchResultState, $entityClippingService) {
+    $searchResultState, $entityService, $tripPlanModel, $entityClippingService) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
 
@@ -651,6 +651,17 @@ function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
 
   $scope.clipEntity = function() {
     $entityClippingService.clipEntity($scope.ed, $scope.tripPlanId, $scope.resultIndex);
+  };
+
+  $scope.saveStarState = function(starred) {
+    $scope.ed['starred'] = starred;
+    $entityService.editEntity({
+      'entity_id': $scope.ed['entity_id'],
+      'starred': starred
+    }, $tripPlanModel.tripPlanId())
+    .success(function(response) {
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    });
   };
 }
 
