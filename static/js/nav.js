@@ -1,6 +1,7 @@
 // TODO:
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
+// -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 
 // CLEANUP:
 // -Remove item groups and associated templating.

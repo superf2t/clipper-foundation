@@ -11,6 +11,7 @@ import enums
 import geocode
 import geometry
 import google_places
+import guide_config
 import kml_import
 import mailer
 import sample_sites
@@ -870,24 +871,15 @@ class TripPlanService(service.Service):
             for editor in trip_plan.editors:
                 editor.display_name = resolver.resolve(editor.public_id)
 
-    FEATURED_TRIP_PLANS_USERS = (
-         'admin@nytimes.com', 'admin@nomadicmatt.com', 'admin@letsgo.com',
-         'admin@tripadvisor.com', 'admin@frommers.com', 'admin@travelclipper.com',
-         'admin@lonelyplanet.com',
-        )
-
     def findtripplans(self, request):
-        featured_trip_plans = []
-        for username in self.FEATURED_TRIP_PLANS_USERS:
-            featured_trip_plans.extend(data.load_all_trip_plans_for_creator(username))
         trip_plans = []
-        for trip_plan in featured_trip_plans:
-            if not trip_plan.location_latlng:
-                continue
-            distance = geometry.earth_distance_meters(trip_plan.location_latlng.lat, trip_plan.location_latlng.lng,
+        for city_config in guide_config.GUIDES_BY_CITY.itervalues():
+            distance = geometry.earth_distance_meters(
+                city_config.latlng['lat'], city_config.latlng['lng'],
                 request.location_latlng.lat, request.location_latlng.lng)
             if distance < 40000:
-                trip_plans.append(trip_plan)
+                guides = data.load_trip_plans_by_ids(city_config.trip_plan_ids)
+                trip_plans.extend([guide for guide in guides if guide])
 
         self.migrate_creators(trip_plans)
         self.resolve_display_users(trip_plans)

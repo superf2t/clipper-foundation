@@ -124,3 +124,33 @@ GUIDES = make_guide_configs(
 
 GUIDES_BY_CITY = dict((config.city_name, config) for config in GUIDES)
 GUIDES_BY_CITY_URL_TOKEN = dict((config.city_name_url_token, config) for config in GUIDES)
+
+SOURCE_HOST_TO_ICON_URL = {
+    'www.bonappetit.com': 'http://www.bonappetit.com/wp-content/themes/bonappetit-2.0.0/i/icons/favicon.ico',
+    'www.frommers.com': "http://www.frommers.com/favicon.ico",
+    'www.fodors.com': "http://www.fodors.com/favicon.ico",
+    'www.lonelyplanet.com': 'http://www.lonelyplanet.com/favicon.ico',
+    'www.nytimes.com': 'http://www.nytimes.com/favicon.ico',
+    'www.nomadicmatt.com': 'http://www.nomadicmatt.com/favicon.ico',
+    'www.hemispheresmagazine.com': 'http://www.hemispheresmagazine.com/images/favicon.ico',
+    'www.ricksteves.com': 'http://www.ricksteves.com/assets/favicon.ico',
+    'www.travelandleisure.com': 'http://www.travelandleisure.com/favicon.ico',
+    'www.thrillist.com': 'http://www.thrillist.com/thrillist_favicon.ico',
+    'www.tripadvisor.com': 'http://tripadvisor.com/favicon.ico',
+    'www.zagat.com': 'http://www.zagat.com/favicon.ico',
+}
+
+SOURCE_HOST_TO_DISPLAY_NAME = {
+    'www.bonappetit.com': 'Bon Appetit',
+    'www.frommers.com': "Frommer's",
+    'www.fodors.com': "Fodor's",
+    'www.lonelyplanet.com': 'Lonely Planet',
+    'www.nytimes.com': 'The New York Times',
+    'www.nomadicmatt.com': 'Nomadic Matt',
+    'www.hemispheresmagazine.com': 'United Hemispheres',
+    'www.ricksteves.com': 'Rick Steves',
+    'www.travelandleisure.com': 'Travel & Leisure',
+    'www.thrillist.com': 'Thrillist',
+    'www.tripadvisor.com': 'TripAdvisor',
+    'www.zagat.com': 'Zagat',
+}

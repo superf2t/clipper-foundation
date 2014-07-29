@@ -2509,22 +2509,22 @@ function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
   };
 }
 
-function TravelGuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
+function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
     $mapManager, $filterModel) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
   $scope.loading = true;
-  $scope.tripPlans = null;
-  $scope.selectedTripPlan = null;
+  $scope.guides = null;
+  $scope.selectedGuide = null;
 
   $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
     .success(function(response) {
       $scope.loading = false;
-      $scope.tripPlans = response['trip_plans'];
+      $scope.guides = response['trip_plans'];
     });
 
-  $scope.selectTripPlan = function(tripPlan) {
-    $scope.selectedTripPlan = tripPlan;
-    $mapManager.fitBoundsToEntities(tripPlan['entities']);
+  $scope.selectGuide = function(guide) {
+    $scope.selectedGuide = guide;
+    $mapManager.fitBoundsToEntities(guide['entities']);
     $filterModel.searchResultsEmphasized = true;
   };
 
@@ -4796,7 +4796,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
-    .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
+    .controller('GuidesPanelCtrl', GuidesPanelCtrl)
     .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
     .controller('EditImagesCtrl', EditImagesCtrl)

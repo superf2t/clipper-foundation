@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import urlparse
 
 from dateutil import parser as date_parser
 from dateutil import tz
@@ -8,6 +9,7 @@ from dateutil import tz
 import constants
 import crypto
 import enums
+import guide_config
 import serializable
 import struct
 import values
@@ -230,7 +232,9 @@ class TripPlan(serializable.Serializable):
         serializable.listf('invitee_emails'),
         'last_modified', 'status',
         'trip_plan_type', serializable.objlistf('tags', Tag),
-        'content_date', 'view_count', 'clip_count')
+        'content_date', 'view_count', 'clip_count',
+        # Display-only fields
+        'content_display_date', 'source_icon', 'source_display_name')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
@@ -268,6 +272,21 @@ class TripPlan(serializable.Serializable):
         self.creator = creator  # Deprecated in favor of user
         self.editors = editors or []
         self.invitee_emails = invitee_emails or []
+
+
+    def initialize(self):
+        if self.trip_plan_type == TripPlanType.GUIDE.name:
+            if self.content_date:
+                self.content_display_date = self.content_date_datetime().strftime('%B %Y')
+            else:
+                self.content_display_date = None
+            if self.source_url:
+                source_host = urlparse.urlparse(self.source_url).netloc.lower()
+                self.source_icon = guide_config.SOURCE_HOST_TO_ICON_URL.get(source_host)
+                self.source_display_name = guide_config.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
+            else:
+                self.source_icon = None
+                self.source_display_name = None
 
     def entity_by_source_url(self, source_url):
         for entity in self.entities:
@@ -372,6 +391,9 @@ class TripPlan(serializable.Serializable):
         self.last_modified = None
         self.editors = ()
         self.invitee_emails = ()
+        self.content_display_date = None
+        self.source_icon = None
+        self.source_display_name = None
         return self
 
     def strip_child_objects(self):

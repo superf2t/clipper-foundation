@@ -60,23 +60,23 @@
       {% if allow_editing %}
       <div ng-include="'guides-panel-template'"
         class="full-width full-height"
-        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.GUIDES">
+        ng-if="pageStateModel.infoPanelMode == InfoPanelMode.GUIDES">
       </div>
       <div ng-include="'add-your-own-panel-template'"
         class="full-width full-height"
-        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN">
+        ng-if="pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN">
       </div>
       <div ng-include="'export-panel-template'"
         class="full-width full-height"
-        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
+        ng-if="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
       </div>
       <div ng-include="'sharing-panel-template'"
         class="full-width full-height"
-        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
+        ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
       </div>
       <div ng-include="'settings-panel-template'"
         class="full-width full-height"
-        ng-show="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
+        ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
       </div>
       {% endif %}
     </div>
@@ -1109,16 +1109,48 @@
 
   {% if allow_editing %}
   <script type="text/ng-template" id="guides-panel-template">
-    <div class="guides-panel">
+    <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl">
       <div class="header">
         Browse popular guides for <i>[[planModel.tripPlanData['location_name'] ]]</i>
         to add to your trip
+      </div>
+      <div ng-show="loading">
+        Loading... <img ng-src="/static/img/spinner-small.gif"/>
+      </div>
+      <div ng-show="!loading && (!guides || !guides.length)" class="no-guides-msg">
+        There aren't any featured guides for this area yet.
+        <a href="javascript:void(0)">Create your own.</a>
+      </div>
+      <div ng-show="guides && guides.length">
+        <div ng-repeat="guide in guides"
+          class="featured-guide-header featured-guide-preview"
+          ng-style="{'background-image': guide['cover_image_url'] && 'url(&quot;' + guide['cover_image_url'] + '&quot;)'}"
+          ng-click="selectGuide(guide)">
+          <div class="guide-info">
+            <div class="guide-name">[[guide['name'] ]]</div>
+            <div class="guide-metadata">
+              <div>
+                <img ng-if="guide['source_icon']"
+                  ng-src="[[guide['source_icon'] ]]" class="source-icon"/>
+                Inspired by
+                [[guide['source_display_name'] ]]
+              </div>
+              <div>
+                <span ng-show="guide['content_display_date']">
+                  [[guide['content_display_date'] ]]
+                  |
+                </span>
+                [[guide.entities.length]] places
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </script>
 
   <script type="text/ng-template" id="add-your-own-panel-template">
-    <div class="add-your-own-panel">
+    <div class="add-your-own-panel one-info-panel">
       <div class="header">
         Search for places by name, address, or category in
         <i>[[planModel.tripPlanData['location_name'] ]]</i>
@@ -1127,7 +1159,7 @@
   </script>
 
   <script type="text/ng-template" id="export-panel-template">
-    <div class="export-panel">
+    <div class="export-panel one-info-panel">
       <div class="header">
         Take your trip plan with you on the road.
       </div>
@@ -1135,7 +1167,7 @@
   </script>
 
   <script type="text/ng-template" id="sharing-panel-template">
-    <div class="export-panel">
+    <div class="export-panel one-info-panel">
       <div class="header">
         Share your trip with collaborators and viewers
       </div>
@@ -1143,7 +1175,7 @@
   </script>
 
   <script type="text/ng-template" id="settings-panel-template">
-    <div class="export-panel">
+    <div class="export-panel one-info-panel">
       <div class="header">
         Settings
       </div>
