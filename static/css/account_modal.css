@@ -1,0 +1,52 @@
+html, body {
+  font-family: 'Avenir';
+  background-color: #EAEAEA;
+}
+
+.modal-logo {
+  font-family: 'Raleway';
+  padding: 6px 10px;
+  font-size: 1.6em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.modal-action-header {
+  font-size: 1.2em;
+  text-align: center;
+}
+
+.form-wrapper {
+  padding: 20px 50px;
+}
+
+.form-control {
+  font-size: 1.2em !important;
+}
+
+#first_name_input {
+  float: left;
+  width: 49%;
+}
+
+#last_name_input {
+  float: right;
+  width: 49%;
+}
+
+.btn-wrapper {
+  text-align: center;
+}
+
+.modal-btn {
+  background-color: #50B0B2 !important;
+}
+
+.modal-bottom-cta {
+  margin-top: 30px;
+  text-align: center;
+}
+
+#forgot-password {
+  padding-top: 10px;
+}

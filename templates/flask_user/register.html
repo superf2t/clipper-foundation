@@ -31,51 +31,57 @@
   });
 </script>
 
-<h1>Register</h1>
+<div class="modal-logo">
+  TravelClipper
+</div>
+<div class="modal-action-header">
+  Sign up to browse and build travel guides
+</div>
 
-<form action="" method="POST" novalidate formnovalidate class="form" role="form">
-  {{ form.hidden_tag() }}
+<div class="form-wrapper">
+  <form action="" method="POST" novalidate formnovalidate class="form" role="form">
+    {{ form.hidden_tag() }}
 
-  {# Would be preferable to make 'next' a hidden field and it would get rendered
-     automatically in hidden_tag(), but it's not clear how to pre-populate it
-     with the value from the url in that case without overriding the view handler. #}
-  <div style="display: none">
-    {{ render_field(form.next, value=request.args.get('next', '')) }}
-    {{ render_field(form.iframe, value=request.args.get('iframe', '')) }}
-  </div>
-
-  {# Can change to form.username to swtich to username login #}
-  {% set field = form.email %}
-  <div class="form-group {% if field.errors %}has-error{% endif %}">
-    <div class="row">
-      <div class="col-xs-6">
-        <label for="{{ field.id }}" class="control-label">{{ field.label.text }}</label>
-      </div>
-      <div class="col-xs-6 text-right">
-          <a href="{{ url_for('user.login', next=request.args.get('next', ''), iframe=request.args.get('iframe')) }}" tabindex='290'>
-            Already registered? Sign in.
-          </a>
-      </div>
+    {# Would be preferable to make 'next' a hidden field and it would get rendered
+       automatically in hidden_tag(), but it's not clear how to pre-populate it
+       with the value from the url in that case without overriding the view handler. #}
+    <div style="display: none">
+      {{ render_field(form.next, value=request.args.get('next', '')) }}
+      {{ render_field(form.iframe, value=request.args.get('iframe', '')) }}
     </div>
-    {{ field(class_='form-control', autofocus=true, tabindex=210) }}
-    {% if field.errors %}
-      {% for e in field.errors %}
-        <p class="help-block">{{ e }}</p>
-      {% endfor %}
+    <span id="first_name_input">
+      {{ render_field(form.first_name, label_visible=False, placeholder='First name', autofocus=true, tabindex=220) }}
+    </span>
+    <span id="last_name_input">
+      {{ render_field(form.last_name, label_visible=False, placeholder='Last name', tabindex=221) }}
+    </span>
+    {# Can change to form.username to switch to username login #}
+    {% set field = form.email %}
+    <div class="form-group {% if field.errors %}has-error{% endif %}">
+      {{ field(class_='form-control', placeholder='Email address', tabindex=210) }}
+      {% if field.errors %}
+        {% for e in field.errors %}
+          <p class="help-block">{{ e }}</p>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+    {{ render_field(form.display_name, label_visible=False, placeholder='Display name (your publicly visible user name)', tabindex=222) }}
+
+    {{ render_field(form.password, label_visible=False, placeholder='Password', tabindex=230) }}
+
+    {% if user_manager.enable_retype_password %}
+      {{ render_field(form.retype_password, label_visible=False, placeholder='Confirm password', tabindex=240) }}
     {% endif %}
-  </div>
-
-  {{ render_field(form.first_name, tabindex=220) }}
-  {{ render_field(form.last_name, tabindex=221) }}
-  {{ render_field(form.display_name, placeholder='e.g. Keyser S', tabindex=222) }}
-
-  {{ render_field(form.password, tabindex=230) }}
-
-  {% if user_manager.enable_retype_password %}
-    {{ render_field(form.retype_password, tabindex=240) }}
-  {% endif %}
-
-  {{ render_submit_field(form.submit, tabindex=280) }}
-</form>
+    <div class="btn-wrapper">
+      <input type="submit" class="btn modal-btn" value="Sign Up">
+    </div>
+    <div class="modal-bottom-cta">
+      <a href="{{ url_for('user.login', next=request.args.get('next', ''), iframe=request.args.get('iframe')) }}" tabindex='290'>
+        Already registered? Sign in.
+      </a>
+    </div>
+  </form>
+</div>
 
 {% endblock %}
