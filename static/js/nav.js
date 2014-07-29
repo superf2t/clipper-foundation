@@ -10,6 +10,8 @@
 // -Render and editing for entity tags.
 // -Check whether the right entity name appears in the reclipping confirmation.
 // -Add "Remember me" support for login.
+// -Change the login page to target the iframe and not the top frame;
+//  if successful, do a page reload.
 
 // CLEANUP:
 // -Remove item groups and associated templating.

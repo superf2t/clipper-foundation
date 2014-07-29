@@ -1113,7 +1113,7 @@
         <div ng-show="infoTab == InfoTab.DETAILS">
           <div class="source-attribution" ng-show="ed['source_url']">
             Place info from
-            <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_url'] | hostname ]]</a>
+            <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_display_name'] ]]</a>
           </div>
           <div ng-show="ed['address']" class="detail-item">
             Address: [[ed['address'] ]]

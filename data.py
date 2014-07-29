@@ -9,7 +9,6 @@ from dateutil import tz
 import constants
 import crypto
 import enums
-import guide_config
 import serializable
 import struct
 import values
@@ -127,7 +126,8 @@ class Entity(serializable.Serializable):
         'starred', serializable.objlistf('comments', Comment),
         'description', 'primary_photo_url',
         serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
-        'source_url', 'origin_trip_plan_id', 'origin_trip_plan_name',
+        'source_url', 'source_display_name',
+        'origin_trip_plan_id', 'origin_trip_plan_name',
         'google_reference', 'last_access',
         'day', 'day_position')
 
@@ -175,6 +175,13 @@ class Entity(serializable.Serializable):
 
         self.day = day  # Deprecated
         self.day_position = day_position  # Deprecated
+
+    def initialize(self):
+        if self.source_url:
+            source_host = urlparse.urlparse(self.source_url).netloc.lower()
+            self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host, source_host)
+        else:
+            self.source_display_name = None
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:
@@ -285,8 +292,8 @@ class TripPlan(serializable.Serializable):
                 self.content_display_date = None
             if self.source_url:
                 source_host = urlparse.urlparse(self.source_url).netloc.lower()
-                self.source_icon = guide_config.SOURCE_HOST_TO_ICON_URL.get(source_host)
-                self.source_display_name = guide_config.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
+                self.source_icon = constants.SOURCE_HOST_TO_ICON_URL.get(source_host)
+                self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
             else:
                 self.source_icon = None
                 self.source_display_name = None
