@@ -114,6 +114,10 @@ function EntityModel(entityData, editable) {
     }
     return new google.maps.LatLng(this.data['latlng']['lat'], this.data['latlng']['lng']);
   };
+
+  this.latlngString = function() {
+    return [this.data['latlng']['lat'], this.data['latlng']['lng']].join(',')
+  };
 }
 
 function TripPlanModel(tripPlanData, entityDatas, notes) {
@@ -600,7 +604,8 @@ function EntityCtrl($scope, $entityService, $modal,
 var InlineEditMode = {
   COMMENTS: 1,
   DAY_PLANNER: 2,
-  DIRECTIONS: 3
+  DIRECTIONS: 3,
+  TAGS: 4
 };
 
 var InfoTab = {
@@ -609,8 +614,9 @@ var InfoTab = {
   COMMENTS: 3
 };
 
-function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
-    $searchResultState, $entityEditingService, $entityClippingService) {
+function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
+    $pageStateModel, $searchResultState, $entityEditingService, 
+    $entityClippingService, $window) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
 
@@ -622,6 +628,11 @@ function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
 
   $scope.infoTab = $scope.showAboutTab() ? InfoTab.ABOUT : InfoTab.DETAILS;
   $scope.InfoTab = InfoTab;
+
+  $scope.inlineEditMode = null;
+  $scope.InlineEditMode = InlineEditMode;
+
+  $scope.directionsHelper = new DirectionsHelper($tripPlanModel.entities(), $window);
 
   $scope.selectInfoTab = function(infoTab) {
     $scope.infoTab = infoTab;
@@ -663,6 +674,11 @@ function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
 
   $scope.openEditPlaceModal = function() {
     $entityEditingService.openEditPlaceModal($scope.ed);
+  };
+
+  $scope.openDirections = function() {
+    $scope.infoTab = InfoTab.DETAILS;
+    $scope.inlineEditMode = InlineEditMode.DIRECTIONS;
   };
 }
 
@@ -3953,6 +3969,30 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
         doShoppingCartClip();
       }      
     }
+  };
+}
+
+function DirectionsHelper(entities, $window) {
+  this.entities = entities;
+  this.direction = 'from';
+  this.destination = null;
+
+  this.toggleDirection = function() {
+    this.direction = this.direction == 'to' ? 'from' : 'to';
+  };
+
+  this.getDirections = function(originEntity) {
+    if (!this.destination) {
+      return;
+    }
+    var origin = this.direction == 'to'
+      ? originEntity : this.destination;
+    var destination = this.direction == 'to'
+      ? this.destination : originEntity;
+    var url = 'https://www.google.com/maps/dir/' + 
+      new EntityModel(origin).latlngString() + '/' +
+      new EntityModel(destination).latlngString();
+    $window.open(url, '_blank');
   };
 }
 

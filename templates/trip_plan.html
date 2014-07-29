@@ -1130,6 +1130,23 @@
               [[ed['website'] ]]
             </a>
           </div>
+          <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="inline-editor">
+            Get directions
+            <a ng-click="directionsHelper.toggleDirection()"
+              href="javascript:void(0)" class="color-link">
+              [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
+            </a>
+            <select class="form-control directions-select"
+              ng-options="e['name'] for e in directionsHelper.entities"
+              ng-model="directionsHelper.destination">
+              <option value="">Select destination</option>
+            </select>
+            <button class="btn btn-primary"
+              ng-click="directionsHelper.getDirections(ed)"
+              ng-disabled="!directionsHelper.destination">
+              Go
+            </button>
+          </div>
         </div>
       </div>
       <div class="editing-controls" ng-if="isEditable">
@@ -1137,7 +1154,7 @@
           <a href="javascript:void(0)">
             <span class="glyphicon glyphicon-tag"></span>
           </a>
-          <a href="javascript:void(0)">
+          <a ng-click="openDirections()" href="javascript:void(0)">
             <span tc-icon="compass"></span>
           </a>
           <a href="javascript:void(0)">
