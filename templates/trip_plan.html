@@ -821,54 +821,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="OLD-details-panel-template">
-    <div class="details-panel"
-      tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
-      scroll-dest-selector=".one-entity-guideview[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
-      <div class="overview">
-        <div class="details-panel-hero-img" ng-if="planModel.hasCoverImage()"
-          ng-style="{'background-image': 'url(&quot;' + planModel.tripPlanData['cover_image_url'] + '&quot;)'}">
-          <div class="title-floater">
-            [[planModel.tripPlanName()]]
-        </div>
-        </div>
-        <div class="default-hero-img" ng-if="!planModel.hasCoverImage()">
-          <div class="title-floater">
-            [[planModel.tripPlanName()]]
-          </div>
-        </div>
-        <div class="description" ng-if="planModel.hasDescription()"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
-        {% if not allow_editing %}
-        <div class="clip-cta">
-          <a ng-click="openBulkClipModal('bulk-clip-modal-window')" href="javascript:void(0)">            
-            Like what you see? Copy places to your own trip.
-            <span class="clip-control">
-              <span class="glyphicon glyphicon-new-window"></span>
-            </span>
-          </a>
-        </div>
-        {% endif %}
-      </div>
-      <div ng-repeat="itemGroupModel in itemGroups" ng-include="'guideview-item-group-template'">
-      </div>
-      <div class="mapview-footer">
-        Copyright 2014 Unicycle Labs
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="guideview-item-group-template">
-    <div ng-controller="GuideviewItemGroupCtrl" ng-show="itemGroupModel.hasContent()" ng-if="itemGroupModel.getEntityItems().length != 0">
-<!--       <div class="guideview-item-group-header">
-        <h3 ng-include="'item-group-header-text-template'"></h3>
-      </div> -->
-      <div ng-repeat="item in itemGroupModel.getEntityItems()">
-        <div ng-include="'guideview-one-entity-template'">
-        </div>
-      </div>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="guideview-one-entity-template">
     <div ng-controller="GuideviewEntityCtrl"
       class="one-entity-guideview"
