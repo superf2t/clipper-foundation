@@ -613,7 +613,14 @@ function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
     $searchResultState, $entityClippingService) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
-  $scope.infoTab = InfoTab.ABOUT;
+
+  $scope.showAboutTab = function() {
+    return $scope.isEditable || (
+      $scope.ed['origin_trip_plan_name'] || $scope.ed['description']
+      || _.isEmpty($scope.ed['tags']));
+  };
+
+  $scope.infoTab = $scope.showAboutTab() ? InfoTab.ABOUT : InfoTab.DETAILS;
   $scope.InfoTab = InfoTab;
 
   $scope.selectInfoTab = function(infoTab) {

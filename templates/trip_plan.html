@@ -1071,7 +1071,8 @@
         </div>
       </div>
       <div class="info-tabs">
-        <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.ABOUT}">
+        <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.ABOUT}"
+          ng-show="showAboutTab()">
           <a ng-click="selectInfoTab(InfoTab.ABOUT)" href="javascript:void(0)">
             About
           </a>
