@@ -669,6 +669,105 @@ hr.dropdown-separator {
   margin: 10px 0;
 }
 
+.one-entity-details {
+  padding: 10px 0;
+}
+
+.one-entity-details .name-and-photos {
+  width: 100%;
+  height: 300px;
+  position: relative;
+}
+
+.one-entity-details .photo-carousel {
+  width: 100%;
+  height: 100%;
+  text-align: center;
+}
+
+.one-entity-details .name-section {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 35px;
+}
+
+.one-entity-details .entity-icon {
+  display: inline-block;
+  padding: 2px 5px;
+}
+
+.one-entity-details .entity-icon .map-marker .marker-shape {
+  width: 20px;
+  height: 31px;
+}
+
+.one-entity-details .entity-name {
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 13pt;
+  display: inline-block;
+  vertical-align: top;
+  padding-top: 5px;
+}
+
+.one-entity-details .star-section {
+  float: right;
+  font-size: 13pt;
+  display: inline-block;
+  vertical-align: top;
+  padding-top: 5px;
+}
+
+.one-entity-details .info-tabs {
+  position: relative;
+  margin: 10px 0;
+}
+
+.one-entity-details .info-tab {
+  display: inline-block;
+  margin-right: 20px;
+  font-weight: bold;
+}
+
+.one-entity-details .info-tab:hover {
+  border-bottom: 3px solid #ccc;
+}
+
+.one-entity-details .info-tab.selected {
+  border-bottom: 3px solid #777;
+}
+
+.one-entity-details .add-to-trip-link {
+  display: inline-block;
+  float: right;
+}
+
+.one-entity-details .source-attribution {
+  margin-bottom: 10px;
+}
+
+.one-entity-details .source-attribution a {
+  text-decoration: underline;
+}
+
+.one-entity-details .detail-item {
+  margin-bottom: 5px;
+}
+
+.one-entity-details .opening-hours {
+  display: inline-block;
+  white-space: pre-line;
+  vertical-align: top;
+}
+
+.one-entity-details .entity-separator {
+  border-top: 1px solid #CCCCCC;
+}
+
 .results-details-panel {
   width: 100%;
   height: 100%;
@@ -830,7 +929,7 @@ hr.dropdown-separator {
   right: 10px;
   width: 15%;
   height: calc(100% - 41px - 10px - 20px);
-  -webkit-font-smoothing:antialiased;
+  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   z-index: 2;
 }

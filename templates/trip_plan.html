@@ -1161,24 +1161,24 @@
 
         <div class="featured-guide-header selected-guide-header"
           ng-style="{'background-image': selectedGuide['cover_image_url'] && 'url(&quot;' + selectedGuide['cover_image_url'] + '&quot;)'}">
-            <div class="guide-info">
-              <div class="guide-name">[[selectedGuide['name'] ]]</div>
-              <div class="guide-metadata">
-                <div>
-                  <img ng-if="selectedGuide['source_icon']"
-                    ng-src="[[selectedGuide['source_icon'] ]]" class="source-icon"/>
-                  Inspired by
-                  [[selectedGuide['source_display_name'] ]]
-                </div>
-                <div>
-                  <span ng-show="selectedGuide['content_display_date']">
-                    [[selectedGuide['content_display_date'] ]]
-                    |
-                  </span>
-                  [[selectedGuide.entities.length]] places
-                </div>
+          <div class="guide-info">
+            <div class="guide-name">[[selectedGuide['name'] ]]</div>
+            <div class="guide-metadata">
+              <div>
+                <img ng-if="selectedGuide['source_icon']"
+                  ng-src="[[selectedGuide['source_icon'] ]]" class="source-icon"/>
+                Inspired by
+                [[selectedGuide['source_display_name'] ]]
+              </div>
+              <div>
+                <span ng-show="selectedGuide['content_display_date']">
+                  [[selectedGuide['content_display_date'] ]]
+                  |
+                </span>
+                [[selectedGuide.entities.length]] places
               </div>
             </div>
+          </div>
         </div>
         <div class="description" ng-if="selectedGuide['description']"><span ng-bind-html="selectedGuide['description'] | linky:'_blank'"></span></div>
         <div ng-if="selectedGuide['source_url']" class="source-link">
@@ -1186,6 +1186,9 @@
             View original article at [[selectedGuide['source_display_name'] ]]
           </a>
         </div>
+        <tc-entity-details ng-repeat="entity in selectedGuide['entities']"
+          entity="entity" is-editable="false" for-results="true" result-index="$index">
+        </tc-entity-details>
       </div>
     </div>
   </script>
@@ -1257,6 +1260,101 @@
       <div ng-show="searchComplete && (!searchResults || !searchResults.length)">
         <h4>No places found</h4>
       </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="one-entity-details-template">
+    <div class="one-entity-details">
+      <div class="name-and-photos">
+        <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
+          <span class="vertical-spacer"></span><!--
+          --><span tc-image-carousel urls="ed['photo_urls']" class="carousel-content">
+          </span>
+        </div>
+        <div class="name-section">
+          <span class="entity-icon">
+            <tc-entity-icon precise="ed['address_precision'] == 'Precise'"
+              category-name="ed['category'] && ed['category']['name']"
+              icon-template-name="iconTemplateName()">>
+            </tc-entity-icon>
+          </span>
+          <span class="entity-name">
+            [[ed['name'] ]]
+          </span>
+          <span class="star-section">
+            <span ng-if="isEditable">
+              <a ng-click="saveStarState(true)"
+                ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
+                <span class="glyphicon glyphicon-star-empty"></span>
+              </a>
+              <a ng-click="saveStarState(false)"
+                ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
+                <span class="glyphicon glyphicon-star favorite-star"></span>
+              </a>
+            </span>
+            <span ng-if="!isEditable">
+              <span class="glyphicon glyphicon-star favorite-star"
+                ng-show="ed['starred']">
+              </span>
+            </span>
+          </span>
+        </div>
+      </div>
+      <div class="info-tabs">
+        <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.ABOUT}">
+          <a ng-click="selectInfoTab(InfoTab.ABOUT)" href="javascript:void(0)">
+            About
+          </a>
+        </span>
+        <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.DETAILS}">
+          <a ng-click="selectInfoTab(InfoTab.DETAILS)" href="javascript:void(0)">
+            Details
+          </a>
+        </span>
+        <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.COMMENTS}"
+          ng-show="showCommentsTab()">
+          <a ng-click="selectInfoTab(InfoTab.COMMENTS)"
+            href="javascript:void(0)">
+            Comments
+          </a>
+        </span>
+        <span class="add-to-trip-link" ng-show="!isEditable">
+          <a ng-click="clipEntity()" ng-show="!isAlreadySaved()" class="cta-link"
+            href="javascript:void(0)">
+            Add to My Trip
+          </a>
+          <span ng-show="isAlreadySaved()" class="text-success">
+            Saved
+          </span>
+        </span>
+      </div>
+      <div class="tab-content">
+        <div ng-show="infoTab == InfoTab.ABOUT">
+          <div class="description" ng-if="ed['description']"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+        </div>
+        <div ng-show="infoTab == InfoTab.DETAILS">
+          <div class="source-attribution" ng-show="ed['source_url']">
+            Place info from
+            <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_url'] | hostname ]]</a>
+          </div>
+          <div ng-show="ed['address']" class="detail-item">
+            Address: [[ed['address'] ]]
+          </div>
+          <div ng-show="em.hasOpeningHours()" class="detail-item">
+            Hours: <span class="opening-hours">[[em.openingHoursStr()]]</span>
+          </div>
+          <div ng-show="ed['phone_number']" class="detail-item">
+            Phone: [[ed['phone_number'] ]]
+          </div>
+          <div ng-show="ed['website']" class="detail-item">
+            Website:
+            <a ng-href="[[ed['website'] ]]" target="_blank" class="color-link">
+              [[ed['website'] ]]
+            </a>
+          </div>
+        </div>
+      </div>
+      <hr class="entity-separator"/>
     </div>
   </script>
 
