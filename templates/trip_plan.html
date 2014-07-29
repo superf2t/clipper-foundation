@@ -1109,42 +1109,79 @@
 
   {% if allow_editing %}
   <script type="text/ng-template" id="guides-panel-template">
-    <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl">
-      <div class="header">
-        Browse popular guides for <i>[[planModel.tripPlanData['location_name'] ]]</i>
-        to add to your trip
-      </div>
-      <div ng-show="loading">
-        Loading... <img ng-src="/static/img/spinner-small.gif"/>
-      </div>
-      <div ng-show="!loading && (!guides || !guides.length)" class="no-guides-msg">
-        There aren't any featured guides for this area yet.
-        <a href="javascript:void(0)">Create your own.</a>
-      </div>
-      <div ng-show="guides && guides.length">
-        <div ng-repeat="guide in guides"
-          class="featured-guide-header featured-guide-preview"
-          ng-style="{'background-image': guide['cover_image_url'] && 'url(&quot;' + guide['cover_image_url'] + '&quot;)'}"
-          ng-click="selectGuide(guide)">
-          <div class="guide-info">
-            <div class="guide-name">[[guide['name'] ]]</div>
-            <div class="guide-metadata">
-              <div>
-                <img ng-if="guide['source_icon']"
-                  ng-src="[[guide['source_icon'] ]]" class="source-icon"/>
-                Inspired by
-                [[guide['source_display_name'] ]]
-              </div>
-              <div>
-                <span ng-show="guide['content_display_date']">
-                  [[guide['content_display_date'] ]]
-                  |
-                </span>
-                [[guide.entities.length]] places
+    <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl"
+      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
+      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
+      <div ng-show="!selectedGuide">
+        <div class="header">
+          Browse popular guides for <i>[[planModel.tripPlanData['location_name'] ]]</i>
+          to add to your trip
+        </div>
+        <div ng-show="loading">
+          Loading... <img ng-src="/static/img/spinner-small.gif"/>
+        </div>
+        <div ng-show="!loading && (!guides || !guides.length)" class="no-guides-msg">
+          There aren't any featured guides for this area yet.
+          <a href="javascript:void(0)">Create your own.</a>
+        </div>
+        <div ng-show="guides && guides.length">
+          <div ng-repeat="guide in guides"
+            class="featured-guide-header featured-guide-preview"
+            ng-style="{'background-image': guide['cover_image_url'] && 'url(&quot;' + guide['cover_image_url'] + '&quot;)'}"
+            ng-click="selectGuide(guide)">
+            <div class="guide-info">
+              <div class="guide-name">[[guide['name'] ]]</div>
+              <div class="guide-metadata">
+                <div>
+                  <img ng-if="guide['source_icon']"
+                    ng-src="[[guide['source_icon'] ]]" class="source-icon"/>
+                  Inspired by
+                  [[guide['source_display_name'] ]]
+                </div>
+                <div>
+                  <span ng-show="guide['content_display_date']">
+                    [[guide['content_display_date'] ]]
+                    |
+                  </span>
+                  [[guide.entities.length]] places
+                </div>
               </div>
             </div>
           </div>
         </div>
+      </div>
+      <div ng-show="selectedGuide">
+        <div class="guide-breadcrumb">
+          <a ng-click="backToListings()" class="cta-link" href="javascript:void(0)">
+            [[planModel.tripPlanData['location_name'] ]] Guides
+          </a>
+          &gt;
+          [[selectedGuide['name'] ]]
+        </div>
+
+        <div class="featured-guide-header selected-guide-header"
+          ng-style="{'background-image': selectedGuide['cover_image_url'] && 'url(&quot;' + selectedGuide['cover_image_url'] + '&quot;)'}">
+            <div class="guide-info">
+              <div class="guide-name">[[selectedGuide['name'] ]]</div>
+              <div class="guide-metadata">
+                <div>
+                  <img ng-if="selectedGuide['source_icon']"
+                    ng-src="[[selectedGuide['source_icon'] ]]" class="source-icon"/>
+                  Inspired by
+                  [[selectedGuide['source_display_name'] ]]
+                </div>
+                <div>
+                  <span ng-show="selectedGuide['content_display_date']">
+                    [[selectedGuide['content_display_date'] ]]
+                    |
+                  </span>
+                  [[selectedGuide.entities.length]] places
+                </div>
+              </div>
+            </div>
+        </div>
+        <div class="description" ng-if="selectedGuide['description']"><span ng-bind-html="selectedGuide['description'] | linky:'_blank'"></span></div>
+
       </div>
     </div>
   </script>
@@ -1334,55 +1371,6 @@
       </div>
       <div ng-if="searchComplete && (!searchResults || !searchResults.length)">
         <h4>No places found</h4>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="travel-guides-panel-template">
-    <div class="travel-guides-panel" ng-controller="TravelGuidesPanelCtrl"
-      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      <div>
-        See full itineraries from well-known sources and from travelers like you.
-      </div>
-      <div class="guides-listings" ng-show="!selectedTripPlan">
-        <h4>Popular travel guides for [[locationName]]:</h4>
-        <div ng-show="loading">
-          Loading... <img ng-src="/static/img/spinner-small.gif"/>
-        </div>
-        <div ng-show="!loading && (!tripPlans || !tripPlans.length)">
-          <h4>There aren't any featured trip plans for this area yet</h4>
-        </div>
-        <div ng-show="tripPlans && tripPlans.length">
-          <div ng-repeat="tripPlan in tripPlans"
-            class="featured-trip-plan-header featured-trip-plan-preview"
-            ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}"
-            ng-click="selectTripPlan(tripPlan)">
-            <div class="text">
-              <div class="name">[[tripPlan['name'] ]]</div>
-              <div class="creator">[[tripPlan | creatorDisplayName ]]</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div ng-show="selectedTripPlan">
-        <div>
-          <a ng-click="backToListings()" href="javascript:void(0)" class="color-link">
-            &laquo; Back to guides
-          </a>
-        </div>
-        <div class="featured-trip-plan-header"
-          ng-style="{'background-image': selectedTripPlan['cover_image_url'] && 'url(&quot;' + selectedTripPlan['cover_image_url'] + '&quot;)'}">
-          <div class="text">
-            <div class="name">[[selectedTripPlan['name'] ]]</div>
-            <div class="creator">[[selectedTripPlan | creatorDisplayName ]]</div>
-          </div>
-        </div>
-        <div class="description" ng-if="selectedTripPlan['description']"><span ng-bind-html="selectedTripPlan['description'] | linky:'_blank'"></span></div>
-        <div ng-repeat="entity in selectedTripPlan['entities']"
-          tc-entity-search-result index="$index" entity-data="entity"
-          search-result-state="searchResultState">
-        </div>
       </div>
     </div>
   </script>

@@ -2529,7 +2529,7 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
   };
 
   $scope.backToListings = function() {
-    $scope.selectedTripPlan = null;
+    $scope.selectedGuide = null;
   };
 }
 

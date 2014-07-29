@@ -40,6 +40,14 @@ a.help-prompt {
   opacity: 0.5;
 }
 
+a.cta-link {
+  color: #50B0B2;
+}
+
+a.cta-link:hover {
+  color: #2D73A0;
+}
+
 .tc-icon {
   display: inline-block;
   width: 1em;
@@ -669,12 +677,16 @@ hr.dropdown-separator {
 }
 
 .one-info-panel {
-  margin: 10px;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .one-info-panel .header {
   font-weight: bold;
   font-size: 12pt;
+  margin-bottom: 10px;
 }
 
 .modal-carousel.modal {
@@ -1306,9 +1318,15 @@ temporary hack that lines up the arrows a bit better for most pictures */
   height: 230px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
+  background-size: cover;
   background-image: url('/static/img/default-cover.jpg');
   margin-bottom: 15px;
   color: #fff;
+}
+
+.guides-panel .featured-guide-header.selected-guide-header {
+  width: calc(100% + 20px);
+  left: -10px;
 }
 
 .guides-panel .description {
@@ -1349,6 +1367,17 @@ temporary hack that lines up the arrows a bit better for most pictures */
 .guides-panel .featured-guide-header .source-icon {
   width: 16px;
   height: 16px;
+}
+
+.guides-panel .description {
+  white-space: pre-line;
+  text-align: justify;
+  margin: 15px 0;
+}
+
+.guides-panel .guide-breadcrumb {
+  font-size: 13pt;
+  margin-bottom: 10px;
 }
 
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
