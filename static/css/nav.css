@@ -9,8 +9,16 @@
 }
 
 .main-logo {
+  position: relative;
+  top: 12px;
+  left: -10px;
   font-family: 'Raleway';
-  font-size: 1.4em;
+  font-size: 1.2em;
+  color: #FFFFFF;
+  padding: 4px 6px;
+  background-color: #000000;
+  line-height: 1.0;
+  height: 30px;
 }
 
 .main-nav {
