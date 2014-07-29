@@ -9,7 +9,6 @@ from dateutil import tz
 import constants
 import crypto
 import enums
-import guide_config
 import serializable
 import struct
 import values
@@ -127,7 +126,9 @@ class Entity(serializable.Serializable):
         'starred', serializable.objlistf('comments', Comment),
         'description', 'primary_photo_url',
         serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
-        'source_url', 'origin_trip_plan_id', 'google_reference', 'last_access',
+        'source_url', 'source_display_name',
+        'origin_trip_plan_id', 'origin_trip_plan_name',
+        'google_reference', 'last_access',
         'day', 'day_position')
 
     def __init__(self, entity_id=None, name=None, latlng=None,
@@ -137,7 +138,8 @@ class Entity(serializable.Serializable):
             rating=None, rating_max=None, review_count=None, 
             starred=None, comments=(),
             description=None, primary_photo_url=None, photo_urls=(), tags=(),
-            source_url=None, origin_trip_plan_id=None, google_reference=None,
+            source_url=None, origin_trip_plan_id=None, origin_trip_plan_name=None,
+            google_reference=None,
             last_access=None, last_access_datetime=None,
             day=None, day_position=None):
         self.entity_id = entity_id
@@ -165,6 +167,7 @@ class Entity(serializable.Serializable):
 
         self.source_url = source_url
         self.origin_trip_plan_id = origin_trip_plan_id
+        self.origin_trip_plan_name = origin_trip_plan_name  # Display-only
         self.google_reference = google_reference
         self.last_access = last_access
         if last_access_datetime:
@@ -172,6 +175,13 @@ class Entity(serializable.Serializable):
 
         self.day = day  # Deprecated
         self.day_position = day_position  # Deprecated
+
+    def initialize(self):
+        if self.source_url:
+            source_host = urlparse.urlparse(self.source_url).netloc.lower()
+            self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host, source_host)
+        else:
+            self.source_display_name = None
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:
@@ -282,8 +292,8 @@ class TripPlan(serializable.Serializable):
                 self.content_display_date = None
             if self.source_url:
                 source_host = urlparse.urlparse(self.source_url).netloc.lower()
-                self.source_icon = guide_config.SOURCE_HOST_TO_ICON_URL.get(source_host)
-                self.source_display_name = guide_config.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
+                self.source_icon = constants.SOURCE_HOST_TO_ICON_URL.get(source_host)
+                self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
             else:
                 self.source_icon = None
                 self.source_display_name = None
@@ -457,6 +467,29 @@ class AccountInfo(serializable.Serializable):
         self.email = email
         self.user = user
         self.logged_in = bool(email)
+
+class TripPlanLoader(object):
+    def __init__(self):
+        self.trip_plans_by_id = {}
+
+    def load(self, trip_plan_ids):
+        ids_to_load = set(trip_plan_ids)
+        ids_to_load = ids_to_load.difference(set(self.trip_plans_by_id.keys()))
+        trip_plans = load_trip_plans_by_ids(ids_to_load)
+        for trip_plan in trip_plans:
+            if trip_plan:
+                self.trip_plans_by_id[trip_plan.trip_plan_id] = trip_plan
+        return self
+
+    def get(self, trip_plan_id):
+        return self.trip_plans_by_id.get(trip_plan_id)
+
+    def get_field(self, trip_plan_id, field_name):
+        trip_plan = self.get(trip_plan_id)
+        if trip_plan:
+            return getattr(trip_plan, field_name)
+        return None
+
 
 def generate_entity_id():
     return generate_id()

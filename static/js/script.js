@@ -90,6 +90,24 @@ function EntityModel(entityData, editable) {
     return !!this.data['latlng'];
   };
 
+  this.hasOpeningHours = function() {
+    return this.data['opening_hours']
+    && (this.data['opening_hours']['as_string']
+      || this.data['opening_hours']['source_text']);
+  };
+
+  this.openingHoursStr = function() {
+    if (!this.data['opening_hours']) {
+      return null;
+    }
+    return this.data['opening_hours']['as_string']
+    || this.data['opening_hours']['source_text'];
+  };
+
+  this.hasComments = function() {
+    return this.data['comments'] && this.data['comments'].length;
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
@@ -399,7 +417,7 @@ function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
 
 function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
-    $timeout, $map, $templateToStringRenderer, $sizeHelper, $shoppingCartService, $window) {
+    $timeout, $map, $templateToStringRenderer, $sizeHelper, $entityClippingService, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.item = new ItemModel($scope.ed);
@@ -456,7 +474,7 @@ function EntityCtrl($scope, $entityService, $modal,
   };
 
   $scope.reclipEntity = function() {
-    $shoppingCartService.clipEntity($scope.ed);
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
   };
 
   $scope.deleteEntity = function() {
@@ -585,8 +603,101 @@ var InlineEditMode = {
   DIRECTIONS: 3
 };
 
+var InfoTab = {
+  ABOUT: 1,
+  DETAILS: 2,
+  COMMENTS: 3
+};
+
+function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
+    $searchResultState, $entityEditingService, $entityClippingService) {
+  $scope.ed = $scope.entity;
+  $scope.em = new EntityModel($scope.ed);
+
+  $scope.showAboutTab = function() {
+    return $scope.isEditable || (
+      $scope.ed['origin_trip_plan_name'] || $scope.ed['description']
+      || _.isEmpty($scope.ed['tags']));
+  };
+
+  $scope.infoTab = $scope.showAboutTab() ? InfoTab.ABOUT : InfoTab.DETAILS;
+  $scope.InfoTab = InfoTab;
+
+  $scope.selectInfoTab = function(infoTab) {
+    $scope.infoTab = infoTab;
+  };
+
+  $scope.iconTemplateName = function() {
+    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
+      return $scope.ed['sub_category']['name'] + '-icon-template';
+    }
+    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
+      return $scope.ed['category']['name'] + '-icon-template';
+    }
+    return null;
+  };
+
+  $scope.showCommentsTab = function() {
+    return $scope.isEditable || $scope.em.hasComments();
+  };
+
+  $scope.isAlreadySaved = function() {
+    if ($scope.forResults) {
+      return $searchResultState.savedResultIndices[$scope.resultIndex];
+    } else {
+      return $activeTripPlanState.savedEntityIds[$scope.ed['entity_id']];
+    }
+  };
+
+  $scope.clipEntity = function() {
+    $entityClippingService.clipEntity($scope.ed, $scope.tripPlanId, $scope.resultIndex);
+  };
+
+  $scope.saveStarState = function(starred) {
+    $entityEditingService.saveStarState($scope.ed, starred);
+  };
+
+  $scope.deleteEntity = function() {
+    $entityEditingService.deleteEntity($scope.ed);
+  };
+
+  $scope.openEditPlaceModal = function() {
+    $entityEditingService.openEditPlaceModal($scope.ed);
+  };
+}
+
+function tcEntityDetails() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'one-entity-details-template',
+    controller: EntityDetailsCtrl,
+    scope: {
+      entity: '=',
+      tripPlanId: '=',
+      isEditable: '=',
+      forResults: '=',
+      resultIndex: '='
+    }
+  };
+}
+
+function tcTripPlanDetailsHeader() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'trip-plan-details-header-template',
+    scope: {
+      tripPlan: '=',
+      numEntities: '=',
+      forGuide: '=',
+      fullBleed: '=',
+      clickable: '=',
+      onClick: '&'
+    }
+  };
+}
+
 function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $filterModel, $accountInfo, $modal, $shoppingCartService, $window) {
+    $filterModel, $accountInfo, $modal, $entityClippingService, $window) {
   $scope.ed = $scope.item.data;
   $scope.show = true;
   $scope.inlineEditMode = null;
@@ -631,7 +742,7 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
   };
 
   $scope.reclipEntity = function() {
-    $shoppingCartService.clipEntity($scope.ed);
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
   };
 
   $scope.deleteEntity = function() {
@@ -3758,29 +3869,89 @@ function MapManager($map) {
   };
 }
 
-function ShoppingCartService($entityService, $tripPlanCreator,
-    $activeTripPlanState, $pageStateModel) {
-  this.clipEntity = function(entity, opt_success) {
+function EntityEditingService($entityService, $tripPlanModel,
+  $modal, $rootScope, $window) {
+  this.saveStarState = function(entity, starred) {
+    entity['starred'] = starred;
+    $entityService.editEntity({
+      'entity_id': entity['entity_id'],
+      'starred': starred
+    }, $tripPlanModel.tripPlanId())
+    .success(function(response) {
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    });
+  };
+
+  this.deleteEntity = function(entity) {
+    var ok = $window.confirm('Are you sure you want to delete this place?');
+    if (!ok) {
+      return;
+    }
+    $entityService.deleteEntity(entity, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.removeEntities(response['entities']);
+        } else {
+          alert('Error while deleting place');
+        }
+      }).error(function() {
+        alert('Error while deleting place')
+      });
+  };
+
+  this.openEditPlaceModal = function(entity) {
+    var scope = $rootScope.$new(true);
+    scope.ed = angular.copy(entity);
+    $modal.open({
+      templateUrl: 'edit-place-modal-template',
+      windowClass: 'edit-place-modal',
+      scope: scope
+    });
+  };
+}
+
+function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
+  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing) {
+
+  this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
     var entityToSave = angular.copy(entity);
     $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
       delete entityToSave[prop];
+      if (!entityToSave['origin_trip_plan_id']) {
+        entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+      }
     });
-    var doClip = function() {
-      $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
+
+    if ($allowEditing) {
+      $entityService.saveNewEntity(entityToSave, $tripPlanModel.tripPlanId())
         .success(function(response) {
-          $activeTripPlanState.numEntities += 1;
-          $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
-          if ($activeTripPlanState.numEntities == 1) {
-            $activeTripPlanState.lastClippedEntity = response['entities'][0];
-            $pageStateModel.showAfterNewTripPlanPanel = true;            
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+           $tripPlanModel.updateLastModified(response['last_modified']);
+            $tripPlanModel.addNewEntities(response['entities']);
+            $pageStateModel.selectedEntity = response['entities'][0];
+            $searchResultState.savedResultIndices[resultIndex] = true;
+            opt_success && opt_success();
           }
-          opt_success && opt_success();
         });
-    };
-    if (!$activeTripPlanState.tripPlan) {
-      $tripPlanCreator.openNewTripPlanModal(doClip, entityToSave);
     } else {
-      doClip();
+      var doShoppingCartClip = function() {
+        $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
+          .success(function(response) {
+            $activeTripPlanState.numEntities += 1;
+            $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
+            if ($activeTripPlanState.numEntities == 1) {
+              $activeTripPlanState.lastClippedEntity = response['entities'][0];
+              $pageStateModel.showAfterNewTripPlanPanel = true;            
+            }
+            opt_success && opt_success();
+          });
+      };
+      if (!$activeTripPlanState.tripPlan) {
+        $tripPlanCreator.openNewTripPlanModal(doShoppingCartClip, entityToSave);
+      } else {
+        doShoppingCartClip();
+      }      
     }
   };
 }
@@ -3832,6 +4003,19 @@ function tcScrollToSelector($interpolate) {
             return;
           }
           elem.animate({scrollTop: newScrollTop}, 500);
+        }
+      });
+    }
+  };
+}
+
+function tcResetScrollTopOn() {
+  return{
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcResetScrollTopOn, function(newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          element.scrollTop(0);
         }
       });
     }
@@ -4206,6 +4390,7 @@ function tcImageCarousel() {
     scope: {
       urls: '=',
       onChange: '&',
+      fullBleed: '=',
       currentIndex: '='
     },
     controller: function($scope) {
@@ -4736,6 +4921,7 @@ angular.module('directivesModule', [])
   .directive('tcImageGallery', tcImageGallery)
   .directive('tcImageCarousel', tcImageCarousel)
   .directive('tcScrollToSelector', tcScrollToSelector)
+  .directive('tcResetScrollTopOn', tcResetScrollTopOn)
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)
@@ -4820,12 +5006,15 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcUserIcon', tcUserIcon)
     .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
     .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
+    .directive('tcEntityDetails', tcEntityDetails)
+    .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)
     .service('$mapManager', MapManager)
     .service('$sizeHelper', SizeHelper)
-    .service('$shoppingCartService', ShoppingCartService)
+    .service('$entityClippingService', EntityClippingService)
+    .service('$entityEditingService', EntityEditingService)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {

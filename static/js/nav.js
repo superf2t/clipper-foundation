@@ -2,6 +2,16 @@
 // -Verify that the 'next' url is working properly when clicking the 'Join' link.
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
+// -Implement rendering for entity details listings that have no photos.
+// -Figure out what to put on the About tab if there's no content (or hide it)
+// -Add variable star ratings widget.
+// -Have a display name for common source urls.
+// -Clean up display language for opening hours.
+// -Render and editing for entity tags.
+// -Check whether the right entity name appears in the reclipping confirmation.
+// -Add "Remember me" support for login.
+// -Change the login page to target the iframe and not the top frame;
+//  if successful, do a page reload.
 
 // CLEANUP:
 // -Remove item groups and associated templating.
