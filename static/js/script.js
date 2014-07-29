@@ -610,7 +610,7 @@ var InfoTab = {
 };
 
 function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
-    $searchResultState, $entityService, $tripPlanModel, $entityClippingService) {
+    $searchResultState, $entityEditingService, $entityClippingService) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
 
@@ -654,14 +654,15 @@ function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
   };
 
   $scope.saveStarState = function(starred) {
-    $scope.ed['starred'] = starred;
-    $entityService.editEntity({
-      'entity_id': $scope.ed['entity_id'],
-      'starred': starred
-    }, $tripPlanModel.tripPlanId())
-    .success(function(response) {
-      $tripPlanModel.updateLastModified(response['last_modified']);
-    });
+    $entityEditingService.saveStarState($scope.ed, starred);
+  };
+
+  $scope.deleteEntity = function() {
+    $entityEditingService.deleteEntity($scope.ed);
+  };
+
+  $scope.openEditPlaceModal = function() {
+    $entityEditingService.openEditPlaceModal($scope.ed);
   };
 }
 
@@ -3868,6 +3869,48 @@ function MapManager($map) {
   };
 }
 
+function EntityEditingService($entityService, $tripPlanModel,
+  $modal, $rootScope, $window) {
+  this.saveStarState = function(entity, starred) {
+    entity['starred'] = starred;
+    $entityService.editEntity({
+      'entity_id': entity['entity_id'],
+      'starred': starred
+    }, $tripPlanModel.tripPlanId())
+    .success(function(response) {
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    });
+  };
+
+  this.deleteEntity = function(entity) {
+    var ok = $window.confirm('Are you sure you want to delete this place?');
+    if (!ok) {
+      return;
+    }
+    $entityService.deleteEntity(entity, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.removeEntities(response['entities']);
+        } else {
+          alert('Error while deleting place');
+        }
+      }).error(function() {
+        alert('Error while deleting place')
+      });
+  };
+
+  this.openEditPlaceModal = function(entity) {
+    var scope = $rootScope.$new(true);
+    scope.ed = angular.copy(entity);
+    $modal.open({
+      templateUrl: 'edit-place-modal-template',
+      windowClass: 'edit-place-modal',
+      scope: scope
+    });
+  };
+}
+
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
   $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing) {
 
@@ -4971,6 +5014,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .service('$mapManager', MapManager)
     .service('$sizeHelper', SizeHelper)
     .service('$entityClippingService', EntityClippingService)
+    .service('$entityEditingService', EntityEditingService)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {

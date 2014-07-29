@@ -1132,6 +1132,27 @@
           </div>
         </div>
       </div>
+      <div class="editing-controls" ng-if="isEditable">
+        <span class="left-controls">
+          <a href="javascript:void(0)">
+            <span class="glyphicon glyphicon-tag"></span>
+          </a>
+          <a href="javascript:void(0)">
+            <span tc-icon="compass"></span>
+          </a>
+          <a href="javascript:void(0)">
+            <span tc-icon="comment"></span>
+          </a>
+        </span>
+        <span class="right-controls">
+          <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-pencil"></span>
+          </a>
+          <a ng-click="deleteEntity()" href="javascript:void(0)">
+            <span class="glyphicon glyphicon-trash"></span>
+          </a>
+        </span>
+      </div>
       <hr class="entity-separator"/>
     </div>
   </script>

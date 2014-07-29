@@ -643,6 +643,30 @@ hr.dropdown-separator {
   vertical-align: top;
 }
 
+.one-entity-details .editing-controls {
+  background-color: #dedede;
+  margin-top: 10px;
+  padding: 10px;
+  height: 35px;
+  font-size: 12pt;
+}
+
+.one-entity-details .editing-controls .left-controls {
+  float: left;
+}
+
+.one-entity-details .editing-controls .left-controls a {
+  padding-right: 5px;
+}
+
+.one-entity-details .editing-controls .right-controls {
+  float: right;
+}
+
+.one-entity-details .editing-controls .right-controls a {
+  padding-left: 5px;
+}
+
 .one-entity-details .entity-separator {
   border-top: 1px solid #CCCCCC;
 }
