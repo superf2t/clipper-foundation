@@ -1335,6 +1335,10 @@ temporary hack that lines up the arrows a bit better for most pictures */
   margin-bottom: 15px;
 }
 
+.guides-panel .source-link {
+  margin-bottom: 15px;
+}
+
 .guides-panel .featured-guide-preview {
   cursor: pointer;
 }

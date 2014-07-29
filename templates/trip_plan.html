@@ -1181,7 +1181,11 @@
             </div>
         </div>
         <div class="description" ng-if="selectedGuide['description']"><span ng-bind-html="selectedGuide['description'] | linky:'_blank'"></span></div>
-
+        <div ng-if="selectedGuide['source_url']" class="source-link">
+          <a ng-href="[[selectedGuide['source_url'] ]]" target="_blank" class="cta-link">
+            View original article at [[selectedGuide['source_display_name'] ]]
+          </a>
+        </div>
       </div>
     </div>
   </script>
