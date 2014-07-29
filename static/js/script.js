@@ -3929,6 +3929,19 @@ function tcScrollToSelector($interpolate) {
   };
 }
 
+function tcResetScrollTopOn() {
+  return{
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcResetScrollTopOn, function(newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          element.scrollTop(0);
+        }
+      });
+    }
+  };
+}
+
 function tcIcon() {
   return {
     restrict: 'AEC',
@@ -4827,6 +4840,7 @@ angular.module('directivesModule', [])
   .directive('tcImageGallery', tcImageGallery)
   .directive('tcImageCarousel', tcImageCarousel)
   .directive('tcScrollToSelector', tcScrollToSelector)
+  .directive('tcResetScrollTopOn', tcResetScrollTopOn)
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)

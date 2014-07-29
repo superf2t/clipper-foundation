@@ -7,6 +7,7 @@
 // -Add variable star ratings widget.
 // -Have a display name for common source urls.
 // -Clean up display language for opening hours.
+// -Render and editing for entity tags.
 
 // CLEANUP:
 // -Remove item groups and associated templating.
