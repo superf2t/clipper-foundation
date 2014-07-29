@@ -21,6 +21,10 @@
   height: 30px;
 }
 
+.main-logo:hover {
+  color: #FFFFFF;
+}
+
 .main-nav {
   background-color: #FFFFFF;
   border: none;
@@ -34,24 +38,26 @@
 }
 
 .nav-pills > li > a {
-  padding: 10px 5px;
+  padding: 10px 8px;
 }
 
 .nav-pill-separator {
-  padding: 10px 0;
+  padding: 12px 0;
+  font-size: 16px;
+  line-height: 1.0;
 }
 
 .navbar .trip-plan-name {
-  font-weight: bold;
+  font-weight: 500;
   font-size: 1.1em;
 }
 
 .navbar .place-count a {
   background-color: #4A90E2;
   color: #fff;
-  padding: 3px 5px;
+  padding: 2px 8px;
   margin: 7px 10px 0 0;
-  border-radius: 0;
+  border-radius: 2 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.5s;
