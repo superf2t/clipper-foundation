@@ -637,6 +637,16 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+.one-entity-details .tags {
+  margin-top: 10px;
+}
+
+.one-entity-details .tags .one-tag {
+  background-color: #ccc;
+  padding: 5px;
+  margin-right: 5px;
+}
+
 .one-entity-details .opening-hours {
   display: inline-block;
   white-space: pre-line;

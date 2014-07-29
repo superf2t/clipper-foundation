@@ -115,6 +115,10 @@ function EntityModel(entityData, editable) {
     return 0;
   };
 
+  this.hasTags = function() {
+    return !_.isEmpty(this.data['tags']);
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
@@ -645,6 +649,8 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.newComment = {};
   $scope.editingComment = null;
 
+  $scope.tagState = {rawInput: null};
+
   $scope.selectInfoTab = function(infoTab) {
     $scope.infoTab = infoTab;
   };
@@ -729,6 +735,22 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.deleteComment = function(comment) {
     $entityEditingService.deleteComment(comment);
+  };
+
+  $scope.openTagsEditor = function() {
+    $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
+    $scope.inlineEditMode = InlineEditMode.TAGS;
+  };
+
+  $scope.closeTagsEditor = function() {
+    $scope.tagState.rawInput = null;
+    $scope.inlineEditMode = null;
+  };
+
+  $scope.saveTags = function() {
+    $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
+      $scope.closeTagsEditor();
+    });
   };
 }
 
@@ -4016,6 +4038,39 @@ function EntityEditingService($entityService, $tripPlanModel,
           opt_success && opt_success();
         }
       });
+  };
+
+  this.saveTags = function(entity, tagsString, opt_success) {
+    var tags = [];
+    $.each(tagsString.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    if (_.isEmpty(tags)) {
+      $entityService.deleteTags(entity['entity_id'], $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            entity['tags'] = response['entities'][0]['tags'];
+            opt_success && opt_success();
+          }
+        });
+    } else {
+      var entityToEdit = {
+        'entity_id': entity['entity_id'],
+        'tags': tags
+      };
+      $entityService.editEntity(entityToEdit, $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            entity['tags'] = response['entities'][0]['tags'];
+            opt_success && opt_success();
+          }
+        });
+    }
   };
 }
 
