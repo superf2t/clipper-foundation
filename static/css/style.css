@@ -670,6 +670,15 @@ hr.dropdown-separator {
   border-top: 1px solid #CCCCCC;
 }
 
+.one-entity-details .inline-editor {
+  background-color: #fff;
+  padding: 10px;
+}
+
+.one-entity-details .directions-select {
+  margin: 10px 0;
+}
+
 .results-details-panel {
   width: 100%;
   height: 100%;
