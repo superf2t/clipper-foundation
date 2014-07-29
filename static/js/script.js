@@ -474,7 +474,7 @@ function EntityCtrl($scope, $entityService, $modal,
   };
 
   $scope.reclipEntity = function() {
-    $entityClippingService.clipEntity($scope.ed);
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
   };
 
   $scope.deleteEntity = function() {
@@ -643,7 +643,7 @@ function EntityDetailsCtrl($scope, $activeTripPlanState, $pageStateModel,
   };
 
   $scope.clipEntity = function() {
-    $entityClippingService.clipEntity($scope.ed, $scope.resultIndex);
+    $entityClippingService.clipEntity($scope.ed, $scope.tripPlanId, $scope.resultIndex);
   };
 }
 
@@ -654,9 +654,25 @@ function tcEntityDetails() {
     controller: EntityDetailsCtrl,
     scope: {
       entity: '=',
+      tripPlanId: '=',
       isEditable: '=',
       forResults: '=',
       resultIndex: '='
+    }
+  };
+}
+
+function tcTripPlanDetailsHeader() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'trip-plan-details-header-template',
+    scope: {
+      tripPlan: '=',
+      numEntities: '=',
+      forGuide: '=',
+      fullBleed: '=',
+      clickable: '=',
+      onClick: '&'
     }
   };
 }
@@ -707,7 +723,7 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
   };
 
   $scope.reclipEntity = function() {
-    $entityClippingService.clipEntity($scope.ed);
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
   };
 
   $scope.deleteEntity = function() {
@@ -3837,10 +3853,13 @@ function MapManager($map) {
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
   $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing) {
 
-  this.clipEntity = function(entity, resultIndex, opt_success) {
+  this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
     var entityToSave = angular.copy(entity);
     $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
       delete entityToSave[prop];
+      if (!entityToSave['origin_trip_plan_id']) {
+        entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+      }
     });
 
     if ($allowEditing) {
@@ -4927,6 +4946,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
     .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
     .directive('tcEntityDetails', tcEntityDetails)
+    .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$pagePositionManager', PagePositionManager)

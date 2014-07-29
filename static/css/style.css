@@ -35,6 +35,10 @@ a.white-link:hover {
   color: #2D73A0;
 }
 
+a.underline-link {
+  text-decoration: underline;
+}
+
 a.help-prompt {
   color: #000;
   opacity: 0.5;
@@ -401,9 +405,9 @@ hr.dropdown-separator {
 }
 
 .details-panel {
-  color: #000;
   width: 100%;
   height: 100%;
+  padding: 0 10px 20px 10px;
   overflow-y: auto;
 }
 
@@ -745,6 +749,10 @@ hr.dropdown-separator {
   border-bottom: 3px solid #777;
 }
 
+.one-entity-details .origin-trip-name {
+  margin-bottom: 10px;
+}
+
 .one-entity-details .add-to-trip-link {
   display: inline-block;
   float: right;
@@ -1033,6 +1041,56 @@ hr.dropdown-separator {
   top: 0;
   right: 0;
   margin: 10px;
+}
+
+.trip-plan-details-header {
+  position: relative;
+  height: 230px;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: cover;
+  background-image: url('/static/img/default-cover.jpg');
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.trip-plan-details-header.full-bleed {
+  width: calc(100% + 20px);
+  left: -10px;
+}
+
+.trip-plan-details-header.clickable {
+  cursor: pointer;
+}
+
+.trip-plan-details-header.clickable:hover {
+  opacity: 0.8;
+}
+
+.trip-plan-details-header .trip-plan-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 115px;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.trip-plan-details-header .trip-plan-info .trip-plan-name {
+  font-size: 16pt;
+}
+
+.trip-plan-details-header .trip-plan-info .trip-plan-metadata {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding: 10px;
+}
+
+.trip-plan-details-header .trip-plan-info .source-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .add-place-options-dropdown {
@@ -1415,21 +1473,9 @@ temporary hack that lines up the arrows a bit better for most pictures */
   margin-top: 20px;
 }
 
-.guides-panel .featured-guide-header {
-  position: relative;
-  width: 100%;
-  height: 230px;
-  background-repeat: no-repeat;
-  background-position: 50% 50%;
-  background-size: cover;
-  background-image: url('/static/img/default-cover.jpg');
-  margin-bottom: 15px;
-  color: #fff;
-}
-
-.guides-panel .featured-guide-header.selected-guide-header {
-  width: calc(100% + 20px);
-  left: -10px;
+.guides-panel .guide-breadcrumb {
+  font-size: 13pt;
+  margin-bottom: 10px;
 }
 
 .guides-panel .description {
@@ -1440,51 +1486,6 @@ temporary hack that lines up the arrows a bit better for most pictures */
 
 .guides-panel .source-link {
   margin-bottom: 15px;
-}
-
-.guides-panel .featured-guide-preview {
-  cursor: pointer;
-}
-
-.guides-panel .featured-guide-preview:hover {
-  opacity: 0.8;
-}
-
-.guides-panel .featured-guide-header .guide-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 115px;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.guides-panel .featured-guide-header .guide-name {
-  font-size: 16pt;
-}
-
-.guides-panel .featured-guide-header .guide-metadata {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 10px;
-}
-
-.guides-panel .featured-guide-header .source-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.guides-panel .description {
-  white-space: pre-line;
-  text-align: justify;
-  margin: 15px 0;
-}
-
-.guides-panel .guide-breadcrumb {
-  font-size: 13pt;
-  margin-bottom: 10px;
 }
 
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {

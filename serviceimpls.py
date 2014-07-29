@@ -243,6 +243,8 @@ class EntityService(service.Service):
         self.migrate_comment_authors(comments)
         self.resolve_comment_display_users(comments)
 
+        self.resolve_relational_fields(entities)
+
         return EntityGetResponse(response_code=service.ResponseCode.SUCCESS.name,
             response_summary=response_summary,
             entities=entities,
@@ -472,6 +474,13 @@ class EntityService(service.Service):
         for comment in comments:
             if comment.user and comment.user.public_id:
                 comment.user.display_name = resolver.resolve(comment.user.public_id)
+
+    def resolve_relational_fields(self, entities):
+        origin_trip_plan_ids = [e.origin_trip_plan_id for e in entities if e.origin_trip_plan_id]
+        loader = data.TripPlanLoader().load(origin_trip_plan_ids)
+        for entity in entities:
+            if entity.origin_trip_plan_id:
+                entity.origin_trip_plan_name = loader.get_field(entity.origin_trip_plan_id, 'name')
 
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 
