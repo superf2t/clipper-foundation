@@ -1268,9 +1268,8 @@
     <div class="one-entity-details">
       <div class="name-and-photos">
         <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
-          <span class="vertical-spacer"></span><!--
-          --><span tc-image-carousel urls="ed['photo_urls']" class="carousel-content">
-          </span>
+          <div tc-image-carousel urls="ed['photo_urls']" full-bleed="true" class="carousel-content">
+          </div>
         </div>
         <div class="name-section">
           <span class="entity-icon">

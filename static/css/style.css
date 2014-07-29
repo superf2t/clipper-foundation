@@ -682,7 +682,11 @@ hr.dropdown-separator {
 .one-entity-details .photo-carousel {
   width: 100%;
   height: 100%;
-  text-align: center;
+}
+
+.one-entity-details .photo-carousel .carousel-content {
+  width: 100%;
+  height: 100%;
 }
 
 .one-entity-details .name-section {

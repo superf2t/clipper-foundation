@@ -67,6 +67,15 @@
     position: relative;
   }
 
+  .image-carousel.full-bleed {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    background-size: cover;
+    cursor: pointer;
+  }
+
   .image-carousel img {
     cursor: pointer;
     max-width: 100%;
@@ -94,12 +103,17 @@
 </script>
 
 <script type="text/ng-template" id="image-carousel-template">
-  <div class="image-carousel">
-    <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+  <div class="image-carousel"
+    ng-class="{'full-bleed': fullBleed}"
+    ng-style="{'background-image': fullBleed && 'url(&quot;' + currentImgUrl() + '&quot;)'}"
+    ng-click="fullBleed && nextImg()">
+    <a class="left carousel-control" ng-show="hasPrevImg()"
+      ng-click="prevImg(); $event.stopPropagation()">
       <span class="icon-prev"></span>
     </a>
-    <img ng-src="[[currentImgUrl()]]" ng-click="nextImg()"/>
-    <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+    <img ng-if="!fullBleed" ng-src="[[currentImgUrl()]]" ng-click="nextImg()"/>
+    <a class="right carousel-control" ng-show="hasNextImg()"
+      ng-click="nextImg(); $event.stopPropagation()">
       <span class="icon-next"></span>
     </a>
   </div>

@@ -8,6 +8,8 @@
 // -Have a display name for common source urls.
 // -Clean up display language for opening hours.
 // -Render and editing for entity tags.
+// -Check whether the right entity name appears in the reclipping confirmation.
+// -Add "Remember me" support for login.
 
 // CLEANUP:
 // -Remove item groups and associated templating.

@@ -4310,6 +4310,7 @@ function tcImageCarousel() {
     scope: {
       urls: '=',
       onChange: '&',
+      fullBleed: '=',
       currentIndex: '='
     },
     controller: function($scope) {
