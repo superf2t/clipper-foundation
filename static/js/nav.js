@@ -12,7 +12,6 @@
 // -Add "Remember me" support for login.
 // -Change the login page to target the iframe and not the top frame;
 //  if successful, do a page reload.
-// -Show comment count.
 
 // CLEANUP:
 // -Remove item groups and associated templating.
