@@ -227,6 +227,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.tripPlanData['description'];
   };
 
+  this.hasTags = function() {
+    return !_.isEmpty(this.tripPlanData['tags']);
+  };
+
   this.hasSource = function() {
     return !!this.tripPlanData['source_url'];
   };

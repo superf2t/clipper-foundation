@@ -4,10 +4,10 @@
 // -Implement rendering for entity details listings that have no photos.
 // -Add variable star ratings widget.
 // -Clean up display language for opening hours.
-// -Rendering for trip plan tags
 // -Check whether the right entity name appears in the reclipping confirmation.
 // -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 // -Get an email sender account on the new domain.
+// -Make sure all featured guides have the GUIDE bit set.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,

@@ -192,6 +192,12 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+.one-tag {
+  background-color: #ccc;
+  padding: 5px;
+  margin-right: 5px;
+}
+
 /* Map View */
 
 #entity-container {
@@ -393,6 +399,10 @@ hr.dropdown-separator {
   overflow-y: auto;
 }
 
+.details-panel .tags {
+  margin: 10px 0;
+}
+
 .one-entity-search-result .header-bar {
   position: relative;
 }
@@ -529,12 +539,6 @@ hr.dropdown-separator {
 
 .one-entity-details .tags {
   margin-top: 10px;
-}
-
-.one-entity-details .tags .one-tag {
-  background-color: #ccc;
-  padding: 5px;
-  margin-right: 5px;
 }
 
 .one-entity-details .opening-hours {
@@ -1292,6 +1296,10 @@ hr.dropdown-separator {
   white-space: pre-line;
   text-align: justify;
   margin-bottom: 15px;
+}
+
+.guides-panel .tags {
+  margin-bottom: 10px;
 }
 
 .guides-panel .source-link {

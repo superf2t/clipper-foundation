@@ -726,6 +726,12 @@
         num-entities="planModel.numEntities()" for-guide="false" full-bleed="true">
       </tc-trip-plan-details-header>
       <div class="description" ng-if="planModel.tripPlanData['description']"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
+      <div class="tags" ng-show="planModel.hasTags()">
+        Tags: 
+        <span ng-repeat="tag in planModel.tripPlanData['tags']" class="one-tag">
+          [[tag['text'] ]]
+        </span>
+      </div>
       <tc-entity-details ng-repeat="entity in planModel.entities()"
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
@@ -1141,6 +1147,12 @@
           num-entities="selectedGuide['entities'].length" for-guide="true" full-bleed="true">
         </tc-trip-plan-details-header>
         <div class="description" ng-if="selectedGuide['description']"><span ng-bind-html="selectedGuide['description'] | linky:'_blank'"></span></div>
+        <div class="tags" ng-show="selectedGuide['tags'] && selectedGuide['tags'].length">
+          Tags: 
+          <span ng-repeat="tag in selectedGuide['tags']" class="one-tag">
+            [[tag['text'] ]]
+          </span>
+        </div>
         <div ng-if="selectedGuide['source_url']" class="source-link">
           <a ng-href="[[selectedGuide['source_url'] ]]" target="_blank" class="cta-link">
             View original article at [[selectedGuide['source_display_name'] ]]
