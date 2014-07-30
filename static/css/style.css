@@ -2,7 +2,6 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Avenir';
-  background-color: #EAEAEA;
 }
 
 a {
@@ -417,6 +416,11 @@ hr.dropdown-separator {
   overflow-y: auto;
 }
 
+.details-panel .header-entities-separator {
+  margin: 10px 0px;
+  border-top: 1px solid #999;
+}
+
 .one-entity-guideview .comments .one-comment {
   margin: 10px 0px;
 }
@@ -546,10 +550,6 @@ hr.dropdown-separator {
   margin: 10px 0;
 }
 
-.one-entity-details {
-  padding: 10px 0;
-}
-
 .one-entity-details .name-and-photos {
   width: 100%;
   height: 300px;
@@ -611,7 +611,7 @@ hr.dropdown-separator {
 .one-entity-details .info-tab {
   display: inline-block;
   margin-right: 20px;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .one-entity-details .info-tab:hover {
@@ -626,9 +626,25 @@ hr.dropdown-separator {
   margin-bottom: 10px;
 }
 
-.one-entity-details .add-to-trip-link {
+.one-entity-details .add-to-trip-cta {
   display: inline-block;
   float: right;
+}
+
+.one-entity-details .add-to-trip-link {
+  color: #4087F9;
+  font-weight: 500;
+  padding: 3px;
+}
+
+.one-entity-details .add-to-trip-link:hover {
+  color: #4A90E2;
+  background-color: #ddd;
+}
+
+.one-entity-details .saved-status {
+  color: #999;
+  font-weight: 500;
 }
 
 .one-entity-details .source-attribution {
@@ -685,6 +701,7 @@ hr.dropdown-separator {
 
 .one-entity-details .entity-separator {
   border-top: 1px solid #CCCCCC;
+  margin: 10px 0px;
 }
 
 .one-entity-details .inline-editor {

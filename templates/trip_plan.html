@@ -813,7 +813,10 @@
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
         num-entities="planModel.numEntities()" for-guide="false" full-bleed="true">
       </tc-trip-plan-details-header>
-      <div class="description" ng-if="planModel.tripPlanData['description']"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
+      <div class="description" ng-if="planModel.tripPlanData['description']">
+        <span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span>
+        <hr class="header-entities-separator"/>
+      </div>
       <tc-entity-details ng-repeat="entity in planModel.entities()"
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
@@ -1090,12 +1093,12 @@
             <span ng-show="em.hasComments()">([[em.numComments()]])<span>
           </a>
         </span>
-        <span class="add-to-trip-link" ng-show="!isEditable">
-          <a ng-click="clipEntity()" ng-show="!isAlreadySaved()" class="cta-link"
+        <span class="add-to-trip-cta" ng-show="!isEditable">
+          <a ng-click="clipEntity()" ng-show="!isAlreadySaved()" class="add-to-trip-link"
             href="javascript:void(0)">
             Add to My Trip
           </a>
-          <span ng-show="isAlreadySaved()" class="text-success">
+          <span ng-show="isAlreadySaved()" class="saved-status">
             Saved
           </span>
         </span>

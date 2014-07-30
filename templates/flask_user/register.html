@@ -58,7 +58,7 @@
     {# Can change to form.username to switch to username login #}
     {% set field = form.email %}
     <div class="form-group {% if field.errors %}has-error{% endif %}">
-      {{ field(class_='form-control', placeholder='Email address', tabindex=210) }}
+      {{ field(class_='form-control', placeholder='Email address', tabindex=222) }}
       {% if field.errors %}
         {% for e in field.errors %}
           <p class="help-block">{{ e }}</p>
@@ -66,7 +66,7 @@
       {% endif %}
     </div>
 
-    {{ render_field(form.display_name, label_visible=False, placeholder='Display name (your publicly visible user name)', tabindex=222) }}
+    {{ render_field(form.display_name, label_visible=False, placeholder='Display name (your publicly visible user name)', tabindex=223) }}
 
     {{ render_field(form.password, label_visible=False, placeholder='Password', tabindex=230) }}
 

@@ -1,6 +1,5 @@
 html, body {
   font-family: 'Avenir';
-  background-color: #EAEAEA;
 }
 
 .modal-logo {
@@ -25,12 +24,12 @@ html, body {
   border-radius: 2px;
 }
 
-#first_name_input {
+#first-name-input {
   float: left;
   width: 49%;
 }
 
-#last_name_input {
+#last-name-input {
   float: right;
   width: 49%;
 }
