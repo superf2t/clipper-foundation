@@ -337,6 +337,14 @@ def register():
         return redirect(next_url)
     return response
 
+def login():
+    response = flask_user.views.login()
+    if (hasattr(response, 'status_code') and response.status_code == 302
+        and request.args.get('iframe')):
+        print request.args.get('next')
+        return render_template('flask_user/login_iframe_complete.html', next_url=request.args.get('next'))
+    return response
+
 def confirm_email(token):
     def handle_trip_plan_migration(sender, user, **kwargs):
         account_service = serviceimpls.AccountService(g.session_info)
@@ -361,6 +369,7 @@ user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
 user_manager = flask_user.UserManager(user_db_adapter, app,
     register_form=user.TCRegisterForm,
     register_view_function=register,
+    login_view_function=login,
     confirm_email_view_function=confirm_email)
 
 
