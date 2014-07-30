@@ -1110,11 +1110,31 @@
             </a>
           </div>
           <div class="description" ng-if="ed['description']"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
-          <div class="tags" ng-show="em.hasTags() && inlineEditMode != InlineEditMode.TAGS">
+          <div ng-show="showAddDescriptionPrompt()">
+            <a ng-click="openDescriptionEditor()" class="color-link" href="javascript:void(0)">
+              Add a description
+            </a>
+          </div>
+          <div ng-if="inlineEditMode == InlineEditMode.DESCRIPTION" class="inline-editor">
+            <textarea class="form-control" ng-model="descriptionState.rawInput"
+              placeholder="Description" tc-focus-on="inlineEditMode">
+            </textarea>
+            <a ng-click="saveDescription()" href="javascript:void(0)" class="color-link">
+              Save
+            </a>
+            <a ng-click="closeDescriptionEditor()" href="javascript:void(0)">
+              Cancel
+            </a>
+          </div>
+          <div class="tags" ng-show="showTags()">
             Tags: 
             <span ng-repeat="tag in ed['tags']" class="one-tag">
               [[tag['text'] ]]
             </span>
+            <a ng-show="!em.hasTags()" ng-click="openTagsEditor()"
+              class="color-link" href="javascript:void(0)">
+              Add tags
+            </a>
           </div>
           <div class="inline-editor tags-editor" ng-show="inlineEditMode == InlineEditMode.TAGS">
             <label>Enter tags, separated by commas</label>
@@ -1167,6 +1187,9 @@
               ng-disabled="!directionsHelper.destination">
               Go
             </button>
+            <a ng-click="closeDirections()" href="javascript:void(0)">
+              Cancel
+            </a>
           </div>
         </div>
         <div ng-show="infoTab == InfoTab.COMMENTS">
