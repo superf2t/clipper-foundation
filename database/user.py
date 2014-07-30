@@ -40,7 +40,7 @@ class TCRegisterForm(forms.RegisterForm):
         [validators.Required('Please enter your first name'), validators.Length(max=50)])
     last_name = wtforms.StringField('Last Name',
         [validators.Required('Please enter your last name'), validators.Length(max=50)])
-    display_name = wtforms.StringField('Display Name - what will be shown on trip plans authored by you',
+    display_name = wtforms.StringField('Display Name',
         [validators.Required('Please enter a display name'), validators.Length(max=50)])
     next = wtforms.StringField()
     iframe = wtforms.StringField()

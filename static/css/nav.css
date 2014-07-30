@@ -9,8 +9,20 @@
 }
 
 .main-logo {
+  position: relative;
+  top: 12px;
+  left: -10px;
   font-family: 'Raleway';
-  font-size: 1.4em;
+  font-size: 1.2em;
+  color: #FFFFFF;
+  padding: 4px 6px;
+  background-color: #000000;
+  line-height: 1.0;
+  height: 30px;
+}
+
+.main-logo:hover {
+  color: #FFFFFF;
 }
 
 .main-nav {
@@ -25,40 +37,54 @@
   padding-right: 10px;
 }
 
+.navbar .right-controls a:hover {
+  color: #000000;
+  border-radius: 0;
+}
+
 .nav-pills > li > a {
-  padding: 10px 5px;
+  padding: 10px 8px;
 }
 
 .nav-pill-separator {
-  padding: 10px 0;
+  padding: 12px 0;
+  font-size: 16px;
+  line-height: 1.0;
 }
 
 .navbar .trip-plan-name {
-  font-weight: bold;
+  font-weight: 500;
   font-size: 1.1em;
 }
 
-.navbar .place-count a {
-  background-color: #4A90E2;
+.navbar .place-count {
+  background-color: #4087F9;
   color: #fff;
-  padding: 3px 5px;
-  margin: 7px 10px 0 0;
-  border-radius: 0;
+  padding: 2px 8px;
+  margin: 7px 0 0 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 0.5s;
+  transition: background-color 0.3s;
 }
 
-.navbar .place-count-changed a {
-  background-color: red;
+.navbar .place-count-changed {
+  background-color: #4CBDC9;
 }
 
 .navbar .new-trip-item > a {
-  background-color: #4A90E2;
+  background-color: #4087F9;
   padding: 7px 10px;
   height: 41px;
   border-radius: 0;
-  color: #fff;
+  color: #FFFFFF;
+}
+
+.navbar .new-trip-item > a:hover {
+  background-color: #4A90E2;
+  color: #FFFFFF;
+  background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
 }
 
 .navbar .trip-menu-icon {
@@ -101,7 +127,7 @@
 
 .login-modal-window {
   width: 600px;
-  height: 400px;
+  height: 460px;
   margin: auto;
   overflow: hidden;
 }
@@ -126,33 +152,31 @@
 }
 
 .account-dropdown > li > a {
-  font-weight: 300;
+  font-weight: 400;
 }
 
-.account-dropdown {
+.account-dropdown, .nav-trip-plan-dropdown {
+  width: 220px;
   border-radius: 2px;
+  font-size: 1.1em;
   margin: 0;
+  padding-bottom: 0px;
 }
 
 .account-dropdown .logout-item {
   text-align: center;
-  border-top: 1px solid black;
+  border-top: 1px solid #CCC;
 }
 
-.account-dropdown .logout-item > a {
+.account-dropdown .logout-item a {
   font-weight: 400;
-}
-
-.nav-trip-plan-dropdown {
-  width: 250px;
-  margin: 0;
-  padding: 5px 0 0 0;
+  padding: 10px;
 }
 
 .nav-trip-plan-dropdown .select-trip-prompt,
 .nav-trip-plan-dropdown .or-text {
   padding: 3px 20px;
-  font-weight: 400;
+  font-weight: 500;
 }
 
 .nav-trip-plan-dropdown .or-text {
@@ -166,9 +190,17 @@
 
 .nav-trip-plan-dropdown .create-new-trip-link a {
   text-align: center;
-  background-color: #4A90E2;
+  background-color: #4087F9;
   color: #fff;
   padding: 10px;
+}
+
+.nav-trip-plan-dropdown .create-new-trip-link a:hover {
+  background-color: #4A90E2;
+  color: #FFFFFF;
+  background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
 }
 
 .new-trip-modal-window .modal-dialog {
