@@ -537,6 +537,10 @@ hr.dropdown-separator {
   text-decoration: underline;
 }
 
+.one-entity-details .description {
+  white-space: pre-wrap;
+}
+
 .one-entity-details .detail-item {
   margin-bottom: 5px;
 }
@@ -1322,7 +1326,7 @@ hr.dropdown-separator {
   text-align: center;
 }
 
-.add-your-own-panel .search-panel .no-search-results {
+.add-your-own-panel .no-search-results {
   text-align: center;
   margin-top: 10px;
   font-size: 11pt;
@@ -1335,18 +1339,18 @@ hr.dropdown-separator {
   margin: auto;
 }
 
-.add-your-own-panel .search-panel .search-spinner {
+.add-your-own-panel .search-spinner {
   position: absolute;
   top: 6px;
   width: 100%;
   text-align: center;
 }
 
-.add-your-own-panel .search-panel .results-header {
+.add-your-own-panel .results-header {
   font-size: 11pt;
 }
 
-.add-your-own-panel .search-panel .search-results {
+.add-your-own-panel .search-results {
   padding-top: 20px;
 }
 
@@ -1369,7 +1373,7 @@ hr.dropdown-separator {
   cursor: move;
 }
 
-.add-your-own-panel .clipper-panel .clipper-info {
+.add-your-own-panel .info-text {
   margin: 0 20px 10px 20px;
 }
 
@@ -1381,13 +1385,23 @@ hr.dropdown-separator {
   text-align: left;
 }
 
-.add-your-own-panel .clipper-panel .sample-sites {
+.add-your-own-panel .sample-sites {
   margin-left: 60px;
 }
 
-.add-your-own-panel .clipper-panel .sample-sites .site-icon {
+.add-your-own-panel .sample-sites .site-icon {
   width: 16px;
   height: 16px;
+}
+
+.add-your-own-panel .paste-link-panel .paste-input {
+  width: 80%;
+  margin: 0 auto 20px auto;
+  position: relative;
+}
+
+.add-your-own-panel .paste-link-panel .no-places {
+  margin-top: 10px;
 }
 
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {

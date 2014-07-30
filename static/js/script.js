@@ -1,4 +1,5 @@
 function hostnameFromUrl(url) {
+  url = urlWithProtocol(url);
   var fullHost = $('<a>').attr('href', url)[0].hostname;
   if (fullHost.substring(0, 4) == 'www.') {
     return fullHost.substring(4);
@@ -9,6 +10,16 @@ function hostnameFromUrl(url) {
 function hostNoSuffix(url) {
   var host = hostnameFromUrl(url);
   return host.split('.')[0];
+}
+
+function urlWithProtocol(url) {
+  if (url.indexOf('//') == 0) {
+    url = 'http:' + url;
+  }
+  if (url.indexOf('http') != 0) {
+    url = 'http://' + url;
+  }; 
+  return url;
 }
 
 function emailPrefix(email) {
@@ -2811,7 +2822,7 @@ var ResultType = {
 };
 
 function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
-    $filterModel, $entityService, $mapManager, $browserInfo, $window) {
+    $filterModel, $entityService, $mapManager, $browserInfo, $window, $timeout) {
 
   $scope.tab = AddYourOwnTab.SEARCH;
   $scope.AddYourOwnTab = AddYourOwnTab;
@@ -2874,6 +2885,46 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
 
   $scope.toggleHelp = function() {
     $scope.showClipperHelp = !$scope.showClipperHelp;
+  };
+
+  $scope.linkState = {
+    rawInput: null,
+    loading: false,
+    loadingComplete: false,
+    results: null,
+    invalidUrl: false,
+    siteDomain: null,
+    formattedUrl: null
+  };
+
+  $scope.linkPasted = function() {
+    // Ugly hack to wrap this in a timeout; without it, the paste event
+    // fires before the input has been populated with the pasted data.
+    $timeout(function() {
+      $scope.linkState.loading = true;
+      $scope.linkState.loadingComplete = false;
+      $scope.linkState.results = null;
+      $scope.linkState.invalidUrl = false;
+      $scope.linkState.siteDomain = null;
+      $scope.linkState.formattedUrl = null;
+      $entityService.urltoentities($scope.linkState.rawInput)
+        .success($scope.processLinkClipResponse);
+    });
+  };
+
+  $scope.processLinkClipResponse = function(response) {
+    $scope.linkState.results = response['entities'];
+    $scope.linkState.loading = false;
+    $scope.linkState.loadingComplete = true;
+    $scope.linkState.siteDomain = hostnameFromUrl($scope.linkState.rawInput);
+    $scope.linkState.formattedUrl = urlWithProtocol($scope.linkState.rawInput);
+    $mapManager.fitBoundsToEntities($scope.linkState.results);
+    $filterModel.searchResultsEmphasized = true;
+  };
+
+  $scope.noLinkResults = function() {
+    return !$scope.linkState.loading && $scope.linkState.loadingComplete
+      && _.isEmpty($scope.linkState.results);
   };
 }
 

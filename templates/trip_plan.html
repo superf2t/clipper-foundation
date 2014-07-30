@@ -945,7 +945,7 @@
                 </tc-star-rating>
               </span>
               <span class="num-reviews" ng-if="ed['review_count']">
-                [[ed['review_count'] ]] review
+                [[ed['review_count'] ]] reviews
               </span>
             </div>
           </div>
@@ -1257,39 +1257,101 @@
           Clip places from travel websites to your trip
         </div>
 
-      <div class="bookmarklet-section">
-        <span class="bookmarklet">
-          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
-          onclick="event.stopPropagation(); event.preventDefault()">
-            <span class="bookmarklet-link">
-              <span class="glyphicon glyphicon-paperclip"></span> Clipper
-            </span>
+        <div class="bookmarklet-section">
+          <span class="bookmarklet">
+            <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
+            onclick="event.stopPropagation(); event.preventDefault()">
+              <span class="bookmarklet-link">
+                <span class="glyphicon glyphicon-paperclip"></span> Clipper
+              </span>
+            </a>
+          </span>
+          <span>
+            Drag the Clipper to your bookmarks bar
+          </span>
+        </div>
+
+        <div class="info-text">
+          After adding the Clipper to your bookmarks bar, try it out on
+          these sites by clicking the Clipper whenever you want to add a place
+          to your trip.
+        </div>
+
+        <div class="help-section info-text">
+          <a ng-click="toggleHelp()" class="color-link" href="javascript:void(0)">
+            Help with installing the Clipper
           </a>
-        </span>
-        <span>
-          Drag the Clipper to your bookmarks bar
-        </span>
-      </div>
+          <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
+          </div>
+        </div>
 
-      <div class="clipper-info">
-        After adding the Clipper to your bookmarks bar, try it out on
-        these sites by clicking the Clipper whenever you want to add a place
-        to your trip.
-      </div>
-
-      <div class="help-section clipper-info">
-        <a ng-click="toggleHelp()" class="color-link" href="javascript:void(0)">
-          Help with installing the Clipper
-        </a>
-        <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
+        <div class="sample-sites">
+          <div ng-repeat="site in sampleSupportedSites">
+            <img ng-src="[[site.iconUrl]]" class="site-icon"/>
+            <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+          </div>
         </div>
       </div>
 
-      <div class="sample-sites">
-        <div ng-repeat="site in sampleSupportedSites">
-          <img ng-src="[[site.iconUrl]]" class="site-icon"/>
-          <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+      <div ng-if="tab == AddYourOwnTab.PASTE_LINK" class="paste-link-panel">
+        <div class="header">
+          Copy and paste URLs from select websites to add places
         </div>
+        <div class="paste-input">
+          <form ng-submit="linkPasted()">
+            <input type="text" class="form-control" ng-model="linkState.rawInput"
+              placeholder="http://..." tc-focus-on="tab"
+              ng-paste="linkPasted()"/>
+            </form>
+          <div class="search-spinner" ng-show="linkState.loading">
+            <img src="/static/img/spinner-small.gif"/>
+          </div>
+        </div>
+
+        <div ng-show="!(linkState.loading || linkState.loadingComplete)">
+          <div class="info-text">
+            Try it out by pasting place pages from these websites:
+          </div>
+
+          <div class="sample-sites">
+            <div ng-repeat="site in sampleSupportedSites">
+              <img ng-src="[[site.iconUrl]]" class="site-icon"/>
+              <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+            </div>
+          </div>
+        </div>
+
+        <div ng-show="noLinkResults()">
+          <div class="no-search-results">No results found</div>
+          <div class="info-text no-places">
+            TravelClipper couldn't automatically find places on that page.
+            <br/>
+            <br/>
+            Try installing the
+            <a ng-click="selectTab(AddYourOwnTab.CLIPPER)"
+              class="color-link" href="javascript:void(0)">clipper bookmark</a>,
+            then
+            <a ng-href="[[linkState.formattedUrl]]" target="_blank" class="color-link">
+              visit the website
+            </a>
+             to quickly clip information and images.
+           </div>
+        </div>
+
+        <div class="text-danger info-text" ng-show="linkState.invalidUrl">
+          Oops, that doesn't look like a valid url
+        </div>
+
+        <div class="link-results" ng-if="linkState.results && linkState.results.length">
+          <div class="results-header">
+            Results from <i>[[linkState.siteDomain]]</i>
+          </div>
+          <tc-entity-details ng-repeat="entity in linkState.results"
+            entity="entity" is-editable="false" for-results="true"
+            trip-plan-id="planModel.tripPlanId()" result-index="$index">
+          </tc-entity-details>
+        </div>
+
       </div>
 
     </div>
