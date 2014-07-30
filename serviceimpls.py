@@ -148,6 +148,34 @@ class EntityMutateCommentResponse(service.ServiceResponse):
         self.comments = comments
         self.last_modified = last_modified
 
+
+class EntityTagOperation(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id', 'entity_id',
+        serializable.objf('tags', data.Tag))
+
+    def __init__(self, operator=None, trip_plan_id=None, entity_id=None, tags=None):
+        self.operator = operator
+        self.trip_plan_id = trip_plan_id
+        self.entity_id = entity_id
+        self.tags = tags
+
+class EntityMutateTagRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(serializable.objlistf('operations', EntityTagOperation))
+
+    def __init__(self, operations=None):
+        self.operations = operations 
+
+class EntityMutateTagResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('entities', data.Entity), 'last_modified'))
+
+    def __init__(self, entities=(), last_modified=None, **kwargs):
+        super(EntityMutateTagResponse, self).__init__(**kwargs)
+        self.entities = entities
+        self.last_modified = last_modified
+
+
 class GooglePlaceToEntityRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('reference')
 
@@ -211,6 +239,7 @@ class EntityService(service.Service):
         ('get', EntityGetRequest, EntityGetResponse),
         ('mutate', EntityMutateRequest, EntityMutateResponse),
         ('mutatecomments', EntityMutateCommentRequest, EntityMutateCommentResponse),
+        ('mutatetags', EntityMutateTagRequest, EntityMutateTagResponse),
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
         ('urltoentities', UrlToEntitiesRequest, GenericMultiEntityResponse),
         ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
@@ -312,6 +341,7 @@ class EntityService(service.Service):
         for op in operations:
             entity = op.operation.entity
             entity.entity_id = data.generate_entity_id()
+            self.sanitize_entity(entity)
             op.trip_plan.entities.append(entity)
             op.result = entity
 
@@ -320,6 +350,7 @@ class EntityService(service.Service):
             entity = op.operation.entity
             for i, e in enumerate(op.trip_plan.entities):
                 if e.entity_id == entity.entity_id:
+                    self.sanitize_entity(entity)
                     op.result = op.trip_plan.entities[i].update(entity)
                     # Negative positions are a signal to clear the value.
                     # You can't send None because that's the same as telling the service
@@ -385,6 +416,35 @@ class EntityService(service.Service):
             # if multiple trip plans are being edited together, since each will be saved
             # at a different time.
             comments=comments, last_modified=trip_plans[0].last_modified)
+
+    def mutatetags(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
+        self.validate_editability(operations)
+        deletes = OperationData.filter_by_operator(operations, Operator.DELETE)
+        for delete_op in deletes:
+            entity = delete_op.trip_plan.entity_by_id(delete_op.operation.entity_id)
+            if entity:
+                entity.tags = []
+                delete_op.result = entity
+        for trip_plan in trip_plans:
+            data.save_trip_plan(trip_plan)
+
+        return EntityMutateTagResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=[op.result for op in operations],
+            last_modified=trip_plans[0].last_modified)
+
+    def sanitize_entity(self, entity):
+        if entity.tags:
+            tag_texts = set()
+            unique_tags = []
+            for tag in entity.tags:
+                if tag.text in tag_texts:
+                    continue
+                tag_texts.add(tag.text)
+                unique_tags.append(tag)
+            entity.tags = unique_tags
 
     def validate_logged_in(self):
         if not self.session_info.logged_in():

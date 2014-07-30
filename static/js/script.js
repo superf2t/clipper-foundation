@@ -108,6 +108,17 @@ function EntityModel(entityData, editable) {
     return this.data['comments'] && this.data['comments'].length;
   };
 
+  this.numComments = function() {
+    if (this.data['comments']) {
+      return this.data['comments'].length;
+    }
+    return 0;
+  };
+
+  this.hasTags = function() {
+    return !_.isEmpty(this.data['tags']);
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
@@ -615,10 +626,11 @@ var InfoTab = {
 };
 
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
-    $pageStateModel, $searchResultState, $entityEditingService, 
-    $entityClippingService, $window) {
+    $pageStateModel, $searchResultState, $accountInfo,
+    $entityEditingService, $entityClippingService, $window) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
+  $scope.accountInfo = $accountInfo;
 
   $scope.showAboutTab = function() {
     return $scope.isEditable || (
@@ -633,6 +645,11 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.InlineEditMode = InlineEditMode;
 
   $scope.directionsHelper = new DirectionsHelper($tripPlanModel.entities(), $window);
+
+  $scope.newComment = {};
+  $scope.editingComment = null;
+
+  $scope.tagState = {rawInput: null};
 
   $scope.selectInfoTab = function(infoTab) {
     $scope.infoTab = infoTab;
@@ -679,6 +696,61 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.openDirections = function() {
     $scope.infoTab = InfoTab.DETAILS;
     $scope.inlineEditMode = InlineEditMode.DIRECTIONS;
+  };
+
+  $scope.openNewComment = function() {
+    $scope.newComment = {
+      'entity_id': $scope.ed['entity_id'],
+      'text': null
+    };
+    $scope.infoTab = InfoTab.COMMENTS;
+    $scope.inlineEditMode = InlineEditMode.COMMENTS;
+  };
+
+  $scope.saveNewComment = function() {
+    $entityEditingService.saveNewComment($scope.newComment, function() {
+      $scope.closeNewComment();
+    });
+  };
+
+  $scope.closeNewComment = function() {
+    $scope.newComment = {};
+    $scope.inlineEditMode = null;
+  };
+
+  $scope.openCommentEdit = function(comment) {
+    $scope.editingComment = angular.copy(comment);
+    $scope.inlineEditMode = null;
+  };
+
+  $scope.closeCommentEdit = function() {
+    $scope.editingComment = null;
+  };
+
+  $scope.saveCommentEdit = function() {
+    $entityEditingService.saveCommentEdit($scope.editingComment, function() {
+      $scope.closeCommentEdit();
+    });
+  };
+
+  $scope.deleteComment = function(comment) {
+    $entityEditingService.deleteComment(comment);
+  };
+
+  $scope.openTagsEditor = function() {
+    $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
+    $scope.inlineEditMode = InlineEditMode.TAGS;
+  };
+
+  $scope.closeTagsEditor = function() {
+    $scope.tagState.rawInput = null;
+    $scope.inlineEditMode = null;
+  };
+
+  $scope.saveTags = function() {
+    $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
+      $scope.closeTagsEditor();
+    });
   };
 }
 
@@ -3924,6 +3996,81 @@ function EntityEditingService($entityService, $tripPlanModel,
       windowClass: 'edit-place-modal',
       scope: scope
     });
+  };
+
+  this.saveNewComment = function(comment, opt_success) {
+    if (!comment['text']) {
+      return;
+    }
+    $entityService.addComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.addNewComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          opt_success && opt_success();
+        }
+      });
+  };
+
+  this.saveCommentEdit = function(comment, opt_success) {
+    if (!comment['text']) {
+      return;
+    }
+    $entityService.editComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          opt_success && opt_success();
+        }
+      });
+  };
+
+  this.deleteComment = function(comment, opt_success) {
+    if (!$window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+    $entityService.deleteComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.removeComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          opt_success && opt_success();
+        }
+      });
+  };
+
+  this.saveTags = function(entity, tagsString, opt_success) {
+    var tags = [];
+    $.each(tagsString.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    if (_.isEmpty(tags)) {
+      $entityService.deleteTags(entity['entity_id'], $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            entity['tags'] = response['entities'][0]['tags'];
+            opt_success && opt_success();
+          }
+        });
+    } else {
+      var entityToEdit = {
+        'entity_id': entity['entity_id'],
+        'tags': tags
+      };
+      $entityService.editEntity(entityToEdit, $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            entity['tags'] = response['entities'][0]['tags'];
+            opt_success && opt_success();
+          }
+        });
+    }
   };
 }
 

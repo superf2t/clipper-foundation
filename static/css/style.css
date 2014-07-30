@@ -643,6 +643,16 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+.one-entity-details .tags {
+  margin-top: 10px;
+}
+
+.one-entity-details .tags .one-tag {
+  background-color: #ccc;
+  padding: 5px;
+  margin-right: 5px;
+}
+
 .one-entity-details .opening-hours {
   display: inline-block;
   white-space: pre-line;
@@ -684,6 +694,42 @@ hr.dropdown-separator {
 
 .one-entity-details .directions-select {
   margin: 10px 0;
+}
+
+.one-entity-details .one-comment {
+  margin: 10px 0px;
+}
+
+.one-entity-details .one-comment .comment-sidebar {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.one-entity-details .one-comment .comment-timestamp {
+  display: inline-block;
+  color: #666666;
+  font-size: 0.8em;
+}
+
+.one-entity-details .one-comment .comment-details {
+  display: inline-block;
+  width: calc(100% - 24px);
+}
+
+.one-entity-details .one-comment .text {
+  white-space: pre-wrap;
+}
+
+.one-entity-details .one-comment .comment-edit-link {
+  display: none;
+}
+
+.one-entity-details .one-comment:hover .comment-edit-link {
+  display: inline;
+}
+
+.one-entity-details .comment-editor .author-name {
+  margin-bottom: 5px;
 }
 
 .results-details-panel {

@@ -150,6 +150,21 @@ function EntityService($http) {
   this.mutatecomments = function(request) {
     return $http.post('/entityservice/mutatecomments', request);
   };
+
+  this.deleteTags = function(entityId, tripPlanId) {
+    var request = {
+      operations: [{
+        'operator': Operator.DELETE,
+        'entity_id': entityId,
+        'trip_plan_id': tripPlanId
+      }]
+    };
+    return this.mutatetags(request);
+  };
+
+  this.mutatetags = function(request) {
+    return $http.post('/entityservice/mutatetags', request);
+  };
 }
 
 

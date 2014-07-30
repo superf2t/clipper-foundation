@@ -1087,6 +1087,7 @@
           <a ng-click="selectInfoTab(InfoTab.COMMENTS)"
             href="javascript:void(0)">
             Comments
+            <span ng-show="em.hasComments()">([[em.numComments()]])<span>
           </a>
         </span>
         <span class="add-to-trip-link" ng-show="!isEditable">
@@ -1109,6 +1110,26 @@
             </a>
           </div>
           <div class="description" ng-if="ed['description']"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+          <div class="tags" ng-show="em.hasTags() && inlineEditMode != InlineEditMode.TAGS">
+            Tags: 
+            <span ng-repeat="tag in ed['tags']" class="one-tag">
+              [[tag['text'] ]]
+            </span>
+          </div>
+          <div class="inline-editor tags-editor" ng-show="inlineEditMode == InlineEditMode.TAGS">
+            <label>Enter tags, separated by commas</label>
+            <form ng-submit="saveTags()">
+              <input type="text" class="form-control" ng-model="tagState.rawInput"
+                placeholder="e.g. greek food, day 1, recommend by Bob"
+                tc-focus-on="inlineEditMode"/>
+            </form>
+            <a ng-click="saveTags()" href="javascript:void(0)" class="color-link">
+              Save
+            </a>
+            <a ng-click="closeTagsEditor()" href="javascript:void(0)">
+              Cancel
+            </a>
+          </div>
         </div>
         <div ng-show="infoTab == InfoTab.DETAILS">
           <div class="source-attribution" ng-show="ed['source_url']">
@@ -1148,16 +1169,73 @@
             </button>
           </div>
         </div>
+        <div ng-show="infoTab == InfoTab.COMMENTS">
+          <div ng-repeat="comment in ed['comments']" class="one-comment">
+            <div>
+              <span class="comment-sidebar">
+                <span tc-user-icon user="comment['user']">
+                </span>
+              </span>
+              <span class="comment-details">
+                <div ng-show="!editingComment || editingComment['comment_id'] != comment['comment_id']">
+                  <div>
+                    <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
+                    <a ng-click="openCommentEdit(comment)" ng-if="comment['user']['public_id'] == accountInfo['user']['public_id']"
+                      href="javascript:void(0)" class="color-link comment-edit-link">
+                      <span class="glyphicon glyphicon-pencil"></span>
+                    </a>
+                    <a ng-click="deleteComment(comment)" ng-if="comment['user']['public_id'] == accountInfo['user']['public_id']"
+                      href="javascript:void(0)" class="color-link comment-edit-link">
+                      <span class="glyphicon glyphicon-trash"></span>
+                    </a>
+                  </div>
+                  <div class="comment-timestamp">
+                    [[comment['last_modified'] | date: 'short']]
+                  </div>
+                </div>
+                <div ng-show="editingComment && editingComment['comment_id'] == comment['comment_id']">
+                  <textarea class="form-control" ng-model="editingComment['text']"
+                    tc-focus-on="editingComment">
+                  </textarea>
+                  <div>
+                    <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
+                    <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
+                  </div>
+                </div>
+              </span>
+            </div>
+          </div>
+          <div ng-show="isEditable && !em.hasComments() && !inlineEditMode == InlineEditMode.COMMENTS">
+            <a ng-click="openNewComment()" class="color-link" href="javascript:void(0)">
+              Add a comment
+            </a>
+          </div>
+          <div ng-if="inlineEditMode == InlineEditMode.COMMENTS"
+            class="inline-editor comment-editor">
+            <div class="author-name">
+              <span tc-user-icon user="accountInfo['user']">
+              </span>
+            </div>
+            <textarea class="form-control" placeholder="Add a comment"
+              tc-focus-on="inlineEditMode"
+              ng-model="newComment['text']">
+            </textarea>
+            <div>
+              <a ng-click="saveNewComment()" href="javascript:void(0)" class="color-link">Save</a>
+              <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="editing-controls" ng-if="isEditable">
         <span class="left-controls">
-          <a href="javascript:void(0)">
+          <a ng-click="openTagsEditor()" href="javascript:void(0)">
             <span class="glyphicon glyphicon-tag"></span>
           </a>
           <a ng-click="openDirections()" href="javascript:void(0)">
             <span tc-icon="compass"></span>
           </a>
-          <a href="javascript:void(0)">
+          <a ng-click="openNewComment()" href="javascript:void(0)">
             <span tc-icon="comment"></span>
           </a>
         </span>
