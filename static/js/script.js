@@ -119,6 +119,10 @@ function EntityModel(entityData, editable) {
     return !_.isEmpty(this.data['tags']);
   };
 
+  this.hasReputationInfo = function() {
+    return this.data['rating'] || this.data['review_count']
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
@@ -225,6 +229,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 
   this.hasDescription = function() {
     return this.tripPlanData['description'];
+  };
+
+  this.hasTags = function() {
+    return !_.isEmpty(this.tripPlanData['tags']);
   };
 
   this.hasSource = function() {
@@ -626,8 +634,8 @@ var InfoTab = {
 };
 
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
-    $pageStateModel, $searchResultState, $accountInfo,
-    $entityEditingService, $entityClippingService, $window) {
+    $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
+    $entityEditingService, $entityClippingService, $window, $timeout) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.accountInfo = $accountInfo;
@@ -635,7 +643,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.showAboutTab = function() {
     return $scope.isEditable || (
       $scope.ed['origin_trip_plan_name'] || $scope.ed['description']
-      || _.isEmpty($scope.ed['tags']));
+      || !_.isEmpty($scope.ed['tags']));
   };
 
   $scope.infoTab = $scope.showAboutTab() ? InfoTab.ABOUT : InfoTab.DETAILS;
@@ -651,6 +659,14 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.tagState = {rawInput: null};
   $scope.descriptionState = {rawInput: null};
+
+  $scope.markerState = {
+    map: $map,
+    marker: null,
+    position: $scope.em.gmapsLatLng(),
+    emphasized: null,
+    deemphasized: null
+  };
 
   $scope.selectInfoTab = function(infoTab) {
     $scope.infoTab = infoTab;
@@ -789,6 +805,36 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $scope.descriptionState.rawInput = null;
     $scope.inlineEditMode = null;
   };
+
+  $scope.markerClicked = function($event) {
+    if ($scope.forResults) {
+      $searchResultState.selectedIndex = $scope.resultIndex;
+    }
+    $event.stopPropagation();
+  };
+
+  $scope.setMarkerState = function() {
+    if (!$scope.markerState.marker) {
+      return;
+    }
+    if ($filterModel.searchResultsEmphasized) {
+      $scope.markerState.deemphasized = !$scope.forResults;
+    }
+    if ($scope.forResults) {
+      $scope.markerState.emphasized = ($searchResultState.highlightedIndex == $scope.resultIndex
+        || $searchResultState.selectedIndex == $scope.resultIndex);
+    }
+  };
+
+  $scope.highlightMarker = function() {
+    if ($scope.forResults) {
+      $searchResultState.highlightedIndex = $scope.resultIndex;
+    }
+  };
+
+  $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
+  $scope.$watch(_.constant($searchResultState), $scope.setMarkerState, true);
+  $timeout($scope.setMarkerState);
 }
 
 function tcEntityDetails() {
@@ -2749,6 +2795,85 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
 
   $scope.backToListings = function() {
     $scope.selectedGuide = null;
+    $filterModel.searchResultsEmphasized = false;
+  };
+}
+
+var AddYourOwnTab = {
+  SEARCH: 1,
+  CLIPPER: 2,
+  PASTE_LINK: 3
+};
+
+var ResultType = {
+  SEARCH: 1,
+  ENTITY_LOOKUP: 2
+};
+
+function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
+    $filterModel, $entityService, $mapManager, $browserInfo, $window) {
+
+  $scope.tab = AddYourOwnTab.SEARCH;
+  $scope.AddYourOwnTab = AddYourOwnTab;
+
+  $scope.selectTab = function(tab) {
+    $scope.tab = tab;
+  };
+
+  $scope.searchState = {
+    rawInput: null,
+    searching: false,
+    searchComplete: false,
+    results: null,
+    resultType: null
+  };
+  $scope.ResultType = ResultType;
+
+  $scope.googlePlaceSelected = function(place) {
+    $scope.searchState.searching = true;
+    $scope.searchState.searchComplete = false;
+    $scope.searchState.results = null;
+    $scope.searchState.resultType = null;
+    $searchResultState.clear();
+    if (place['reference']) {
+      $entityService.googleplacetoentity(place['reference'])
+        .success($scope.processSearchResponse);
+    } else {
+      $entityService.googletextsearchtoentities(place['name'],
+        $tripPlanModel.tripPlanData['location_latlng'])
+          .success($scope.processSearchResponse);
+    }
+  };
+
+  $scope.processSearchResponse = function(response) {
+    if (response['entity']) {
+      $scope.searchState.results = [response['entity']]
+      $scope.searchState.resultType = ResultType.ENTITY_LOOKUP;
+    } else {
+      $scope.searchState.results = response['entities'] || [];
+      $scope.searchState.resultType = ResultType.SEARCH;
+    }
+    $scope.searchResultState.results = $scope.searchState.results;
+    $scope.searchState.searching = false;
+    $scope.searchState.searchComplete = true;
+    $mapManager.fitBoundsToEntities($scope.searchState.results);
+    $filterModel.searchResultsEmphasized = true;
+  };
+
+  $scope.hasNoSearchResults = function() {
+    return !$scope.searchState.searching && $scope.searchState.searchComplete
+      && _.isEmpty($scope.searchState.results);
+  };
+
+  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
+  $scope.browserInfo = $browserInfo;
+  $scope.BrowserPlatform = BrowserPlatform;
+  $scope.BrowserApp = BrowserApp;
+
+  $scope.showClipperHelp = false;
+
+  $scope.toggleHelp = function() {
+    $scope.showClipperHelp = !$scope.showClipperHelp;
   };
 }
 
@@ -4265,9 +4390,16 @@ function tcStarRating() {
   return {
     restrict: 'AEC',
     scope: {
-      value: '=value'
+      value: '=',
+      max: '='
     },
-    templateUrl: 'star-rating-template'
+    templateUrl: 'star-rating-template',
+    controller: function($scope) {
+      $scope.maxRange = new Array($scope.max);
+      for (var i = 0; i < $scope.max; i++) {
+        $scope.maxRange[i] = i;
+      }
+    }
   };
 }
 
@@ -5100,6 +5232,46 @@ function tcAnimateOnChangeTo() {
   };
 };
 
+var BrowserPlatform = {
+  WINDOWS: 1,
+  MAC: 2
+};
+
+var BrowserApp = {
+  CHROME: 1,
+  FIREFOX: 2,
+  SAFARI: 3,
+  IE: 4
+};
+
+function BrowserInfo(platform, app) {
+  this.platform = platform;
+  this.app = app;
+}
+
+BrowserInfo.parse = function(userAgent) {
+  var platform = null;
+  var app = null;
+
+  if (userAgent.indexOf('Win') != -1) {
+    platform = BrowserPlatform.WINDOWS;
+  } else if (userAgent.indexOf('Mac') != -1) {
+    platform = BrowserPlatform.MAC;
+  }
+
+  if (userAgent.indexOf('Chrome') != -1) {
+    app = BrowserApp.CHROME;
+  } else if (userAgent.indexOf('Firefox') != -1) {
+    app = BrowserApp.FIREFOX;
+  } else if (userAgent.indexOf('Safari') != -1) {
+    app = BrowserApp.SAFARI;
+  } else if (userAgent.indexOf('MSIE') != -1) {
+    app = BrowserApp.IE;
+  }
+
+  return new BrowserInfo(platform, app);
+};
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -5186,7 +5358,8 @@ window['initApp'] = function(tripPlan, entities, notes,
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
     .value('$sampleSites', sampleSites)
-    .value('$flashedMessages', flashedMessages);
+    .value('$flashedMessages', flashedMessages)
+    .value('$browserInfo', BrowserInfo.parse(navigator.userAgent));
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
@@ -5209,6 +5382,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
     .controller('GuidesPanelCtrl', GuidesPanelCtrl)
+    .controller('AddYourOwnPanelCtrl', AddYourOwnPanelCtrl)
     .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
     .controller('EditImagesCtrl', EditImagesCtrl)

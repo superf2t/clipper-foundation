@@ -84,8 +84,7 @@
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.infoPanelExpanded"
     tc-transitionend="updateMap()"
     class-when-true="info-panel-closed" after-complete="updateMap()"
-    ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
-    class="info-panel-closed">
+    ng-class="{'full-screen': pageStateModel.isMapFullScreen()}">
     <div id="map-container">
       <div id="map">
       </div>
@@ -670,8 +669,7 @@
       {% if allow_editing %}
       <div class="control-cog-section" ng-click="$event.stopPropagation()">
         <span class="control-cog">
-          <a ng-click="openControls()" href="javascript:void(0)" class="white-link"
-            ng-show="!controlState.open">
+          <a ng-click="openControls()" href="javascript:void(0)" ng-show="!controlState.open">
             <span class="glyphicon glyphicon-cog"></span>
           </a>
           <a ng-click="closeControls()" href="javascript:void(0)" class="white-link"
@@ -732,6 +730,12 @@
         <span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span>
         <hr class="header-entities-separator"/>
       </div>
+      <div class="tags" ng-show="planModel.hasTags()">
+        Tags: 
+        <span ng-repeat="tag in planModel.tripPlanData['tags']" class="one-tag">
+          [[tag['text'] ]]
+        </span>
+      </div>
       <tc-entity-details ng-repeat="entity in planModel.entities()"
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
@@ -741,7 +745,7 @@
 
   <script type="text/ng-template" id="trip-plan-header-template">
     <div class="trip-plan-header">
-      <span class="trip-name">
+      <span class="trip-plan-name">
         [[planModel.tripPlanData['name'] ]]
       </span>
       <span class="place-count">
@@ -796,7 +800,8 @@
   <script type="text/ng-template" id="one-entity-details-template">
     <div class="one-entity-details"
       tc-entity-id="[[forResults ? null : ed['entity_id'] ]]"
-      tc-entity-result-id="[[forResults ? resultIndex : null]]">
+      tc-entity-result-id="[[forResults ? resultIndex : null]]"
+      ng-mouseenter="highlightMarker()">
       <div class="name-and-photos">
         <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
           <div tc-image-carousel urls="ed['photo_urls']" full-bleed="true" class="carousel-content">
@@ -932,6 +937,23 @@
               [[ed['website'] ]]
             </a>
           </div>
+          <div class="reputation-section" ng-show="em.hasReputationInfo()">
+            <div ng-show="ed['source_url']">
+              Ratings and Reviews from
+              <a ng-href="[[ed['source_url'] ]]" target="_blank" class="underline-link">
+                [[ed['source_display_name'] ]]
+              </a>
+            </div>
+            <div>
+              <span class="star-rating" ng-if="ed['rating']">
+                <tc-star-rating value="ed['rating']" max="ed['rating_max'] || 5">
+                </tc-star-rating>
+              </span>
+              <span class="num-reviews" ng-if="ed['review_count']">
+                [[ed['review_count'] ]] review
+              </span>
+            </div>
+          </div>
           <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="inline-editor">
             Get directions
             <a ng-click="directionsHelper.toggleDirection()"
@@ -1032,6 +1054,18 @@
           </a>
         </span>
       </div>
+
+      <tc-entity-marker ng-if="forResults && markerState.position"
+        map="markerState.map" marker="markerState.marker" position="markerState.position"
+        category-name="ed['category'] && ed['category']['name']"
+        icon-template-name="iconTemplateName()"
+        selected="pageStateModel.entityIsSelected(ed['entity_id'])"
+        precise="ed['address_precision'] == 'Precise'"
+        starred="ed['starred']" has-comments="em.hasComments()"
+        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
+        on-click="markerClicked($event)">
+      </tc-entity-marker>
+
       <hr class="entity-separator"/>
     </div>
   </script>
@@ -1113,7 +1147,7 @@
   <script type="text/ng-template" id="guides-panel-template">
     <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']"
+      scroll-dest-selector=".one-entity-details[tc-entity-result-id='[[searchResultState.selectedIndex]]']"
       tc-reset-scroll-top-on="selectedGuide">
       <div ng-show="!selectedGuide">
         <div class="header">
@@ -1147,6 +1181,12 @@
           num-entities="selectedGuide['entities'].length" for-guide="true" full-bleed="true">
         </tc-trip-plan-details-header>
         <div class="description" ng-if="selectedGuide['description']"><span ng-bind-html="selectedGuide['description'] | linky:'_blank'"></span></div>
+        <div class="tags" ng-show="selectedGuide['tags'] && selectedGuide['tags'].length">
+          Tags: 
+          <span ng-repeat="tag in selectedGuide['tags']" class="one-tag">
+            [[tag['text'] ]]
+          </span>
+        </div>
         <div ng-if="selectedGuide['source_url']" class="source-link">
           <a ng-href="[[selectedGuide['source_url'] ]]" target="_blank" class="cta-link">
             View original article at [[selectedGuide['source_display_name'] ]]
@@ -1161,10 +1201,153 @@
   </script>
 
   <script type="text/ng-template" id="add-your-own-panel-template">
-    <div class="add-your-own-panel one-info-panel">
-      <div class="header">
-        Search for places by name, address, or category in
-        <i>[[planModel.tripPlanData['location_name'] ]]</i>
+    <div class="add-your-own-panel one-info-panel" ng-controller="AddYourOwnPanelCtrl">
+      <div class="sub-nav btn-group">
+        <button type="button" class="btn btn-default"
+          ng-class="{'active': tab == AddYourOwnTab.SEARCH}"
+          ng-click="selectTab(AddYourOwnTab.SEARCH)">
+          <span class="glyphicon glyphicon-search"></span>
+        </button>
+        <button type="button" class="btn btn-default"
+          ng-class="{'active': tab == AddYourOwnTab.CLIPPER}"
+          ng-click="selectTab(AddYourOwnTab.CLIPPER)">
+          <span class="glyphicon glyphicon-paperclip"></span>
+        </button>
+        <button type="button" class="btn btn-default"
+          ng-class="{'active': tab == AddYourOwnTab.PASTE_LINK}"
+          ng-click="selectTab(AddYourOwnTab.PASTE_LINK)">
+          <span class="glyphicon glyphicon-link"></span>
+        </button>
+      </div>
+
+      <div ng-if="tab == AddYourOwnTab.SEARCH" class="search-panel">
+        <div class="header">
+          Search for places by name, address, or category in
+          <i>[[planModel.tripPlanData['location_name'] ]]</i>
+        </div>
+        <div class="search-input">
+          <input type="text" class="form-control" ng-model="searchState.rawInput"
+            tc-focus-on="tab"
+            tc-google-place-autocomplete
+            search-bounds-json="planModel.tripPlanData['location_bounds']"
+            on-place-change="googlePlaceSelected($newPlace)"
+            placeholder="e.g. 'cafe', '123 Main St', or 'Eiffel Tower'"/>
+          <div class="search-spinner" ng-show="searchState.searching">
+            <img src="/static/img/spinner-small.gif"/>
+          </div>
+        </div>
+        <div ng-show="hasNoSearchResults()" class="no-search-results">
+          No results found
+        </div>
+
+        <div class="search-results">
+          <div ng-show="searchState.resultType == ResultType.SEARCH"
+            class="results-header">
+            Results from Google Maps for <b>[[searchState.rawInput]]</b>
+            near <i>[[planModel.tripPlanData['location_name'] ]]</i>
+          </div>
+          <div ng-show="searchState.resultType == ResultType.ENTITY_LOOKUP"
+            class="results-header">
+            Place details from Google Maps
+          </div>
+          <tc-entity-details ng-repeat="entity in searchState.results"
+            entity="entity" is-editable="false" for-results="true"
+            trip-plan-id="planModel.tripPlanId()" result-index="$index">
+          </tc-entity-details>
+        </div>
+      </div>
+
+      <div ng-if="tab == AddYourOwnTab.CLIPPER" class="clipper-panel">
+        <div class="header">
+          Clip places from travel websites to your trip
+        </div>
+
+      <div class="bookmarklet-section">
+        <span class="bookmarklet">
+          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
+          onclick="event.stopPropagation(); event.preventDefault()">
+            <span class="bookmarklet-link">
+              <span class="glyphicon glyphicon-paperclip"></span> Clipper
+            </span>
+          </a>
+        </span>
+        <span>
+          Drag the Clipper to your bookmarks bar
+        </span>
+      </div>
+
+      <div class="clipper-info">
+        After adding the Clipper to your bookmarks bar, try it out on
+        these sites by clicking the Clipper whenever you want to add a place
+        to your trip.
+      </div>
+
+      <div class="help-section clipper-info">
+        <a ng-click="toggleHelp()" class="color-link" href="javascript:void(0)">
+          Help with installing the Clipper
+        </a>
+        <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
+        </div>
+      </div>
+
+      <div class="sample-sites">
+        <div ng-repeat="site in sampleSupportedSites">
+          <img ng-src="[[site.iconUrl]]" class="site-icon"/>
+          <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+        </div>
+      </div>
+
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="clipper-help-template">
+    <div class="clipper-help-details">
+      <div ng-if="browserInfo.platform == BrowserPlatform.WINDOWS">
+        <div ng-if="browserInfo.app == BrowserApp.CHROME">
+          For Chrome/Windows: First make sure your bookmarks bar is shown, by pressing
+          control-shift-B or View -> Always Show Bookmarks Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.FIREFOX">
+          For Firefox/Windows: First make sure your bookmarks bar is shown, clicking
+          View -> Toolbars -> Bookmarks Toolbar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.SAFARI">
+          For Safari/Windows: First make sure your bookmarks bar is shown, by pressing
+          control-shift-B or View -> Show Favorites Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+      </div>
+      <div ng-if="browserInfo.platform == BrowserPlatform.MAC">
+        <div ng-if="browserInfo.app == BrowserApp.CHROME">
+          For Chrome/Mac: First make sure your bookmarks bar is shown, by pressing
+          command-shift-B or View -> Always Show Bookmarks Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.FIREFOX">
+          For Firefox/Mac: First make sure your bookmarks bar is shown, clicking
+          View -> Toolbars -> Bookmarks Toolbar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.SAFARI">
+          For Safari/Mac: First make sure your bookmarks bar is shown, by pressing
+          command-shift-B or View -> Show Favorites Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+      </div>
+      <div ng-if="!browserInfo.platform || !browserInfo.app">
+        First make sure your browser's bookmarks bar is shown.
+        This is typically done by going to the 'View' menu in your
+        browser and looking for an option like 'Show bookmarks bar'.
+        Then click and drag the clipper bookmark above into the bookmarks
+        bar and release the mouse, which should create a new item in the bookmarks bar.
       </div>
     </div>
   </script>

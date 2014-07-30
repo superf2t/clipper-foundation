@@ -191,16 +191,26 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+.one-tag {
+  background-color: #ccc;
+  padding: 5px;
+  margin-right: 5px;
+}
+
 /* Map View */
 
 #entity-container {
-  max-height: 0;
-  transition: max-height 0.3s;
   overflow-y: auto;
-  width: 100%;
   background-color: #FAFAFA;
   color: #000;
   z-index: 1;
+
+  position: fixed;
+  top: calc(41px + 10px + 40px);
+  right: 10px;
+  width: 15%;
+  max-height: 0;
+  transition: max-height 0.3s;
 
   -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
@@ -208,7 +218,7 @@ hr.dropdown-separator {
 }
 
 #entity-container.expanded {
-  max-height: calc(100% - 40px);
+  max-height: calc(100% - 41px - 40px - 10px - 20px);
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -234,11 +244,13 @@ hr.dropdown-separator {
 
 .one-entity-summary.selected,
 .one-entity-listing.selected {
-  background-color: #bbb !important;
+  border-left: 3px solid #777;
+  padding: 7px 10px 7px 7px;
 }
 
 .one-entity-summary:hover {
-  background-color: #ddd;
+  border-left: 3px solid #ccc;
+  padding: 7px 10px 7px 7px;
 }
 
 .one-entity-summary .entity-circle-img,
@@ -477,6 +489,10 @@ hr.dropdown-separator {
   background-color: #eee;
 }
 
+.details-panel .tags {
+  margin: 10px 0;
+}
+
 .one-entity-search-result .header-bar {
   position: relative;
 }
@@ -657,14 +673,12 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
-.one-entity-details .tags {
+.one-entity-details .reputation-section {
   margin-top: 10px;
 }
 
-.one-entity-details .tags .one-tag {
-  background-color: #ccc;
-  padding: 5px;
-  margin-right: 5px;
+.one-entity-details .tags {
+  margin-top: 10px;
 }
 
 .one-entity-details .opening-hours {
@@ -895,7 +909,7 @@ hr.dropdown-separator {
   top: calc(41px + 10px);
   right: 10px;
   width: 15%;
-  height: calc(100% - 41px - 10px - 20px);
+  height: 40px
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   z-index: 2;
@@ -972,15 +986,14 @@ hr.dropdown-separator {
 }
 
 #summary-panel .trip-plan-header .trip-plan-name {
-  font-weight: bold;
+  font-weight: 500;
 }
 
 #summary-panel .trip-plan-header .place-count {
-  background-color: #4A90E2;
+  background-color: #4087F9;
   color: #fff;
-  padding: 3px 5px;
-  margin-left: 15px;
-  border-radius: 0;
+  padding: 2px 8px;
+  margin: 7px 0 0 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -1420,8 +1433,88 @@ hr.dropdown-separator {
   margin-bottom: 15px;
 }
 
+.guides-panel .tags {
+  margin-bottom: 10px;
+}
+
 .guides-panel .source-link {
   margin-bottom: 15px;
+}
+
+.add-your-own-panel .sub-nav {
+  margin-bottom: 15px;
+}
+
+.add-your-own-panel .header {
+  text-align: center;
+}
+
+.add-your-own-panel .search-panel .no-search-results {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.add-your-own-panel .search-panel .search-input {
+  position: relative;
+  width: 80%;
+  margin: auto;
+}
+
+.add-your-own-panel .search-panel .search-spinner {
+  position: absolute;
+  top: 6px;
+  width: 100%;
+  text-align: center;
+}
+
+.add-your-own-panel .search-panel .results-header {
+  font-size: 11pt;
+}
+
+.add-your-own-panel .search-panel .search-results {
+  padding-top: 20px;
+}
+
+.add-your-own-panel .clipper-panel .bookmarklet-section {
+  text-align: center;
+  margin: 20px auto;
+}
+
+.add-your-own-panel .clipper-panel .bookmarklet {
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.add-your-own-panel .clipper-panel .bookmarklet-link {
+  padding: 10px;
+  border: 1px solid #357ebd;
+  border-radius: 2px;
+  background-color: #428bca;
+  color: #fff;
+  cursor: move;
+}
+
+.add-your-own-panel .clipper-panel .clipper-info {
+  margin: 0 20px 10px 20px;
+}
+
+.add-your-own-panel .clipper-panel .help-section {
+  text-align: center;
+}
+
+.add-your-own-panel .clipper-panel .help-section .clipper-help-details {
+  text-align: left;
+}
+
+.add-your-own-panel .clipper-panel .sample-sites {
+  margin-left: 60px;
+}
+
+.add-your-own-panel .clipper-panel .sample-sites .site-icon {
+  width: 16px;
+  height: 16px;
 }
 
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
