@@ -1196,10 +1196,60 @@
   </script>
 
   <script type="text/ng-template" id="add-your-own-panel-template">
-    <div class="add-your-own-panel one-info-panel">
-      <div class="header">
-        Search for places by name, address, or category in
-        <i>[[planModel.tripPlanData['location_name'] ]]</i>
+    <div class="add-your-own-panel one-info-panel" ng-controller="AddYourOwnPanelCtrl">
+      <div class="sub-nav btn-group">
+        <button type="button" class="btn btn-default"
+          ng-class="{'active': tab == AddYourOwnTab.SEARCH}"
+          ng-click="selectTab(AddYourOwnTab.SEARCH)">
+          <span class="glyphicon glyphicon-search"></span>
+        </button>
+        <button type="button" class="btn btn-default"
+          ng-class="{'active': tab == AddYourOwnTab.CLIPPER}"
+          ng-click="selectTab(AddYourOwnTab.CLIPPER)">
+          <span class="glyphicon glyphicon-paperclip"></span>
+        </button>
+        <button type="button" class="btn btn-default"
+          ng-class="{'active': tab == AddYourOwnTab.PASTE_LINK}"
+          ng-click="selectTab(AddYourOwnTab.PASTE_LINK)">
+          <span class="glyphicon glyphicon-link"></span>
+        </button>
+      </div>
+      <div ng-if="tab == AddYourOwnTab.SEARCH" class="search-panel">
+        <div class="header">
+          Search for places by name, address, or category in
+          <i>[[planModel.tripPlanData['location_name'] ]]</i>
+        </div>
+        <div class="search-input">
+          <input type="text" class="form-control" ng-model="searchState.rawInput"
+            tc-focus-on="tab"
+            tc-google-place-autocomplete
+            search-bounds-json="planModel.tripPlanData['location_bounds']"
+            on-place-change="googlePlaceSelected($newPlace)"
+            placeholder="e.g. 'cafe', '123 Main St', or 'Eiffel Tower'"/>
+          <div class="search-spinner" ng-show="searchState.searching">
+            <img src="/static/img/spinner-small.gif"/>
+          </div>
+        </div>
+        <div ng-show="hasNoSearchResults()" class="no-search-results">
+          No results found
+        </div>
+
+        <div class="search-results">
+          <div ng-show="searchState.resultType == ResultType.SEARCH"
+            class="results-header">
+            Results from Google Maps for <b>[[searchState.rawInput]]</b>
+            near <i>[[planModel.tripPlanData['location_name'] ]]</i>
+          </div>
+          <div ng-show="searchState.resultType == ResultType.ENTITY_LOOKUP"
+            class="results-header">
+            Place details from Google Maps
+          </div>
+          <tc-entity-details ng-repeat="entity in searchState.results"
+            entity="entity" is-editable="false" for-results="true"
+            trip-plan-id="planModel.tripPlanId()" result-index="$index">
+          </tc-entity-details>
+        </div>
+
       </div>
     </div>
   </script>

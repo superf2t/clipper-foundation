@@ -1314,6 +1314,42 @@ hr.dropdown-separator {
   margin-bottom: 15px;
 }
 
+.add-your-own-panel .sub-nav {
+  margin-bottom: 15px;
+}
+
+.add-your-own-panel .header {
+  text-align: center;
+}
+
+.add-your-own-panel .search-panel .no-search-results {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 11pt;
+  font-weight: bold;
+}
+
+.add-your-own-panel .search-panel .search-input {
+  position: relative;
+  width: 80%;
+  margin: auto;
+}
+
+.add-your-own-panel .search-panel .search-spinner {
+  position: absolute;
+  top: 6px;
+  width: 100%;
+  text-align: center;
+}
+
+.add-your-own-panel .search-panel .results-header {
+  font-size: 11pt;
+}
+
+.add-your-own-panel .search-panel .search-results {
+  padding-top: 20px;
+}
+
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
   font-size: 60px !important;
   top: calc(50% - 30px) !important;

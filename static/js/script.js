@@ -2799,6 +2799,73 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
   };
 }
 
+var AddYourOwnTab = {
+  SEARCH: 1,
+  CLIPPER: 2,
+  PASTE_LINK: 3
+};
+
+var ResultType = {
+  SEARCH: 1,
+  ENTITY_LOOKUP: 2
+};
+
+function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
+    $filterModel, $entityService, $mapManager) {
+
+  $scope.tab = AddYourOwnTab.SEARCH;
+  $scope.AddYourOwnTab = AddYourOwnTab;
+
+  $scope.selectTab = function(tab) {
+    $scope.tab = tab;
+  };
+
+  $scope.searchState = {
+    rawInput: null,
+    searching: false,
+    searchComplete: false,
+    results: null,
+    resultType: null
+  };
+  $scope.ResultType = ResultType;
+
+  $scope.googlePlaceSelected = function(place) {
+    $scope.searchState.searching = true;
+    $scope.searchState.searchComplete = false;
+    $scope.searchState.results = null;
+    $scope.searchState.resultType = null;
+    $searchResultState.clear();
+    if (place['reference']) {
+      $entityService.googleplacetoentity(place['reference'])
+        .success($scope.processSearchResponse);
+    } else {
+      $entityService.googletextsearchtoentities(place['name'],
+        $tripPlanModel.tripPlanData['location_latlng'])
+          .success($scope.processSearchResponse);
+    }
+  };
+
+  $scope.processSearchResponse = function(response) {
+    if (response['entity']) {
+      $scope.searchState.results = [response['entity']]
+      $scope.searchState.resultType = ResultType.ENTITY_LOOKUP;
+    } else {
+      $scope.searchState.results = response['entities'] || [];
+      $scope.searchState.resultType = ResultType.SEARCH;
+    }
+    $scope.searchResultState.results = $scope.searchState.results;
+    $scope.searchState.searching = false;
+    $scope.searchState.searchComplete = true;
+    $mapManager.fitBoundsToEntities($scope.searchState.results);
+    $filterModel.searchResultsEmphasized = true;
+  };
+
+  $scope.hasNoSearchResults = function() {
+    return !$scope.searchState.searching && $scope.searchState.searchComplete
+      && _.isEmpty($scope.searchState.results);
+  };
+}
+
 var SAMPLE_SUPPORTED_SITES = _.map([
   ['Yelp', 'http://www.yelp.com'],
   ['TripAdvisor', 'http://www.tripadvisor.com'],
@@ -5263,6 +5330,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
     .controller('GuidesPanelCtrl', GuidesPanelCtrl)
+    .controller('AddYourOwnPanelCtrl', AddYourOwnPanelCtrl)
     .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
     .controller('EditImagesCtrl', EditImagesCtrl)

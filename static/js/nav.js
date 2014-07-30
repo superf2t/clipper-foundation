@@ -11,6 +11,8 @@
 // -Add Show More links for long text.
 // -Check that rating_max is set on prod guides.
 // -Only show ratings and reviews from known sources.
+// -Make sure there is a source url set for Google search results.
+// -Add infowindow for search results and guides.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
