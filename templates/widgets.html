@@ -193,3 +193,13 @@
     </div>
   </div>
 </script>
+
+<script type="text/ng-template" id="user-icon-template">
+  <a href="javascript:void(0)" tooltip="[[noTooltip ? null : user['display_name'] ]]"
+    tooltip-append-to-body="true">
+    <span class="user-icon"
+      ng-class="'user-' + userStyleIdentifier()">
+      [[user['display_name'].substring(0, 1) ]]
+    </span>
+  </a>
+</script>
