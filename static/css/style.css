@@ -2,7 +2,6 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Avenir';
-  background-color: #EAEAEA;
 }
 
 a {
@@ -245,11 +244,13 @@ hr.dropdown-separator {
 
 .one-entity-summary.selected,
 .one-entity-listing.selected {
-  background-color: #bbb !important;
+  border-left: 3px solid #777;
+  padding: 7px 10px 7px 7px;
 }
 
 .one-entity-summary:hover {
-  background-color: #ddd;
+  border-left: 3px solid #ccc;
+  padding: 7px 10px 7px 7px;
 }
 
 .one-entity-summary .entity-circle-img,
@@ -349,35 +350,53 @@ hr.dropdown-separator {
 }
 
 .info-panel-nav {
-  height: 32px;
+  height: 40px;
   position: relative;
-  background-color: #ccc;
+  background-color: #EEE;
+  border: 1px solid #dce0e0;
 }
 
-.info-panel-nav .info-nav-item {
+.info-panel-nav .info-panel-nav-main-controls {
+  width: 96%;
   display: inline-block;
-  padding: 5px;
-  font-size: 12pt;
+  float: left;
 }
 
-.info-panel-nav .info-nav-item a {
-  color: #428bca;
+.info-panel-nav .info-panel-nav-more-items {
+  width: 4%;
+  padding: 7px 0px;
+  height: 40px;
+  text-align: center;
+  display: inline-block;
+  float: right;
+  font-size: 1.2em;
 }
 
-.info-panel-nav .info-nav-item a:hover {
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item {
+  display: inline-block;
+  padding: 10px;
+  height: 40px;
+  text-align: center;
+}
+
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item .info-nav-item-icon {
+  font-size: 1.2em;  
+}
+
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item a {
+  color: #000000;
+}
+
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item a:hover {
   color: #2D73A0;
 }
 
-.info-panel-nav .info-nav-item.selected {
-  background-color: #777;
-}
-
-.info-panel-nav .info-nav-item.selected a {
-  color: #fff;
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item.selected {
+  border-bottom: 3px solid #777;
 }
 
 .info-panel-nav .info-nav-item.selected a svg {
-  fill: #fff;
+  fill: #000;
 }
 
 .info-panel-nav .more-item {
@@ -401,6 +420,73 @@ hr.dropdown-separator {
   height: 100%;
   padding: 0 10px 20px 10px;
   overflow-y: auto;
+}
+
+.details-panel .header-entities-separator {
+  margin: 10px 0px;
+  border-top: 1px solid #999;
+}
+
+.one-entity-guideview .comments .one-comment {
+  margin: 10px 0px;
+}
+
+.one-entity-guideview .comments .one-comment .comment-sidebar {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.one-entity-guideview .comments .one-comment .comment-timestamp {
+  display: inline-block;
+  color: #666666;
+  font-size: 0.8em;
+}
+
+.one-entity-guideview .comments .one-comment .comment-details {
+  display: inline-block;
+  width: calc(100% - 24px);
+}
+
+.one-entity-guideview .comments .one-comment .text {
+  white-space: pre-wrap;
+}
+
+.one-entity-guideview .comments .one-comment .comment-edit-link {
+  display: none;
+}
+
+.one-entity-guideview .comments .one-comment:hover .comment-edit-link {
+  display: inline;
+}
+
+.one-entity-guideview .controls {
+  margin-top: 10px;
+  position: relative;
+  min-height: 20px;
+  font-size: 1.4em;
+}
+
+.one-entity-guideview .clip-cta {
+  display: inline-block;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  font-size: 11pt;
+}
+
+.one-entity-guideview .inline-editor {
+  padding: 10px;
+  background-color: #eee;  
+}
+
+.one-entity-guideview .inline-editor.ng-enter {
+  -webkit-transition: all linear 1s;
+  transition: all linear 1s;
+  background-color: #ccc;
+}
+
+.one-entity-guideview .inline-editor.ng-enter-active { 
+  background-color: #eee;
 }
 
 .details-panel .tags {
@@ -444,8 +530,34 @@ hr.dropdown-separator {
   color: rgb(39, 172, 113);
 }
 
-.one-entity-details {
-  padding: 10px 0;
+.one-entity-guideview .clip-cta a {
+  color: #428bca;
+}
+
+.one-entity-guideview .clip-cta a:hover {
+  color: #2D73A0;
+}
+
+.one-entity-guideview .inline-comment-editor .author-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.one-entity-guideview .inline-day-planner select {
+  max-width: 200px;
+  margin: 5px 0;
+}
+
+.one-entity-guideview .inline-day-planner a {
+  color: #428bca;
+}
+
+.one-entity-guideview .inline-day-planner a:hover {
+  color: #2D73A0;
+}
+
+.one-entity-guideview .inline-directions .directions-select {
+  margin: 10px 0;
 }
 
 .one-entity-details .name-and-photos {
@@ -469,8 +581,8 @@ hr.dropdown-separator {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  height: 35px;
+  background-color: rgba(0, 0, 0, 0.3);
+  height: 38px;
 }
 
 .one-entity-details .entity-icon {
@@ -490,7 +602,7 @@ hr.dropdown-separator {
   font-size: 13pt;
   display: inline-block;
   vertical-align: top;
-  padding-top: 5px;
+  padding-top: 8px;
 }
 
 .one-entity-details .star-section {
@@ -498,7 +610,11 @@ hr.dropdown-separator {
   font-size: 13pt;
   display: inline-block;
   vertical-align: top;
-  padding: 5px 5px 0 0;
+  padding: 8px 5px 0 0;
+}
+
+.one-entity-details .star-section a {
+  color: #FFFFFF;
 }
 
 .one-entity-details .info-tabs {
@@ -509,7 +625,7 @@ hr.dropdown-separator {
 .one-entity-details .info-tab {
   display: inline-block;
   margin-right: 20px;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .one-entity-details .info-tab:hover {
@@ -524,9 +640,25 @@ hr.dropdown-separator {
   margin-bottom: 10px;
 }
 
-.one-entity-details .add-to-trip-link {
+.one-entity-details .add-to-trip-cta {
   display: inline-block;
   float: right;
+}
+
+.one-entity-details .add-to-trip-link {
+  color: #4087F9;
+  font-weight: 500;
+  padding: 3px;
+}
+
+.one-entity-details .add-to-trip-link:hover {
+  color: #4A90E2;
+  background-color: #ddd;
+}
+
+.one-entity-details .saved-status {
+  color: #999;
+  font-weight: 500;
 }
 
 .one-entity-details .source-attribution {
@@ -560,10 +692,9 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .editing-controls {
-  background-color: #dedede;
   margin-top: 10px;
-  padding: 10px;
-  height: 35px;
+  padding-top: 10px;
+  height: 36px;
   font-size: 12pt;
 }
 
@@ -585,6 +716,7 @@ hr.dropdown-separator {
 
 .one-entity-details .entity-separator {
   border-top: 1px solid #CCCCCC;
+  margin: 10px 0px;
 }
 
 .one-entity-details .inline-editor {
@@ -855,22 +987,17 @@ hr.dropdown-separator {
   color: #000;
   position: relative;
   padding: 10px;
-
-  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 #summary-panel .trip-plan-header .trip-plan-name {
-  font-weight: bold;
+  font-weight: 500;
 }
 
 #summary-panel .trip-plan-header .place-count {
-  background-color: #4A90E2;
+  background-color: #4087F9;
   color: #fff;
-  padding: 3px 5px;
-  margin-left: 15px;
-  border-radius: 0;
+  padding: 2px 8px;
+  margin: 7px 0 0 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -886,7 +1013,7 @@ hr.dropdown-separator {
 
 .trip-plan-details-header {
   position: relative;
-  height: 230px;
+  height: 280px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
   background-size: cover;

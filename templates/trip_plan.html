@@ -108,52 +108,55 @@
   <script type="text/ng-template" id="info-panel-nav-template">
     <div class="info-panel-nav">
       <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
-        <span class="info-nav-item"
-          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
-          <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
-            <span tc-icon="trip-plan"></span> View Details
-          </a>
+        <div class="info-panel-nav-main-controls">
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
+            <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
+              <span class="info-nav-item-icon">
+                <span tc-icon="trip-plan"></span>
+              </span> View Details
+            </a>
+          </span>
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}">
+            <a ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-book info-nav-item-icon"></span> Browse Guides
+            </a>
+          </span>
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}">
+            <a ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"  href="javascript:void(0)">
+              <span class="glyphicon glyphicon-plus info-nav-item-icon"></span> Add Your Own
+            </a>
+          </span>
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}">
+            <a ng-click="goToInfoPanel(InfoPanelMode.EXPORT)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-share info-nav-item-icon"></span> Export
+            </a>
+          </span>
         </span>
-        <span class="info-nav-item"
-          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}">
-          <a ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-book"></span> Browse Guides
-          </a>
+        <span ng-show="pageStateModel.infoPanelShowExtendedNavItems">
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SHARING}">
+            <a ng-click="goToInfoPanel(InfoPanelMode.SHARING)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-share-alt info-nav-item-icon"></span> Share
+            </a>
+          </span>
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS}">
+            <a ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-cog info-nav-item-icon"></span> Settings
+            </a>
+          </span>
         </span>
-        <span class="info-nav-item"
-          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}">
-          <a ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"  href="javascript:void(0)">
-            <span class="glyphicon glyphicon-plus"></span> Add Your Own
-          </a>
-        </span>
-        <span class="info-nav-item"
-          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}">
-          <a ng-click="goToInfoPanel(InfoPanelMode.EXPORT)" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-share"></span> Export
-          </a>
-        </span>
-      </span>
-      <span ng-show="pageStateModel.infoPanelShowExtendedNavItems">
-        <span class="info-nav-item"
-          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SHARING}">
-          <a ng-click="goToInfoPanel(InfoPanelMode.SHARING)" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-share-alt"></span> Share
-          </a>
-        </span>
-        <span class="info-nav-item"
-          ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS}">
-          <a ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)" href="javascript:void(0)">
-            <span class="glyphicon glyphicon-cog"></span> Settings
-          </a>
-        </span>
-      </span>
-
-      <span class="more-item">
+      </div>
+      <div class="info-panel-nav-more-items">
         <a ng-click="pageStateModel.infoPanelShowExtendedNavItems = !pageStateModel.infoPanelShowExtendedNavItems"
         href="javascript:void(0)">
           &hellip;
         </a>
-      </span>
+      </div>
     </div>
   </script>
 
@@ -666,8 +669,7 @@
       {% if allow_editing %}
       <div class="control-cog-section" ng-click="$event.stopPropagation()">
         <span class="control-cog">
-          <a ng-click="openControls()" href="javascript:void(0)" class="white-link"
-            ng-show="!controlState.open">
+          <a ng-click="openControls()" href="javascript:void(0)" ng-show="!controlState.open">
             <span class="glyphicon glyphicon-cog"></span>
           </a>
           <a ng-click="closeControls()" href="javascript:void(0)" class="white-link"
@@ -724,7 +726,10 @@
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
         num-entities="planModel.numEntities()" for-guide="false" full-bleed="true">
       </tc-trip-plan-details-header>
-      <div class="description" ng-if="planModel.tripPlanData['description']"><span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span></div>
+      <div class="description" ng-if="planModel.tripPlanData['description']">
+        <span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span>
+        <hr class="header-entities-separator"/>
+      </div>
       <div class="tags" ng-show="planModel.hasTags()">
         Tags: 
         <span ng-repeat="tag in planModel.tripPlanData['tags']" class="one-tag">
@@ -740,7 +745,7 @@
 
   <script type="text/ng-template" id="trip-plan-header-template">
     <div class="trip-plan-header">
-      <span class="trip-name">
+      <span class="trip-plan-name">
         [[planModel.tripPlanData['name'] ]]
       </span>
       <span class="place-count">
@@ -851,12 +856,12 @@
             <span ng-show="em.hasComments()">([[em.numComments()]])<span>
           </a>
         </span>
-        <span class="add-to-trip-link" ng-show="!isEditable">
-          <a ng-click="clipEntity()" ng-show="!isAlreadySaved()" class="cta-link"
+        <span class="add-to-trip-cta" ng-show="!isEditable">
+          <a ng-click="clipEntity()" ng-show="!isAlreadySaved()" class="add-to-trip-link"
             href="javascript:void(0)">
             Add to My Trip
           </a>
-          <span ng-show="isAlreadySaved()" class="text-success">
+          <span ng-show="isAlreadySaved()" class="saved-status">
             Saved
           </span>
         </span>
