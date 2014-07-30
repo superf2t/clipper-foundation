@@ -1214,6 +1214,7 @@
           <span class="glyphicon glyphicon-link"></span>
         </button>
       </div>
+
       <div ng-if="tab == AddYourOwnTab.SEARCH" class="search-panel">
         <div class="header">
           Search for places by name, address, or category in
@@ -1249,7 +1250,99 @@
             trip-plan-id="planModel.tripPlanId()" result-index="$index">
           </tc-entity-details>
         </div>
+      </div>
 
+      <div ng-if="tab == AddYourOwnTab.CLIPPER" class="clipper-panel">
+        <div class="header">
+          Clip places from travel websites to your trip
+        </div>
+
+      <div class="bookmarklet-section">
+        <span class="bookmarklet">
+          <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
+          onclick="event.stopPropagation(); event.preventDefault()">
+            <span class="bookmarklet-link">
+              <span class="glyphicon glyphicon-paperclip"></span> Clipper
+            </span>
+          </a>
+        </span>
+        <span>
+          Drag the Clipper to your bookmarks bar
+        </span>
+      </div>
+
+      <div class="clipper-info">
+        After adding the Clipper to your bookmarks bar, try it out on
+        these sites by clicking the Clipper whenever you want to add a place
+        to your trip.
+      </div>
+
+      <div class="help-section clipper-info">
+        <a ng-click="toggleHelp()" class="color-link" href="javascript:void(0)">
+          Help with installing the Clipper
+        </a>
+        <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
+        </div>
+      </div>
+
+      <div class="sample-sites">
+        <div ng-repeat="site in sampleSupportedSites">
+          <img ng-src="[[site.iconUrl]]" class="site-icon"/>
+          <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+        </div>
+      </div>
+
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="clipper-help-template">
+    <div class="clipper-help-details">
+      <div ng-if="browserInfo.platform == BrowserPlatform.WINDOWS">
+        <div ng-if="browserInfo.app == BrowserApp.CHROME">
+          For Chrome/Windows: First make sure your bookmarks bar is shown, by pressing
+          control-shift-B or View -> Always Show Bookmarks Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.FIREFOX">
+          For Firefox/Windows: First make sure your bookmarks bar is shown, clicking
+          View -> Toolbars -> Bookmarks Toolbar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.SAFARI">
+          For Safari/Windows: First make sure your bookmarks bar is shown, by pressing
+          control-shift-B or View -> Show Favorites Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+      </div>
+      <div ng-if="browserInfo.platform == BrowserPlatform.MAC">
+        <div ng-if="browserInfo.app == BrowserApp.CHROME">
+          For Chrome/Mac: First make sure your bookmarks bar is shown, by pressing
+          command-shift-B or View -> Always Show Bookmarks Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.FIREFOX">
+          For Firefox/Mac: First make sure your bookmarks bar is shown, clicking
+          View -> Toolbars -> Bookmarks Toolbar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.SAFARI">
+          For Safari/Mac: First make sure your bookmarks bar is shown, by pressing
+          command-shift-B or View -> Show Favorites Bar.
+          Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+      </div>
+      <div ng-if="!browserInfo.platform || !browserInfo.app">
+        First make sure your browser's bookmarks bar is shown.
+        This is typically done by going to the 'View' menu in your
+        browser and looking for an option like 'Show bookmarks bar'.
+        Then click and drag the clipper bookmark above into the bookmarks
+        bar and release the mouse, which should create a new item in the bookmarks bar.
       </div>
     </div>
   </script>

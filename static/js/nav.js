@@ -13,6 +13,7 @@
 // -Only show ratings and reviews from known sources.
 // -Make sure there is a source url set for Google search results.
 // -Add infowindow for search results and guides.
+// -Test help text for the clipper, and get IE commands.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,

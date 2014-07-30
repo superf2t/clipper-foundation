@@ -1350,6 +1350,46 @@ hr.dropdown-separator {
   padding-top: 20px;
 }
 
+.add-your-own-panel .clipper-panel .bookmarklet-section {
+  text-align: center;
+  margin: 20px auto;
+}
+
+.add-your-own-panel .clipper-panel .bookmarklet {
+  display: inline-block;
+  padding-right: 10px;
+}
+
+.add-your-own-panel .clipper-panel .bookmarklet-link {
+  padding: 10px;
+  border: 1px solid #357ebd;
+  border-radius: 2px;
+  background-color: #428bca;
+  color: #fff;
+  cursor: move;
+}
+
+.add-your-own-panel .clipper-panel .clipper-info {
+  margin: 0 20px 10px 20px;
+}
+
+.add-your-own-panel .clipper-panel .help-section {
+  text-align: center;
+}
+
+.add-your-own-panel .clipper-panel .help-section .clipper-help-details {
+  text-align: left;
+}
+
+.add-your-own-panel .clipper-panel .sample-sites {
+  margin-left: 60px;
+}
+
+.add-your-own-panel .clipper-panel .sample-sites .site-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
   font-size: 60px !important;
   top: calc(50% - 30px) !important;

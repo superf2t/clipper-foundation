@@ -2811,7 +2811,7 @@ var ResultType = {
 };
 
 function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
-    $filterModel, $entityService, $mapManager) {
+    $filterModel, $entityService, $mapManager, $browserInfo, $window) {
 
   $scope.tab = AddYourOwnTab.SEARCH;
   $scope.AddYourOwnTab = AddYourOwnTab;
@@ -2863,6 +2863,17 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
   $scope.hasNoSearchResults = function() {
     return !$scope.searchState.searching && $scope.searchState.searchComplete
       && _.isEmpty($scope.searchState.results);
+  };
+
+  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
+  $scope.browserInfo = $browserInfo;
+  $scope.BrowserPlatform = BrowserPlatform;
+  $scope.BrowserApp = BrowserApp;
+
+  $scope.showClipperHelp = false;
+
+  $scope.toggleHelp = function() {
+    $scope.showClipperHelp = !$scope.showClipperHelp;
   };
 }
 
@@ -5221,6 +5232,46 @@ function tcAnimateOnChangeTo() {
   };
 };
 
+var BrowserPlatform = {
+  WINDOWS: 1,
+  MAC: 2
+};
+
+var BrowserApp = {
+  CHROME: 1,
+  FIREFOX: 2,
+  SAFARI: 3,
+  IE: 4
+};
+
+function BrowserInfo(platform, app) {
+  this.platform = platform;
+  this.app = app;
+}
+
+BrowserInfo.parse = function(userAgent) {
+  var platform = null;
+  var app = null;
+
+  if (userAgent.indexOf('Win') != -1) {
+    platform = BrowserPlatform.WINDOWS;
+  } else if (userAgent.indexOf('Mac') != -1) {
+    platform = BrowserPlatform.MAC;
+  }
+
+  if (userAgent.indexOf('Chrome') != -1) {
+    app = BrowserApp.CHROME;
+  } else if (userAgent.indexOf('Firefox') != -1) {
+    app = BrowserApp.FIREFOX;
+  } else if (userAgent.indexOf('Safari') != -1) {
+    app = BrowserApp.SAFARI;
+  } else if (userAgent.indexOf('MSIE') != -1) {
+    app = BrowserApp.IE;
+  }
+
+  return new BrowserInfo(platform, app);
+};
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -5307,7 +5358,8 @@ window['initApp'] = function(tripPlan, entities, notes,
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
     .value('$sampleSites', sampleSites)
-    .value('$flashedMessages', flashedMessages);
+    .value('$flashedMessages', flashedMessages)
+    .value('$browserInfo', BrowserInfo.parse(navigator.userAgent));
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
