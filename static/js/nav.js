@@ -17,6 +17,9 @@
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
 //  or just as scope methods.
+// -Remove tutorial panel.
+// -Remove day planner.
+// -Remove notes
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {

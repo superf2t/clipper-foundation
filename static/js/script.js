@@ -1845,7 +1845,7 @@ var InfoPanelMode = {
 function PageStateModel(grouping, needsTutorial) {
   this.omniboxOpen = false;
   this.summaryPanelExpanded = true;
-  this.infoPanelExpanded = false;
+  this.infoPanelExpanded = true;
   this.infoPanelMode = InfoPanelMode.DETAILS;
   this.infoPanelShowExtendedNavItems = false;
   this.inNewTripPlanModal = false;
