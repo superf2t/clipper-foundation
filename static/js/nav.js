@@ -1,14 +1,13 @@
 // TODO:
-// -Verify that the 'next' url is working properly when clicking the 'Join' link.
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
 // -Add variable star ratings widget.
 // -Clean up display language for opening hours.
-// -Render and editing for entity tags.
+// -Rendering for trip plan tags
 // -Check whether the right entity name appears in the reclipping confirmation.
-// -Add "Remember me" support for login.
 // -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
+// -Get an email sender account on the new domain.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,

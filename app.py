@@ -9,6 +9,7 @@ from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask import session
 from flask import url_for
 from flask.ext import user as flask_user
 from flask.ext.user import current_user
@@ -339,10 +340,21 @@ def register():
 
 def login():
     response = flask_user.views.login()
-    if (hasattr(response, 'status_code') and response.status_code == 302
-        and request.args.get('iframe')):
-        print request.args.get('next')
-        return render_template('flask_user/login_iframe_complete.html', next_url=request.args.get('next'))
+    if hasattr(response, 'status_code') and response.status_code == 302:
+        # HACK: Somewhat baffling but Flask-User does not allow you to pass
+        # the remember-me param to Flask-Login when logging in a user.
+        # So we just do what that would have done here.
+        session['remember'] = 'set'
+        if request.args.get('iframe'):
+            # HACK: If the login form was filled out correctly we could
+            # just target the top frame and let the redirect happen,
+            # but if the user makes an error they would get the form
+            # with error messages in the top frame instead of the iframe.
+            # So we have to make the form target the iframe and render a hack
+            # response here that tells the app to reload the page if successful.
+            # Note that we're not setting any cookies here, fortunately the login
+            # is still working without it.
+            return render_template('flask_user/login_iframe_complete.html', next_url=request.args.get('next'))
     return response
 
 def confirm_email(token):

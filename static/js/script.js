@@ -635,7 +635,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.showAboutTab = function() {
     return $scope.isEditable || (
       $scope.ed['origin_trip_plan_name'] || $scope.ed['description']
-      || _.isEmpty($scope.ed['tags']));
+      || !_.isEmpty($scope.ed['tags']));
   };
 
   $scope.infoTab = $scope.showAboutTab() ? InfoTab.ABOUT : InfoTab.DETAILS;
