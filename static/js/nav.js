@@ -11,6 +11,8 @@
 // -Add Show More links for long text.
 // -Check that rating_max is set on prod guides.
 // -Only show ratings and reviews from known sources.
+// -Fix the size of the summary panel so that it doesn't intercept clicks from the map
+//  when not full size.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,

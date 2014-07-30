@@ -795,7 +795,8 @@
   <script type="text/ng-template" id="one-entity-details-template">
     <div class="one-entity-details"
       tc-entity-id="[[forResults ? null : ed['entity_id'] ]]"
-      tc-entity-result-id="[[forResults ? resultIndex : null]]">
+      tc-entity-result-id="[[forResults ? resultIndex : null]]"
+      ng-mouseenter="highlightMarker()">
       <div class="name-and-photos">
         <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
           <div tc-image-carousel urls="ed['photo_urls']" full-bleed="true" class="carousel-content">
@@ -1048,6 +1049,18 @@
           </a>
         </span>
       </div>
+
+      <tc-entity-marker ng-if="forResults && markerState.position"
+        map="markerState.map" marker="markerState.marker" position="markerState.position"
+        category-name="ed['category'] && ed['category']['name']"
+        icon-template-name="iconTemplateName()"
+        selected="pageStateModel.entityIsSelected(ed['entity_id'])"
+        precise="ed['address_precision'] == 'Precise'"
+        starred="ed['starred']" has-comments="em.hasComments()"
+        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
+        on-click="markerClicked($event)">
+      </tc-entity-marker>
+
       <hr class="entity-separator"/>
     </div>
   </script>
@@ -1129,7 +1142,7 @@
   <script type="text/ng-template" id="guides-panel-template">
     <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']"
+      scroll-dest-selector=".one-entity-details[tc-entity-result-id='[[searchResultState.selectedIndex]]']"
       tc-reset-scroll-top-on="selectedGuide">
       <div ng-show="!selectedGuide">
         <div class="header">

@@ -634,8 +634,8 @@ var InfoTab = {
 };
 
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
-    $pageStateModel, $searchResultState, $accountInfo,
-    $entityEditingService, $entityClippingService, $window) {
+    $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
+    $entityEditingService, $entityClippingService, $window, $timeout) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.accountInfo = $accountInfo;
@@ -659,6 +659,14 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.tagState = {rawInput: null};
   $scope.descriptionState = {rawInput: null};
+
+  $scope.markerState = {
+    map: $map,
+    marker: null,
+    position: $scope.em.gmapsLatLng(),
+    emphasized: null,
+    deemphasized: null
+  };
 
   $scope.selectInfoTab = function(infoTab) {
     $scope.infoTab = infoTab;
@@ -797,6 +805,36 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $scope.descriptionState.rawInput = null;
     $scope.inlineEditMode = null;
   };
+
+  $scope.markerClicked = function($event) {
+    if ($scope.forResults) {
+      $searchResultState.selectedIndex = $scope.resultIndex;
+    }
+    $event.stopPropagation();
+  };
+
+  $scope.setMarkerState = function() {
+    if (!$scope.markerState.marker) {
+      return;
+    }
+    if ($filterModel.searchResultsEmphasized) {
+      $scope.markerState.deemphasized = !$scope.forResults;
+    }
+    if ($scope.forResults) {
+      $scope.markerState.emphasized = ($searchResultState.highlightedIndex == $scope.resultIndex
+        || $searchResultState.selectedIndex == $scope.resultIndex);
+    }
+  };
+
+  $scope.highlightMarker = function() {
+    if ($scope.forResults) {
+      $searchResultState.highlightedIndex = $scope.resultIndex;
+    }
+  };
+
+  $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
+  $scope.$watch(_.constant($searchResultState), $scope.setMarkerState, true);
+  $timeout($scope.setMarkerState);
 }
 
 function tcEntityDetails() {
@@ -2757,6 +2795,7 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
 
   $scope.backToListings = function() {
     $scope.selectedGuide = null;
+    $filterModel.searchResultsEmphasized = false;
   };
 }
 
