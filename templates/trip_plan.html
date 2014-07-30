@@ -1412,7 +1412,25 @@
   <script type="text/ng-template" id="export-panel-template">
     <div class="export-panel one-info-panel">
       <div class="header">
-        Take your trip plan with you on the road.
+        Take your trip plan with you on the road
+      </div>
+
+      <div>
+        You can export to the following formats:
+      </div>
+
+      <div class="export-buttons">
+        <a class="export-button" target="_blank"
+          ng-href="/trip_plan/[[planModel.tripPlanId()]]/print">
+          Print
+        </a>
+        <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+          Spreadsheet
+        </a>
+      </div>
+
+      <div>
+        Offline mobile support for iOS and Android coming soon!
       </div>
     </div>
   </script>

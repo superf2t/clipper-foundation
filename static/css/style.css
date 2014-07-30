@@ -1404,6 +1404,24 @@ hr.dropdown-separator {
   margin-top: 10px;
 }
 
+.export-panel .export-buttons {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.export-panel .export-button {
+  background-color: #fff;
+  border: 1px solid #777;
+  border-radius: 2px;
+  padding: 10px 0;
+  margin: 0 10px;
+  display: inline-block;
+  width: 120px;
+  text-align: center;
+  font-size: 12pt;
+  font-weight: bold;
+}
+
 .add-place-panel .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
   font-size: 60px !important;
   top: calc(50% - 30px) !important;
