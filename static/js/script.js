@@ -119,6 +119,10 @@ function EntityModel(entityData, editable) {
     return !_.isEmpty(this.data['tags']);
   };
 
+  this.hasReputationInfo = function() {
+    return this.data['rating'] || this.data['review_count']
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
@@ -4269,9 +4273,16 @@ function tcStarRating() {
   return {
     restrict: 'AEC',
     scope: {
-      value: '=value'
+      value: '=',
+      max: '='
     },
-    templateUrl: 'star-rating-template'
+    templateUrl: 'star-rating-template',
+    controller: function($scope) {
+      $scope.maxRange = new Array($scope.max);
+      for (var i = 0; i < $scope.max; i++) {
+        $scope.maxRange[i] = i;
+      }
+    }
   };
 }
 

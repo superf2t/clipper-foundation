@@ -537,6 +537,10 @@ hr.dropdown-separator {
   margin-bottom: 5px;
 }
 
+.one-entity-details .reputation-section {
+  margin-top: 10px;
+}
+
 .one-entity-details .tags {
   margin-top: 10px;
 }

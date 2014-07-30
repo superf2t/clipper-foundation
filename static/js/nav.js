@@ -8,6 +8,11 @@
 // -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 // -Get an email sender account on the new domain.
 // -Make sure all featured guides have the GUIDE bit set.
+// -Add Show More links for long text.
+// -Check that rating_max is set on prod guides.
+// -Only show ratings and reviews from known sources.
+
+// -Fix map initial width.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,

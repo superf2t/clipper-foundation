@@ -932,6 +932,23 @@
               [[ed['website'] ]]
             </a>
           </div>
+          <div class="reputation-section" ng-show="em.hasReputationInfo()">
+            <div ng-show="ed['source_url']">
+              Ratings and Reviews from
+              <a ng-href="[[ed['source_url'] ]]" target="_blank" class="underline-link">
+                [[ed['source_display_name'] ]]
+              </a>
+            </div>
+            <div>
+              <span class="star-rating" ng-if="ed['rating']">
+                <tc-star-rating value="ed['rating']" max="ed['rating_max'] || 5">
+                </tc-star-rating>
+              </span>
+              <span class="num-reviews" ng-if="ed['review_count']">
+                [[ed['review_count'] ]] review
+              </span>
+            </div>
+          </div>
           <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="inline-editor">
             Get directions
             <a ng-click="directionsHelper.toggleDirection()"

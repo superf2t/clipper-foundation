@@ -149,7 +149,7 @@
 
 <script type="text/ng-template" id="star-rating-template">
   <div>
-    <span ng-repeat="star in [1, 2, 3, 4, 5]">
+    <span ng-repeat="star in maxRange">
       <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
     </span>
   </div>
