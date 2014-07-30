@@ -12,9 +12,9 @@
 // -Add "Remember me" support for login.
 // -Change the login page to target the iframe and not the top frame;
 //  if successful, do a page reload.
+// -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 
 // CLEANUP:
-// -Remove item groups and associated templating.
 // -Delete the item model and put its remaining funcionality in EntityModel,
 //  or just as scope methods.
 

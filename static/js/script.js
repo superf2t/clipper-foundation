@@ -999,23 +999,6 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
   };
 }
 
-function NoteCtrl($scope, $noteService, $tripPlanModel) {
-  $scope.nd = $scope.item.data;
-  $scope.editing = false;
-
-  $scope.openEditNote = function() {
-    $scope.editing = true;
-  };
-
-  $scope.saveNote = function() {
-    $noteService.editNote($scope.item.data, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        $tripPlanModel.updateLastModified(response['last_modified']);
-      });
-    $scope.editing = false;
-  };
-}
-
 function DaySelectDropdownCtrl($scope, $tripPlanModel, $entityService,
     $dataRefreshManager, $pageStateModel, $pagePositionManager, $timeout) {
   $scope.selectedDayState = {dayModel: null};
@@ -5220,7 +5203,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .controller('EntityCtrl', EntityCtrl)
     .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
-    .controller('NoteCtrl', NoteCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)

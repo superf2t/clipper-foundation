@@ -218,30 +218,6 @@ hr.dropdown-separator {
     display: none; 
 }
 
-.item-group-header {
-  position: relative;
-}
-
-.item-group-header h4 {
-  margin: 0px;
-  padding: 10px;
-  font-weight: 300;
-}
-
-.item-group-header .item-group-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.item-group-header .item-group-controls .emphasis-control {
-  display: none;
-}
-
-.item-group-header:hover .item-group-controls .emphasis-control {
-  display: block;
-}
-
 .one-entity-summary {
   padding: 7px 10px;
   cursor: pointer;
@@ -417,68 +393,6 @@ hr.dropdown-separator {
   overflow-y: auto;
 }
 
-.one-entity-guideview .comments .one-comment {
-  margin: 10px 0px;
-}
-
-.one-entity-guideview .comments .one-comment .comment-sidebar {
-  display: inline-block;
-  vertical-align: top;
-}
-
-.one-entity-guideview .comments .one-comment .comment-timestamp {
-  display: inline-block;
-  color: #666666;
-  font-size: 0.8em;
-}
-
-.one-entity-guideview .comments .one-comment .comment-details {
-  display: inline-block;
-  width: calc(100% - 24px);
-}
-
-.one-entity-guideview .comments .one-comment .text {
-  white-space: pre-wrap;
-}
-
-.one-entity-guideview .comments .one-comment .comment-edit-link {
-  display: none;
-}
-
-.one-entity-guideview .comments .one-comment:hover .comment-edit-link {
-  display: inline;
-}
-
-.one-entity-guideview .controls {
-  margin-top: 10px;
-  position: relative;
-  min-height: 20px;
-  font-size: 1.4em;
-}
-
-.one-entity-guideview .clip-cta {
-  display: inline-block;
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  font-size: 11pt;
-}
-
-.one-entity-guideview .inline-editor {
-  padding: 10px;
-  background-color: #eee;  
-}
-
-.one-entity-guideview .inline-editor.ng-enter {
-  -webkit-transition: all linear 1s;
-  transition: all linear 1s;
-  background-color: #ccc;
-}
-
-.one-entity-guideview .inline-editor.ng-enter-active { 
-  background-color: #eee;
-}
-
 .one-entity-search-result .header-bar {
   position: relative;
 }
@@ -514,36 +428,6 @@ hr.dropdown-separator {
 
 .one-entity-search-result .save-confirmation {
   color: rgb(39, 172, 113);
-}
-
-.one-entity-guideview .clip-cta a {
-  color: #428bca;
-}
-
-.one-entity-guideview .clip-cta a:hover {
-  color: #2D73A0;
-}
-
-.one-entity-guideview .inline-comment-editor .author-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.one-entity-guideview .inline-day-planner select {
-  max-width: 200px;
-  margin: 5px 0;
-}
-
-.one-entity-guideview .inline-day-planner a {
-  color: #428bca;
-}
-
-.one-entity-guideview .inline-day-planner a:hover {
-  color: #2D73A0;
-}
-
-.one-entity-guideview .inline-directions .directions-select {
-  margin: 10px 0;
 }
 
 .one-entity-details {
@@ -772,17 +656,6 @@ hr.dropdown-separator {
 .modal-carousel img {
   height: 100%;
   margin: auto;
-}
-
-.one-note-mapview {
-  margin: 5px 10px;
-  position: relative;
-}
-
-.one-note-mapview .controls {
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 
 .getting-started-directions {
@@ -1252,21 +1125,6 @@ hr.dropdown-separator {
 .clipping-iframe {
   width: 500px;
   height: 400px;
-}
-
-/* Not sure why the arrows are not maintaining consistent position - 
-temporary hack that lines up the arrows a bit better for most pictures */
-.one-entity-guideview .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
-  font-size: 60px !important;
-  top: calc(50% - 30px) !important;
-  margin: none;
-  left: 16px;
-}
-
-.one-entity-guideview .photo-carousel .carousel-content .image-carousel .carousel-control .icon-prev {
-  font-size: 60px !important;
-  top: calc(50% - 30px) !important;
-  margin: none;
 }
 
 .note-text {
