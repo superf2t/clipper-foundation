@@ -84,8 +84,7 @@
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.infoPanelExpanded"
     tc-transitionend="updateMap()"
     class-when-true="info-panel-closed" after-complete="updateMap()"
-    ng-class="{'full-screen': pageStateModel.isMapFullScreen()}"
-    class="info-panel-closed">
+    ng-class="{'full-screen': pageStateModel.isMapFullScreen()}">
     <div id="map-container">
       <div id="map">
       </div>

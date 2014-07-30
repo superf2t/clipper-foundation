@@ -12,8 +12,6 @@
 // -Check that rating_max is set on prod guides.
 // -Only show ratings and reviews from known sources.
 
-// -Fix map initial width.
-
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
 //  or just as scope methods.
