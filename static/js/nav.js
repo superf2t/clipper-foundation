@@ -14,6 +14,7 @@
 // -Make sure there is a source url set for Google search results.
 // -Add infowindow for search results and guides.
 // -Test help text for the clipper, and get IE commands.
+// -Add Back to Top link for guides.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
