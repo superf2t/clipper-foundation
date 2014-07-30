@@ -201,13 +201,17 @@ hr.dropdown-separator {
 /* Map View */
 
 #entity-container {
-  max-height: 0;
-  transition: max-height 0.3s;
   overflow-y: auto;
-  width: 100%;
   background-color: #FAFAFA;
   color: #000;
   z-index: 1;
+
+  position: fixed;
+  top: calc(41px + 10px + 40px);
+  right: 10px;
+  width: 15%;
+  max-height: 0;
+  transition: max-height 0.3s;
 
   -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
@@ -215,7 +219,7 @@ hr.dropdown-separator {
 }
 
 #entity-container.expanded {
-  max-height: calc(100% - 40px);
+  max-height: calc(100% - 41px - 40px - 10px - 20px);
 }
 
 /* Temporary until I figure out a better solution or UI */
@@ -773,7 +777,7 @@ hr.dropdown-separator {
   top: calc(41px + 10px);
   right: 10px;
   width: 15%;
-  height: calc(100% - 41px - 10px - 20px);
+  height: 40px
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   z-index: 2;
