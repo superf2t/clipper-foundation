@@ -425,30 +425,6 @@ function TaxonomyTree(categories, subCategories) {
   };
 }
 
-function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
-  $scope.show = function() {
-    if ($scope.itemGroupModel.grouping == Grouping.CATEGORY) {
-      return $filterModel.isCategoryNameSelected($scope.itemGroupModel.groupKey);
-    } else if ($scope.itemGroupModel.grouping == Grouping.DAY) {
-      return $filterModel.isDaySelected($scope.itemGroupModel.groupKey);
-    }
-    return true;
-  };
-
-  $scope.centerMapOnGroup = function() {
-    $scope.$emit('asktocloseallinfowindows');
-    var bounds = new google.maps.LatLngBounds()
-    $.each($scope.itemGroupModel.getEntityItems(), function(i, item) {
-      if (item.hasLocation()) {
-        bounds.extend(gmapsLatLngFromJson(item.data['latlng']));
-      }
-    });
-    if (!bounds.isEmpty()) {
-      $map.fitBounds(bounds);
-    }
-  };
-}
-
 function EntityCtrl($scope, $entityService, $modal,
     $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
     $timeout, $map, $templateToStringRenderer, $sizeHelper, $entityClippingService, $window) {
@@ -1798,9 +1774,6 @@ HtmlInfowindow.prototype.panMap = function() {
   map.panTo(new google.maps.LatLng(centerY, centerX));
 };
 
-function GuideviewItemGroupCtrl($scope) {
-}
-
 function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
   $scope.tripPlanSelectOptions = $allTripPlans.slice(0);
   $scope.tripPlanSelectOptions.push({
@@ -2183,18 +2156,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     }
   };
 
-  $scope.closeAddPlacePanel = function() {
-    $scope.$broadcast('closeaddplacepanel');
-  };
-
-  $scope.$watch('searchResultState.savedResultIndices', function() {
-    if (_.some($scope.searchResultState.savedResultIndices)
-      && $scope.searchResultState.results
-      && $scope.searchResultState.results.length == 1) {
-      $timeout($scope.closeAddPlacePanel, 1000);
-    }
-  }, true);
-
   $scope.coverImageClicked = function() {
     $scope.pageStateModel.selectedEntity = null;
   };
@@ -2535,19 +2496,6 @@ function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
   };
 }
 
-function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy) {
-  $scope.typesExpanded = false;
-  $scope.daysExpanded = false;
-
-  $scope.categories = $taxonomy.allCategories();
-  $scope.dayNumbers = _.range(1, $tripPlanModel.dayPlannerModel.numDays() + 1);
-
-  $scope.suppress = function($event) {
-    $event.stopPropagation();
-    $event.preventDefault();
-  };
-}
-
 function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
   $scope.allEntities = angular.copy($tripPlanModel.entities());
   $scope.selectionState = {
@@ -2667,13 +2615,6 @@ function SearchResultState() {
   };
 }
 
-function AddPlacePanelCtrl($scope, $searchResultState, $filterModel) {
-  $scope.$on('infopanelclosing', function() {
-    $searchResultState.clear();
-    $filterModel.searchResultsEmphasized = false;
-  });
-}
-
 function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     $pageStateModel, $searchResultState, $filterModel, $mapManager) {
   var me = this;
@@ -2709,79 +2650,6 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     $mapManager.fitBoundsToEntities($scope.searchResults);
     $filterModel.searchResultsEmphasized = true;
     $filterModel.emphasizedDayNumber = null;
-  };
-}
-
-function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
-    $entityService, $searchResultState, $filterModel, $mapManager, $timeout) {
-  var me = this;
-  $scope.sampleSites = $sampleSites;
-  $scope.selectedSite = $sampleSites[0];
-  $scope.queryDropdownState = {isopen: false};
-  $scope.customQueryState = {
-    active: false,
-    input: null,
-    focus: 0
-  };
-  $scope.searching = false;
-  $scope.searchComplete = false;
-  $scope.searchResults = null;
-
-  this.selectDefaultQuery = function() {
-    var site = $scope.selectedSite;
-    if (!_.isEmpty(site['sample_queries'])) {
-      return site['sample_queries'][0];
-    } else if (site['pseudo_query']) {
-      return site['pseudo_query'];
-    }
-    return null;
-  };
-
-  $scope.selectedQuery = this.selectDefaultQuery();
-
-  $scope.selectSite = function(site) {
-    $scope.selectedSite = site;
-    $scope.selectedQuery = me.selectDefaultQuery();
-  }
-
-  $scope.selectQuery = function(query) {
-    $scope.selectedQuery = query;
-  }
-
-  $scope.openCustomQuery = function() {
-    $scope.customQueryState.active = true;
-    $scope.customQueryState.input = null;
-    $timeout(function() {
-      $scope.customQueryState.focus++;
-    });
-  };
-
-  $scope.selectCustomQuery = function() {
-    $scope.selectedQuery = $scope.customQueryState.input;
-    $scope.customQueryState.active = false;
-    $scope.customQueryState.input = null;
-    $scope.queryDropdownState.isopen = false;
-  };
-
-  $scope.querySelectEnabled = function() {
-    var site = $scope.selectedSite;
-    return site['custom_queries_allowed'] || site['sample_queries'];
-  };
-
-  $scope.submitSearch = function() {
-    $scope.searching = true;
-    $scope.searchComplete = false;
-    $searchResultState.clear();
-    $entityService.sitesearchtoentities($scope.selectedSite['host'],
-      $tripPlanModel.tripPlanData, $scope.selectedQuery)
-      .success(function(response) {
-        $scope.searching = false;
-        $scope.searchComplete = true;
-        $filterModel.searchResultsEmphasized = true;
-        $filterModel.emphasizedDayNumber = null;
-        $scope.searchResults = response['entities'];
-        $mapManager.fitBoundsToEntities($scope.searchResults);
-      });
   };
 }
 
@@ -2948,76 +2816,6 @@ var SAMPLE_SUPPORTED_SITES = _.map([
     iconUrl: siteInfo.length >= 3 ? siteInfo[2] : siteInfo[1] + '/favicon.ico'
   };
 });
-
-function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
-    $filterModel, $document, $timeout) {
-  var me = this;
-  $scope.state = {rawInput: null};
-  $scope.loadingData = false;
-  $scope.results = null;
-  $scope.clipComplete = false;
-  $scope.invalidUrl = false;
-  $scope.learnMoreState = {expanded: false};
-
-  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
-  $scope.sampleSiteState = {
-    hoverShow: false,
-    clickShow: false,
-
-    show: function() {
-      return this.hoverShow || this.clickShow;
-    }
-  };
-
-  $scope.openSampleSites = function() {
-    $scope.sampleSiteState.clickShow = true;
-    $timeout(function() {
-      $document.on('click', closeSampleSites);
-    });
-  };
-
-  var closeSampleSites = function() {
-    $scope.sampleSiteState.clickShow = false;
-    $document.off('click', null, closeSampleSites);
-    $scope.$apply();
-  };
-
-  $scope.textPasted = function() {
-    // Ugly hack to wrap this in a timeout; without it, the paste event
-    // fires before the input has been populated with the pasted data.
-    $timeout(function() {
-      var input = $scope.state.rawInput;
-      $scope.loadingData = true;
-      $scope.clipComplete = false;
-      $scope.results = null;
-      $scope.invalidUrl = false;
-      $scope.siteDomain = null;
-      $entityService.urltoentities(input)
-        .success(me.processResponse);
-    });
-  };
-
-  this.processResponse = function(response) {
-    $scope.results = response['entities'];
-    $scope.loadingData = false;
-    $scope.clipComplete = true;
-    $scope.siteDomain = hostnameFromUrl($scope.state.rawInput);
-    $mapManager.fitBoundsToEntities($scope.results);
-    $filterModel.searchResultsEmphasized = true;
-    $filterModel.emphasizedDayNumber = null;
-  };
-
-  $scope.urlToVisit = function() {
-    var url = $scope.state.rawInput || '';
-    if (url.indexOf('//') == 0) {
-      url = 'http:' + url;
-    }
-    if (url.indexOf('http') != 0) {
-      url = 'http://' + url;
-    }
-    return url;
-  };
-}
 
 function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
     $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager, $sizeHelper) {
@@ -5420,21 +5218,15 @@ window['initApp'] = function(tripPlan, entities, notes,
       'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', RootCtrl)
-    .controller('OrganizeMenuCtrl', OrganizeMenuCtrl)
     .controller('BulkClipCtrl', BulkClipCtrl)
-    .controller('ItemGroupCtrl', ItemGroupCtrl)
-    .controller('GuideviewItemGroupCtrl', GuideviewItemGroupCtrl)
     .controller('EntityCtrl', EntityCtrl)
     .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
-    .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
     .controller('SearchPanelCtrl', SearchPanelCtrl)
-    .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
     .controller('GuidesPanelCtrl', GuidesPanelCtrl)
     .controller('AddYourOwnPanelCtrl', AddYourOwnPanelCtrl)
-    .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
     .controller('EditImagesCtrl', EditImagesCtrl)
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)

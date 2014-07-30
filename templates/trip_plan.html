@@ -1416,7 +1416,25 @@
   <script type="text/ng-template" id="export-panel-template">
     <div class="export-panel one-info-panel">
       <div class="header">
-        Take your trip plan with you on the road.
+        Take your trip plan with you on the road
+      </div>
+
+      <div>
+        You can export to the following formats:
+      </div>
+
+      <div class="export-buttons">
+        <a class="export-button" target="_blank"
+          ng-href="/trip_plan/[[planModel.tripPlanId()]]/print">
+          Print
+        </a>
+        <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+          Spreadsheet
+        </a>
+      </div>
+
+      <div>
+        Offline mobile support for iOS and Android coming soon!
       </div>
     </div>
   </script>
@@ -1521,170 +1539,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="web-search-panel-template">
-    <div class="web-search-panel" ng-controller="WebSearchPanelCtrl"
-      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      <div>
-        Not sure where to go? Browse places rated highly by users and writers on top travel websites.
-      </div>
-      <div class="sample-site-selector-row">
-        Browse
-        <span class="inline-dropdown-parent dropdown">
-          <button class="btn btn-default dropdown-toggle">
-            <img ng-src="[[selectedSite['icon_url'] ]]" class="site-icon"/>
-            [[selectedSite['display_name'] ]]
-          </button>
-          <ul class="dropdown-menu">
-            <li ng-repeat="site in sampleSites">
-              <a ng-click="selectSite(site)" href="javascript:void(0)">
-                <img ng-src="[[site['icon_url'] ]]" class="site-icon"/>
-                [[site['display_name'] ]]
-              </a>
-            </li>
-          </ul>
-        </span>
-        &nbsp;&nbsp;for&nbsp;&nbsp;
-        <span class="inline-dropdown-parent" dropdown is-open="queryDropdownState.isopen">
-          <button class="btn btn-default dropdown-toggle" ng-disabled="!querySelectEnabled()">
-            [[selectedQuery]]
-          </button>
-          <ul class="dropdown-menu">
-            <li ng-repeat="query in selectedSite['sample_queries']">
-              <a ng-click="selectQuery(query)" href="javascript:void(0)">
-                [[query]]
-              </a>
-            </li>
-            <li ng-click="$event.stopPropagation()"
-              ng-if="selectedSite['custom_queries_allowed']">
-              <a ng-click="openCustomQuery()"
-                ng-show="!customQueryState.active"
-                href="javascript:void(0)">
-                <span class="custom-search-link" >
-                  custom search
-                </span>
-              </a>
-              <span ng-show="customQueryState.active" class="custom-query-row">
-                <form ng-submit="selectCustomQuery()">
-                  <input type="text" class="form-control custom-query-input" ng-model="customQueryState.input"
-                  tc-focus-on="customQueryState.focus"/>
-                </form>
-              </span>
-            </li>
-          </ul>
-        </span>
-        <button ng-click="submitSearch()" class="btn btn-primary">
-          Go
-        </button>
-      </div>
-      <div ng-show="searching" class="search-spinner">
-        <img ng-src="/static/img/spinner-small.gif"/>
-      </div>
-      <div class="search-results" ng-if="searchComplete && searchResults && searchResults.length">
-        <h4>Results from [[selectedSite['display_name'] ]]</h4>
-        <div ng-repeat="result in searchResults"
-          tc-entity-search-result index="$index" entity-data="result"
-          search-result-state="searchResultState">
-        </div>
-      </div>
-      <div ng-if="searchComplete && (!searchResults || !searchResults.length)">
-        <h4>No places found</h4>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="clip-my-own-panel-template">
-    <div class="clip-my-own-panel" ng-controller="ClipMyOwnPanelCtrl"
-      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      <p>
-        Add places to your trip while browsing other websites.
-      </p>
-      <p>
-        Drag the TravelClipper bookmark to your bookmarks bar to clip places from dozens of
-        <a ng-mouseenter="sampleSiteState.hoverShow = true"
-          ng-mouseleave="sampleSiteState.hoverShow = false"
-          ng-click="openSampleSites()"
-          class="color-link" href="javascript:void(0)">
-          websites and blogs
-        </a>
-        in a single click.
-        <a href="javascript:void(0)" class="help-prompt" tooltip="Don't see your bookmarks bar? Press Cmd+Shift+B (Mac) or Ctrl+Shift+B (PC)"
-          tooltip-placement="left">
-          <span class="glyphicon glyphicon-question-sign"></span>
-        </a>
-      </p>
-      <ul class="sample-sites-hover-window" ng-show="sampleSiteState.show()">
-        Example Sites:
-        <br/><br/>
-        <li ng-repeat="site in sampleSupportedSites">
-          <img ng-src="[[site.iconUrl]]" class="site-icon"/>
-          <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
-        </li>
-      </ul>
-      <div class="bookmarklet">
-        <a href="javascript:(function(){c=document.createElement('script');c.type='text/javascript';c.src='{{bookmarklet_url}}'+'?'+Math.floor(Math.random()*99999999);document.body.appendChild(c);})();"
-        onclick="event.stopPropagation(); event.preventDefault()">
-          <span class="bookmarklet-link">
-            <span class="glyphicon glyphicon-paperclip"></span> Travel Clipper
-          </span>
-        </a>
-      </div>
-      <p>
-        <a ng-click="learnMoreState.expanded = !learnMoreState.expanded" href="javascript:void(0)" class="color-link">
-          Learn more
-          <span class="glyphicon learn-more-chevron"
-            ng-class="{'glyphicon-chevron-down': !learnMoreState.expanded,
-                       'glyphicon-chevron-up': learnMoreState.expanded}">
-          </span>
-        </a>
-      </p>
-      <div ng-show="learnMoreState.expanded">
-        <p>
-          The TravelClipper bookmark clips place names, locations, images, and other information from supported websites and automatically adds them to your trip plan.
-        </p>
-        <p>
-          For all other websites, the bookmark helps you quickly clip the information and images you care about.
-        </p>
-      </div>
-      <hr class="section-separator"/>
-      <p>
-        Try it out without even installing the bookmark.  Paste a url from a supported website to see places from that page:
-      </p>
-      <div class="search-box-container">
-        <form ng-submit="textPasted()">
-          <input type="text" class="form-control"
-            placeholder="http://..."
-            ng-paste="textPasted()"
-            tc-focus-on="pageStateModel.infoPanelMode"
-            ng-model="state.rawInput"
-            ng-disabled="loadingData"/>
-        </form>
-        <div ng-show="loadingData" class="search-spinner">
-          <img src="/static/img/spinner-small.gif"/>
-        </div>
-      </div>
-      <div class="invalid-url text-danger" ng-show="invalidUrl">
-        Oops, that doesn't look like a valid url
-      </div>
-      <div class="results" ng-show="clipComplete && results && results.length">
-        <h4>Results from [[siteDomain]]</h4>
-        <div ng-repeat="result in results"
-          tc-entity-search-result index="$index" entity-data="result"
-          search-result-state="searchResultState">
-        </div>
-      </div>
-      <div class="no-results" ng-show="clipComplete && (!results || !results.length)">
-        <h4>No results found</h4>
-        TravelClipper couldn't automatically find places on that page. Install the bookmark, then
-        <a ng-href="[[urlToVisit()]]" target="_blank" class="color-link">visit the website</a>
-         to quickly clip information and images.
-      </div>
-    </div>
-    </script>
-  {% endif %}
-
-  {% if allow_editing %}
   <script type="text/ng-template" id="trip-plan-settings-editor-template">
     <div class="trip-plan-settings-editor" ng-controller="TripPlanSettingsEditorCtrl">
       <div class="header">
