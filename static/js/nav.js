@@ -3,20 +3,19 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
-// -Figure out what to put on the About tab if there's no content (or hide it)
 // -Add variable star ratings widget.
-// -Have a display name for common source urls.
 // -Clean up display language for opening hours.
 // -Render and editing for entity tags.
 // -Check whether the right entity name appears in the reclipping confirmation.
 // -Add "Remember me" support for login.
-// -Change the login page to target the iframe and not the top frame;
-//  if successful, do a page reload.
+// -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 
 // CLEANUP:
-// -Remove item groups and associated templating.
 // -Delete the item model and put its remaining funcionality in EntityModel,
 //  or just as scope methods.
+// -Remove tutorial panel.
+// -Remove day planner.
+// -Remove notes
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
@@ -30,6 +29,10 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
     $window['closeLoginModal'] = function() {
       modal.close();
       $window['closeLoginModal'] = null;
+    };
+    $window['loginCompleteRedirect'] = function(url) {
+      modal.close();
+      $window.location.href = url;
     };
   };
 

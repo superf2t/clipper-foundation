@@ -217,30 +217,6 @@ hr.dropdown-separator {
     display: none; 
 }
 
-.item-group-header {
-  position: relative;
-}
-
-.item-group-header h4 {
-  margin: 0px;
-  padding: 10px;
-  font-weight: 300;
-}
-
-.item-group-header .item-group-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.item-group-header .item-group-controls .emphasis-control {
-  display: none;
-}
-
-.item-group-header:hover .item-group-controls .emphasis-control {
-  display: block;
-}
-
 .one-entity-summary {
   padding: 7px 10px;
   cursor: pointer;
@@ -362,35 +338,53 @@ hr.dropdown-separator {
 }
 
 .info-panel-nav {
-  height: 32px;
+  height: 40px;
   position: relative;
-  background-color: #ccc;
+  background-color: #EEE;
+  border: 1px solid #dce0e0;
 }
 
-.info-panel-nav .info-nav-item {
+.info-panel-nav .info-panel-nav-main-controls {
+  width: 96%;
   display: inline-block;
-  padding: 5px;
-  font-size: 12pt;
+  float: left;
 }
 
-.info-panel-nav .info-nav-item a {
-  color: #428bca;
+.info-panel-nav .info-panel-nav-more-items {
+  width: 4%;
+  padding: 7px 0px;
+  height: 40px;
+  text-align: center;
+  display: inline-block;
+  float: right;
+  font-size: 1.2em;
 }
 
-.info-panel-nav .info-nav-item a:hover {
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item {
+  display: inline-block;
+  padding: 10px;
+  height: 40px;
+  text-align: center;
+}
+
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item .info-nav-item-icon {
+  font-size: 1.2em;  
+}
+
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item a {
+  color: #000000;
+}
+
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item a:hover {
   color: #2D73A0;
 }
 
-.info-panel-nav .info-nav-item.selected {
-  background-color: #777;
-}
-
-.info-panel-nav .info-nav-item.selected a {
-  color: #fff;
+.info-panel-nav .info-panel-nav-main-controls .info-nav-item.selected {
+  border-bottom: 3px solid #777;
 }
 
 .info-panel-nav .info-nav-item.selected a svg {
-  fill: #fff;
+  fill: #000;
 }
 
 .info-panel-nav .more-item {
@@ -571,8 +565,8 @@ hr.dropdown-separator {
   bottom: 0;
   left: 0;
   width: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  height: 35px;
+  background-color: rgba(0, 0, 0, 0.3);
+  height: 38px;
 }
 
 .one-entity-details .entity-icon {
@@ -592,7 +586,7 @@ hr.dropdown-separator {
   font-size: 13pt;
   display: inline-block;
   vertical-align: top;
-  padding-top: 5px;
+  padding-top: 8px;
 }
 
 .one-entity-details .star-section {
@@ -600,7 +594,11 @@ hr.dropdown-separator {
   font-size: 13pt;
   display: inline-block;
   vertical-align: top;
-  padding: 5px 5px 0 0;
+  padding: 8px 5px 0 0;
+}
+
+.one-entity-details .star-section a {
+  color: #FFFFFF;
 }
 
 .one-entity-details .info-tabs {
@@ -676,10 +674,9 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .editing-controls {
-  background-color: #dedede;
   margin-top: 10px;
-  padding: 10px;
-  height: 35px;
+  padding-top: 10px;
+  height: 36px;
   font-size: 12pt;
 }
 
@@ -789,17 +786,6 @@ hr.dropdown-separator {
 .modal-carousel img {
   height: 100%;
   margin: auto;
-}
-
-.one-note-mapview {
-  margin: 5px 10px;
-  position: relative;
-}
-
-.one-note-mapview .controls {
-  position: absolute;
-  top: 0;
-  right: 0;
 }
 
 .getting-started-directions {
@@ -983,10 +969,6 @@ hr.dropdown-separator {
   color: #000;
   position: relative;
   padding: 10px;
-
-  -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
-  box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
 }
 
 #summary-panel .trip-plan-header .trip-plan-name {
@@ -1014,7 +996,7 @@ hr.dropdown-separator {
 
 .trip-plan-details-header {
   position: relative;
-  height: 230px;
+  height: 280px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
   background-size: cover;
@@ -1269,21 +1251,6 @@ hr.dropdown-separator {
 .clipping-iframe {
   width: 500px;
   height: 400px;
-}
-
-/* Not sure why the arrows are not maintaining consistent position - 
-temporary hack that lines up the arrows a bit better for most pictures */
-.one-entity-guideview .photo-carousel .carousel-content .image-carousel .carousel-control .icon-next {
-  font-size: 60px !important;
-  top: calc(50% - 30px) !important;
-  margin: none;
-  left: 16px;
-}
-
-.one-entity-guideview .photo-carousel .carousel-content .image-carousel .carousel-control .icon-prev {
-  font-size: 60px !important;
-  top: calc(50% - 30px) !important;
-  margin: none;
 }
 
 .note-text {

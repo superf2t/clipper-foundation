@@ -614,7 +614,7 @@ function EntityCtrl($scope, $entityService, $modal,
 
 var InlineEditMode = {
   COMMENTS: 1,
-  DAY_PLANNER: 2,
+  DESCRIPTION: 2,
   DIRECTIONS: 3,
   TAGS: 4
 };
@@ -650,9 +650,12 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.editingComment = null;
 
   $scope.tagState = {rawInput: null};
+  $scope.descriptionState = {rawInput: null};
 
   $scope.selectInfoTab = function(infoTab) {
     $scope.infoTab = infoTab;
+    $scope.inlineEditMode = null;
+    $scope.directionsHelper.reset();
   };
 
   $scope.iconTemplateName = function() {
@@ -667,6 +670,16 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.showCommentsTab = function() {
     return $scope.isEditable || $scope.em.hasComments();
+  };
+
+  $scope.showTags = function() {
+    return ($scope.em.hasTags() || $scope.isEditable)
+      && $scope.inlineEditMode != InlineEditMode.TAGS;
+  };
+
+  $scope.showAddDescriptionPrompt = function() {
+    return !$scope.ed['description'] && $scope.isEditable
+      && $scope.inlineEditMode != InlineEditMode.DESCRIPTION;
   };
 
   $scope.isAlreadySaved = function() {
@@ -696,6 +709,11 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.openDirections = function() {
     $scope.infoTab = InfoTab.DETAILS;
     $scope.inlineEditMode = InlineEditMode.DIRECTIONS;
+  };
+
+  $scope.closeDirections = function() {
+    $scope.inlineEditMode = null;
+    $scope.directionsHelper.reset();
   };
 
   $scope.openNewComment = function() {
@@ -740,6 +758,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.openTagsEditor = function() {
     $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
     $scope.inlineEditMode = InlineEditMode.TAGS;
+    $scope.infoTab = InfoTab.ABOUT;
   };
 
   $scope.closeTagsEditor = function() {
@@ -751,6 +770,24 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
       $scope.closeTagsEditor();
     });
+  };
+
+  $scope.openDescriptionEditor = function() {
+    $scope.descriptionState.rawInput = $scope.ed['description'];
+    $scope.inlineEditMode = InlineEditMode.DESCRIPTION;
+    $scope.infoTab = InfoTab.ABOUT;
+  };
+
+  $scope.saveDescription = function() {
+    $entityEditingService.saveDescription(
+      $scope.ed, $scope.descriptionState.rawInput, function() {
+        $scope.closeDescriptionEditor();
+      });
+  };
+
+  $scope.closeDescriptionEditor = function() {
+    $scope.descriptionState.rawInput = null;
+    $scope.inlineEditMode = null;
   };
 }
 
@@ -959,23 +996,6 @@ function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
 
   $scope.toggleControls = function() {
     $scope.showSecondaryControls = !$scope.showSecondaryControls;
-  };
-}
-
-function NoteCtrl($scope, $noteService, $tripPlanModel) {
-  $scope.nd = $scope.item.data;
-  $scope.editing = false;
-
-  $scope.openEditNote = function() {
-    $scope.editing = true;
-  };
-
-  $scope.saveNote = function() {
-    $noteService.editNote($scope.item.data, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        $tripPlanModel.updateLastModified(response['last_modified']);
-      });
-    $scope.editing = false;
   };
 }
 
@@ -1825,7 +1845,7 @@ var InfoPanelMode = {
 function PageStateModel(grouping, needsTutorial) {
   this.omniboxOpen = false;
   this.summaryPanelExpanded = true;
-  this.infoPanelExpanded = false;
+  this.infoPanelExpanded = true;
   this.infoPanelMode = InfoPanelMode.DETAILS;
   this.infoPanelShowExtendedNavItems = false;
   this.inNewTripPlanModal = false;
@@ -4072,6 +4092,21 @@ function EntityEditingService($entityService, $tripPlanModel,
         });
     }
   };
+
+  this.saveDescription = function(entity, description, opt_success) {
+     var entityToEdit = {
+      'entity_id': entity['entity_id'],
+      'description': description
+    };
+    $entityService.editEntity(entityToEdit, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          entity['description'] = response['entities'][0]['description'];
+          opt_success && opt_success();
+        }
+      });
+  };
 }
 
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
@@ -4140,6 +4175,11 @@ function DirectionsHelper(entities, $window) {
       new EntityModel(origin).latlngString() + '/' +
       new EntityModel(destination).latlngString();
     $window.open(url, '_blank');
+  };
+
+  this.reset = function() {
+    this.direction = 'from';
+    this.destination = null;
   };
 }
 
@@ -5163,7 +5203,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .controller('EntityCtrl', EntityCtrl)
     .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
-    .controller('NoteCtrl', NoteCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
     .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
