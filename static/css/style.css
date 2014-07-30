@@ -560,10 +560,21 @@ hr.dropdown-separator {
   margin: 10px 0;
 }
 
+.one-entity-details {
+  border: 1px solid #dce0e0;
+  margin-bottom: 10px;
+  border-radius: 2px;
+}
+
 .one-entity-details .name-and-photos {
   width: 100%;
   height: 300px;
   position: relative;
+}
+
+.one-entity-details .one-entity-content {
+  padding: 6px 8px;
+  background-color: #FFFFFF;
 }
 
 .one-entity-details .photo-carousel {
@@ -927,7 +938,7 @@ hr.dropdown-separator {
   left: 0;
   z-index: 1;
 
-  background-color: #FAFAFA;
+  background-color: #EAEAEA;
   -webkit-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 1px 0px 3px 0px rgba(0, 0, 0, 0.3);
