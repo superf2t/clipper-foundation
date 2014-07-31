@@ -622,7 +622,9 @@ var InfoTab = {
 
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
-    $entityEditingService, $entityClippingService, $window, $timeout) {
+    $entityEditingService, $entityClippingService,
+    $templateToStringRenderer, $sizeHelper,
+    $window, $timeout) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.accountInfo = $accountInfo;
@@ -651,6 +653,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     map: $map,
     marker: null,
     position: $scope.em.gmapsLatLng(),
+    infowindow: null,
     emphasized: null,
     deemphasized: null
   };
@@ -795,7 +798,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.markerClicked = function($event) {
     if ($scope.forResults) {
-      $searchResultState.selectedIndex = $scope.resultIndex;
+      $scope.selectResult();
     }
     $event.stopPropagation();
   };
@@ -818,6 +821,45 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
       $searchResultState.highlightedIndex = $scope.resultIndex;
     }
   };
+
+  $scope.selectResult = function() {
+    $searchResultState.selectedIndex = $scope.resultIndex;
+    $searchResultState.highlightedIndex = null;
+    $pageStateModel.selectedEntity = null;
+    if (!$scope.markerState.infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
+      $scope.createResultsInfowindow();
+    }
+  };
+
+  $scope.resultAlreadySaved = function() {
+    return $searchResultState.savedResultIndices[$scope.resultIndex];
+  };
+
+  $scope.createResultsInfowindow = function() {
+    var scope = $scope.$new();
+    var contentDiv = $templateToStringRenderer.render(
+      'results-infowindow-template', scope);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    $scope.markerState.infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
+  };
+
+  $scope.destroyInfowindow = function() {
+    $scope.markerState.infowindow && $scope.markerState.infowindow.setMap(null);
+    $scope.markerState.infowindow = null;
+  };
+
+  $scope.$on('closeallinfowindows', function() {
+    $scope.destroyInfowindow();
+  });
+
+  $scope.$on('$destroy', function() {
+    $scope.destroyInfowindow();
+  });
 
   $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
   $scope.$watch(_.constant($searchResultState), $scope.setMarkerState, true);
@@ -2126,6 +2168,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.goToInfoPanel = function(infoPanelMode) {
     $pageStateModel.infoPanelMode = infoPanelMode;
     $scope.openInfoPanel();
+    $searchResultState.clear();
   };
 
   $scope.inTutorial = function() {
@@ -2636,7 +2679,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     } else {
       $scope.searchResults = response['entities'] || [];
     }
-    $scope.searchResultState.results = $scope.searchResults;
+    $searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
     $scope.searchComplete = true;
     $mapManager.fitBoundsToEntities($scope.searchResults);
@@ -2646,7 +2689,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
 }
 
 function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
-    $mapManager, $filterModel) {
+    $mapManager, $filterModel, $searchResultState) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
   $scope.loading = true;
   $scope.guides = null;
@@ -2667,6 +2710,7 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
   $scope.backToListings = function() {
     $scope.selectedGuide = null;
     $filterModel.searchResultsEmphasized = false;
+    $searchResultState.clear();
   };
 }
 
@@ -2780,6 +2824,7 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
     $scope.linkState.formattedUrl = urlWithProtocol($scope.linkState.rawInput);
     $mapManager.fitBoundsToEntities($scope.linkState.results);
     $filterModel.searchResultsEmphasized = true;
+    $searchResultState.clear();
   };
 
   $scope.noLinkResults = function() {
