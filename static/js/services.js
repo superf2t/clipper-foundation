@@ -258,6 +258,20 @@ function TripPlanService($http) {
   this.mutatecollaborators = function(request) {
     return $http.post('/tripplanservice/mutatecollaborators', request);
   };
+
+  this.deleteTags = function(tripPlanId) {
+    var request = {
+      operations: [{
+        'operator': Operator.DELETE,
+        'trip_plan_id': tripPlanId
+      }]
+    };
+    return this.mutatetags(request);
+  };
+
+  this.mutatetags = function(request) {
+    return $http.post('/tripplanservice/mutatetags', request);
+  };
 }
 
 var TripPlanServiceError = {

@@ -16,8 +16,8 @@
 // -Test help text for the clipper, and get IE commands.
 // -Add Back to Top link for guides.
 // -Render creator info in the details panel.
-// -Make tags deletable in the trip plan settings editor.
 // -Do something with the entity editor.
+// -Lock down admin
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
