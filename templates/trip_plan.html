@@ -783,7 +783,12 @@
         </div>
       </div>
       <div class="trip-plan-details" ng-if="includeDetails">
-        <div class="description" ng-if="tripPlan['description']"><span ng-bind-html="tripPlan['description'] | linky:'_blank'"></span></div>
+        <div class="description" ng-if="tripPlan['description']">
+          <tc-expandable-content text-content="tripPlan['description']"
+            expand-link-text="Read more" collapse-link-text="Read less"
+            max-lines="5">
+          </tc-expandable-content>
+        </div>
         <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
           Tags: 
           <span ng-repeat="tag in tripPlan['tags']" class="one-tag">

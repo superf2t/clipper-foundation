@@ -1011,6 +1011,10 @@ hr.dropdown-separator {
   font-size: 1.2em;
 }
 
+.trip-plan-details-header .description {
+  margin-bottom: 15px;
+}
+
 .infowindow {
   position: relative;
   bottom: 79px;
