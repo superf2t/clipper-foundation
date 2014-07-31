@@ -1328,7 +1328,40 @@ hr.dropdown-separator {
   font-weight: bold;
 }
 
-/* Custom calculation to support 360px image/map */
+.sharing-panel .section {
+  padding: 10px;
+}
+
+.sharing-panel .section-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.sharing-panel .info-text {
+  margin-bottom: 10px;
+}
+
+.sharing-panel .add-btn {
+  width: 80px;
+}
+
+.sharing-panel .email-input {
+  width: calc(100% - 80px - 10px);
+}
+
+.sharing-panel .collaborator .remove-link {
+  display: none;
+}
+
+.sharing-panel .collaborator:hover .remove-link {
+  display: inline;
+}
+
+.sharing-panel .share-url {
+  margin-top: 5px;
+  cursor: text;
+}
+
 
 .modal-dialog {
   width: 782px;
@@ -1515,41 +1548,6 @@ hr.dropdown-separator {
 .trip-plan-settings-editor .cover-img-editor .cover-img-drop-target.dragactive {
   background-color: blue;
   border: 1px solid red;
-}
-
-.sharing-settings-editor {
-  margin: 20px;
-}
-
-.sharing-settings-editor .header {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.sharing-settings-editor .header .title {
-  font-size: 18pt;
-}
-
-.sharing-settings-editor .header .button-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.sharing-settings-editor .email-input {
-  width: 400px;
-}
-
-.sharing-settings-editor .collaborator .remove-link {
-  display: none;
-}
-
-.sharing-settings-editor .collaborator:hover .remove-link {
-  display: inline;
-}
-
-.sharing-settings-editor .share-url {
-  cursor: text;
 }
 
 .reclip-confirmation-modal {

@@ -3208,8 +3208,11 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
   $scope.formState = {email: null};
   $scope.accountInfo = $accountInfo;
   $scope.creator = $tripPlanModel.tripPlanData['user'];
-  $scope.isCreator = $accountInfo['user']['public_id'] == $scope.creator['public_id'];
   $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
+
+  $scope.isCurrentUser = function(user) {
+    return user['public_id'] == $accountInfo['user']['public_id']
+  };
 
   $scope.editors = function() {
     return $tripPlanModel.tripPlanData['editors'] || [];
@@ -3217,10 +3220,6 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
 
   $scope.inviteeEmails = function() {
     return $tripPlanModel.tripPlanData['invitee_emails'] || [];
-  };
-
-  $scope.hasCollaborators = function() {
-    return $scope.editors().length || $scope.inviteeEmails().length;
   };
 
   $scope.addCollaborator = function() {

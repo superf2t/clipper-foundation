@@ -107,8 +107,8 @@
 
   <script type="text/ng-template" id="info-panel-nav-template">
     <div class="info-panel-nav">
-      <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
-        <div class="info-panel-nav-main-controls">
+      <div class="info-panel-nav-main-controls">
+        <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
           <span class="info-nav-item"
             ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
             <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
@@ -1441,9 +1441,67 @@
   </script>
 
   <script type="text/ng-template" id="sharing-panel-template">
-    <div class="export-panel one-info-panel">
+    <div class="sharing-panel one-info-panel" ng-controller="SharingSettingsCtrl">
       <div class="header">
         Share your trip with collaborators and viewers
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          Collaborators
+        </div>
+        <div class="info-text">
+          Collaborators can edit and comment on this trip and invite other collaborators.
+        </div>
+        <p class="collaborator">
+          <span tc-user-icon user="creator" no-tooltip="true"></span>
+          [[creator['display_name'] ]]
+          <span ng-show="isCurrentUser(creator)">(you)</span>
+          - creator
+        </p>
+        <p ng-repeat="editor in editors()" class="collaborator">
+          <span tc-user-icon user="editor" no-tooltip="true"></span>
+          [[editor['display_name'] ]]
+          <span ng-show="isCurrentUser(editor)">
+            (you)
+          </span>
+          <a ng-click="removeEditor(editor)"
+            ng-show="!isCurrentUser(editor)"
+            href="javascript:void(0)" class="remove-link color-link">
+            <span class="glyphicon glyphicon-trash"></span>
+          </a>
+        </p>
+        <p ng-repeat="inviteeEmail in inviteeEmails()" class="collaborator">
+          <span>
+            [[inviteeEmail]] (invited)
+            <a ng-click="removeInvitee(inviteeEmail)"
+              href="javascript:void(0)" class="remove-link color-link">
+              <span class="glyphicon glyphicon-trash"></span>
+            </a>
+          </span>
+        </p>
+
+        <form class="form-inline" role="form" ng-submit="addCollaborator()">
+          <div class="form-group full-width">
+            <input type="text" class="form-control email-input"
+              placeholder="Enter an email address"
+              ng-model="formState.email"/>
+            <button class="btn btn-cta add-btn">
+              Add
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="section">
+        <div class="section-header">
+          Viewers
+        </div>
+        <div>
+          Viewers who are not collaborators cannot edit and comment on the trip or invite collaborators.
+          Anyone with the following link can view your trip.
+        </div>
+        <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
       </div>
     </div>
   </script>
@@ -1587,65 +1645,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="sharing-settings-editor-template">
-    <div class="sharing-settings-editor" ng-controller="SharingSettingsCtrl">
-      <div class="header">
-        <div class="title">Share</div>
-        <div class="button-panel">
-          <button class="btn btn-default" ng-click="$close()">
-            Close
-          </button>
-        </div>
-      </div>
-      <div class="creator">
-        <h4>Creator</h4>
-        <span tc-user-icon user="creator" no-tooltip="true"></span> [[creator['display_name'] ]]
-        <span ng-show="isCreator">(you)</span>
-      </div>
-      <div ng-show="hasCollaborators()">
-        <h4>Collaborators</h4>
-        <p ng-repeat="editor in editors()" class="collaborator">
-          <span tc-user-icon user="editor" no-tooltip="true"></span>
-          [[editor['display_name'] ]]
-          <span ng-show="editor['public_id'] == accountInfo['user']['public_id']">
-            (you)
-          </span>
-          <a ng-click="removeEditor(editor)"
-            ng-show="editor['public_id'] != accountInfo['user']['public_id']"
-            href="javascript:void(0)" class="remove-link color-link">
-            <span class="glyphicon glyphicon-trash"></span>
-          </a>
-        </p>
-        <p ng-repeat="inviteeEmail in inviteeEmails()" class="collaborator">
-          <span>
-            [[inviteeEmail]] (invited)
-            <a ng-click="removeInvitee(inviteeEmail)"
-              href="javascript:void(0)" class="remove-link color-link">
-              <span class="glyphicon glyphicon-trash"></span>
-            </a>
-          </span>
-        </p>
-      </div>
-      <div>
-        <h4>Add Collaborators</h4>
-        Collaborators can edit and comment on the trip plan and invite other collaborators.
-        <form class="form-inline" role="form" ng-submit="addCollaborator()">
-          <div class="form-group">
-            <input type="text" class="form-control email-input" placeholder="Enter an email address" ng-model="formState.email"/>
-            <button class="btn btn-primary">
-              Add
-            </button>
-          </div>
-        </form>
-      </div>
-      <div>
-        <h4>Share Trip Plan</h4>
-        Share this trip plan by sending others the trip plan link. Viewers that are not collaborators cannot edit and comment on the trip plan or invite other collaborators.
-        <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
       </div>
     </div>
   </script>
