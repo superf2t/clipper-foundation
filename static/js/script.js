@@ -4142,8 +4142,8 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
           .success(function(response) {
             $activeTripPlanState.numEntities += 1;
             $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
+            $activeTripPlanState.lastClippedEntity = response['entities'][0];
             if ($activeTripPlanState.numEntities == 1) {
-              $activeTripPlanState.lastClippedEntity = response['entities'][0];
               $pageStateModel.showAfterNewTripPlanPanel = true;            
             }
             opt_success && opt_success();
