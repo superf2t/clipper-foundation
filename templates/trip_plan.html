@@ -913,7 +913,7 @@
               <label>Enter tags, separated by commas</label>
               <form ng-submit="saveTags()">
                 <input type="text" class="form-control" ng-model="tagState.rawInput"
-                  placeholder="e.g. greek food, day 1, recommend by Bob"
+                  placeholder="e.g. greek food, day 1, recommended by Bob"
                   tc-focus-on="inlineEditMode"/>
               </form>
               <a ng-click="saveTags()" href="javascript:void(0)" class="color-link">
@@ -1512,59 +1512,75 @@
   </script>
 
   <script type="text/ng-template" id="settings-panel-template">
-    <div class="export-panel one-info-panel">
+    <div class="settings-panel one-info-panel" ng-controller="TripPlanSettingsEditorCtrl">
       <div class="header">
         Settings
       </div>
-    </div>
-  </script>
 
-  <script type="text/ng-template" id="trip-plan-settings-editor-template">
-    <div class="trip-plan-settings-editor" ng-controller="TripPlanSettingsEditorCtrl">
-      <div class="header">
-        <div class="title">Trip Plan Settings</div>
-        <div class="button-panel">
-          <button class="btn btn-primary" ng-click="saveSettings()">
+      <div class="settings-panel-body">
+
+        <div class="delete-trip-link">
+          <a ng-click="deleteTripPlan()" href="javascript:void(0)" class="cta-link">
+            <span class="glyphicon glyphicon-trash"></span>
+            Delete Trip
+          </a>
+        </div>
+
+        <div class="input-section">
+          <label>Trip Name</label>
+          <input type="text" class="form-control" ng-model="tpd['name']"
+            placeholder="e.g. April in Paris"/>
+        </div>
+
+        <div class="input-section">
+          <label>Cover Image</label>
+          <div ng-if="editingImage">
+            <textarea class="cover-img-drop-target"
+              placeholder="Drag and drop an image or paste an image url"
+              ng-model="coverImgUrlInput.text" ng-change="coverImgUrlChanged()" ng-paste="coverImgUrlPasted()"
+              tc-dragenter="coverImgDragenter()" tc-dragover="$event.preventDefault()" tc-drop="coverImgUrlDropped($event)"
+              ng-class="{'dragactive': coverImgDragActive}">
+            </textarea>
+          </div>
+          <div class="cover-img-container"
+            ng-if="tpd['cover_image_url'] && !editingImage">
+            <img ng-src="[[tpd['cover_image_url'] ]]"/>
+            <div class="img-control top-control">
+              <a ng-click="changeImage()" href="javascript:void(0)">
+                Change image
+                <span class="glyphicon glyphicon-picture"></span>
+              </a>
+            </div>
+            <div class="img-control bottom-control">
+              <a ng-click="removeImage()" href="javascript:void(0)">
+                Remove image
+                <span class="glyphicon glyphicon-trash"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-section">
+          <label>Description</label>
+          <textarea class="form-control description-input" ng-model="tpd['description']">
+          </textarea>
+        </div>
+
+        <div class="input-section">
+          <label>Tags, separated by commas</label>
+          <input type="text" class="form-control" ng-model="tagState.rawInput"
+            ng-change="tagsChanged()"
+            placeholder="e.g. fine dining, history, adventure"/>
+        </div>
+
+        <div class="save-confirmation" ng-show="saveComplete">
+          Settings saved          
+        </div>
+
+        <div class="buttons">
+          <button ng-click="saveSettings()" class="btn btn-cta">
             Save
           </button>
-          <button class="btn btn-default" ng-click="$close()">
-            Cancel
-          </button>
-        </div>
-      </div>
-      <div class="editor-body container-fluid">
-        <div class="row">
-          <div class="col-sm-6">
-            <h4>Name</h4>
-            <input type="text" class="form-control" ng-model="tpd['name']"/>
-            <h4>Description</h4>
-            <textarea class="form-control description-input" ng-model="tpd['description']"></textarea>
-          </div>
-          <div class="col-sm-6">
-            <h4>Cover Image</h4>
-            <div class="cover-img-container" ng-if="tpd['cover_image_url'] && !editingImage">
-              <img ng-src="[[tpd['cover_image_url'] ]]"/>
-              <div class="img-control top-control">
-                <a ng-click="changeImage()" href="javascript:void(0)">
-                  Change image
-                  <span class="glyphicon glyphicon-picture"></span>
-                </a>
-              </div>
-              <div class="img-control bottom-control">
-                <a ng-click="removeImage()" href="javascript:void(0)">
-                  Remove image
-                  <span class="glyphicon glyphicon-trash"></span>
-                </a>
-              </div>
-            </div>
-            <div class="cover-img-editor" ng-if="editingImage">
-              <textarea class="cover-img-drop-target" placeholder="Drag and drop an image or paste an image url"
-                ng-model="coverImgUrlInput.text" ng-change="coverImgUrlChanged()" ng-paste="coverImgUrlPasted()"
-                tc-dragenter="coverImgDragenter()" tc-dragover="$event.preventDefault()" tc-drop="coverImgUrlDropped($event)"
-                ng-class="{'dragactive': coverImgDragActive}">
-              </textarea>
-            </div>
-          </div>
         </div>
       </div>
     </div>
