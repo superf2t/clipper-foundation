@@ -2854,103 +2854,10 @@ var SAMPLE_SUPPORTED_SITES = _.map([
   };
 });
 
-function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
-    $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager, $sizeHelper) {
-  var me = this;
-  $scope.ed = $scope.entityData;
-  $scope.em = new EntityModel($scope.ed);
-  $scope.im = new ItemModel($scope.ed);
-
-  $scope.map = $map;
-  $scope.position = $scope.em.gmapsLatLng();
-  $scope.markerState = {
-    marker: null
-  };
-  var infowindow = null;
-
-  this.createInfowindow = function() {
-    var scope = $scope.$new();
-    var contentDiv = $templateToStringRenderer.render(
-      'results-infowindow-template', scope);
-    var extraPadding = $pageStateModel.summaryPanelExpanded
-      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
-      : 0;
-    infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
-      'extraPaddingX': extraPadding
-    });
-  };
-
-  this.destroyInfowindow = function() {
-    infowindow && infowindow.setMap(null);
-    infowindow = null;
-  };
-
-  $scope.$on('closeallinfowindows', function() {
-    me.destroyInfowindow();
-  });
-
-  $scope.$on('$destroy', function() {
-    me.destroyInfowindow();
-  });
-
-  $scope.markerClicked = function($event) {
-    $scope.selectResult();
-    $event.stopPropagation();
-  };
-
-  $scope.isSelected = function() {
-    return $scope.searchResultState.selectedIndex == $scope.index ||
-      $scope.searchResultState.highlightedIndex == $scope.index;
-  };
-
-  $scope.selectResult = function() {
-    $scope.searchResultState.selectedIndex = $scope.index;
-    $scope.searchResultState.highlightedIndex = null;
-    $pageStateModel.selectedEntity = null;
-    if (!infowindow) {
-      $scope.$emit('asktocloseallinfowindows');
-      me.createInfowindow();
-    }
-  };
-
-  $scope.highlightResult = function() {
-    $scope.searchResultState.highlightedIndex = $scope.index;
-  };
-
-  $scope.saveResult = function() {
-    $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.addNewEntities(response['entities']);
-          $pageStateModel.selectedEntity = response['entities'][0];
-          $scope.searchResultState.savedResultIndices[$scope.index] = true;
-          me.destroyInfowindow();
-          $scope.$emit('redrawgroupings');
-        }
-      });
-  };
-
-  $scope.resultLetter = function() {
-    return String.fromCharCode(65 + $scope.index);
-  };
-}
 
 function EntityListingCtrl($scope) {
   $scope.ed = $scope.entityData;
   $scope.im = new ItemModel($scope.ed);
-}
-
-function tcEntitySearchResult() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      searchResultState: '=',
-      index: '='
-    },
-    templateUrl: 'one-entity-search-result-template'
-  };
 }
 
 function tcEntityListing() {
@@ -5379,7 +5286,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
-    .directive('tcEntitySearchResult', tcEntitySearchResult)
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
