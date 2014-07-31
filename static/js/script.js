@@ -4241,13 +4241,27 @@ function tcScrollToSelector($interpolate) {
 }
 
 function tcResetScrollTopOn() {
-  return{
+  return {
     restrict: 'A',
     link: function(scope, element, attrs) {
       scope.$watch(attrs.tcResetScrollTopOn, function(newValue, oldValue) {
         if (newValue && newValue !== oldValue) {
           element.scrollTop(0);
         }
+      });
+    }
+  };
+}
+
+function tcScrollOnClick() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollParent = $(attrs.scrollParent);
+      var scrollTarget = $(attrs.scrollTarget);
+      element.on('click', function() {
+        var newScrollTop = scrollParent.offset().top - scrollTarget.offset().top;
+        scrollParent.animate({scrollTop: newScrollTop}, 500);
       });
     }
   };
@@ -5246,6 +5260,7 @@ angular.module('directivesModule', [])
   .directive('tcImageCarousel', tcImageCarousel)
   .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcResetScrollTopOn', tcResetScrollTopOn)
+  .directive('tcScrollOnClick', tcScrollOnClick)
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)

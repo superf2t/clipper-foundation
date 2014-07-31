@@ -8,10 +8,8 @@
 // -Get an email sender account on the new domain.
 // -Make sure all featured guides have the GUIDE bit set.
 // -Check that rating_max is set on prod guides.
-// -Make sure there is a source url set for Google search results.
 // -Add infowindow for search results and guides.
 // -Test help text for the clipper, and get IE commands.
-// -Add Back to Top link for guides.
 // -Render creator info in the details panel.
 // -Do something with the entity editor.
 // -Lock down admin

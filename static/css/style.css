@@ -1181,6 +1181,11 @@ hr.dropdown-separator {
   margin-bottom: 15px;
 }
 
+.guides-panel .back-to-top {
+  font-size: 13pt;
+  padding: 10px 0 30px 0;
+}
+
 .add-your-own-panel .sub-nav {
   margin-bottom: 15px;
 }
