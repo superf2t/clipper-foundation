@@ -1,7 +1,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  font-family: 'Avenir';
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -418,13 +418,8 @@ hr.dropdown-separator {
 .details-panel {
   width: 100%;
   height: 100%;
-  padding: 0 10px 20px 10px;
+  padding: 0px 10px 0px 10px;
   overflow-y: auto;
-}
-
-.details-panel .header-entities-separator {
-  margin: 10px 0px;
-  border-top: 1px solid #999;
 }
 
 .details-panel .source-link {
@@ -510,7 +505,7 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .one-entity-content {
-  padding: 6px 8px;
+  padding: 8px 10px;
   background-color: #FFFFFF;
 }
 
@@ -660,11 +655,6 @@ hr.dropdown-separator {
 
 .one-entity-details .editing-controls .right-controls a {
   padding-left: 5px;
-}
-
-.one-entity-details .entity-separator {
-  border-top: 1px solid #CCCCCC;
-  margin: 10px 0px;
 }
 
 .one-entity-details .inline-editor {
@@ -953,60 +943,79 @@ hr.dropdown-separator {
 }
 
 .trip-plan-details-header {
+  margin-bottom: 10px;
+  background-color: #FFFFFF;
+  border-bottom: 1px solid #dce0e0;
+}
+
+.trip-plan-details-header .trip-plan-img {
   position: relative;
-  height: 280px;
+  height: 300px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
   background-size: cover;
   background-image: url('/static/img/default-cover.jpg');
-  margin-bottom: 15px;
-  color: #fff;
 }
 
 .trip-plan-details-header.full-bleed {
+  position: relative;
   width: calc(100% + 20px);
   left: -10px;
+}
+
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay {
+  position: absolute;
+  left: 0px;
+  min-width: 100px;
+  top: 50%;
+  padding: 10px 16px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #FFFFFF;
+}
+
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .source-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background-color: #FFFFFF;
+}
+
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .source-publish-date {
+  font-size: 1.3em;
+  line-height: 1.6;
 }
 
 .trip-plan-details-header.clickable {
   cursor: pointer;
 }
 
-.trip-plan-details-header.clickable:hover {
-  opacity: 0.8;
-}
-
-.trip-plan-details-header .trip-plan-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 115px;
-  padding: 10px;
+.trip-plan-details-header.clickable:hover .trip-plan-img-overlay{
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-.trip-plan-details-header .trip-plan-info .trip-plan-name {
-  font-size: 16pt;
+.trip-plan-details-header .trip-plan-name {
+  font-size: 1.8em;
 }
 
-.trip-plan-details-header .trip-plan-info .trip-plan-metadata {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+.trip-plan-details-header .trip-plan-info {
+  width: 100%;
   padding: 10px;
 }
 
-.trip-plan-details-header .trip-plan-info .source-icon {
-  width: 16px;
-  height: 16px;
+.trip-plan-details-header .trip-plan-details {
+  width: 100%;
+  padding: 0px 10px 10px 10px;
+}
+
+.trip-plan-details-header .trip-plan-info .trip-plan-metadata {
+  font-size: 1.2em;
 }
 
 .infowindow {
   position: relative;
   bottom: 79px;
   font-size: 10pt;
-  font-family: 'Avenir';
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   font-weight: 300;
 }
 

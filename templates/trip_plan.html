@@ -724,24 +724,8 @@
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
-        num-entities="planModel.numEntities()" for-guide="false" full-bleed="true">
+        num-entities="planModel.numEntities()" for-guide="false" full-bleed="true" include-details="true">
       </tc-trip-plan-details-header>
-      <div class="description" ng-if="planModel.tripPlanData['description']">
-        <span ng-bind-html="planModel.tripPlanData['description'] | linky:'_blank'"></span>
-        <hr class="header-entities-separator"/>
-      </div>
-      <div class="tags" ng-show="planModel.hasTags()">
-        Tags: 
-        <span ng-repeat="tag in planModel.tripPlanData['tags']" class="one-tag">
-          [[tag['text'] ]]
-        </span>
-      </div>
-      <div ng-if="planModel.hasSource()" class="source-link">
-        <a ng-href="[[planModel.tripPlanData['source_url'] ]]"
-          target="_blank" class="cta-link">
-          View original article at [[planModel.tripPlanData['source_display_name'] ]]
-        </a>
-      </div>
       <tc-entity-details ng-repeat="entity in planModel.entities()"
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
@@ -773,31 +757,43 @@
   </script>
 
   <script type="text/ng-template" id="trip-plan-details-header-template">
-    <div class="trip-plan-details-header"
-      ng-class="{'full-bleed': fullBleed, 'clickable': clickable}"
-      ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}"
-      ng-click="clickable && onClick()">
+    <div class="trip-plan-details-header" ng-class="{'full-bleed': fullBleed, 'clickable': clickable}">
+      <div class="trip-plan-img" 
+      ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}" ng-click="clickable && onClick()">
+        <div class="trip-plan-img-overlay">
+          <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
+          <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
+          <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
+            [[tripPlan['content_display_date'] ]]
+          </span>
+        </div>
+      </div>
       <div class="trip-plan-info">
-        <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
         <div class="trip-plan-metadata">
-          <div ng-if="forGuide">
-            <img ng-if="tripPlan['source_icon']"
-              ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
+          <span ng-if="forGuide">
             Inspired by
-            [[tripPlan['source_display_name'] ]]
-          </div>
-          <div>
-            <span ng-show="forGuide && tripPlan['content_display_date']">
-              [[tripPlan['content_display_date'] ]]
-              |
-            </span>
-            <span ng-show="numEntities > 1">
-              [[numEntities]] places
-            </span>
-            <span ng-show="numEntities == 1">
-              1 place
-            </span>
-          </div>
+            [[tripPlan['source_display_name'] ]] -
+          </span>
+          <span ng-show="numEntities > 1" class="trip-plan-places-count">
+            [[numEntities]] places
+          </span>
+          <span ng-show="numEntities == 1" class="trip-plan-places-count">
+            1 place
+          </span>
+        </div>
+      </div>
+      <div class="trip-plan-details" ng-if="includeDetails">
+        <div class="description" ng-if="tripPlan['description']"><span ng-bind-html="tripPlan['description'] | linky:'_blank'"></span></div>
+        <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
+          Tags: 
+          <span ng-repeat="tag in tripPlan['tags']" class="one-tag">
+            [[tag['text'] ]]
+          </span>
+        </div>
+        <div ng-if="tripPlan['source_url']" class="source-link">
+          <a ng-href="[[tripPlan['source_url'] ]]" target="_blank" class="cta-link">
+            View original article at [[tripPlan['source_display_name'] ]]
+          </a>
         </div>
       </div>
     </div>
@@ -1186,22 +1182,9 @@
           &gt;
           [[selectedGuide['name'] ]]
         </div>
-
         <tc-trip-plan-details-header trip-plan="selectedGuide"
-          num-entities="selectedGuide['entities'].length" for-guide="true" full-bleed="true">
+          num-entities="selectedGuide['entities'].length" for-guide="true" full-bleed="true" include-details="true">
         </tc-trip-plan-details-header>
-        <div class="description" ng-if="selectedGuide['description']"><span ng-bind-html="selectedGuide['description'] | linky:'_blank'"></span></div>
-        <div class="tags" ng-show="selectedGuide['tags'] && selectedGuide['tags'].length">
-          Tags: 
-          <span ng-repeat="tag in selectedGuide['tags']" class="one-tag">
-            [[tag['text'] ]]
-          </span>
-        </div>
-        <div ng-if="selectedGuide['source_url']" class="source-link">
-          <a ng-href="[[selectedGuide['source_url'] ]]" target="_blank" class="cta-link">
-            View original article at [[selectedGuide['source_display_name'] ]]
-          </a>
-        </div>
         <tc-entity-details ng-repeat="entity in selectedGuide['entities']"
           entity="entity" is-editable="false" for-results="true"
           trip-plan-id="selectedGuide['trip_plan_id']" result-index="$index">
