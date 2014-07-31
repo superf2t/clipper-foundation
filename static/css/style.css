@@ -710,7 +710,7 @@ hr.dropdown-separator {
 }
 
 .one-info-panel .header {
-  font-weight: bold;
+  font-weight: 500;
   font-size: 12pt;
   margin-bottom: 10px;
 }
@@ -967,22 +967,31 @@ hr.dropdown-separator {
   position: absolute;
   left: 0px;
   min-width: 100px;
-  top: 50%;
-  padding: 10px 16px;
-  background-color: rgba(0, 0, 0, 0.75);
+  top: 60%;
+  padding: 8px 12px;
+  background-color: rgba(0, 0, 0, 0.50);
   color: #FFFFFF;
 }
 
-.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .source-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+.trip-plan-details-header .trip-plan-metadata .source-icon {
+  position: relative;
+  bottom: 36px;
+  float: right;
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  border: 2px solid #444;
   background-color: #FFFFFF;
+  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);  
 }
 
-.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .source-publish-date {
-  font-size: 1.3em;
-  line-height: 1.6;
+.trip-plan-details-header .trip-plan-metadata .source-url {
+  color: #50B0B2;
+}
+
+.trip-plan-details-header .trip-plan-metadata .source-url:hover {
 }
 
 .trip-plan-details-header.clickable {
@@ -990,25 +999,28 @@ hr.dropdown-separator {
 }
 
 .trip-plan-details-header.clickable:hover .trip-plan-img-overlay{
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.75);
 }
 
 .trip-plan-details-header .trip-plan-name {
-  font-size: 1.8em;
+  font-size: 1.6em;
 }
 
 .trip-plan-details-header .trip-plan-info {
   width: 100%;
-  padding: 10px;
+  padding: 15px;
 }
 
 .trip-plan-details-header .trip-plan-details {
   width: 100%;
-  padding: 0px 10px 10px 10px;
+  padding: 0px 15px 15px 15px;
+}
+
+.trip-plan-details-header .trip-plan-places {
 }
 
 .trip-plan-details-header .trip-plan-info .trip-plan-metadata {
-  font-size: 1.2em;
+  font-size: 1.3em;
 }
 
 .infowindow {
@@ -1101,7 +1113,7 @@ hr.dropdown-separator {
 }
 
 .infowindow .inline-comment-editor .author-name {
-  font-weight: bold;
+  font-weight: 500;
   text-align: left;
   margin-bottom: 5px;
 }
@@ -1170,10 +1182,6 @@ hr.dropdown-separator {
   margin-bottom: 10px;
 }
 
-.guides-panel .source-link {
-  margin-bottom: 15px;
-}
-
 .add-your-own-panel .sub-nav {
   margin-bottom: 15px;
 }
@@ -1186,7 +1194,7 @@ hr.dropdown-separator {
   text-align: center;
   margin-top: 10px;
   font-size: 11pt;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .add-your-own-panel .search-panel .search-input {
@@ -1275,7 +1283,7 @@ hr.dropdown-separator {
   width: 120px;
   text-align: center;
   font-size: 12pt;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 .sharing-panel .section {
@@ -1283,7 +1291,7 @@ hr.dropdown-separator {
 }
 
 .sharing-panel .section-header {
-  font-weight: bold;
+  font-weight: 500;
   margin-bottom: 10px;
 }
 
@@ -1976,7 +1984,7 @@ hr.dropdown-separator {
 }
 
 .after-new-trip-plan-panel .header {
-  font-weight: bold;
+  font-weight: 500;
   font-size: 13pt;
   text-align: center;
   color: #000;
