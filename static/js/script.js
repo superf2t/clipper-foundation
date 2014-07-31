@@ -858,7 +858,7 @@ function tcTripPlanDetailsHeader() {
 }
 
 function DaySelectDropdownCtrl($scope, $tripPlanModel, $entityService,
-    $dataRefreshManager, $pageStateModel, $pagePositionManager, $timeout) {
+    $dataRefreshManager, $pageStateModel, $timeout) {
   $scope.selectedDayState = {dayModel: null};
   if ($scope.ed['day']) {
     $scope.selectedDayState.dayModel =
@@ -896,11 +896,7 @@ function DaySelectDropdownCtrl($scope, $tripPlanModel, $entityService,
           // somehow updates the data in this scope.
           $scope.ed['day'] = dayModel.dayNumber;
           if ($pageStateModel.isGroupByDay()) {
-            $dataRefreshManager.redrawGroupings(function() {
-              $timeout(function() {
-                $pagePositionManager.scrollToEntity($scope.ed['entity_id']);
-              });
-            });
+            $dataRefreshManager.redrawGroupings();
           }
         }
         $dataRefreshManager.unfreeze();
@@ -2399,12 +2395,6 @@ function DataRefreshManager($rootScope) {
 
   this.unfreeze = function() {
     $rootScope.$broadcast('unfreezerefresh');
-  };
-}
-
-function PagePositionManager($rootScope) {
-  this.scrollToEntity = function(entityId) {
-    $rootScope.$broadcast('scrolltoentity', entityId);
   };
 }
 
@@ -5085,7 +5075,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
-    .service('$pagePositionManager', PagePositionManager)
     .service('$mapManager', MapManager)
     .service('$sizeHelper', SizeHelper)
     .service('$entityCtrlProxy', EntityCtrlProxy)

@@ -21,7 +21,6 @@
 // -Remove day planner.
 // -Remove notes
 // -Remove bulk clipper
-// -See if PagePositionManager is obsolete.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
