@@ -120,6 +120,12 @@
     position: relative;
     top: -1px;
   }
+
+  .star-rating-container .rating-star {
+    display: inline-block;
+    position: relative;
+    top: -1px;
+  }
 </style>
 
 {# TODO: Replace uses of this with tc-image-carousel directive #}
@@ -181,8 +187,8 @@
 </script>
 
 <script type="text/ng-template" id="star-rating-template">
-  <div>
-    <span ng-repeat="star in maxRange">
+  <div class="star-rating-container">
+    <span ng-repeat="star in maxRange" class="rating-star">
       <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
     </span>
   </div>

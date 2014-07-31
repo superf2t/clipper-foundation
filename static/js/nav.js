@@ -2,15 +2,12 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
-// -Add variable star ratings widget.
 // -Clean up display language for opening hours.
 // -Check whether the right entity name appears in the reclipping confirmation.
 // -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 // -Get an email sender account on the new domain.
 // -Make sure all featured guides have the GUIDE bit set.
-// -Add Show More links for long text.
 // -Check that rating_max is set on prod guides.
-// -Only show ratings and reviews from known sources.
 // -Make sure there is a source url set for Google search results.
 // -Add infowindow for search results and guides.
 // -Test help text for the clipper, and get IE commands.

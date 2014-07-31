@@ -950,7 +950,8 @@
                 [[ed['website'] ]]
               </a>
             </div>
-            <div class="reputation-section" ng-show="em.hasReputationInfo()">
+            <div class="reputation-section"
+              ng-show="em.hasReputationInfo() && ed['source_is_trusted_for_reputation']">
               <div ng-show="ed['source_url']">
                 Ratings and Reviews from
                 <a ng-href="[[ed['source_url'] ]]" target="_blank" class="underline-link">

@@ -53,6 +53,18 @@ SOURCE_HOST_TO_DISPLAY_NAME = {
     'www.zagat.com': 'Zagat',
 }
 
+TRUSTED_REPUTATION_SOURCES = set([
+    'www.booking.com',
+    'www.foursquare.com',
+    'foursquare.com',
+    'www.hotels.com',
+    'www.google.com',
+    'plus.google.com',
+    'www.tripadvisor.com',
+    'www.yelp.com',
+    'www.zagat.com',
+])
+
 try:
     from constants_override import *
 except ImportError:

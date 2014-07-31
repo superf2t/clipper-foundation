@@ -624,6 +624,15 @@ hr.dropdown-separator {
   margin-top: 10px;
 }
 
+.one-entity-details .star-rating {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.one-entity-details .num-reviews {
+  vertical-align: middle;
+}
+
 .one-entity-details .tags {
   margin-top: 10px;
 }

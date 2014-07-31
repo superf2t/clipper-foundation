@@ -127,6 +127,7 @@ class Entity(serializable.Serializable):
         'description', 'primary_photo_url',
         serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
         'source_url', 'source_display_name',
+        'source_is_trusted_for_reputation',
         'origin_trip_plan_id', 'origin_trip_plan_name',
         'google_reference', 'last_access',
         'day', 'day_position')
@@ -180,8 +181,10 @@ class Entity(serializable.Serializable):
         if self.source_url:
             source_host = urlparse.urlparse(self.source_url).netloc.lower()
             self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host, source_host)
+            self.source_is_trusted_for_reputation = source_host in constants.TRUSTED_REPUTATION_SOURCES
         else:
             self.source_display_name = None
+            self.source_is_trusted_for_reputation = None
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:
