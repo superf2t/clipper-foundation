@@ -601,6 +601,33 @@ class TripPlanCloneResponse(service.ServiceResponse):
         super(TripPlanCloneResponse, self).__init__(**kwargs)
         self.trip_plan = trip_plan
 
+class TripPlanTagOperation(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id',
+        serializable.objlistf('tags', data.Tag))
+
+    def __init__(self, operator=None, trip_plan_id=None, tags=None):
+        self.operator = operator
+        self.trip_plan_id = trip_plan_id
+        self.tags = tags
+
+class TripPlanMutateTagRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.objlistf('operations', TripPlanTagOperation))
+
+    def __init__(self, operations=None):
+        self.operations = operations 
+
+class TripPlanMutateTagResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('trip_plans', data.TripPlan),
+            'last_modified'))
+
+    def __init__(self, trip_plans=(), last_modified=None, **kwargs):
+        super(TripPlanMutateTagResponse, self).__init__(**kwargs)
+        self.trip_plans = trip_plans
+        self.last_modified = last_modified
+
 class GmapsImportRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('gmaps_url')
 
@@ -674,6 +701,7 @@ class TripPlanService(service.Service):
         ('mutate', TripPlanMutateRequest, TripPlanMutateResponse),
         ('clone', TripPlanCloneRequest, TripPlanCloneResponse),
         ('mutatecollaborators', MutateCollaboratorsRequest, MutateCollaboratorsResponse),
+        ('mutatetags', TripPlanMutateTagRequest, TripPlanMutateTagResponse),
         ('gmapsimport', GmapsImportRequest, GmapsImportResponse),
         ('findtripplans', FindTripPlansRequest, FindTripPlansResponse))
 
@@ -832,7 +860,7 @@ class TripPlanService(service.Service):
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')
         self.validate_collaborator_operations(operations)
         trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
-        self.validate_mutate_collaborators_editability(operations)
+        self.validate_trip_plan_editability(operations)
 
         for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
             invitee_email = add_op.operation.invitee_email
@@ -878,7 +906,7 @@ class TripPlanService(service.Service):
                 self.validation_errors.append(add_op.missingfield('invitee_email'))
         self.raise_if_errors()
 
-    def validate_mutate_collaborators_editability(self, operations):
+    def validate_trip_plan_editability(self, operations):
         for op in operations:
             if not op.trip_plan:
                 self.validation_errors.append(op.newerror(TripPlanServiceError.NO_TRIP_PLAN_FOUND, field_name='trip_plan_id'))
@@ -901,6 +929,25 @@ class TripPlanService(service.Service):
         msg = mailer.render_multipart_msg(subject, [recipient], None,
             template_vars, template_prefix + '.txt', template_prefix + '.html')
         mailer.send(msg)
+
+    def mutatetags(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
+        self.validate_trip_plan_editability(operations)
+
+        deletes = OperationData.filter_by_operator(operations, Operator.DELETE)
+        for delete_op in deletes:
+            if delete_op.trip_plan:
+                delete_op.trip_plan.tags = []
+                delete_op.result = delete_op.trip_plan
+
+        for trip_plan in trip_plans:
+            data.save_trip_plan(trip_plan)
+
+        return TripPlanMutateTagResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plans=[op.result for op in operations],
+            last_modified=trip_plans[0].last_modified)
 
     def gmapsimport(self, request):
         kml_url = kml_import.get_kml_url(request.gmaps_url)

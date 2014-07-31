@@ -3187,14 +3187,27 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
     $tripPlanService.editTripPlan($scope.tpd)
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
-          $document[0].title = response['trip_plans'][0]['name'];
-          $scope.saveComplete = true;
+          if (_.isEmpty($scope.tpd['tags'])
+            && !_.isEmpty($tripPlanModel.tripPlanData['tags'])) {
+            // We can't delete all tags in a normal EDIT request, since
+            // an empty list of tags is ignored.  So we have to send
+            // a followup request to clear the tags.
+            $tripPlanService.deleteTags($tripPlanModel.tripPlanId())
+              .success($scope.handleSaveResponse);
+          } else {
+            $scope.handleSaveResponse(response);
+          }
         }
       })
       .error(function() {
         $window.alert('Error saving trip plan, please try again.');
       });
+  };
+
+  $scope.handleSaveResponse = function(response) {
+    $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
+    $document[0].title = response['trip_plans'][0]['name'];
+    $scope.saveComplete = true;
   };
 
   $scope.deleteTripPlan = function() {
@@ -3207,7 +3220,6 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
         $window.location.href = '/trip_plan';
       });
   };
-
 
   $scope.tagsChanged = function() {
     var tags = [];
