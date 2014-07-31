@@ -107,8 +107,8 @@
 
   <script type="text/ng-template" id="info-panel-nav-template">
     <div class="info-panel-nav">
-      <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
-        <div class="info-panel-nav-main-controls">
+      <div class="info-panel-nav-main-controls">
+        <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
           <span class="info-nav-item"
             ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
             <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)">
@@ -761,7 +761,19 @@
       <div class="trip-plan-img" 
       ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}" ng-click="clickable && onClick()">
         <div class="trip-plan-img-overlay">
+          <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
           <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
+          <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
+            [[tripPlan['content_display_date'] ]]
+          </span>
+        </div>
+      </div>
+      <div class="trip-plan-info">
+        <div class="trip-plan-metadata">
+          <span ng-if="forGuide">
+            Inspired by
+            [[tripPlan['source_display_name'] ]] -
+          </span>
           <span ng-show="numEntities > 1" class="trip-plan-places-count">
             [[numEntities]] places
           </span>
@@ -770,21 +782,7 @@
           </span>
         </div>
       </div>
-      <div class="trip-plan-info">
-        <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
-        <div class="trip-plan-metadata">
-          <div ng-if="forGuide">
-            Inspired by
-            [[tripPlan['source_display_name'] ]]
-          </div>
-          <div>
-            <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
-                [[tripPlan['content_display_date'] ]]
-            </span>
-          </div>
-        </div>
-      </div>
-      <div ng-if="includeDetails">
+      <div class="trip-plan-details" ng-if="includeDetails">
         <div class="description" ng-if="tripPlan['description']"><span ng-bind-html="tripPlan['description'] | linky:'_blank'"></span></div>
         <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
           Tags: 
@@ -911,7 +909,7 @@
               <label>Enter tags, separated by commas</label>
               <form ng-submit="saveTags()">
                 <input type="text" class="form-control" ng-model="tagState.rawInput"
-                  placeholder="e.g. greek food, day 1, recommend by Bob"
+                  placeholder="e.g. greek food, day 1, recommended by Bob"
                   tc-focus-on="inlineEditMode"/>
               </form>
               <a ng-click="saveTags()" href="javascript:void(0)" class="color-link">
@@ -1179,7 +1177,6 @@
           &gt;
           [[selectedGuide['name'] ]]
         </div>
-
         <tc-trip-plan-details-header trip-plan="selectedGuide"
           num-entities="selectedGuide['entities'].length" for-guide="true" full-bleed="true" include-details="true">
         </tc-trip-plan-details-header>
@@ -1432,181 +1429,32 @@
   </script>
 
   <script type="text/ng-template" id="sharing-panel-template">
-    <div class="export-panel one-info-panel">
+    <div class="sharing-panel one-info-panel" ng-controller="SharingSettingsCtrl">
       <div class="header">
         Share your trip with collaborators and viewers
       </div>
-    </div>
-  </script>
 
-  <script type="text/ng-template" id="settings-panel-template">
-    <div class="export-panel one-info-panel">
-      <div class="header">
-        Settings
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="search-panel-template">
-    <div class="search-panel" ng-controller="SearchPanelCtrl"
-      tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
-      scroll-dest-selector=".one-entity-search-result[tc-entity-result-id='[[searchResultState.selectedIndex]]']">
-      Search for place names, addresses, or categories to add to your trip
-      <div class="search-box-container">
-        <input type="text" class="form-control"
-          placeholder="e.g. 'Eiffel Tower', '123 Main St', or 'Cafes'"
-          tc-google-place-autocomplete search-bounds-json="planModel.tripPlanData['location_bounds']"
-          tc-focus-on="pageStateModel.infoPanelMode"
-          on-place-change="googlePlaceSelected($newPlace)"
-          ng-model="queryState.rawQuery"
-          ng-disabled="loadingData"/>
-        <div ng-show="loadingData" class="search-spinner">
-          <img src="/static/img/spinner-small.gif"/>
+      <div class="section">
+        <div class="section-header">
+          Collaborators
         </div>
-      </div>
-      <div ng-include="'results-details-panel-template'">
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="results-details-panel-template">
-    <div class="results-details-panel">
-      <div ng-show="searchComplete && searchResults && searchResults.length">
-        <h4>Results from Google Maps</h4>
-      </div>
-      <div ng-repeat="result in searchResultState.results"
-        tc-entity-search-result index="$index" entity-data="result"
-        search-result-state="searchResultState">
-      </div>
-      <div ng-show="searchComplete && (!searchResults || !searchResults.length)">
-        <h4>No places found</h4>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="one-entity-search-result-template">
-    <div class="one-entity-search-result" tc-entity-result-id="[[index]]"
-      ng-controller="EntitySearchResultCtrl"
-      ng-mouseenter="highlightResult()">
-      <hr class="entity-separator" ng-show="index > 0"/>
-      <div class="header-bar">
-        <span class="result-letter-icon" tc-search-result-icon
-          precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()">
-        </span>
-        <span class="name">[[ed['name'] ]]</span>
-        <div class="controls">
-          <span ng-show="!searchResultState.savedResultIndices[index]">
-            <a ng-click="saveResult()" href="javascript:void(0)" class="color-link">
-              <span class="glyphicon glyphicon-plus"></span>
-              Add to trip
-            </a>
-          </span>
-          <span class="save-confirmation" ng-show="searchResultState.savedResultIndices[index]">
-            saved
-          </span>
+        <div class="info-text">
+          Collaborators can edit and comment on this trip and invite other collaborators.
         </div>
-      </div>
-      <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
-        <span class="vertical-spacer"></span><!--
-        --><span tc-image-carousel urls="ed['photo_urls']" class="carousel-content">
-        </span>
-      </div>
-       <div class="metadata">
-        <div class="address">
-          [[ed['address'] ]]
-        </div>
-        <div class="source-info" ng-show="ed['source_url']">
-          <a ng-href="[[ed['source_url'] ]]" target="_blank">
-            From <span class="source-text">[[ed['source_url'] | hostname ]]</span>
-          </a>
-        </div>
-      </div>
-      <div class="description"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
-      <tc-search-result-marker ng-if="position && !searchResultState.savedResultIndices[index]"
-        marker="markerState.marker" position="position" map="map"
-        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
-        selected="isSelected()"
-        on-click="markerClicked($event)">
-      </tc-search-result-marker>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="trip-plan-settings-editor-template">
-    <div class="trip-plan-settings-editor" ng-controller="TripPlanSettingsEditorCtrl">
-      <div class="header">
-        <div class="title">Trip Plan Settings</div>
-        <div class="button-panel">
-          <button class="btn btn-primary" ng-click="saveSettings()">
-            Save
-          </button>
-          <button class="btn btn-default" ng-click="$close()">
-            Cancel
-          </button>
-        </div>
-      </div>
-      <div class="editor-body container-fluid">
-        <div class="row">
-          <div class="col-sm-6">
-            <h4>Name</h4>
-            <input type="text" class="form-control" ng-model="tpd['name']"/>
-            <h4>Description</h4>
-            <textarea class="form-control description-input" ng-model="tpd['description']"></textarea>
-          </div>
-          <div class="col-sm-6">
-            <h4>Cover Image</h4>
-            <div class="cover-img-container" ng-if="tpd['cover_image_url'] && !editingImage">
-              <img ng-src="[[tpd['cover_image_url'] ]]"/>
-              <div class="img-control top-control">
-                <a ng-click="changeImage()" href="javascript:void(0)">
-                  Change image
-                  <span class="glyphicon glyphicon-picture"></span>
-                </a>
-              </div>
-              <div class="img-control bottom-control">
-                <a ng-click="removeImage()" href="javascript:void(0)">
-                  Remove image
-                  <span class="glyphicon glyphicon-trash"></span>
-                </a>
-              </div>
-            </div>
-            <div class="cover-img-editor" ng-if="editingImage">
-              <textarea class="cover-img-drop-target" placeholder="Drag and drop an image or paste an image url"
-                ng-model="coverImgUrlInput.text" ng-change="coverImgUrlChanged()" ng-paste="coverImgUrlPasted()"
-                tc-dragenter="coverImgDragenter()" tc-dragover="$event.preventDefault()" tc-drop="coverImgUrlDropped($event)"
-                ng-class="{'dragactive': coverImgDragActive}">
-              </textarea>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="sharing-settings-editor-template">
-    <div class="sharing-settings-editor" ng-controller="SharingSettingsCtrl">
-      <div class="header">
-        <div class="title">Share</div>
-        <div class="button-panel">
-          <button class="btn btn-default" ng-click="$close()">
-            Close
-          </button>
-        </div>
-      </div>
-      <div class="creator">
-        <h4>Creator</h4>
-        <span tc-user-icon user="creator" no-tooltip="true"></span> [[creator['display_name'] ]]
-        <span ng-show="isCreator">(you)</span>
-      </div>
-      <div ng-show="hasCollaborators()">
-        <h4>Collaborators</h4>
+        <p class="collaborator">
+          <span tc-user-icon user="creator" no-tooltip="true"></span>
+          [[creator['display_name'] ]]
+          <span ng-show="isCurrentUser(creator)">(you)</span>
+          - creator
+        </p>
         <p ng-repeat="editor in editors()" class="collaborator">
           <span tc-user-icon user="editor" no-tooltip="true"></span>
           [[editor['display_name'] ]]
-          <span ng-show="editor['public_id'] == accountInfo['user']['public_id']">
+          <span ng-show="isCurrentUser(editor)">
             (you)
           </span>
           <a ng-click="removeEditor(editor)"
-            ng-show="editor['public_id'] != accountInfo['user']['public_id']"
+            ng-show="!isCurrentUser(editor)"
             href="javascript:void(0)" class="remove-link color-link">
             <span class="glyphicon glyphicon-trash"></span>
           </a>
@@ -1620,23 +1468,103 @@
             </a>
           </span>
         </p>
-      </div>
-      <div>
-        <h4>Add Collaborators</h4>
-        Collaborators can edit and comment on the trip plan and invite other collaborators.
+
         <form class="form-inline" role="form" ng-submit="addCollaborator()">
-          <div class="form-group">
-            <input type="text" class="form-control email-input" placeholder="Enter an email address" ng-model="formState.email"/>
-            <button class="btn btn-primary">
+          <div class="form-group full-width">
+            <input type="text" class="form-control email-input"
+              placeholder="Enter an email address"
+              ng-model="formState.email"/>
+            <button class="btn btn-cta add-btn">
               Add
             </button>
           </div>
         </form>
       </div>
-      <div>
-        <h4>Share Trip Plan</h4>
-        Share this trip plan by sending others the trip plan link. Viewers that are not collaborators cannot edit and comment on the trip plan or invite other collaborators.
+
+      <div class="section">
+        <div class="section-header">
+          Viewers
+        </div>
+        <div>
+          Viewers who are not collaborators cannot edit and comment on the trip or invite collaborators.
+          Anyone with the following link can view your trip.
+        </div>
         <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="settings-panel-template">
+    <div class="settings-panel one-info-panel" ng-controller="TripPlanSettingsEditorCtrl">
+      <div class="header">
+        Settings
+      </div>
+
+      <div class="settings-panel-body">
+
+        <div class="delete-trip-link">
+          <a ng-click="deleteTripPlan()" href="javascript:void(0)" class="cta-link">
+            <span class="glyphicon glyphicon-trash"></span>
+            Delete Trip
+          </a>
+        </div>
+
+        <div class="input-section">
+          <label>Trip Name</label>
+          <input type="text" class="form-control" ng-model="tpd['name']"
+            placeholder="e.g. April in Paris"/>
+        </div>
+
+        <div class="input-section">
+          <label>Cover Image</label>
+          <div ng-if="editingImage">
+            <textarea class="cover-img-drop-target"
+              placeholder="Drag and drop an image or paste an image url"
+              ng-model="coverImgUrlInput.text" ng-change="coverImgUrlChanged()" ng-paste="coverImgUrlPasted()"
+              tc-dragenter="coverImgDragenter()" tc-dragover="$event.preventDefault()" tc-drop="coverImgUrlDropped($event)"
+              ng-class="{'dragactive': coverImgDragActive}">
+            </textarea>
+          </div>
+          <div class="cover-img-container"
+            ng-if="tpd['cover_image_url'] && !editingImage">
+            <img ng-src="[[tpd['cover_image_url'] ]]"/>
+            <div class="img-control top-control">
+              <a ng-click="changeImage()" href="javascript:void(0)">
+                Change image
+                <span class="glyphicon glyphicon-picture"></span>
+              </a>
+            </div>
+            <div class="img-control bottom-control">
+              <a ng-click="removeImage()" href="javascript:void(0)">
+                Remove image
+                <span class="glyphicon glyphicon-trash"></span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="input-section">
+          <label>Description</label>
+          <textarea class="form-control description-input" ng-model="tpd['description']">
+          </textarea>
+        </div>
+
+        <div class="input-section">
+          <label>Tags, separated by commas</label>
+          <input type="text" class="form-control" ng-model="tagState.rawInput"
+            ng-change="tagsChanged()"
+            placeholder="e.g. fine dining, history, adventure"/>
+        </div>
+
+        <div class="save-confirmation" ng-show="saveComplete">
+          Settings saved          
+        </div>
+
+        <div class="buttons">
+          <button ng-click="saveSettings()" class="btn btn-cta">
+            Save
+          </button>
+        </div>
       </div>
     </div>
   </script>

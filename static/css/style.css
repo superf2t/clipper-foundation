@@ -1,7 +1,7 @@
 html, body {
   width: 100%;
   height: 100%;
-  font-family: 'Avenir';
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -418,13 +418,12 @@ hr.dropdown-separator {
 .details-panel {
   width: 100%;
   height: 100%;
-  padding: 0 10px 20px 10px;
+  padding: 0px 10px 0px 10px;
   overflow-y: auto;
 }
 
-.details-panel .header-entities-separator {
-  margin: 10px 0px;
-  border-top: 1px solid #999;
+.details-panel .source-link {
+  margin-bottom: 15px;
 }
 
 .one-entity-guideview .comments .one-comment {
@@ -493,73 +492,6 @@ hr.dropdown-separator {
   margin: 10px 0;
 }
 
-.one-entity-search-result .header-bar {
-  position: relative;
-}
-
-.one-entity-search-result .header-bar .name {
-  font-size: 1.2em;
-  display: inline-block;
-  width: calc(100% - 110px);
-}
-
-.one-entity-search-result .controls {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.one-entity-search-result .result-letter-icon {
-  display: inline-block;
-  vertical-align: top;
-}
-
-.one-entity-search-result .result-letter-icon .map-marker .marker-shape {
-  width: 24px;
-  height: 37px;
-  position: relative;
-  top: -3px;
-}
-
-.one-entity-search-result .result-letter-icon .search-result-marker .result-letter {
-  font-size: 1.2em;
-  top: -3px;
-}
-
-.one-entity-search-result .save-confirmation {
-  color: rgb(39, 172, 113);
-}
-
-.one-entity-guideview .clip-cta a {
-  color: #428bca;
-}
-
-.one-entity-guideview .clip-cta a:hover {
-  color: #2D73A0;
-}
-
-.one-entity-guideview .inline-comment-editor .author-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.one-entity-guideview .inline-day-planner select {
-  max-width: 200px;
-  margin: 5px 0;
-}
-
-.one-entity-guideview .inline-day-planner a {
-  color: #428bca;
-}
-
-.one-entity-guideview .inline-day-planner a:hover {
-  color: #2D73A0;
-}
-
-.one-entity-guideview .inline-directions .directions-select {
-  margin: 10px 0;
-}
-
 .one-entity-details {
   border: 1px solid #dce0e0;
   margin-bottom: 10px;
@@ -573,7 +505,7 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .one-entity-content {
-  padding: 6px 8px;
+  padding: 8px 10px;
   background-color: #FFFFFF;
 }
 
@@ -768,13 +700,6 @@ hr.dropdown-separator {
 
 .one-entity-details .comment-editor .author-name {
   margin-bottom: 5px;
-}
-
-.results-details-panel {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  padding-bottom: 25px;
 }
 
 .one-info-panel {
@@ -1020,11 +945,12 @@ hr.dropdown-separator {
 .trip-plan-details-header {
   margin-bottom: 10px;
   background-color: #FFFFFF;
+  border-bottom: 1px solid #dce0e0;
 }
 
 .trip-plan-details-header .trip-plan-img {
   position: relative;
-  height: 280px;
+  height: 300px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
   background-size: cover;
@@ -1039,9 +965,9 @@ hr.dropdown-separator {
 
 .trip-plan-details-header .trip-plan-img .trip-plan-img-overlay {
   position: absolute;
-  height: 50px;
   left: 0px;
-  top: 70%;
+  min-width: 100px;
+  top: 50%;
   padding: 10px 16px;
   background-color: rgba(0, 0, 0, 0.75);
   color: #FFFFFF;
@@ -1054,8 +980,8 @@ hr.dropdown-separator {
   background-color: #FFFFFF;
 }
 
-.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .trip-plan-places-count {
-  font-size: 1.2em;
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .source-publish-date {
+  font-size: 1.3em;
   line-height: 1.6;
 }
 
@@ -1063,8 +989,12 @@ hr.dropdown-separator {
   cursor: pointer;
 }
 
-.trip-plan-details-header.clickable:hover {
-  opacity: 0.8;
+.trip-plan-details-header.clickable:hover .trip-plan-img-overlay{
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.trip-plan-details-header .trip-plan-name {
+  font-size: 1.8em;
 }
 
 .trip-plan-details-header .trip-plan-info {
@@ -1072,19 +1002,20 @@ hr.dropdown-separator {
   padding: 10px;
 }
 
-.trip-plan-details-header .trip-plan-info .trip-plan-name {
-  font-size: 24pt;
+.trip-plan-details-header .trip-plan-details {
+  width: 100%;
+  padding: 0px 10px 10px 10px;
 }
 
 .trip-plan-details-header .trip-plan-info .trip-plan-metadata {
-  padding-bottom: 10px;
+  font-size: 1.2em;
 }
 
 .infowindow {
   position: relative;
   bottom: 79px;
   font-size: 10pt;
-  font-family: 'Avenir';
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
   font-weight: 300;
 }
 
@@ -1347,7 +1278,126 @@ hr.dropdown-separator {
   font-weight: bold;
 }
 
-/* Custom calculation to support 360px image/map */
+.sharing-panel .section {
+  padding: 10px;
+}
+
+.sharing-panel .section-header {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.sharing-panel .info-text {
+  margin-bottom: 10px;
+}
+
+.sharing-panel .add-btn {
+  width: 80px;
+}
+
+.sharing-panel .email-input {
+  width: calc(100% - 80px - 10px);
+}
+
+.sharing-panel .collaborator .remove-link {
+  display: none;
+}
+
+.sharing-panel .collaborator:hover .remove-link {
+  display: inline;
+}
+
+.sharing-panel .share-url {
+  margin-top: 5px;
+  cursor: text;
+}
+
+.settings-panel .settings-panel-body {
+  margin: 0 10px 20px 10px;
+  position: relative;
+}
+
+.settings-panel .input-section {
+  margin-bottom: 15px;
+}
+
+.settings-panel .delete-trip-link {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.settings-panel .description-input {
+  height: 100px;
+}
+
+.settings-panel .buttons {
+  text-align: center;
+}
+
+.settings-panel .buttons button {
+  font-size: 13pt;
+}
+
+.settings-panel .save-confirmation {
+  text-align: center;
+  padding-bottom: 15px;
+  font-size: 13pt;
+  color: #4CBDC9;
+}
+
+.settings-panel .cover-img-container {
+  position: relative;
+  text-align: center;
+  max-width: 100%;
+  max-height: 200px;
+}
+
+.settings-panel .cover-img-container img {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.settings-panel .cover-img-container .img-control {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+}
+
+.settings-panel .cover-img-container .img-control.top-control {
+  top: 10px;
+}
+
+.settings-panel .cover-img-container .img-control.bottom-control {
+  bottom: 10px;
+}
+
+.settings-panel .cover-img-container .img-control a {
+  color: #fff;
+  text-shadow: 2px 2px 3px #000;
+}
+
+.settings-panel .cover-img-container .img-control a:hover {
+  color: #428bca;
+}
+
+.settings-panel .cover-img-drop-target {
+  width: 100%;
+  height: 100px;
+  padding-top: 42px;
+  border: 1px dashed #ccc;
+  border-radius: 3px;
+  resize: none;
+  text-align: center;
+  cursor: default;
+}
+
+.settings-panel .cover-img-drop-target.dragactive {
+  -moz-box-shadow: 0px 0px 5px 2px #4CBDC9;
+  -webkit-box-shadow: 0px 0px 5px 2px #4CBDC9;
+  box-shadow: 0px 0px 5px 2px #4CBDC9;
+  border: none;
+}
 
 .modal-dialog {
   width: 782px;
@@ -1456,119 +1506,6 @@ hr.dropdown-separator {
   position: absolute;
   right: 0;
   top: 6px;
-}
-
-.trip-plan-settings-editor-modal .modal-dialog {
-  width: 80%;
-}
-
-.trip-plan-settings-editor {
-  margin: 20px;
-}
-
-.trip-plan-settings-editor .header {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.trip-plan-settings-editor .header .title {
-  font-size: 18pt;
-}
-
-.trip-plan-settings-editor .header .button-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.trip-plan-settings-editor .editor-body .description-input {
-  height: 250px;
-}
-
-.trip-plan-settings-editor .editor-body .cover-img-container {
-  position: absolute;
-  text-align: center;
-  max-width: 100%;
-  max-height: 300px;
-}
-
-.trip-plan-settings-editor .editor-body .cover-img-container img {
-  max-width: 100%;
-  max-height: 100%;
-}
-
-.trip-plan-settings-editor .cover-img-container .img-control {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-}
-
-.trip-plan-settings-editor .cover-img-container .img-control.top-control {
-  top: 10px;
-}
-
-.trip-plan-settings-editor .cover-img-container .img-control.bottom-control {
-  bottom: 10px;
-}
-
-.trip-plan-settings-editor .cover-img-container .img-control a {
-  color: #fff;
-  text-shadow: 2px 2px 3px #000;
-}
-
-.trip-plan-settings-editor .cover-img-container .img-control a:hover {
-  color: #428bca;
-}
-
-.trip-plan-settings-editor .cover-img-editor .cover-img-drop-target {
-  width: 100%;
-  height: 300px;
-  padding-top: 150px;
-  border: 1px dashed #ccc;
-  border-radius: 3px;
-  resize: none;
-  text-align: center;
-  cursor: default;
-}
-
-.trip-plan-settings-editor .cover-img-editor .cover-img-drop-target.dragactive {
-  background-color: blue;
-  border: 1px solid red;
-}
-
-.sharing-settings-editor {
-  margin: 20px;
-}
-
-.sharing-settings-editor .header {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.sharing-settings-editor .header .title {
-  font-size: 18pt;
-}
-
-.sharing-settings-editor .header .button-panel {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.sharing-settings-editor .email-input {
-  width: 400px;
-}
-
-.sharing-settings-editor .collaborator .remove-link {
-  display: none;
-}
-
-.sharing-settings-editor .collaborator:hover .remove-link {
-  display: inline;
-}
-
-.sharing-settings-editor .share-url {
-  cursor: text;
 }
 
 .reclip-confirmation-modal {

@@ -2214,17 +2214,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     });
   };
 
-  $scope.deleteCurrentTripPlan = function() {
-    var ok = confirm('Are you sure you want to delete this trip plan?');
-    if (!ok) {
-      return;
-    }
-    $tripPlanService.deleteTripPlanById($tripPlan['trip_plan_id'])
-      .success(function(response) {
-        location.href = '/trip_plan';
-      });
-  };
-
   $scope.startGmapsImport = function() {
     $modal.open({
       templateUrl: 'gmaps-importer-template',
@@ -3140,11 +3129,15 @@ function EditImagesCtrl($scope, $timeout) {
 }
 
 function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
-    $timeout, $document) {
+    $timeout, $window, $document) {
   $scope.tpd = angular.copy($tripPlanModel.tripPlanData);
   $scope.editingImage = !$scope.tpd['cover_image_url'];
   $scope.coverImgDragActive = false;
-  $scope.coverImgUrlInput = {text:''};
+  $scope.coverImgUrlInput = {text: ''};
+  $scope.saveComplete = false;
+  $scope.tagState = {
+    rawInput: _.pluck($scope.tpd['tags'], 'text').join(', ')
+  };
 
   $scope.changeImage = function() {
     $scope.editingImage = true;
@@ -3164,7 +3157,7 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
     if (imgUrl) {
       $scope.tpd['cover_image_url'] = imgUrl;
     } else {
-      alert("Couldn't recognize this image.")
+      $window.alert("Couldn't recognize this image.")
     }
     $event.stopPropagation();
     $event.preventDefault();
@@ -3191,17 +3184,42 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
   };
 
   $scope.saveSettings = function() {
+    $scope.saveComplete = false;
     $tripPlanService.editTripPlan($scope.tpd)
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
           $document[0].title = response['trip_plans'][0]['name'];
-          $scope.$close();
+          $scope.saveComplete = true;
         }
       })
       .error(function() {
-        alert('Error saving trip plan, please try again.');
+        $window.alert('Error saving trip plan, please try again.');
       });
+  };
+
+  $scope.deleteTripPlan = function() {
+    var ok = $window.confirm('Are you sure you want to delete this trip plan?');
+    if (!ok) {
+      return;
+    }
+    $tripPlanService.deleteTripPlanById($tripPlanModel.tripPlanId())
+      .success(function(response) {
+        $window.location.href = '/trip_plan';
+      });
+  };
+
+
+  $scope.tagsChanged = function() {
+    var tags = [];
+    var tagsString = $scope.tagState.rawInput;
+    $.each(tagsString.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    $scope.tpd['tags'] = tags;
   };
 }
 
@@ -3209,8 +3227,11 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
   $scope.formState = {email: null};
   $scope.accountInfo = $accountInfo;
   $scope.creator = $tripPlanModel.tripPlanData['user'];
-  $scope.isCreator = $accountInfo['user']['public_id'] == $scope.creator['public_id'];
   $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
+
+  $scope.isCurrentUser = function(user) {
+    return user['public_id'] == $accountInfo['user']['public_id']
+  };
 
   $scope.editors = function() {
     return $tripPlanModel.tripPlanData['editors'] || [];
@@ -3218,10 +3239,6 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
 
   $scope.inviteeEmails = function() {
     return $tripPlanModel.tripPlanData['invitee_emails'] || [];
-  };
-
-  $scope.hasCollaborators = function() {
-    return $scope.editors().length || $scope.inviteeEmails().length;
   };
 
   $scope.addCollaborator = function() {

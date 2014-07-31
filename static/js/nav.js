@@ -15,6 +15,9 @@
 // -Add infowindow for search results and guides.
 // -Test help text for the clipper, and get IE commands.
 // -Add Back to Top link for guides.
+// -Render creator info in the details panel.
+// -Make tags deletable in the trip plan settings editor.
+// -Do something with the entity editor.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
@@ -22,6 +25,7 @@
 // -Remove tutorial panel.
 // -Remove day planner.
 // -Remove notes
+// -Remove bulk clipper
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
