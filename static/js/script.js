@@ -2113,6 +2113,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
     $scope.$broadcast('closeallinfowindows');
     $pageStateModel.selectedEntity = null;
+    $searchResultState.clear();
+    $filterModel.searchResultsEmphasized = false;
     $scope.$broadcast('infopanelclosing');
   };
 
