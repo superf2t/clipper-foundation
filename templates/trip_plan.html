@@ -762,24 +762,28 @@
       ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}" ng-click="clickable && onClick()">
         <div class="trip-plan-img-overlay">
           <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
-          <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
-          <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
-            [[tripPlan['content_display_date'] ]]
-          </span>
         </div>
       </div>
       <div class="trip-plan-info">
         <div class="trip-plan-metadata">
           <span ng-if="forGuide">
             Inspired by
-            [[tripPlan['source_display_name'] ]] -
+            <a href="#" class="source-url">
+              [[tripPlan['source_display_name'] ]]
+            </a>
           </span>
-          <span ng-show="numEntities > 1" class="trip-plan-places-count">
-            [[numEntities]] places
-          </span>
-          <span ng-show="numEntities == 1" class="trip-plan-places-count">
-            1 place
-          </span>
+          <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
+            - [[tripPlan['content_display_date'] ]]
+          </span>              
+          <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
+          <div class="trip-plan-places">
+            <span ng-show="numEntities > 1" class="trip-plan-places-count">
+              [[numEntities]] places
+            </span>
+            <span ng-show="numEntities == 1" class="trip-plan-places-count">
+              1 place
+            </span>
+          </div>
         </div>
       </div>
       <div class="trip-plan-details" ng-if="includeDetails">
