@@ -849,6 +849,7 @@ function tcTripPlanDetailsHeader() {
       forGuide: '=',
       fullBleed: '=',
       clickable: '=',
+      includeDetails: '=',
       onClick: '&'
     }
   };

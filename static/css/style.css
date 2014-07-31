@@ -725,11 +725,6 @@ hr.dropdown-separator {
   padding-left: 5px;
 }
 
-.one-entity-details .entity-separator {
-  border-top: 1px solid #CCCCCC;
-  margin: 10px 0px;
-}
-
 .one-entity-details .inline-editor {
   background-color: #fff;
   padding: 10px;
@@ -1023,19 +1018,45 @@ hr.dropdown-separator {
 }
 
 .trip-plan-details-header {
+  margin-bottom: 10px;
+  background-color: #FFFFFF;
+}
+
+.trip-plan-details-header .trip-plan-img {
   position: relative;
   height: 280px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
   background-size: cover;
   background-image: url('/static/img/default-cover.jpg');
-  margin-bottom: 15px;
-  color: #fff;
 }
 
 .trip-plan-details-header.full-bleed {
+  position: relative;
   width: calc(100% + 20px);
   left: -10px;
+}
+
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay {
+  position: absolute;
+  height: 50px;
+  left: 0px;
+  top: 70%;
+  padding: 10px 16px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: #FFFFFF;
+}
+
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .source-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background-color: #FFFFFF;
+}
+
+.trip-plan-details-header .trip-plan-img .trip-plan-img-overlay .trip-plan-places-count {
+  font-size: 1.2em;
+  line-height: 1.6;
 }
 
 .trip-plan-details-header.clickable {
@@ -1047,29 +1068,16 @@ hr.dropdown-separator {
 }
 
 .trip-plan-details-header .trip-plan-info {
-  position: absolute;
-  bottom: 0;
-  left: 0;
   width: 100%;
-  height: 115px;
   padding: 10px;
-  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .trip-plan-details-header .trip-plan-info .trip-plan-name {
-  font-size: 16pt;
+  font-size: 24pt;
 }
 
 .trip-plan-details-header .trip-plan-info .trip-plan-metadata {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding: 10px;
-}
-
-.trip-plan-details-header .trip-plan-info .source-icon {
-  width: 16px;
-  height: 16px;
+  padding-bottom: 10px;
 }
 
 .infowindow {
