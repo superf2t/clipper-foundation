@@ -5119,7 +5119,8 @@ function tcExpandableContent($timeout) {
       textContent: '=',
       expandLinkText: '@',
       collapseLinkText: '@',
-      maxLines: '='
+      maxLines: '=',
+      numBufferLines: '='
     },
     link: function(scope, element, attrs) {
       var contentElem = element.find('.text-content');
@@ -5127,7 +5128,13 @@ function tcExpandableContent($timeout) {
         var fullHeight = contentElem.height();
         var lineHeight = parseInt(contentElem.css('line-height').replace('px', ''));
         var maxHeight = scope.maxLines * lineHeight;
-        scope.needsExpansion = fullHeight > maxHeight;
+        // Allow the content to be up to 1 line longer than the max
+        // if that's all it takes to render the whole thing, otherwise
+        // we render an expander link for 1 line which looks stupid.
+        var numBufferLines = _.isNumber(scope.numBufferLines)
+          ? scope.numBufferLines : 2;
+        var maxHeightWithBuffer = (scope.maxLines + numBufferLines) * lineHeight;
+        scope.needsExpansion = fullHeight > maxHeightWithBuffer;
         if (scope.needsExpansion) {
           contentElem.css('height', maxHeight);
         }
