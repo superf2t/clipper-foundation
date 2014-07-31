@@ -427,6 +427,10 @@ hr.dropdown-separator {
   border-top: 1px solid #999;
 }
 
+.details-panel .source-link {
+  margin-bottom: 15px;
+}
+
 .one-entity-guideview .comments .one-comment {
   margin: 10px 0px;
 }

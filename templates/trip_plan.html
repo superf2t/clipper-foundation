@@ -736,6 +736,12 @@
           [[tag['text'] ]]
         </span>
       </div>
+      <div ng-if="planModel.hasSource()" class="source-link">
+        <a ng-href="[[planModel.tripPlanData['source_url'] ]]"
+          target="_blank" class="cta-link">
+          View original article at [[planModel.tripPlanData['source_display_name'] ]]
+        </a>
+      </div>
       <tc-entity-details ng-repeat="entity in planModel.entities()"
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
