@@ -493,73 +493,6 @@ hr.dropdown-separator {
   margin: 10px 0;
 }
 
-.one-entity-search-result .header-bar {
-  position: relative;
-}
-
-.one-entity-search-result .header-bar .name {
-  font-size: 1.2em;
-  display: inline-block;
-  width: calc(100% - 110px);
-}
-
-.one-entity-search-result .controls {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.one-entity-search-result .result-letter-icon {
-  display: inline-block;
-  vertical-align: top;
-}
-
-.one-entity-search-result .result-letter-icon .map-marker .marker-shape {
-  width: 24px;
-  height: 37px;
-  position: relative;
-  top: -3px;
-}
-
-.one-entity-search-result .result-letter-icon .search-result-marker .result-letter {
-  font-size: 1.2em;
-  top: -3px;
-}
-
-.one-entity-search-result .save-confirmation {
-  color: rgb(39, 172, 113);
-}
-
-.one-entity-guideview .clip-cta a {
-  color: #428bca;
-}
-
-.one-entity-guideview .clip-cta a:hover {
-  color: #2D73A0;
-}
-
-.one-entity-guideview .inline-comment-editor .author-name {
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.one-entity-guideview .inline-day-planner select {
-  max-width: 200px;
-  margin: 5px 0;
-}
-
-.one-entity-guideview .inline-day-planner a {
-  color: #428bca;
-}
-
-.one-entity-guideview .inline-day-planner a:hover {
-  color: #2D73A0;
-}
-
-.one-entity-guideview .inline-directions .directions-select {
-  margin: 10px 0;
-}
-
 .one-entity-details {
   border: 1px solid #dce0e0;
   margin-bottom: 10px;
@@ -773,13 +706,6 @@ hr.dropdown-separator {
 
 .one-entity-details .comment-editor .author-name {
   margin-bottom: 5px;
-}
-
-.results-details-panel {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  padding-bottom: 25px;
 }
 
 .one-info-panel {
