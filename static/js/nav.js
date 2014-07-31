@@ -2,7 +2,6 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
-// -Clean up display language for opening hours.
 // -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 // -Get an email sender account on the new domain.
 // -Make sure all featured guides have the GUIDE bit set.
