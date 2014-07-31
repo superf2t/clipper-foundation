@@ -613,7 +613,7 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .description {
-  white-space: pre-wrap;
+  margin-bottom: 15px;
 }
 
 .one-entity-details .detail-item {
@@ -622,6 +622,15 @@ hr.dropdown-separator {
 
 .one-entity-details .reputation-section {
   margin-top: 10px;
+}
+
+.one-entity-details .star-rating {
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.one-entity-details .num-reviews {
+  vertical-align: middle;
 }
 
 .one-entity-details .tags {
@@ -1023,6 +1032,10 @@ hr.dropdown-separator {
   font-size: 1.3em;
 }
 
+.trip-plan-details-header .description {
+  margin-bottom: 15px;
+}
+
 .infowindow {
   position: relative;
   bottom: 79px;
@@ -1172,14 +1185,16 @@ hr.dropdown-separator {
   margin-bottom: 10px;
 }
 
-.guides-panel .description {
-  white-space: pre-line;
-  text-align: justify;
-  margin-bottom: 15px;
-}
-
 .guides-panel .tags {
   margin-bottom: 10px;
+}
+
+.guides-panel .source-link {
+}
+
+.guides-panel .back-to-top {
+  font-size: 13pt;
+  padding: 10px 0 30px 0;
 }
 
 .add-your-own-panel .sub-nav {

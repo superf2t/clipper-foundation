@@ -87,6 +87,45 @@
     background-image: none;
     cursor: pointer;
   }
+
+  .expandable-content .text-content {
+    white-space: pre-line;
+    text-align: justify;
+    position: relative;
+  }
+
+  .expandable-content .text-content.collapsed {
+    overflow: hidden;
+  }
+
+  .expandable-content .text-content.collapsed:after {
+    content: "";
+    width: 100%;
+    height: 1.5em;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    /* http://www.colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0+0,1+100;Custom */
+    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(100%,rgba(255,255,255,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 ); /* IE6-9 */
+  }
+
+  .expandable-content .toggle-link .caret {
+    position: relative;
+    top: -1px;
+  }
+
+  .star-rating-container .rating-star {
+    display: inline-block;
+    position: relative;
+    top: -1px;
+  }
 </style>
 
 {# TODO: Replace uses of this with tc-image-carousel directive #}
@@ -148,8 +187,8 @@
 </script>
 
 <script type="text/ng-template" id="star-rating-template">
-  <div>
-    <span ng-repeat="star in maxRange">
+  <div class="star-rating-container">
+    <span ng-repeat="star in maxRange" class="rating-star">
       <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
     </span>
   </div>
@@ -202,4 +241,20 @@
       [[user['display_name'].substring(0, 1) ]]
     </span>
   </a>
+</script>
+
+<script type="text/ng-template" id="expandable-content-template">
+  <div class="expandable-content">
+    <div class="text-content" ng-class="{'collapsed': needsExpansion && !isExpanded}"><span ng-bind-html="textContent | linky:'_blank'"></span></div>
+    <div class="toggle-link" ng-show="needsExpansion">
+      <a ng-click="toggleExpanded()" class="color-link" ng-show="!isExpanded" href="javascript:void(0)">
+        [[expandLinkText]]
+        <span class="caret"></span>
+      </a>
+      <a ng-click="toggleExpanded()" class="color-link" ng-show="isExpanded" href="javascript:void(0)">
+        [[collapseLinkText]]
+        <span class="caret caret-up"></span>
+      </a>
+    </div>
+  </div>
 </script>

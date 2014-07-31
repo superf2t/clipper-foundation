@@ -1,6 +1,7 @@
 import datetime
 import json
 import os
+import time
 import urlparse
 
 from dateutil import parser as date_parser
@@ -83,24 +84,57 @@ class OpeningPeriod(serializable.Serializable):
         self.minute_close = minute_close
         self.initialize()
 
-    def initialize(self):
-        if not self.day_open:
-            self.as_string = None
-            return
+    def format(self, hour, minute):
+        return time.strftime('%I:%M%p', time.gmtime(3600 * hour + 60 * minute)).lower()
+
+    def day_open_name(self):
+        return self.DAY_NAMES[self.day_open]
+
+    def format_open(self):
+        if self.day_open is None:
+            return None
+        return self.format(self.hour_open, self.minute_open)
+
+    def day_close_name(self):
         if self.day_close is None:
-            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d'
-        elif self.day_open == self.day_close:
-            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d-%(hour_close)02d:%(minute_close)02d'
+            return None
+        return self.DAY_NAMES[self.day_close]
+
+    def format_close(self):
+        if self.day_close is None:
+            return None
+        return self.format(self.hour_close, self.minute_close)
+
+    def long_string(self):
+        if not self.day_open:
+            return None
+        if self.day_close is None:
+            format = '%(day_open)s %(open)s'
+        elif self.day_open == self.day_close or self.day_close == (self.day_open + 1) % 7:
+            format = '%(day_open)s %(open)s - %(close)s'
         else:
-            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d - %(day_close)s %(hour_close)02d:%(minute_close)02d'
-        self.as_string = format % {
-            'day_open': self.DAY_NAMES[self.day_open],
-            'hour_open': self.hour_open,
-            'minute_open': self.minute_open,
-            'day_close': self.DAY_NAMES[self.day_close] if self.day_close is not None else None,
-            'hour_close': self.hour_close,
-            'minute_close': self.minute_close,
+            format = '%(day_open)s %(open)s - %(day_close)s %(close)s'
+        return format % {
+            'day_open': self.day_open_name(),
+            'open': self.format_open(),
+            'day_close': self.day_close_name(),
+            'close': self.format_close(),
         }
+
+    def short_string(self):
+        if not self.day_open:
+            return None
+        if self.day_close is None:
+            format = '%(open)s'
+        else:
+            format = '%(open)s - %(close)s'
+        return format % {
+            'open': self.format_open(),
+            'close': self.format_close(),
+        }
+
+    def initialize(self):
+        self.as_string = self.long_string()
 
 class OpeningHours(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('source_text',
@@ -112,8 +146,26 @@ class OpeningHours(serializable.Serializable):
         self.opening_periods = opening_periods or []
         self.initialize()
 
+    def to_string(self):
+        if not self.opening_periods:
+            return None
+        strs = []
+        current_str = None
+        current_day = None
+        for period in self.opening_periods:
+            if period.day_open == current_day:
+                current_str = '%s, %s' % (current_str, period.short_string())
+            else:
+                if current_str:
+                    strs.append(current_str)
+                current_day = period.day_open
+                current_str = period.long_string()
+        if current_str:
+            strs.append(current_str)
+        return '\n'.join(strs)
+
     def initialize(self):
-        self.as_string = '\n'.join(p.as_string for p in self.opening_periods if p.as_string)
+        self.as_string = self.to_string()
 
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
@@ -127,6 +179,7 @@ class Entity(serializable.Serializable):
         'description', 'primary_photo_url',
         serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
         'source_url', 'source_display_name',
+        'source_is_trusted_for_reputation',
         'origin_trip_plan_id', 'origin_trip_plan_name',
         'google_reference', 'last_access',
         'day', 'day_position')
@@ -180,8 +233,10 @@ class Entity(serializable.Serializable):
         if self.source_url:
             source_host = urlparse.urlparse(self.source_url).netloc.lower()
             self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host, source_host)
+            self.source_is_trusted_for_reputation = source_host in constants.TRUSTED_REPUTATION_SOURCES
         else:
             self.source_display_name = None
+            self.source_is_trusted_for_reputation = None
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:

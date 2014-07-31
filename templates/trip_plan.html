@@ -787,7 +787,12 @@
         </div>
       </div>
       <div class="trip-plan-details" ng-if="includeDetails">
-        <div class="description" ng-if="tripPlan['description']"><span ng-bind-html="tripPlan['description'] | linky:'_blank'"></span></div>
+        <div class="description" ng-if="tripPlan['description']">
+          <tc-expandable-content text-content="tripPlan['description']"
+            expand-link-text="Read more" collapse-link-text="Read less"
+            max-lines="5">
+          </tc-expandable-content>
+        </div>
         <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
           Tags: 
           <span ng-repeat="tag in tripPlan['tags']" class="one-tag">
@@ -882,7 +887,12 @@
                 [[ed['origin_trip_plan_name'] ]]
               </a>
             </div>
-            <div class="description" ng-if="ed['description']"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+            <div class="description" ng-if="ed['description']">
+              <tc-expandable-content text-content="ed['description']"
+                expand-link-text="Read more" collapse-link-text="Read less"
+                max-lines="5">
+              </tc-expandable-content>
+            </div>
             <div ng-show="showAddDescriptionPrompt()">
               <a ng-click="openDescriptionEditor()" class="color-link" href="javascript:void(0)">
                 Add a description
@@ -944,7 +954,8 @@
                 [[ed['website'] ]]
               </a>
             </div>
-            <div class="reputation-section" ng-show="em.hasReputationInfo()">
+            <div class="reputation-section"
+              ng-show="em.hasReputationInfo() && ed['source_is_trusted_for_reputation']">
               <div ng-show="ed['source_url']">
                 Ratings and Reviews from
                 <a ng-href="[[ed['source_url'] ]]" target="_blank" class="underline-link">
@@ -1188,6 +1199,14 @@
           entity="entity" is-editable="false" for-results="true"
           trip-plan-id="selectedGuide['trip_plan_id']" result-index="$index">
         </tc-entity-details>
+
+        <div class="back-to-top">
+          <a tc-scroll-on-click scroll-parent=".guides-panel" scroll-target=".guides-panel"
+            href="javascript:void(0)" class="cta-link">
+            Back to top
+            <span class="glyphicon glyphicon-chevron-up"></span>
+          </a>
+        </div>
       </div>
     </div>
   </script>

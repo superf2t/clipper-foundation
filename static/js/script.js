@@ -4142,8 +4142,8 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
           .success(function(response) {
             $activeTripPlanState.numEntities += 1;
             $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
+            $activeTripPlanState.lastClippedEntity = response['entities'][0];
             if ($activeTripPlanState.numEntities == 1) {
-              $activeTripPlanState.lastClippedEntity = response['entities'][0];
               $pageStateModel.showAfterNewTripPlanPanel = true;            
             }
             opt_success && opt_success();
@@ -4241,13 +4241,27 @@ function tcScrollToSelector($interpolate) {
 }
 
 function tcResetScrollTopOn() {
-  return{
+  return {
     restrict: 'A',
     link: function(scope, element, attrs) {
       scope.$watch(attrs.tcResetScrollTopOn, function(newValue, oldValue) {
         if (newValue && newValue !== oldValue) {
           element.scrollTop(0);
         }
+      });
+    }
+  };
+}
+
+function tcScrollOnClick() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollParent = $(attrs.scrollParent);
+      var scrollTarget = $(attrs.scrollTarget);
+      element.on('click', function() {
+        var newScrollTop = scrollParent.offset().top - scrollTarget.offset().top;
+        scrollParent.animate({scrollTop: newScrollTop}, 500);
       });
     }
   };
@@ -5111,6 +5125,52 @@ function tcAnimateOnChangeTo() {
   };
 };
 
+function tcExpandableContent($timeout) {
+  return {
+    restrict: 'AE',
+    templateUrl: 'expandable-content-template',
+    scope: {
+      textContent: '=',
+      expandLinkText: '@',
+      collapseLinkText: '@',
+      maxLines: '=',
+      numBufferLines: '='
+    },
+    link: function(scope, element, attrs) {
+      var contentElem = element.find('.text-content');
+      $timeout(function() {
+        var fullHeight = contentElem.height();
+        var lineHeight = parseInt(contentElem.css('line-height').replace('px', ''));
+        var maxHeight = scope.maxLines * lineHeight;
+        // Allow the content to be up to 1 line longer than the max
+        // if that's all it takes to render the whole thing, otherwise
+        // we render an expander link for 1 line which looks stupid.
+        var numBufferLines = _.isNumber(scope.numBufferLines)
+          ? scope.numBufferLines : 2;
+        var maxHeightWithBuffer = (scope.maxLines + numBufferLines) * lineHeight;
+        scope.needsExpansion = fullHeight > maxHeightWithBuffer;
+        if (scope.needsExpansion) {
+          contentElem.css('height', maxHeight);
+        }
+        scope.$watch('isExpanded', function(isExpanded, wasExpanded) {
+          if (isExpanded == wasExpanded) {
+            return;
+          }
+          contentElem.css('height', isExpanded ? '' : maxHeight);
+        });
+      });
+    },
+    controller: function($scope) {
+      $scope.isExpanded = false;
+      $scope.needsExpansion = null;
+
+      $scope.toggleExpanded = function() {
+        $scope.isExpanded = !$scope.isExpanded;
+      };
+    }
+  };
+}
+
 var BrowserPlatform = {
   WINDOWS: 1,
   MAC: 2
@@ -5200,13 +5260,15 @@ angular.module('directivesModule', [])
   .directive('tcImageCarousel', tcImageCarousel)
   .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcResetScrollTopOn', tcResetScrollTopOn)
+  .directive('tcScrollOnClick', tcScrollOnClick)
   .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcIcon', tcIcon)
   .directive('tcSvgHack', tcSvgHack)
-  .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo);
+  .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo)
+  .directive('tcExpandableContent', tcExpandableContent);
 
 function makeFilter(fn) {
   return function() {
