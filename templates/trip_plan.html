@@ -882,7 +882,12 @@
                 [[ed['origin_trip_plan_name'] ]]
               </a>
             </div>
-            <div class="description" ng-if="ed['description']"><span ng-bind-html="ed['description'] | linky:'_blank'"></span></div>
+            <div class="description" ng-if="ed['description']">
+              <tc-expandable-content text-content="ed['description']"
+                expand-link-text="Read more" collapse-link-text="Read less"
+                max-lines="5">
+              </tc-expandable-content>
+            </div>
             <div ng-show="showAddDescriptionPrompt()">
               <a ng-click="openDescriptionEditor()" class="color-link" href="javascript:void(0)">
                 Add a description

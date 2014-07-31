@@ -5110,6 +5110,45 @@ function tcAnimateOnChangeTo() {
   };
 };
 
+function tcExpandableContent($timeout) {
+  return {
+    restrict: 'AE',
+    templateUrl: 'expandable-content-template',
+    scope: {
+      textContent: '=',
+      expandLinkText: '@',
+      collapseLinkText: '@',
+      maxLines: '='
+    },
+    link: function(scope, element, attrs) {
+      var contentElem = element.find('.text-content');
+      $timeout(function() {
+        var fullHeight = contentElem.height();
+        var lineHeight = parseInt(contentElem.css('line-height').replace('px', ''));
+        var maxHeight = scope.maxLines * lineHeight;
+        scope.needsExpansion = fullHeight > maxHeight;
+        if (scope.needsExpansion) {
+          contentElem.css('height', maxHeight);
+        }
+        scope.$watch('isExpanded', function(isExpanded, wasExpanded) {
+          if (isExpanded == wasExpanded) {
+            return;
+          }
+          contentElem.css('height', isExpanded ? '' : maxHeight);
+        });
+      });
+    },
+    controller: function($scope) {
+      $scope.isExpanded = false;
+      $scope.needsExpansion = null;
+
+      $scope.toggleExpanded = function() {
+        $scope.isExpanded = !$scope.isExpanded;
+      };
+    }
+  };
+}
+
 var BrowserPlatform = {
   WINDOWS: 1,
   MAC: 2
@@ -5205,7 +5244,8 @@ angular.module('directivesModule', [])
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcIcon', tcIcon)
   .directive('tcSvgHack', tcSvgHack)
-  .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo);
+  .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo)
+  .directive('tcExpandableContent', tcExpandableContent);
 
 function makeFilter(fn) {
   return function() {

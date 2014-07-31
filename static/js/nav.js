@@ -18,6 +18,7 @@
 // -Render creator info in the details panel.
 // -Do something with the entity editor.
 // -Lock down admin
+// -Make sure saved search results get cleared after opening a new guide.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,

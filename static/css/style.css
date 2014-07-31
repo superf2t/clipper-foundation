@@ -618,7 +618,7 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .description {
-  white-space: pre-wrap;
+  margin-bottom: 15px;
 }
 
 .one-entity-details .detail-item {
@@ -1149,12 +1149,6 @@ hr.dropdown-separator {
 .guides-panel .guide-breadcrumb {
   font-size: 13pt;
   margin-bottom: 10px;
-}
-
-.guides-panel .description {
-  white-space: pre-line;
-  text-align: justify;
-  margin-bottom: 15px;
 }
 
 .guides-panel .tags {
