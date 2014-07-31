@@ -12,6 +12,7 @@
 // -Do something with the entity editor.
 // -Lock down admin
 // -Make sure saved search results get cleared after opening a new guide.
+// -Add back a control to recenter the map on the trip.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
@@ -20,6 +21,7 @@
 // -Remove day planner.
 // -Remove notes
 // -Remove bulk clipper
+// -See if PagePositionManager is obsolete.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {

@@ -290,7 +290,7 @@ hr.dropdown-separator {
 
 .one-entity-summary .entity-info .details svg,
 .one-entity-listing .entity-info .details svg {
-  fill: #FFFFFF;
+  fill: #000;
 }
 
 .one-entity-summary .entity-info .day,

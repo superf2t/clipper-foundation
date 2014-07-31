@@ -24,7 +24,7 @@
   </tc-nav>
   <div tc-include-and-replace="flashed-messages-template"></div>
 
-  <div id="summary-panel" ng-show="{{allow_editing | jsbool}}">
+  <div id="summary-panel" ng-if="{{allow_editing | jsbool}}">
     <div ng-include="'trip-plan-header-template'">
     </div>
 
@@ -593,30 +593,26 @@
   </script>
 
   <script type="text/ng-template" id="one-entity-summary-template">
-    <div ng-controller="EntityCtrl" class="one-entity-summary"
+    <div ng-controller="EntitySummaryCtrl" class="one-entity-summary"
       tc-entity-id="[[ed['entity_id'] ]]"
       ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id']),
         'controls-open': controlState.open}"
-      ng-click="selectEntity(ed); openInfowindow()">
+      ng-click="selectEntity()">
       <a class="scroll-anchor"></a>
       <span class="entity-circle-img">
-        <img ng-src="[[item.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
+        <img ng-src="[[em.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
       </span>
       <span class="entity-info" ng-show="!controlState.open">
         <div class="name">
           [[ed['name'] ]]
         </div>
         <div class="details">
-          <span ng-show="item.hasCategory()"
+          <span ng-show="em.hasCategory()"
             ng-class="'text-' + ed['category']['name']">
-            [[item.categoryDisplayText()]]
+            [[em.categoryDisplayText()]]
           </span>
           <span ng-show="ed['comments'] && ed['comments'].length" class="quickinfo-icon" tc-icon="comment">
           </span>
-          </span>
-          <span ng-show="item.day() && pageStateModel.isGroupByCategory()"
-            class="quickinfo-icon" ng-class="day">
-            Day [[item.day()]]
           </span>
           <span class="glyphicon glyphicon-star favorite-star quickinfo-icon" ng-show="ed['starred']">
           </span>
@@ -625,43 +621,47 @@
       <span class="controls" ng-show="controlState.open" ng-click="$event.stopPropagation()">
         <span ng-show="!controlState.showSecondaryControls">
           <a ng-click="openInlineEdit(InlineEditMode.COMMENTS); closeControls()"
-            href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
+            href="javascript:void(0)"
+            tooltip="Comment" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span tc-icon="comment"></span>
           </a>
           <a ng-click="openInlineEdit(InlineEditMode.DAY_PLANNER); closeControls()"
             href="javascript:void(0)"
-            tooltip="Add to day" tooltip-placement="bottom">
+            tooltip="Add to day" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span tc-icon="calendar"></span>
           </a>
           <a ng-click="saveStarState(true); closeControls()"
-            ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
+            ng-show="!ed['starred']" href="javascript:void(0)"
+            tooltip="Favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span class="glyphicon glyphicon-star-empty"></span>
           </a>
           <a ng-click="saveStarState(false); closeControls()"
-            ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
+            ng-show="ed['starred']" href="javascript:void(0)"
+            tooltip="Un-favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span class="glyphicon glyphicon-star favorite-star"></span>
           </a>
         </span>
         <span ng-show="controlState.showSecondaryControls">
           <a ng-click="openInlineEdit(InlineEditMode.DIRECTIONS); closeControls()"
             href="javascript:void(0)"
-            tooltip="Get directions" tooltip-placement="bottom">
+            tooltip="Get directions" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span tc-icon="compass"></span>
           </a>
           <a ng-click="openEditPlaceModal('edit-place-modal'); closeControls()"
-            href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
+            href="javascript:void(0)"
+            tooltip="Edit" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
           <a ng-click="deleteEntity(); closeControls()"
             href="javascript:void(0)"
-            tooltip="Delete" tooltip-placement="bottom">
+            tooltip="Delete" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span class="glyphicon glyphicon-trash"></span>
           </a>
         </span>
         <span class="control-toggle">
           <a ng-click="controlState.showSecondaryControls = !controlState.showSecondaryControls"
             href="javascript:void(0)"
-            tooltip="More controls" tooltip-placement="bottom">
+            tooltip="More controls" tooltip-placement="bottom" tooltip-append-to-body="true">
             &hellip;
           </a>
         </span>
@@ -679,7 +679,7 @@
         </span>
       </div>
       {% endif %}
-      <tc-entity-marker ng-if="position"
+      <XXtc-entity-marker ng-if="position"
         map="map" marker="markerState.marker" position="position"
         category-name="ed['category'] && ed['category']['name']"
         icon-template-name="markerState.iconTemplateName"
@@ -688,7 +688,7 @@
         starred="ed['starred']" has-comments="ed['comments'] && ed['comments'].length"
         emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
         on-click="markerClicked($event)">
-      </tc-entity-marker>
+      </XXtc-entity-marker>
     </div>
   </script>
 
@@ -1069,11 +1069,11 @@
           </span>
         </div>
       </div>
-      <tc-entity-marker ng-if="forResults && markerState.position"
+      <tc-entity-marker ng-if="markerState.position"
         map="markerState.map" marker="markerState.marker" position="markerState.position"
         category-name="ed['category'] && ed['category']['name']"
         icon-template-name="iconTemplateName()"
-        selected="pageStateModel.entityIsSelected(ed['entity_id'])"
+        selected="entityIsSelected()"
         precise="ed['address_precision'] == 'Precise'"
         starred="ed['starred']" has-comments="em.hasComments()"
         emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"

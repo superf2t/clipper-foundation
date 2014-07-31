@@ -101,6 +101,25 @@ function EntityModel(entityData, editable) {
     return !!this.data['latlng'];
   };
 
+  this.hasCategory = function() {
+    return !_.isEmpty(this.data['category'])
+      && this.data['category']['category_id'] != 0;
+  }
+
+  this.hasSubCategory = function() {
+    return !_.isEmpty(this.data['sub_category'])
+      && this.data['sub_category']['sub_category_id'] != 0;
+  };
+
+  this.categoryDisplayText = function() {
+    if (this.data['sub_category'] && this.data['sub_category']['name'] != 'none') {
+      return this.data['sub_category']['display_name'];
+    } else if (this.data['category'] && this.data['category']['name'] != 'none') {
+      return this.data['category']['display_name'];
+    }
+    return '';
+  };
+
   this.hasOpeningHours = function() {
     return this.data['opening_hours']
     && (this.data['opening_hours']['as_string']
@@ -134,6 +153,10 @@ function EntityModel(entityData, editable) {
     return this.data['rating'] || this.data['review_count']
   };
 
+  this.hasPhotos = function() {
+    return this.data['photo_urls'] && this.data['photo_urls'].length;
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
@@ -143,6 +166,29 @@ function EntityModel(entityData, editable) {
 
   this.latlngString = function() {
     return [this.data['latlng']['lat'], this.data['latlng']['lng']].join(',')
+  };
+
+  this.staticMiniMapUrl = function(opt_referenceLatlng) {
+    var parts = ['//maps.googleapis.com/maps/api/staticmap?sensor=false&size=100x100',
+      '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ',
+      '&center=', this.latlngString(),
+      '&markers=color:red%7C', this.latlngString()];
+    if (opt_referenceLatlng) {
+      var referenceLatlngString = [opt_referenceLatlng['lat'],
+        opt_referenceLatlng['lng']].join(',');
+      parts.push('&markers=size:small%7Ccolor:blue%7C' + referenceLatlngString);
+    }
+    return parts.join('');
+  };
+
+  this.getBackgroundImageUrl = function(opt_referenceLatlng) {
+    if (this.hasPhotos()) {
+      return this.data['photo_urls'][0];
+    } else if (this.hasLocation()) {
+      return this.staticMiniMapUrl(opt_referenceLatlng);
+    } else {
+      return '';
+    }
   };
 }
 
@@ -425,18 +471,27 @@ function TaxonomyTree(categories, subCategories) {
   };
 }
 
-function EntityCtrl($scope, $entityService, $modal,
-    $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
-    $timeout, $map, $templateToStringRenderer, $sizeHelper, $entityClippingService, $window) {
+var InlineEditMode = {
+  COMMENTS: 1,
+  DESCRIPTION: 2,
+  DIRECTIONS: 3,
+  TAGS: 4
+};
+
+function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
+    $entityClippingService, $entityCtrlProxy) {
   var me = this;
   $scope.ed = $scope.entity;
-  $scope.item = new ItemModel($scope.ed);
-  var entityModel = new EntityModel($scope.ed);
+  $scope.em = new EntityModel($scope.ed);
   $scope.InlineEditMode = InlineEditMode;
 
   $scope.controlState = {
     open: false,
     showSecondaryControls: false
+  };
+
+  $scope.selectEntity = function() {
+    $entityCtrlProxy.selectEntity($scope.ed);
   };
 
   $scope.openControls = function() {
@@ -454,33 +509,8 @@ function EntityCtrl($scope, $entityService, $modal,
     $scope.closeControls();
   });
 
-  this.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
-  };
-
-  $scope.map = $map;
-  $scope.position = entityModel.gmapsLatLng();
-  $scope.markerState = {
-    marker: null,
-    iconTemplateName: this.iconTemplateName(),
-    emphasized: false,
-    deemphasized: false
-  };
-
-  $scope.openEditPlaceModal = function(windowClass) {
-    var scope = $scope.$new(true);
-    scope.ed = angular.copy($scope.ed);
-    $modal.open({
-      templateUrl: 'edit-place-modal-template',
-      windowClass: windowClass,
-      scope: scope
-    });
+  $scope.openEditPlaceModal = function() {
+    $entityEditingService.openEditPlaceModal($scope.ed);
   };
 
   $scope.reclipEntity = function() {
@@ -488,33 +518,11 @@ function EntityCtrl($scope, $entityService, $modal,
   };
 
   $scope.deleteEntity = function() {
-    var ok = $window.confirm('Are you sure you want to delete this place?');
-    if (!ok) {
-      return;
-    }
-    $entityService.deleteEntity($scope.item.data, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.removeEntities(response['entities']);
-          $scope.$emit('redrawgroupings');
-        } else {
-          alert('Failed to delete entity');
-        }
-      }).error(function() {
-        alert('Failed to delete entity')
-      });
+    $entityEditingService.deleteEntity($scope.ed);
   };
 
   $scope.saveStarState = function(starred) {
-    $scope.ed['starred'] = starred;
-    $entityService.editEntity({
-      'entity_id': $scope.ed['entity_id'],
-      'starred': starred
-    }, $tripPlanModel.tripPlanId())
-    .success(function(response) {
-      $tripPlanModel.updateLastModified(response['last_modified']);
-    });
+    $entityEditingService.saveStarState($scope.ed, starred);
   };
 
   $scope.openInlineEdit = function(inlineEditMode) {
@@ -523,96 +531,7 @@ function EntityCtrl($scope, $entityService, $modal,
     $scope.selectEntity($scope.ed);
     $scope.$emit('asktoopeninlineedit', $scope.ed['entity_id'], inlineEditMode);
   };
-
-  // Map and Marker Controls
-
-  var infowindow = null;
-  $scope.infowindowOpen = false;
-
-  this.createInfowindow = function() {
-    var scope = $scope.$new();
-    var contentDiv = $templateToStringRenderer.render('infowindow-template', scope);
-    var extraPadding = $pageStateModel.summaryPanelExpanded
-      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
-      : 0;
-    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
-      'extraPaddingX': extraPadding
-    });
-    scope.onSizeChange = function() {
-      overlay.draw();
-    };
-    return overlay;
-  };
-
-  this.destroyInfowindow = function() {
-    if (infowindow) {
-      infowindow.setMap(null);
-      infowindow = null;
-    }
-  };
-
-  $scope.$on('$destroy', function() {
-    me.destroyInfowindow();
-  });
-
-  this.setMarkerState = function() {
-    if (!$scope.markerState.marker) {
-      return;
-    }
-    var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
-    var selected = categorySelected && daySelected;
-    $scope.markerState.marker.setMap(selected ? $map : null);
-    if ($filterModel.emphasisActive()) {
-      var dayEmphasized = $scope.ed['day'] && ($scope.ed['day'] == $filterModel.emphasizedDayNumber);
-      $scope.markerState.emphasized = dayEmphasized;
-      $scope.markerState.deemphasized = !dayEmphasized;
-    } else {
-      $scope.markerState.emphasized = false;
-      $scope.markerState.deemphasized = false;
-    }
-    if (!selected) {
-      me.destroyInfowindow();
-      if ($pageStateModel.entityIsSelected($scope.ed['entity_id'])) {
-        $pageStateModel.selectedEntity = null;
-        $scope.infowindowOpen = false;
-      }
-    }
-  };
-
- $scope.$watch(_.constant($filterModel), this.setMarkerState, true);
- $timeout(this.setMarkerState);
-
-  $scope.markerClicked = function($event) {
-    $scope.selectEntity($scope.ed);  // parent scope method
-    $scope.openInfowindow();
-    $event.stopPropagation();
-  };
-
-  $scope.openInfowindow = function() {
-    $scope.$emit('asktocloseallinfowindows');
-    if (entityModel.hasLocation()) {
-      infowindow = me.createInfowindow();
-      $scope.infowindowOpen = true;
-    }
-  };
-
-  $scope.$on('closeallinfowindows', function() {
-    $scope.infowindowOpen = false;
-    me.destroyInfowindow();
-  });
-
-  $scope.$on('emphasizemarkers', function() {
-    $scope.markerState.emphasized = true;
-  });
 }
-
-var InlineEditMode = {
-  COMMENTS: 1,
-  DESCRIPTION: 2,
-  DIRECTIONS: 3,
-  TAGS: 4
-};
 
 var InfoTab = {
   ABOUT: 1,
@@ -799,6 +718,8 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.markerClicked = function($event) {
     if ($scope.forResults) {
       $scope.selectResult();
+    } else {
+      $scope.selectEntity();
     }
     $event.stopPropagation();
   };
@@ -811,14 +732,24 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
       $scope.markerState.deemphasized = !$scope.forResults;
     }
     if ($scope.forResults) {
-      $scope.markerState.emphasized = ($searchResultState.highlightedIndex == $scope.resultIndex
-        || $searchResultState.selectedIndex == $scope.resultIndex);
+      $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
     }
   };
 
   $scope.highlightMarker = function() {
     if ($scope.forResults) {
       $searchResultState.highlightedIndex = $scope.resultIndex;
+    }
+  };
+
+  $scope.selectEntity = function() {
+    $pageStateModel.selectedEntity = $scope.ed;
+    $searchResultState.selectedIndex = null;
+    if (!$scope.markerState.infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
+      if ($scope.em.hasLocation()) {
+        $scope.createEntityInfowindow();
+      }      
     }
   };
 
@@ -832,8 +763,31 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     }
   };
 
+  $scope.entityIsSelected = function() {
+    if ($scope.forResults) {
+      return $searchResultState.selectedIndex == $scope.resultIndex;
+    } else {
+      return $pageStateModel.entityIsSelected($scope.ed['entity_id']);
+    }
+  };
+
   $scope.resultAlreadySaved = function() {
     return $searchResultState.savedResultIndices[$scope.resultIndex];
+  };
+
+  $scope.createEntityInfowindow = function() {
+    var scope = $scope.$new();
+    var contentDiv = $templateToStringRenderer.render('infowindow-template', scope);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
+    scope.onSizeChange = function() {
+      overlay.draw();
+    };
+    $scope.markerState.infowindow = overlay;
   };
 
   $scope.createResultsInfowindow = function() {
@@ -859,6 +813,12 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.$on('$destroy', function() {
     $scope.destroyInfowindow();
+  });
+
+  $scope.$on('entity-selected', function(event, entity) {
+    if ($scope.ed['entity_id'] && entity['entity_id'] == $scope.ed['entity_id']) {
+      $scope.selectEntity();
+    }
   });
 
   $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
@@ -3757,6 +3717,12 @@ function MapManager($map) {
   };
 }
 
+function EntityCtrlProxy($rootScope, $pageStateModel) {
+  this.selectEntity = function(entity) {
+    $rootScope.$broadcast('entity-selected', entity);
+  };
+}
+
 function EntityEditingService($entityService, $tripPlanModel,
   $modal, $rootScope, $window) {
   this.saveStarState = function(entity, starred) {
@@ -5087,7 +5053,7 @@ window['initApp'] = function(tripPlan, entities, notes,
       interpolator)
     .controller('RootCtrl', RootCtrl)
     .controller('BulkClipCtrl', BulkClipCtrl)
-    .controller('EntityCtrl', EntityCtrl)
+    .controller('EntitySummaryCtrl', EntitySummaryCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
@@ -5122,6 +5088,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .service('$pagePositionManager', PagePositionManager)
     .service('$mapManager', MapManager)
     .service('$sizeHelper', SizeHelper)
+    .service('$entityCtrlProxy', EntityCtrlProxy)
     .service('$entityClippingService', EntityClippingService)
     .service('$entityEditingService', EntityEditingService)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
