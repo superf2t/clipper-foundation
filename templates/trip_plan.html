@@ -276,11 +276,11 @@
           </div>
         </div>
         <div class="tools-section">
-          <a ng-click="saveResult()" href="javascript:void(0)"
-            ng-show="!searchResultState.savedResultIndices[index]">
+          <a ng-click="clipEntity()" href="javascript:void(0)"
+            ng-show="!resultAlreadySaved()">
             <span class="glyphicon glyphicon-plus"></span> Add to trip
           </a>
-          <div class="save-confirmation" ng-show="searchResultState.savedResultIndices[index]">
+          <div class="save-confirmation" ng-show="resultAlreadySaved()">
             saved
           </div>
         </div>

@@ -622,7 +622,9 @@ var InfoTab = {
 
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
-    $entityEditingService, $entityClippingService, $window, $timeout) {
+    $entityEditingService, $entityClippingService,
+    $templateToStringRenderer, $sizeHelper,
+    $window, $timeout) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.accountInfo = $accountInfo;
@@ -651,6 +653,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     map: $map,
     marker: null,
     position: $scope.em.gmapsLatLng(),
+    infowindow: null,
     emphasized: null,
     deemphasized: null
   };
@@ -795,7 +798,7 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.markerClicked = function($event) {
     if ($scope.forResults) {
-      $searchResultState.selectedIndex = $scope.resultIndex;
+      $scope.selectResult();
     }
     $event.stopPropagation();
   };
@@ -818,6 +821,45 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
       $searchResultState.highlightedIndex = $scope.resultIndex;
     }
   };
+
+  $scope.selectResult = function() {
+    $searchResultState.selectedIndex = $scope.resultIndex;
+    $searchResultState.highlightedIndex = null;
+    $pageStateModel.selectedEntity = null;
+    if (!$scope.markerState.infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
+      $scope.createResultsInfowindow();
+    }
+  };
+
+  $scope.resultAlreadySaved = function() {
+    return $searchResultState.savedResultIndices[$scope.resultIndex];
+  };
+
+  $scope.createResultsInfowindow = function() {
+    var scope = $scope.$new();
+    var contentDiv = $templateToStringRenderer.render(
+      'results-infowindow-template', scope);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    $scope.markerState.infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
+  };
+
+  $scope.destroyInfowindow = function() {
+    $scope.markerState.infowindow && $scope.markerState.infowindow.setMap(null);
+    $scope.markerState.infowindow = null;
+  };
+
+  $scope.$on('closeallinfowindows', function() {
+    $scope.destroyInfowindow();
+  });
+
+  $scope.$on('$destroy', function() {
+    $scope.destroyInfowindow();
+  });
 
   $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
   $scope.$watch(_.constant($searchResultState), $scope.setMarkerState, true);
@@ -852,184 +894,6 @@ function tcTripPlanDetailsHeader() {
       includeDetails: '=',
       onClick: '&'
     }
-  };
-}
-
-function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $filterModel, $accountInfo, $modal, $entityClippingService, $window) {
-  $scope.ed = $scope.item.data;
-  $scope.show = true;
-  $scope.inlineEditMode = null;
-  $scope.InlineEditMode = InlineEditMode;
-
-  $scope.showSecondaryControls = false;
-
-  $scope.allEntities = $tripPlanModel.entities();
-  $scope.directionsState = {
-    direction: 'from',
-    destination: null
-  };
-
-  $scope.toggleDirectionsDirection = function() {
-    $scope.directionsState.direction = 
-      $scope.directionsState.direction == 'to' ? 'from' : 'to';
-  };
-
-  $scope.getDirections = function() {
-    if (!$scope.directionsState.destination) {
-      return;
-    }
-    var origin = $scope.directionsState.direction == 'to'
-      ? $scope.ed : $scope.directionsState.destination;
-    var destination = $scope.directionsState.direction == 'to'
-      ? $scope.directionsState.destination : $scope.ed;
-    var url = 'https://www.google.com/maps/dir/' + 
-      new ItemModel(origin).latlngString() + '/' +
-      new ItemModel(destination).latlngString();
-    $window.open(url, '_blank');
-  };
-
-  $scope.saveStarState = function(starred) {
-    $scope.ed['starred'] = starred;
-    $entityService.editEntity({
-      'entity_id': $scope.ed['entity_id'],
-      'starred': starred
-    }, $tripPlanModel.tripPlanId())
-    .success(function(response) {
-      $tripPlanModel.updateLastModified(response['last_modified']);
-    });
-  };
-
-  $scope.reclipEntity = function() {
-    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
-  };
-
-  $scope.deleteEntity = function() {
-    var ok = $window.confirm('Are you sure you want to delete this place?');
-    if (!ok) {
-      return;
-    }
-    $entityService.deleteEntity($scope.ed, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.removeEntities(response['entities']);
-          $scope.$emit('redrawgroupings');
-        } else {
-          alert('Failed to delete entity');
-        }
-      }).error(function() {
-        alert('Failed to delete entity')
-      });
-  };
-
-  $scope.openEditPlaceModal = function(windowClass) {
-    var scope = $scope.$new(true);
-    scope.ed = angular.copy($scope.ed);
-    $modal.open({
-      templateUrl: 'edit-place-modal-template',
-      windowClass: windowClass,
-      scope: scope
-    });   
-  };
-
-  $scope.toggleInlineEdit = function(inlineEditMode) {
-    if ($scope.inlineEditMode == inlineEditMode) {
-      $scope.inlineEditMode = null;
-    } else {
-      if (!$accountInfo['logged_in']
-        && inlineEditMode == InlineEditMode.COMMENTS) {
-        $window.alert('Please log in before making comments.');
-        return;
-      }
-
-      $scope.inlineEditMode = inlineEditMode;
-      if (inlineEditMode == InlineEditMode.COMMENTS) {
-        $scope.closeCommentEdit();
-        $scope.newComment = {
-          'entity_id': $scope.ed['entity_id'],
-          'text': ''
-        };
-      }
-    }
-  };
-
-  $scope.closeInlineEditor = function() {
-    $scope.inlineEditMode = null;
-  };
-
-  $scope.$on('openinlineedit', function($event, entityId, inlineEditMode) {
-    if ($scope.ed['entity_id'] != entityId) {
-      return;
-    }
-    $scope.inlineEditMode = null;
-    $scope.toggleInlineEdit(inlineEditMode);
-  });
-
-  $scope.$on('closeallcontrols', function() {
-    $scope.inlineEditMode = null;
-    $scope.closeCommentEdit();
-  });
-
-  $scope.saveNewComment = function() {
-    if (!$scope.newComment['text']) {
-      return;
-    }
-    $entityService.addComment($scope.newComment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.addNewComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeInlineEditor();
-        }
-      });
-  };
-
-  $scope.saveCommentEdit = function() {
-    if (!$scope.editingComment || !$scope.editingComment['text']) {
-      return;
-    }
-    $entityService.editComment($scope.editingComment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeCommentEdit();
-        }
-      });
-  };
-
-  $scope.deleteComment = function(comment) {
-    if (!$window.confirm('Are you sure you want to delete this comment?')) {
-      return;
-    }
-    $entityService.deleteComment(comment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.removeComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeCommentEdit();
-        }
-      });
-  };
-
-  $scope.openCommentEdit = function(comment) {
-    $scope.editingComment = angular.copy(comment);
-    $scope.closeInlineEditor();
-  };
-
-  $scope.closeCommentEdit = function() {
-    $scope.editingComment = null;
-  };
-
-  $scope.show = function() {
-    var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
-    return categorySelected && daySelected;
-  };
-
-  $scope.toggleControls = function() {
-    $scope.showSecondaryControls = !$scope.showSecondaryControls;
   };
 }
 
@@ -2113,6 +1977,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
     $scope.$broadcast('closeallinfowindows');
     $pageStateModel.selectedEntity = null;
+    $searchResultState.clear();
+    $filterModel.searchResultsEmphasized = false;
     $scope.$broadcast('infopanelclosing');
   };
 
@@ -2124,6 +1990,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.goToInfoPanel = function(infoPanelMode) {
     $pageStateModel.infoPanelMode = infoPanelMode;
     $scope.openInfoPanel();
+    $searchResultState.clear();
   };
 
   $scope.inTutorial = function() {
@@ -2634,7 +2501,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     } else {
       $scope.searchResults = response['entities'] || [];
     }
-    $scope.searchResultState.results = $scope.searchResults;
+    $searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
     $scope.searchComplete = true;
     $mapManager.fitBoundsToEntities($scope.searchResults);
@@ -2644,7 +2511,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
 }
 
 function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
-    $mapManager, $filterModel) {
+    $mapManager, $filterModel, $searchResultState) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
   $scope.loading = true;
   $scope.guides = null;
@@ -2665,6 +2532,7 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
   $scope.backToListings = function() {
     $scope.selectedGuide = null;
     $filterModel.searchResultsEmphasized = false;
+    $searchResultState.clear();
   };
 }
 
@@ -2778,6 +2646,7 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
     $scope.linkState.formattedUrl = urlWithProtocol($scope.linkState.rawInput);
     $mapManager.fitBoundsToEntities($scope.linkState.results);
     $filterModel.searchResultsEmphasized = true;
+    $searchResultState.clear();
   };
 
   $scope.noLinkResults = function() {
@@ -2807,103 +2676,10 @@ var SAMPLE_SUPPORTED_SITES = _.map([
   };
 });
 
-function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
-    $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager, $sizeHelper) {
-  var me = this;
-  $scope.ed = $scope.entityData;
-  $scope.em = new EntityModel($scope.ed);
-  $scope.im = new ItemModel($scope.ed);
-
-  $scope.map = $map;
-  $scope.position = $scope.em.gmapsLatLng();
-  $scope.markerState = {
-    marker: null
-  };
-  var infowindow = null;
-
-  this.createInfowindow = function() {
-    var scope = $scope.$new();
-    var contentDiv = $templateToStringRenderer.render(
-      'results-infowindow-template', scope);
-    var extraPadding = $pageStateModel.summaryPanelExpanded
-      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
-      : 0;
-    infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
-      'extraPaddingX': extraPadding
-    });
-  };
-
-  this.destroyInfowindow = function() {
-    infowindow && infowindow.setMap(null);
-    infowindow = null;
-  };
-
-  $scope.$on('closeallinfowindows', function() {
-    me.destroyInfowindow();
-  });
-
-  $scope.$on('$destroy', function() {
-    me.destroyInfowindow();
-  });
-
-  $scope.markerClicked = function($event) {
-    $scope.selectResult();
-    $event.stopPropagation();
-  };
-
-  $scope.isSelected = function() {
-    return $scope.searchResultState.selectedIndex == $scope.index ||
-      $scope.searchResultState.highlightedIndex == $scope.index;
-  };
-
-  $scope.selectResult = function() {
-    $scope.searchResultState.selectedIndex = $scope.index;
-    $scope.searchResultState.highlightedIndex = null;
-    $pageStateModel.selectedEntity = null;
-    if (!infowindow) {
-      $scope.$emit('asktocloseallinfowindows');
-      me.createInfowindow();
-    }
-  };
-
-  $scope.highlightResult = function() {
-    $scope.searchResultState.highlightedIndex = $scope.index;
-  };
-
-  $scope.saveResult = function() {
-    $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.addNewEntities(response['entities']);
-          $pageStateModel.selectedEntity = response['entities'][0];
-          $scope.searchResultState.savedResultIndices[$scope.index] = true;
-          me.destroyInfowindow();
-          $scope.$emit('redrawgroupings');
-        }
-      });
-  };
-
-  $scope.resultLetter = function() {
-    return String.fromCharCode(65 + $scope.index);
-  };
-}
 
 function EntityListingCtrl($scope) {
   $scope.ed = $scope.entityData;
   $scope.im = new ItemModel($scope.ed);
-}
-
-function tcEntitySearchResult() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      searchResultState: '=',
-      index: '='
-    },
-    templateUrl: 'one-entity-search-result-template'
-  };
 }
 
 function tcEntityListing() {
@@ -5312,7 +5088,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .controller('RootCtrl', RootCtrl)
     .controller('BulkClipCtrl', BulkClipCtrl)
     .controller('EntityCtrl', EntityCtrl)
-    .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
@@ -5332,7 +5107,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcDaySelectDropdown', tcDaySelectDropdown)
-    .directive('tcEntitySearchResult', tcEntitySearchResult)
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
