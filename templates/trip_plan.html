@@ -745,7 +745,7 @@
   </script>
 
   <script type="text/ng-template" id="details-panel-template">
-    <div class="details-panel"
+    <div class="details-panel one-info-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
@@ -755,6 +755,13 @@
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
       </tc-entity-details>
+      <div class="back-to-top">
+        <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
+          href="javascript:void(0)" class="cta-link">
+          Back to top
+          <span class="glyphicon glyphicon-chevron-up"></span>
+        </a>
+      </div>
     </div>
   </script>
 
