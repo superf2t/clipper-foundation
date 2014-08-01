@@ -743,7 +743,7 @@
   </script>
 
   <script type="text/ng-template" id="details-panel-template">
-    <div class="details-panel"
+    <div class="details-panel one-info-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
@@ -753,6 +753,13 @@
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
       </tc-entity-details>
+      <div class="back-to-top">
+        <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
+          href="javascript:void(0)" class="cta-link">
+          Back to top
+          <span class="glyphicon glyphicon-chevron-up"></span>
+        </a>
+      </div>
     </div>
   </script>
 
@@ -776,58 +783,6 @@
           <span class="glyphicon glyphicon-plus"></span>
         </a>
       </span>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="trip-plan-details-header-template">
-    <div class="trip-plan-details-header" ng-class="{'full-bleed': fullBleed, 'clickable': clickable}">
-      <div class="trip-plan-img" 
-      ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}" ng-click="clickable && onClick()">
-        <div class="trip-plan-img-overlay">
-          <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
-        </div>
-      </div>
-      <div class="trip-plan-info">
-        <div class="trip-plan-metadata">
-          <span ng-if="forGuide">
-            Inspired by
-            <a href="#" class="source-url">
-              [[tripPlan['source_display_name'] ]]
-            </a>
-          </span>
-          <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
-            - [[tripPlan['content_display_date'] ]]
-          </span>              
-          <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
-          <div class="trip-plan-places">
-            <span ng-show="numEntities > 1" class="trip-plan-places-count">
-              [[numEntities]] places
-            </span>
-            <span ng-show="numEntities == 1" class="trip-plan-places-count">
-              1 place
-            </span>
-          </div>
-        </div>
-      </div>
-      <div class="trip-plan-details" ng-if="includeDetails">
-        <div class="description" ng-if="tripPlan['description']">
-          <tc-expandable-content text-content="tripPlan['description']"
-            expand-link-text="Read more" collapse-link-text="Read less"
-            max-lines="5">
-          </tc-expandable-content>
-        </div>
-        <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
-          Tags: 
-          <span ng-repeat="tag in tripPlan['tags']" class="one-tag">
-            [[tag['text'] ]]
-          </span>
-        </div>
-        <div ng-if="tripPlan['source_url']" class="source-link">
-          <a ng-href="[[tripPlan['source_url'] ]]" target="_blank">
-            View original article at [[tripPlan['source_display_name'] ]]
-          </a>
-        </div>
-      </div>
     </div>
   </script>
 
@@ -1815,6 +1770,8 @@
   {% include 'widgets.html' %}
   {% include 'map_markers.html' %}
   {% include 'icons.html' %}
+  {% include 'trip_plan_common.html' %}
+
 
   <script>
     initApp(

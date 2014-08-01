@@ -299,7 +299,8 @@ class TripPlan(serializable.Serializable):
         'trip_plan_type', serializable.objlistf('tags', Tag),
         'content_date', 'view_count', 'clip_count',
         # Display-only fields
-        'content_display_date', 'source_icon', 'source_display_name')
+        'content_display_date', 'source_icon', 'source_display_name',
+        'num_entities')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
@@ -340,6 +341,7 @@ class TripPlan(serializable.Serializable):
 
 
     def initialize(self):
+        self.num_entities = len(self.entities)
         if self.trip_plan_type == TripPlanType.GUIDE.name:
             if self.content_date:
                 self.content_display_date = self.content_date_datetime().strftime('%B %Y')
