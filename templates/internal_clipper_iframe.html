@@ -25,13 +25,13 @@
         class="form-control">
       </select>
       <div class="control-links">
-        <a href="javascript:void(0)" class="color-link" ng-click="openEditTripPlan()">
+        <a href="javascript:void(0)" class="cta-link" ng-click="openEditTripPlan()">
           <span class="glyphicon glyphicon-pencil"></span> Edit          
         </a>
-        <a ng-href="/admin/editor/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="color-link">
+        <a ng-href="/admin/editor/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="cta-link">
           <span class="glyphicon glyphicon-wrench"></span> Admin editor
         </a>
-        <a ng-href="/trip_plan/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="color-link">
+        <a ng-href="/trip_plan/[[s.tripPlan['trip_plan_id'] ]]" target="_blank" class="cta-link">
           <span class="glyphicon glyphicon-new-window"></span> View trip
         </a>
       </div>
@@ -53,7 +53,7 @@
     <div class="entity-panel">
       <div class="num-entities">[[s.entities.length]] Entities</div>
       <div class="create-new-place-link">
-        <a href="javascript:void(0)" class="color-link" ng-click="createNewEntity()">
+        <a href="javascript:void(0)" class="cta-link" ng-click="createNewEntity()">
           Add new place
         </a>
       </div>
@@ -66,7 +66,7 @@
   <div ng-if="s.state == ClipperState.EDIT_TRIP_PLAN" class="edit-trip-plan-panel"
     ng-controller="EditTripPlanCtrl">
     <div class="controls">
-      <a href="javascript:void(0)" class="color-link" ng-click="closeEditTripPlan()">
+      <a href="javascript:void(0)" class="cta-link" ng-click="closeEditTripPlan()">
         &laquo; back
       </a>
       <span ng-show="saving" class="text-success">saving...</span>
@@ -99,7 +99,7 @@
   <div ng-if="s.state == ClipperState.EDIT_ENTITY" class="edit-entity-panel"
     ng-controller="EditEntityCtrl">
     <div class="controls">
-      <a href="javascript:void(0)" class="color-link" ng-click="closeEditEntity()">
+      <a href="javascript:void(0)" class="cta-link" ng-click="closeEditEntity()">
         &laquo; back
       </a>
       <span ng-show="saving" class="text-success">saving...</span>
