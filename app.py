@@ -22,6 +22,7 @@ import constants
 import csv_export
 import data
 from database import user
+import featured_profiles
 import guide_config
 import sample_sites
 from scraping import trip_plan_creator
@@ -194,14 +195,23 @@ def guides(location):
 
 @app.route('/profile/<profile_name>')
 def profile(profile_name):
-    try:
-        db_user = user.User.get_by_public_id(profile_name)
-    except:
-        return redirect('/')
-    display_user = data.DisplayUser(db_user.public_id if db_user else None, db_user.display_name)
+    featured_trip_plan_ids = featured_profiles.PROFILE_NAME_TO_TRIP_PLAN_IDS.get(profile_name)
+    if featured_trip_plan_ids:
+        req = serviceimpls.TripPlanGetRequest(trip_plan_ids=featured_trip_plan_ids)
+        display_user = data.DisplayUser()
+    else:
+        try:
+            db_user = user.User.get_by_public_id(profile_name)
+        except:
+            return redirect('/')
+        req = serviceimpls.TripPlanGetRequest(public_user_id=profile_name)
+        display_user = data.DisplayUser(db_user.public_id if db_user else None, db_user.display_name)
+
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
-    req = serviceimpls.TripPlanGetRequest(public_user_id=profile_name)
     trip_plans = trip_plan_service.get(req).trip_plans
+
+    if featured_trip_plan_ids and trip_plans and not display_user.display_name:
+        display_user.display_name = trip_plans[0].user.display_name
 
     all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     sorted_user_trip_plans = sorted(all_user_trip_plans, cmp=lambda x, y: x.compare(y))

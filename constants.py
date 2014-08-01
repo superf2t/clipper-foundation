@@ -18,6 +18,8 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/travelclipper'
 MAIL_USERNAME = 'jamie@unicyclelabs.com'
 MAIL_PASSWORD = None  # Set this securely in an override
 
+FEATURED_PROFILES_CONFIG_FILE = os.path.join(PROJECTPATH, 'data/guides.csv')
+
 SOURCE_HOST_TO_ICON_URL = {
     'www.bonappetit.com': 'http://www.bonappetit.com/wp-content/themes/bonappetit-2.0.0/i/icons/favicon.ico',
     'www.frommers.com': "http://www.frommers.com/favicon.ico",
