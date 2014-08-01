@@ -12,7 +12,7 @@
           <li>
             <ul class="nav nav-pills">
               <li ng-if="shoppingCartMode && activeTripPlan" class="trip-plan-name">
-                <a ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank">
+                <a class="black-link" ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank">
                   <span>[[activeTripPlan['name'] ]]</span>
                   <span id="place-count" class="place-count" tc-animate-on-change-to="numEntities" class-to-add="place-count-changed" remove-when-complete="true">
                   [[numEntities]]
@@ -33,7 +33,7 @@
                 </a>
               </li>
               <li ng-if="!shoppingCartMode && activeTripPlan" class="dropdown">
-                <a href="javascript:void(0)" class="dropdown-toggle">
+                <a class="black-link dropdown-toggle" href="javascript:void(0)" >
                   My Trips
                   <span class="caret"></span>
                 </a>
@@ -41,7 +41,7 @@
               </li>
               {% if session_info.logged_in() %}
               <li class="dropdown">
-                <a class="dropdown-toggle" href="javascript:void(0)">
+                <a class="black-link dropdown-toggle" href="javascript:void(0)">
                   [[accountInfo['user']['display_name'] ]]
                   <span class="caret"></span>
                 </a>
@@ -49,14 +49,14 @@
               </li>
               {% else %}
               <li>
-                <a ng-click="openLoginModal('{{register_iframe_url}}', 'login-modal-window')"
+                <a class="black-link" ng-click="openLoginModal('{{register_iframe_url}}', 'login-modal-window')"
                   href="javascript:void(0)">
                   Join
                 </a>
               </li>
               <li class="nav-pill-separator">|</li>
               <li>
-                <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+                <a class="black-link" ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
                   href="javascript:void(0)">
                   Log in
                 </a>
