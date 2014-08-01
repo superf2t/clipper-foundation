@@ -513,10 +513,6 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
     $entityEditingService.openEditPlaceModal($scope.ed);
   };
 
-  $scope.reclipEntity = function() {
-    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
-  };
-
   $scope.deleteEntity = function() {
     $entityEditingService.deleteEntity($scope.ed);
   };
@@ -526,10 +522,7 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
   };
 
   $scope.openInlineEdit = function(inlineEditMode) {
-    $pageStateModel.infoPanelExpanded = true;
-    $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
-    $scope.selectEntity($scope.ed);
-    $scope.$emit('asktoopeninlineedit', $scope.ed['entity_id'], inlineEditMode);
+    $entityCtrlProxy.openInlineEdit($scope.ed, inlineEditMode);
   };
 }
 
@@ -818,6 +811,21 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   $scope.$on('entity-selected', function(event, entity) {
     if ($scope.ed['entity_id'] && entity['entity_id'] == $scope.ed['entity_id']) {
       $scope.selectEntity();
+    }
+  });
+
+  $scope.$on('open-inline-edit', function(event, entity, inlineEditMode) {
+    if ($scope.ed['entity_id'] && entity['entity_id'] == $scope.ed['entity_id']) {
+      $scope.selectEntity();
+      $pageStateModel.infoPanelExpanded = true;
+      $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
+      if (inlineEditMode == InlineEditMode.COMMENTS) {
+        $scope.openNewComment();
+      } else if (inlineEditMode == InlineEditMode.DIRECTIONS) {
+        $scope.openDirections();
+      } else if (inlineEditMode == InlineEditMode.TAGS) {
+        $scope.openTagsEditor(); 
+      }
     }
   });
 
@@ -3694,6 +3702,10 @@ function MapManager($map) {
 function EntityCtrlProxy($rootScope, $pageStateModel) {
   this.selectEntity = function(entity) {
     $rootScope.$broadcast('entity-selected', entity);
+  };
+
+  this.openInlineEdit = function(entity, inlineEditMode) {
+    $rootScope.$broadcast('open-inline-edit', entity, inlineEditMode);
   };
 }
 

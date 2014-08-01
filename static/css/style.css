@@ -1064,6 +1064,7 @@ hr.dropdown-separator {
 
 .infowindow .info-section .name {
   display: inline-block;
+  max-width: calc(100% - 21px - 5px);
 }
 
 .infowindow .info-section .metadata {
