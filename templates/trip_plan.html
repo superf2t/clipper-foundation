@@ -220,7 +220,7 @@
         </div>
         <div class="workspace-section" ng-if="workspaceActive()">
           <div ng-if="inlineEditMode == InlineEditMode.TAGS" class="inline-tags-editor">
-            <label>Enter tags, separated by commas</label>
+            <span class="inline-editor-prompt">Enter tags, separated by commas</span>
             <form ng-submit="saveTags()">
               <input type="text" class="form-control" ng-model="tagState.rawInput"
                 placeholder="e.g. greek food, day 1, recommended by Bob"
@@ -248,7 +248,7 @@
             </div>
           </div>
           <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="directions-planner">
-            Get directions
+            <span class="inline-editor-prompt">Get directions </span>
             <a ng-click="directionsHelper.toggleDirection()" href="javascript:void(0)">
               [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
             </a>
@@ -900,8 +900,8 @@
               </a>
             </div>
             <div class="inline-editor tags-editor" ng-show="inlineEditMode == InlineEditMode.TAGS">
-              <label>Enter tags, separated by commas</label>
-              <form ng-submit="saveTags()">
+              <span class="inline-editor-prompt">Enter tags, separated by commas</span>
+              <form class="tag-input-form" ng-submit="saveTags()">
                 <input type="text" class="form-control" ng-model="tagState.rawInput"
                   placeholder="e.g. greek food, day 1, recommended by Bob"
                   tc-focus-on="inlineEditMode"/>
@@ -953,7 +953,7 @@
               </div>
             </div>
             <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="inline-editor">
-              Get directions
+              <span class="inline-editor-prompt">Get directions </span>
               <a ng-click="directionsHelper.toggleDirection()"
                 href="javascript:void(0)" class="cta-link">
                 [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
@@ -1020,10 +1020,12 @@
                 <span tc-user-icon user="accountInfo['user']">
                 </span>
               </div>
-              <textarea class="form-control" placeholder="Add a comment"
-                tc-focus-on="inlineEditMode"
-                ng-model="newComment['text']">
-              </textarea>
+              <div class="comment-input-form">
+                <textarea class="form-control" placeholder="Add a comment"
+                  tc-focus-on="inlineEditMode"
+                  ng-model="newComment['text']">
+                </textarea>
+              </div>
               <div>
                 <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link">Save</a>
                 <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>

@@ -640,8 +640,17 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .inline-editor {
-  background-color: #fff;
+  margin: 0px -10px;
   padding: 10px;
+  background-color: #F9F9F9;
+}
+
+.one-entity-details .inline-editor .inline-editor-prompt {
+  font-weight: 500;
+}
+
+.one-entity-details .inline-editor .tag-input-form, .comment-input-form {
+  margin: 10px 0px;
 }
 
 .one-entity-details .directions-select {
