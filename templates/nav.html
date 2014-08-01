@@ -33,7 +33,7 @@
                 </a>
               </li>
               <li ng-if="!shoppingCartMode && activeTripPlan" class="dropdown">
-                <a class="black-link" href="javascript:void(0)" class="dropdown-toggle">
+                <a class="black-link dropdown-toggle" href="javascript:void(0)" >
                   My Trips
                   <span class="caret"></span>
                 </a>
@@ -41,7 +41,7 @@
               </li>
               {% if session_info.logged_in() %}
               <li class="dropdown">
-                <a class="black-link" class="dropdown-toggle" href="javascript:void(0)">
+                <a class="black-link dropdown-toggle" href="javascript:void(0)">
                   [[accountInfo['user']['display_name'] ]]
                   <span class="caret"></span>
                 </a>
