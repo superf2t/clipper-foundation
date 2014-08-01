@@ -640,8 +640,17 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .inline-editor {
-  background-color: #fff;
+  margin: 0px -10px;
   padding: 10px;
+  background-color: #F9F9F9;
+}
+
+.one-entity-details .inline-editor .inline-editor-prompt {
+  font-weight: 500;
+}
+
+.one-entity-details .inline-editor .tag-input-form, .comment-input-form {
+  margin: 10px 0px;
 }
 
 .one-entity-details .directions-select {
@@ -698,8 +707,12 @@ hr.dropdown-separator {
 }
 
 .one-info-panel .back-to-top {
-  font-size: 13pt;
-  padding: 10px 0 30px 0;
+  font-size: 1.1em;
+  padding: 10px 0 20px 0;
+}
+
+.one-info-panel .back-to-top .back-to-top-chevron {
+  font-size: 0.8em;
 }
 
 .modal-carousel.modal {
