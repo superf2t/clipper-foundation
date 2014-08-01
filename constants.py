@@ -26,7 +26,7 @@ SOURCE_HOST_TO_ICON_URL = {
     'www.fodors.com': "http://www.fodors.com/favicon.ico",
     'www.lonelyplanet.com': 'http://www.lonelyplanet.com/favicon.ico',
     'www.nytimes.com': 'http://www.nytimes.com/favicon.ico',
-    'www.nomadicmatt.com': 'http://www.nomadicmatt.com/favicon.ico',
+    'www.nomadicmatt.com': 'http://www.nomadicmatt.com/wp-content/themes/NomadicMattV2/favicon.ico',
     'www.hemispheresmagazine.com': 'http://www.hemispheresmagazine.com/images/favicon.ico',
     'www.ricksteves.com': 'http://www.ricksteves.com/assets/favicon.ico',
     'www.saveur.com': 'http://www.saveur.com/sites/saveur.com/themes/saveur/favicon.ico',

@@ -219,7 +219,7 @@ def profile(profile_name):
     all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     sorted_user_trip_plans = sorted(all_user_trip_plans, cmp=lambda x, y: x.compare(y))
 
-    viewer_is_owner = g.session_info.logged_in() and current_user.id == db_user.id
+    viewer_is_owner = not is_featured and g.session_info.logged_in() and current_user.id == db_user.id
 
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
     return render_template('profile.html',
