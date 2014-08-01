@@ -94,7 +94,9 @@
         .value('$allTripPlans', allTripPlans)
         .value('$accountInfo', accountInfo)
         .value('$flashedMessages', flashedMessages)
-        .value('$activeTripPlanState', new ActiveTripPlanStateModel());
+        .value('$activeTripPlanState', new ActiveTripPlanStateModel(
+          allTripPlans.length ? allTripPlans[0] : null,
+          allTripPlans.length ? allTripPlans[0]['num_entities'] : null));
 
       angular.module('guidesAppModule',
           ['guidesInitialDataModule', 'navModule', 'directivesModule'],
