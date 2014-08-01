@@ -4,6 +4,7 @@ from dateutil import parser as date_parser
 from dateutil import tz
 from flask import url_for
 
+import crypto
 import data
 from database import user
 import clip_logic
@@ -545,10 +546,14 @@ class EntityService(service.Service):
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 
 class TripPlanGetRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields(serializable.listf('trip_plan_ids'), 'include_entities', 'include_notes')
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.listf('trip_plan_ids'), 'public_user_id',
+        'include_entities', 'include_notes')
 
-    def __init__(self, trip_plan_ids=(), include_entities=False, include_notes=False):
+    def __init__(self, trip_plan_ids=(), public_user_id=None,
+            include_entities=False, include_notes=False):
         self.trip_plan_ids = trip_plan_ids
+        self.public_user_id = public_user_id
         self.include_entities = include_entities
         self.include_notes = include_notes
 
@@ -716,6 +721,12 @@ class TripPlanService(service.Service):
     def get(self, request):
         if request.trip_plan_ids:
             trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids)
+        elif request.public_user_id:
+            try:
+                creator_user_id = crypto.decrypt_id(request.public_user_id)
+                trip_plans = data.load_all_trip_plans_for_creator(creator_user_id)
+            except:
+                trip_plans = []
         else:
             trip_plans = data.load_all_trip_plans(self.session_info)
         trip_plans = [t for t in trip_plans if t]

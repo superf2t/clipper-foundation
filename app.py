@@ -105,10 +105,6 @@ def trip_plan():
 
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
-    # Temporary hack to allow old trip plan ids to redirect to new ones.
-    if trip_plan_id > 2**53:
-        return redirect('/trip_plan/%s' % str(trip_plan_id)[:15])
-
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)
     note_service = serviceimpls.NoteService(g.session_info)
@@ -194,6 +190,27 @@ def guides(location):
         guides=guides,
         all_trip_plans=sorted_user_trip_plans,
         location_name=config.city_name if config else '',
+        flashed_messages=flashed_messages)
+
+@app.route('/profile/<profile_name>')
+def profile(profile_name):
+    try:
+        db_user = user.User.get_by_public_id(profile_name)
+    except:
+        return redirect('/')
+    display_user = data.DisplayUser(db_user.public_id if db_user else None, db_user.display_name)
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    req = serviceimpls.TripPlanGetRequest(public_user_id=profile_name)
+    trip_plans = trip_plan_service.get(req).trip_plans
+
+    all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+    sorted_user_trip_plans = sorted(all_user_trip_plans, cmp=lambda x, y: x.compare(y))
+
+    flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
+    return render_template('profile.html',
+        display_user=display_user,
+        trip_plans=trip_plans,
+        all_user_trip_plans=sorted_user_trip_plans,
         flashed_messages=flashed_messages)
 
 @app.route('/bookmarklet.js')
