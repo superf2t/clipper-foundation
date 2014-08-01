@@ -707,8 +707,12 @@ hr.dropdown-separator {
 }
 
 .one-info-panel .back-to-top {
-  font-size: 13pt;
-  padding: 10px 0 30px 0;
+  font-size: 1.1em;
+  padding: 10px 0 20px 0;
+}
+
+.one-info-panel .back-to-top .back-to-top-chevron {
+  font-size: 0.8em;
 }
 
 .modal-carousel.modal {
