@@ -5,20 +5,24 @@ html, body {
 }
 
 a {
-  color: #000000;
+  color: #2D73A0;
 }
 
 a:hover {
   text-decoration: none;
-  color: #2D73A0;
+  color: #428bca;
 }
 
-a.color-link {
-  color: #428bca !important;
+a.black-link {
+  color: #000000;
 }
 
-a.color-link:hover {
-  color: #2D73A0 !important;
+a.black-link:hover {
+  color: #444444;
+}
+
+a.black-link:hover .tc-icon svg {
+  fill: #444444;
 }
 
 a.white-link {
@@ -47,7 +51,7 @@ a.cta-link {
 }
 
 a.cta-link:hover {
-  color: #2D73A0;
+  color: #3B9BB2;
 }
 
 .tc-icon {
@@ -75,13 +79,6 @@ a:hover .tc-icon svg {
   background-color: #4087F9;
 }
 
-.btn-cta {
-  border-radius: 2px;
-  border: none;
-  background-color: #4CBDC9;
-  color: #fff;
-}
-
 .btn-primary:hover {
   background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
   background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
@@ -89,11 +86,18 @@ a:hover .tc-icon svg {
   background-color: transparent;  background-color: #4A90E2;
 }
 
+.btn-cta {
+  border-radius: 2px;
+  border: none;
+  background-color: #50B0B2;
+  color: #fff;
+}
+
 .btn-cta:hover {
   background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
   background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
   background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
-  background-color: transparent;  background-color: #50B0B2;
+  background-color: transparent;  background-color: #3B9BB2;
   color: #FFFFFF;
 }
 
@@ -111,7 +115,7 @@ a:hover .tc-icon svg {
 }
 
 .text-attractions {
-  color: #50B0B2;
+  color: #4EACB2;
 }
 
 .text-activities {
@@ -192,9 +196,11 @@ hr.dropdown-separator {
 }
 
 .one-tag {
-  background-color: #ccc;
-  padding: 5px;
+  background-color: #DCE1FB;
+  color: #888;
+  padding: 4px;
   margin-right: 5px;
+  border-radius: 2px;
 }
 
 /* Map View */
@@ -244,12 +250,12 @@ hr.dropdown-separator {
 
 .one-entity-summary.selected,
 .one-entity-listing.selected {
-  border-left: 3px solid #777;
+  border-left: 3px solid #E33743;
   padding: 7px 10px 7px 7px;
 }
 
 .one-entity-summary:hover {
-  border-left: 3px solid #ccc;
+  border-left: 3px solid #ddd;
   padding: 7px 10px 7px 7px;
 }
 
@@ -392,7 +398,7 @@ hr.dropdown-separator {
 }
 
 .info-panel-nav .info-panel-nav-main-controls .info-nav-item.selected {
-  border-bottom: 3px solid #777;
+  border-bottom: 3px solid #E33743;
 }
 
 .info-panel-nav .info-nav-item.selected a svg {
@@ -495,7 +501,7 @@ hr.dropdown-separator {
 .one-entity-details {
   border: 1px solid #dce0e0;
   margin-bottom: 10px;
-  border-radius: 2px;
+  border-radius: 4px;
 }
 
 .one-entity-details .name-and-photos {
@@ -572,11 +578,12 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .info-tab:hover {
-  border-bottom: 3px solid #ccc;
+  border-bottom: 3px solid #ddd;
 }
 
 .one-entity-details .info-tab.selected {
-  border-bottom: 3px solid #777;
+  border-bottom: 3px solid #E33743;
+;
 }
 
 .one-entity-details .origin-trip-name {
@@ -591,12 +598,16 @@ hr.dropdown-separator {
 .one-entity-details .add-to-trip-link {
   color: #4087F9;
   font-weight: 500;
-  padding: 3px;
+  padding: 6px;
+  position: relative;
+  bottom: 3px;
+  left: 3px;
 }
 
 .one-entity-details .add-to-trip-link:hover {
   color: #4A90E2;
   background-color: #ddd;
+  border-radius: 4px;
 }
 
 .one-entity-details .saved-status {
@@ -768,7 +779,7 @@ hr.dropdown-separator {
 }
 
 .getting-started-directions .bookmarklet:hover {
-  background-color: #ccc;
+  background-color: #ddd;
 }
 
 .getting-started-directions .sample-sites {
@@ -996,13 +1007,6 @@ hr.dropdown-separator {
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);  
 }
 
-.trip-plan-details-header .trip-plan-metadata .source-url {
-  color: #50B0B2;
-}
-
-.trip-plan-details-header .trip-plan-metadata .source-url:hover {
-}
-
 .trip-plan-details-header.clickable {
   cursor: pointer;
 }
@@ -1083,6 +1087,7 @@ hr.dropdown-separator {
   text-align: left;
   padding: 0 5px 5px 5px;
   border-bottom: 1px solid #777;
+;
   max-height: 150px;
   overflow-y: auto;
 }
@@ -1115,6 +1120,7 @@ hr.dropdown-separator {
   background-color: #FFFFFF;
   padding: 5px 10px;
   border-bottom: 1px solid #777;
+;
   font-size: 12px;
   text-align: center;
 }
@@ -1170,6 +1176,7 @@ hr.dropdown-separator {
 
 .marker-tools a.already-clipped {
   color: #777;
+;
 }
 
 .results-infowindow {
@@ -1305,6 +1312,7 @@ hr.dropdown-separator {
 .export-panel .export-button {
   background-color: #fff;
   border: 1px solid #777;
+;
   border-radius: 2px;
   padding: 10px 0;
   margin: 0 10px;

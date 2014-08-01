@@ -250,7 +250,7 @@
               ng-model="newComment['text']">
             </textarea>
             <div>
-              <a ng-click="saveNewComment()" href="javascript:void(0)" class="color-link">Save</a>
+              <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link">Save</a>
               <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
             </div>
           </div>
@@ -471,7 +471,7 @@
       <div class="day-planner-header">
         <div class="day-planner-header-text">Plan Itinerary</div>
         <div class="day-planner-persistent-controls">
-          <button class="btn btn-primary" ng-click="saveOrderings()">
+          <button class="btn btn-cta" ng-click="saveOrderings()">
             Save
           </button>
           <button class="btn" ng-click="$close()">
@@ -807,7 +807,7 @@
           </span>
         </div>
         <div ng-if="tripPlan['source_url']" class="source-link">
-          <a ng-href="[[tripPlan['source_url'] ]]" target="_blank" class="cta-link">
+          <a ng-href="[[tripPlan['source_url'] ]]" target="_blank">
             View original article at [[tripPlan['source_display_name'] ]]
           </a>
         </div>
@@ -858,18 +858,18 @@
         <div class="info-tabs">
           <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.ABOUT}"
             ng-show="showAboutTab()">
-            <a ng-click="selectInfoTab(InfoTab.ABOUT)" href="javascript:void(0)">
+            <a class="black-link" ng-click="selectInfoTab(InfoTab.ABOUT)" href="javascript:void(0)">
               About
             </a>
           </span>
           <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.DETAILS}">
-            <a ng-click="selectInfoTab(InfoTab.DETAILS)" href="javascript:void(0)">
+            <a class="black-link" ng-click="selectInfoTab(InfoTab.DETAILS)" href="javascript:void(0)">
               Details
             </a>
           </span>
           <span class="info-tab" ng-class="{'selected': infoTab == InfoTab.COMMENTS}"
             ng-show="showCommentsTab()">
-            <a ng-click="selectInfoTab(InfoTab.COMMENTS)"
+            <a class="black-link" ng-click="selectInfoTab(InfoTab.COMMENTS)"
               href="javascript:void(0)">
               Comments
               <span ng-show="em.hasComments()">([[em.numComments()]])<span>
@@ -901,7 +901,7 @@
               </tc-expandable-content>
             </div>
             <div ng-show="showAddDescriptionPrompt()">
-              <a ng-click="openDescriptionEditor()" class="color-link" href="javascript:void(0)">
+              <a ng-click="openDescriptionEditor()" class="cta-link" href="javascript:void(0)">
                 Add a description
               </a>
             </div>
@@ -909,7 +909,7 @@
               <textarea class="form-control" ng-model="descriptionState.rawInput"
                 placeholder="Description" tc-focus-on="inlineEditMode">
               </textarea>
-              <a ng-click="saveDescription()" href="javascript:void(0)" class="color-link">
+              <a ng-click="saveDescription()" href="javascript:void(0)" class="cta-link">
                 Save
               </a>
               <a ng-click="closeDescriptionEditor()" href="javascript:void(0)">
@@ -922,7 +922,7 @@
                 [[tag['text'] ]]
               </span>
               <a ng-show="!em.hasTags()" ng-click="openTagsEditor()"
-                class="color-link" href="javascript:void(0)">
+                class="cta-link" href="javascript:void(0)">
                 Add tags
               </a>
             </div>
@@ -933,7 +933,7 @@
                   placeholder="e.g. greek food, day 1, recommended by Bob"
                   tc-focus-on="inlineEditMode"/>
               </form>
-              <a ng-click="saveTags()" href="javascript:void(0)" class="color-link">
+              <a ng-click="saveTags()" href="javascript:void(0)" class="cta-link">
                 Save
               </a>
               <a ng-click="closeTagsEditor()" href="javascript:void(0)">
@@ -957,7 +957,7 @@
             </div>
             <div ng-show="ed['website']" class="detail-item">
               Website:
-              <a ng-href="[[ed['website'] ]]" target="_blank" class="color-link">
+              <a ng-href="[[ed['website'] ]]" target="_blank" class="cta-link">
                 [[ed['website'] ]]
               </a>
             </div>
@@ -982,7 +982,7 @@
             <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="inline-editor">
               Get directions
               <a ng-click="directionsHelper.toggleDirection()"
-                href="javascript:void(0)" class="color-link">
+                href="javascript:void(0)" class="cta-link">
                 [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
               </a>
               <select class="form-control directions-select"
@@ -990,7 +990,7 @@
                 ng-model="directionsHelper.destination">
                 <option value="">Select destination</option>
               </select>
-              <button class="btn btn-primary"
+              <button class="btn btn-cta"
                 ng-click="directionsHelper.getDirections(ed)"
                 ng-disabled="!directionsHelper.destination">
                 Go
@@ -1012,11 +1012,11 @@
                     <div>
                       <span ng-bind-html="comment['text'] | linky:'_blank'" class="text"></span>
                       <a ng-click="openCommentEdit(comment)" ng-if="comment['user']['public_id'] == accountInfo['user']['public_id']"
-                        href="javascript:void(0)" class="color-link comment-edit-link">
+                        href="javascript:void(0)" class="cta-link comment-edit-link">
                         <span class="glyphicon glyphicon-pencil"></span>
                       </a>
                       <a ng-click="deleteComment(comment)" ng-if="comment['user']['public_id'] == accountInfo['user']['public_id']"
-                        href="javascript:void(0)" class="color-link comment-edit-link">
+                        href="javascript:void(0)" class="cta-link comment-edit-link">
                         <span class="glyphicon glyphicon-trash"></span>
                       </a>
                     </div>
@@ -1029,7 +1029,7 @@
                       tc-focus-on="editingComment">
                     </textarea>
                     <div>
-                      <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="color-link">Save</a>
+                      <a ng-click="saveCommentEdit()" href="javascript:void(0)" class="cta-link">Save</a>
                       <a ng-click="closeCommentEdit()" href="javascript:void(0)">Cancel</a>
                     </div>
                   </div>
@@ -1037,7 +1037,7 @@
               </div>
             </div>
             <div ng-show="isEditable && !em.hasComments() && !inlineEditMode == InlineEditMode.COMMENTS">
-              <a ng-click="openNewComment()" class="color-link" href="javascript:void(0)">
+              <a ng-click="openNewComment()" class="cta-link" href="javascript:void(0)">
                 Add a comment
               </a>
             </div>
@@ -1052,7 +1052,7 @@
                 ng-model="newComment['text']">
               </textarea>
               <div>
-                <a ng-click="saveNewComment()" href="javascript:void(0)" class="color-link">Save</a>
+                <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link">Save</a>
                 <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
               </div>
             </div>
@@ -1060,21 +1060,21 @@
         </div>
         <div class="editing-controls" ng-if="isEditable">
           <span class="left-controls">
-            <a ng-click="openTagsEditor()" href="javascript:void(0)">
+            <a class="black-link" ng-click="openTagsEditor()" href="javascript:void(0)">
               <span class="glyphicon glyphicon-tag"></span>
             </a>
-            <a ng-click="openDirections()" href="javascript:void(0)">
+            <a class="black-link" ng-click="openDirections()" href="javascript:void(0)">
               <span tc-icon="compass"></span>
             </a>
-            <a ng-click="openNewComment()" href="javascript:void(0)">
+            <a class="black-link" ng-click="openNewComment()" href="javascript:void(0)">
               <span tc-icon="comment"></span>
             </a>
           </span>
           <span class="right-controls">
-            <a ng-click="openEditPlaceModal()" href="javascript:void(0)">
+            <a class="black-link" ng-click="openEditPlaceModal()" href="javascript:void(0)">
               <span class="glyphicon glyphicon-pencil"></span>
             </a>
-            <a ng-click="deleteEntity()" href="javascript:void(0)">
+            <a class="black-link" ng-click="deleteEntity()" href="javascript:void(0)">
               <span class="glyphicon glyphicon-trash"></span>
             </a>
           </span>
@@ -1301,7 +1301,7 @@
         </div>
 
         <div class="help-section info-text">
-          <a ng-click="toggleHelp()" class="color-link" href="javascript:void(0)">
+          <a ng-click="toggleHelp()" class="cta-link" href="javascript:void(0)">
             Help with installing the Clipper
           </a>
           <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
@@ -1352,9 +1352,9 @@
             <br/>
             Try installing the
             <a ng-click="selectTab(AddYourOwnTab.CLIPPER)"
-              class="color-link" href="javascript:void(0)">clipper bookmark</a>,
+              class="cta-link" href="javascript:void(0)">clipper bookmark</a>,
             then
-            <a ng-href="[[linkState.formattedUrl]]" target="_blank" class="color-link">
+            <a ng-href="[[linkState.formattedUrl]]" target="_blank" class="cta-link">
               visit the website
             </a>
              to quickly clip information and images.
@@ -1485,7 +1485,7 @@
           </span>
           <a ng-click="removeEditor(editor)"
             ng-show="!isCurrentUser(editor)"
-            href="javascript:void(0)" class="remove-link color-link">
+            href="javascript:void(0)" class="remove-link cta-link">
             <span class="glyphicon glyphicon-trash"></span>
           </a>
         </p>
@@ -1493,7 +1493,7 @@
           <span>
             [[inviteeEmail]] (invited)
             <a ng-click="removeInvitee(inviteeEmail)"
-              href="javascript:void(0)" class="remove-link color-link">
+              href="javascript:void(0)" class="remove-link cta-link">
               <span class="glyphicon glyphicon-trash"></span>
             </a>
           </span>
@@ -1700,7 +1700,7 @@
               <span class="glyphicon glyphicon-search"></span>
             </span><!--
             --><span class="section-text">
-              <a ng-click="setOption(options[0])" href="javascript:void(0)" class="color-link">
+              <a ng-click="setOption(options[0])" href="javascript:void(0)" class="cta-link">
                 Search
               </a>
               for places - like those your friends and family have recommended
@@ -1712,7 +1712,7 @@
             </span><!--
             --><span class="section-text">
               Discover places rated highly by users
-              <a ng-click="setOption(options[1])" href="javascript:void(0)" class="color-link">
+              <a ng-click="setOption(options[1])" href="javascript:void(0)" class="cta-link">
                 from the web
               </a>
             </span>
@@ -1723,7 +1723,7 @@
             </span><!--
             --><span class="section-text">
               View full
-              <a ng-click="setOption(options[2])" href="javascript:void(0)" class="color-link">
+              <a ng-click="setOption(options[2])" href="javascript:void(0)" class="cta-link">
                 travel guides
               </a>
               - then pick and choose the places that you like
@@ -1735,7 +1735,7 @@
             </span><!--
             --><span class="section-text">
               Perform research across the web and
-              <a ng-click="setOption(options[3])" href="javascript:void(0)" class="color-link">
+              <a ng-click="setOption(options[3])" href="javascript:void(0)" class="cta-link">
                 clip your own
               </a>
               places from any website

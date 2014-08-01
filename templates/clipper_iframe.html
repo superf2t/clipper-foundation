@@ -57,7 +57,7 @@
           </div>
         </div>
         <div class="add-other-link">
-          <a ng-click="openAddOther()" href="javascript:void(0)" class="color-link">
+          <a ng-click="openAddOther()" href="javascript:void(0)" class="cta-link">
             Add another place
           </a>
         </div>
@@ -81,7 +81,7 @@
           Search for a place
           <div class="back-link" ng-show="entities.length >= 1">
             <a ng-click="clipperState.status = ClipperState.SUMMARY"
-              href="javascript:void(0)" class="color-link">
+              href="javascript:void(0)" class="cta-link">
               &laquo; back
             </a>
           </div>
@@ -116,7 +116,7 @@
               <div class="no-results-text">No results found</div>
             </div>
             <div class="enter-manually-link">
-              <a ng-click="startManualEntry()" href="javascript:void(0)" class="color-link">
+              <a ng-click="startManualEntry()" href="javascript:void(0)" class="cta-link">
                 Still can't find it?  Enter a place manually
               </a>
             </div>
@@ -168,7 +168,7 @@
       </div>
       <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
         <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
-          target="_blank" class="color-link">
+          target="_blank" class="cta-link">
           <span class="glyphicon glyphicon-new-window"></span>
         </a>
       </div>
@@ -222,13 +222,13 @@
         </span>
         <span class="edit-link" ng-show="!isEditing()">
           <a ng-click="closeAllEditors(); openEditor(); $event.stopPropagation()" href="javascript:void(0)"
-            class="color-link">
+            class="cta-link">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
         </span>
         <span class="close-edit-link" ng-show="isEditing()">
           <a ng-click="closeEditor(); $event.stopPropagation()" href="javascript:void(0)"
-            class="color-link">
+            class="cta-link">
             <span class="glyphicon glyphicon-chevron-up"></span> Done
           </a>
         </span>
