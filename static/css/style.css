@@ -488,18 +488,23 @@ hr.dropdown-separator {
   height: 38px;
 }
 
+.one-entity-details .map-marker {
+  width: 24px;
+  height: 36px;
+}
+
 .one-entity-details .name-and-photos:hover .name-section {
   background-color: rgba(0, 0, 0, 0.75);
 }
 
 .one-entity-details .entity-icon {
   display: inline-block;
-  padding: 2px 5px;
+  padding: 0px 5px;
 }
 
 .one-entity-details .entity-icon .map-marker .marker-shape {
-  width: 20px;
-  height: 31px;
+  width: 24px;
+  height: 36px;
 }
 
 .one-entity-details .entity-name {
