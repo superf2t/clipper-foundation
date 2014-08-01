@@ -172,7 +172,7 @@ a:hover .tc-icon svg {
   width: 20px;
   height: 20px;
   border-radius: 10px;
-  font-weight: bold;
+  font-weight: 500;
   text-align: center;
   vertical-align: top;
   color: #fff;
@@ -952,6 +952,12 @@ hr.dropdown-separator {
   left: calc(40% + 10px);
 }
 
+#map-buttons .btn-slide-info-panel {
+  -webkit-box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);  
+}
+
 #summary-panel .trip-plan-header {
   background-color: #F9F9F9;
   color: #000;
@@ -1036,7 +1042,7 @@ hr.dropdown-separator {
 }
 
 .trip-plan-details-header .trip-plan-name {
-  font-size: 1.6em;
+  font-size: 1.4em;
 }
 
 .trip-plan-details-header .trip-plan-info {
@@ -1049,11 +1055,8 @@ hr.dropdown-separator {
   padding: 0px 15px 15px 15px;
 }
 
-.trip-plan-details-header .trip-plan-places {
-}
-
 .trip-plan-details-header .trip-plan-info .trip-plan-metadata {
-  font-size: 1.3em;
+  font-size: 1.15em;
 }
 
 .trip-plan-details-header .description {
@@ -1215,7 +1218,7 @@ hr.dropdown-separator {
 
 .results-infowindow .tools-section {
   background-color: #fff;
-  font-size: 10pt;
+  font-size: 1em;
   padding: 5px;
 }
 
@@ -1232,7 +1235,7 @@ hr.dropdown-separator {
 }
 
 .guides-panel .guide-breadcrumb {
-  font-size: 13pt;
+  font-size: 1.2em;
   margin-bottom: 10px;
 }
 
@@ -1251,7 +1254,7 @@ hr.dropdown-separator {
 .add-your-own-panel .no-search-results {
   text-align: center;
   margin-top: 10px;
-  font-size: 11pt;
+  font-size: 1.1em;
   font-weight: 500;
 }
 
@@ -1269,11 +1272,17 @@ hr.dropdown-separator {
 }
 
 .add-your-own-panel .results-header {
-  font-size: 11pt;
+  font-size: 1.2em;
+  border-top: 1px solid #dce0e0;
+  padding: 10px 0px;
 }
 
 .add-your-own-panel .search-results {
   padding-top: 20px;
+}
+
+.add-your-own-panel .search-results .results-header .results-query {
+  font-weight: 500;
 }
 
 .add-your-own-panel .clipper-panel .bookmarklet-section {
@@ -1288,15 +1297,14 @@ hr.dropdown-separator {
 
 .add-your-own-panel .clipper-panel .bookmarklet-link {
   padding: 10px;
-  border: 1px solid #357ebd;
   border-radius: 2px;
-  background-color: #428bca;
+  background-color: #4087F9;
   color: #fff;
   cursor: move;
 }
 
 .add-your-own-panel .info-text {
-  margin: 0 20px 10px 20px;
+  margin: 0 40px 10px 40px;
 }
 
 .add-your-own-panel .clipper-panel .help-section {
@@ -1307,8 +1315,8 @@ hr.dropdown-separator {
   text-align: left;
 }
 
-.add-your-own-panel .sample-sites {
-  margin-left: 60px;
+.add-your-own-panel .sample-sites .sample-site {
+  padding-left: 15%;
 }
 
 .add-your-own-panel .sample-sites .site-icon {
@@ -1331,18 +1339,9 @@ hr.dropdown-separator {
   margin: 20px 0;
 }
 
-.export-panel .export-button {
-  background-color: #fff;
-  border: 1px solid #777;
-;
-  border-radius: 2px;
-  padding: 10px 0;
-  margin: 0 10px;
-  display: inline-block;
-  width: 120px;
-  text-align: center;
-  font-size: 12pt;
-  font-weight: 500;
+.export-panel .export-buttons .btn-export {
+  margin: 0px 10px;
+  min-width: 110px;
 }
 
 .sharing-panel .section {
@@ -1382,6 +1381,10 @@ hr.dropdown-separator {
 .settings-panel .settings-panel-body {
   margin: 0 10px 20px 10px;
   position: relative;
+}
+
+.settings-panel .settings-panel-body .label {
+  font-weight: 500;
 }
 
 .settings-panel .input-section {
