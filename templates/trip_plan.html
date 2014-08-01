@@ -160,11 +160,11 @@
 
   <script type="text/ng-template" id="control-buttons-template">
     <div id="map-buttons" ng-class="{'info-panel-open': pageStateModel.infoPanelExpanded}">
-      <button class="btn btn-default" ng-click="openDetailsPanel()"
+      <button class="btn btn-default btn-slide-info-panel" ng-click="openDetailsPanel()"
         ng-show="!pageStateModel.infoPanelExpanded">
         <span class="glyphicon glyphicon-plus"></span>
       </button>
-      <button class="btn btn-default" ng-click="closeInfoPanel()"
+      <button class="btn btn-default btn-slide-info-panel" ng-click="closeInfoPanel()"
         ng-show="pageStateModel.infoPanelExpanded">
         <span class="glyphicon glyphicon-minus"></span>
       </button>
@@ -736,7 +736,7 @@
       </tc-entity-details>
       <div class="back-to-top" ng-show="planModel.hasEntities()">
         <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
-          href="javascript:void(0)" class="cta-link">
+          href="javascript:void(0)">
           Back to top
           <span class="glyphicon glyphicon-chevron-up"></span>
         </a>
@@ -1225,12 +1225,12 @@
         <div class="search-results">
           <div ng-show="searchState.resultType == ResultType.SEARCH"
             class="results-header">
-            Results from Google Maps for <b>[[searchState.rawInput]]</b>
+            Results from Google for <span class="results-query">[[searchState.rawInput]]</span>
             near <i>[[planModel.tripPlanData['location_name'] ]]</i>
           </div>
           <div ng-show="searchState.resultType == ResultType.ENTITY_LOOKUP"
             class="results-header">
-            Place details from Google Maps
+            Place details from Google
           </div>
           <tc-entity-details ng-repeat="entity in searchState.results"
             entity="entity" is-editable="false" for-results="true"
@@ -1265,17 +1265,19 @@
         </div>
 
         <div class="help-section info-text">
-          <a ng-click="toggleHelp()" class="cta-link" href="javascript:void(0)">
+          <a ng-click="toggleHelp()" href="javascript:void(0)">
             Help with installing the Clipper
           </a>
           <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
           </div>
         </div>
 
-        <div class="sample-sites">
-          <div ng-repeat="site in sampleSupportedSites">
-            <img ng-src="[[site.iconUrl]]" class="site-icon"/>
-            <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+        <div class="sample-sites container-fluid">
+          <div class="row">
+            <div ng-repeat="site in sampleSupportedSites" class="col-md-6 sample-site">
+              <img ng-src="[[site.iconUrl]]" class="site-icon"/>
+              <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+            </div>
           </div>
         </div>
       </div>
@@ -1300,10 +1302,12 @@
             Try it out by pasting place pages from these websites:
           </div>
 
-          <div class="sample-sites">
-            <div ng-repeat="site in sampleSupportedSites">
-              <img ng-src="[[site.iconUrl]]" class="site-icon"/>
-              <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+          <div class="sample-sites container-fluid">
+            <div class="row">
+              <div ng-repeat="site in sampleSupportedSites" class="col-md-6 sample-site">
+                <img ng-src="[[site.iconUrl]]" class="site-icon"/>
+                <span><a ng-href="[[site.url]]" target="_blank">[[site.name]]</a></span>
+              </div>
             </div>
           </div>
         </div>
@@ -1331,7 +1335,7 @@
 
         <div class="link-results" ng-if="linkState.results && linkState.results.length">
           <div class="results-header">
-            Results from <i>[[linkState.siteDomain]]</i>
+            Results from [[linkState.siteDomain]]
           </div>
           <tc-entity-details ng-repeat="entity in linkState.results"
             entity="entity" is-editable="false" for-results="true"
@@ -1403,21 +1407,20 @@
       </div>
 
       <div>
-        You can export to the following formats:
+        Export your trip in your preferred format. Offline mobile support for iOS and Android coming soon!
       </div>
-
       <div class="export-buttons">
-        <a class="export-button" target="_blank"
-          ng-href="/trip_plan/[[planModel.tripPlanId()]]/print">
-          Print
-        </a>
-        <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
-          Spreadsheet
-        </a>
-      </div>
-
-      <div>
-        Offline mobile support for iOS and Android coming soon!
+        <btn class="btn btn-export btn-default">
+          <a class="export-button" target="_blank"
+            ng-href="/trip_plan/[[planModel.tripPlanId()]]/print">
+            Print
+          </a>
+        </btn>
+        <btn class="btn btn-export btn-default">
+          <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+            Spreadsheet
+          </a>
+        </btn>
       </div>
     </div>
   </script>
@@ -1544,7 +1547,7 @@
         </div>
 
         <div class="input-section">
-          <label>Tags, separated by commas</label>
+          <label>Tags</label> (separated by commas)
           <input type="text" class="form-control" ng-model="tagState.rawInput"
             ng-change="tagsChanged()"
             placeholder="e.g. fine dining, history, adventure"/>
