@@ -6,12 +6,10 @@
 // -Get an email sender account on the new domain.
 // -Make sure all featured guides have the GUIDE bit set.
 // -Check that rating_max is set on prod guides.
-// -Add infowindow for search results and guides.
 // -Test help text for the clipper, and get IE commands.
 // -Render creator info in the details panel.
 // -Do something with the entity editor.
 // -Lock down admin
-// -Make sure saved search results get cleared after opening a new guide.
 // -Add back a control to recenter the map on the trip.
 
 // CLEANUP:

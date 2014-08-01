@@ -208,7 +208,7 @@
               tooltip="[[ed['comments'].length ]] comments">
             </span>
             {% if allow_editing %}
-            <a ng-click="saveStarState(true)" ng-show="!ed['starred']"
+            <a ng-click="saveStarState(true)" ng-show="!ed['starred']" class="white-link"
               href="javascript:void(0)" tooltip="Favorite">
               <span class="glyphicon glyphicon-star-empty"></span>
             </a>
@@ -240,6 +240,20 @@
           </div>
         </div>
         <div class="workspace-section" ng-if="workspaceActive()">
+          <div ng-if="inlineEditMode == InlineEditMode.TAGS" class="inline-tags-editor">
+            <label>Enter tags, separated by commas</label>
+            <form ng-submit="saveTags()">
+              <input type="text" class="form-control" ng-model="tagState.rawInput"
+                placeholder="e.g. greek food, day 1, recommended by Bob"
+                tc-focus-on="inlineEditMode"/>
+            </form>
+            <a ng-click="saveTags()" href="javascript:void(0)" class="cta-link">
+              Save
+            </a>
+            <a ng-click="closeTagsEditor()" href="javascript:void(0)" class="black-link">
+              Cancel
+            </a>
+          </div>
           <div ng-if="inlineEditMode == InlineEditMode.COMMENTS" class="inline-comment-editor">
             <div class="author-name">
               <span tc-user-icon user="accountInfo['user']">
@@ -283,6 +297,7 @@
       {% if allow_editing %}
       <span ng-show="showPrimaryControls">
         <a ng-click="toggleTagsEdit()" href="javascript:void(0)"
+          class="black-link"
           tooltip="Add Tags" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-tag"></span>
         </a>
@@ -296,29 +311,32 @@
         </a>
       </span>
       <span ng-show="showSecondaryControls">
-        <a ng-click="openEditPlaceModal()" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
+        <a ng-click="openEditPlaceModal()" href="javascript:void(0)" class="black-link"
+          tooltip="Edit" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
-        <a ng-click="deleteEntity()" href="javascript:void(0)"
+        <a ng-click="deleteEntity()" href="javascript:void(0)" class="black-link"
           tooltip="Delete" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-trash"></span>
         </a>
       </span>
       <span class="control-toggle">
-        <a ng-click="toggleControls()" href="javascript:void(0)"
+        <a ng-click="toggleControls()" href="javascript:void(0)" class="black-link"
           tooltip="More controls" tooltip-placement="bottom">
           &hellip;
         </a>
       </span>
       {% else %}
-      <a ng-click="!activeTripPlanState.isSaved(ed) && reclipEntity()"
-        ng-class="{'already-clipped': activeTripPlanState.isSaved(ed)}"
-        href="javascript:void(0)"
-        tooltip="Clip this place" tooltip-placement="bottom">
-        <span class="glyphicon glyphicon-paperclip"></span>
+      <a ng-show="!isAlreadySaved()" ng-click="clipEntity()"
+        class="add-to-trip-cta" href="javascript:void(0)">
+        Add to My Trip
       </a>
-      <a ng-click="toggleInlineEdit(InlineEditMode.DIRECTIONS)" href="javascript:void(0)" tooltip="Get directions"
-        tooltip-placement="bottom">
+      <span ng-show="isAlreadySaved()" class="already-saved">
+        Saved
+      </span>
+      <a ng-click="toggleDirectionsEdit()" href="javascript:void(0)"
+        class="non-editor-control-icon"
+        tooltip="Get directions" tooltip-placement="bottom">
         <span tc-icon="compass"></span>
       </a>
       {% endif %}
@@ -628,39 +646,38 @@
       </span>
       <span class="controls" ng-show="controlState.open" ng-click="$event.stopPropagation()">
         <span ng-show="!controlState.showSecondaryControls">
-          <a ng-click="openInlineEdit(InlineEditMode.COMMENTS); closeControls()"
-            href="javascript:void(0)"
-            tooltip="Comment" tooltip-placement="bottom" tooltip-append-to-body="true">
-            <span tc-icon="comment"></span>
+          <a ng-click="openInlineEdit(InlineEditMode.TAGS)" href="javascript:void(0)"
+            tooltip="Add Tags" tooltip-placement="bottom" tooltip-append-to-body="true">
+            <span class="glyphicon glyphicon-tag"></span>
           </a>
-          <a ng-click="openInlineEdit(InlineEditMode.DAY_PLANNER); closeControls()"
-            href="javascript:void(0)"
-            tooltip="Add to day" tooltip-placement="bottom" tooltip-append-to-body="true">
-            <span tc-icon="calendar"></span>
-          </a>
-          <a ng-click="saveStarState(true); closeControls()"
-            ng-show="!ed['starred']" href="javascript:void(0)"
-            tooltip="Favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
-            <span class="glyphicon glyphicon-star-empty"></span>
-          </a>
-          <a ng-click="saveStarState(false); closeControls()"
-            ng-show="ed['starred']" href="javascript:void(0)"
-            tooltip="Un-favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
-            <span class="glyphicon glyphicon-star favorite-star"></span>
-          </a>
-        </span>
-        <span ng-show="controlState.showSecondaryControls">
           <a ng-click="openInlineEdit(InlineEditMode.DIRECTIONS); closeControls()"
             href="javascript:void(0)"
             tooltip="Get directions" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span tc-icon="compass"></span>
           </a>
-          <a ng-click="openEditPlaceModal('edit-place-modal'); closeControls()"
+          <a ng-click="openInlineEdit(InlineEditMode.COMMENTS); closeControls()"
+            href="javascript:void(0)"
+            tooltip="Comment" tooltip-placement="bottom" tooltip-append-to-body="true">
+            <span tc-icon="comment"></span>
+          </a>
+        </span>
+        <span ng-show="controlState.showSecondaryControls">
+          <a ng-click="saveStarState(true)"
+            ng-show="!ed['starred']" href="javascript:void(0)"
+            tooltip="Favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
+            <span class="glyphicon glyphicon-star-empty"></span>
+          </a>
+          <a ng-click="saveStarState(false)"
+            ng-show="ed['starred']" href="javascript:void(0)"
+            tooltip="Un-favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
+            <span class="glyphicon glyphicon-star favorite-star"></span>
+          </a>
+          <a ng-click="openEditPlaceModal(); closeControls()"
             href="javascript:void(0)"
             tooltip="Edit" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
-          <a ng-click="deleteEntity(); closeControls()"
+          <a ng-click="deleteEntity()"
             href="javascript:void(0)"
             tooltip="Delete" tooltip-placement="bottom" tooltip-append-to-body="true">
             <span class="glyphicon glyphicon-trash"></span>

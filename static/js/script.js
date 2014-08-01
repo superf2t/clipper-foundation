@@ -513,10 +513,6 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
     $entityEditingService.openEditPlaceModal($scope.ed);
   };
 
-  $scope.reclipEntity = function() {
-    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
-  };
-
   $scope.deleteEntity = function() {
     $entityEditingService.deleteEntity($scope.ed);
   };
@@ -526,10 +522,7 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
   };
 
   $scope.openInlineEdit = function(inlineEditMode) {
-    $pageStateModel.infoPanelExpanded = true;
-    $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
-    $scope.selectEntity($scope.ed);
-    $scope.$emit('asktoopeninlineedit', $scope.ed['entity_id'], inlineEditMode);
+    $entityCtrlProxy.openInlineEdit($scope.ed, inlineEditMode);
   };
 }
 
@@ -821,6 +814,21 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     }
   });
 
+  $scope.$on('open-inline-edit', function(event, entity, inlineEditMode) {
+    if ($scope.ed['entity_id'] && entity['entity_id'] == $scope.ed['entity_id']) {
+      $scope.selectEntity();
+      $pageStateModel.infoPanelExpanded = true;
+      $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
+      if (inlineEditMode == InlineEditMode.COMMENTS) {
+        $scope.openNewComment();
+      } else if (inlineEditMode == InlineEditMode.DIRECTIONS) {
+        $scope.openDirections();
+      } else if (inlineEditMode == InlineEditMode.TAGS) {
+        $scope.openTagsEditor(); 
+      }
+    }
+  });
+
   $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
   $scope.$watch(_.constant($searchResultState), $scope.setMarkerState, true);
   $timeout($scope.setMarkerState);
@@ -919,13 +927,33 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope, $entityEditingService,
+function InfowindowCtrl($scope, $tripPlanModel, $activeTripPlanState,
+    $entityEditingService, $entityClippingService,
     $accountInfo, $window, $timeout) {
   $scope.inlineEditMode = null;
   $scope.InlineEditMode = InlineEditMode;
 
   $scope.showPrimaryControls = true;
   $scope.showSecondaryControls = false;
+
+  $scope.tagState = {rawInput: null};
+  $scope.newComment = {};
+
+  $scope.openTagsEditor = function() {
+    $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
+    $scope.openInlineEditorInternal(InlineEditMode.TAGS);
+  };
+
+  $scope.closeTagsEditor = function() {
+    $scope.tagState.rawInput = null;
+    $scope.closeInlineEditorInternal();
+  };
+
+  $scope.saveTags = function() {
+    $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
+      $scope.closeTagsEditor();
+    });
+  };
 
   $scope.openNewComment = function() {
     $scope.newComment = {
@@ -952,6 +980,14 @@ function InfowindowCtrl($scope, $entityEditingService,
 
   $scope.workspaceActive = function() {
     return !!$scope.inlineEditMode;
+  };
+
+  $scope.toggleTagsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.TAGS) {
+      $scope.closeTagsEditor();
+    } else {
+      $scope.openTagsEditor();
+    }
   };
 
   $scope.toggleCommentsEdit = function() {
@@ -987,6 +1023,14 @@ function InfowindowCtrl($scope, $entityEditingService,
   $scope.toggleControls = function() {
     $scope.showPrimaryControls = !$scope.showPrimaryControls;
     $scope.showSecondaryControls = !$scope.showSecondaryControls;
+  };
+
+  $scope.clipEntity = function() {
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
+  };
+
+  $scope.isAlreadySaved = function() {
+    return $activeTripPlanState.isSaved($scope.ed);
   };
 }
 
@@ -3694,6 +3738,10 @@ function MapManager($map) {
 function EntityCtrlProxy($rootScope, $pageStateModel) {
   this.selectEntity = function(entity) {
     $rootScope.$broadcast('entity-selected', entity);
+  };
+
+  this.openInlineEdit = function(entity, inlineEditMode) {
+    $rootScope.$broadcast('open-inline-edit', entity, inlineEditMode);
   };
 }
 
