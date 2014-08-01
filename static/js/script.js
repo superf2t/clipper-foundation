@@ -1930,47 +1930,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $scope.$apply();
   });
 
-  $scope.openBulkClipModal = function(windowClass) {
-    $modal.open({
-      templateUrl: 'bulk-clip-modal-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
+  var initialBounds = $tripPlanModel.getMapBounds();
+  if (initialBounds) {
+    $map.fitBounds(initialBounds);
+  }
 
   $scope.startGmapsImport = function() {
     $modal.open({
       templateUrl: 'gmaps-importer-template',
       scope: $scope.$new(true)
-    });
-  };
-
-  $scope.openDayPlanner = function(windowClass) {
-    $modal.open({
-      templateUrl: 'day-planner-template',
-      scope: $scope,
-      backdrop: 'static',
-      windowClass: windowClass
-    });
-  };
-
-  $scope.openTripPlanEditor = function(windowClass) {
-    $modal.open({
-      templateUrl: 'trip-plan-settings-editor-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
-
-  $scope.openSharingSettings = function(windowClass) {
-    if (!$accountInfo['logged_in']) {
-      alert('Please log in before sharing trip plans');
-      return;
-    }
-    $modal.open({
-      templateUrl: 'sharing-settings-editor-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
     });
   };
 
@@ -1981,11 +1949,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.$on('asktocloseallcontrols', function() {
     $scope.$broadcast('closeallcontrols');
   });
-
-  var initialBounds = $tripPlanModel.getMapBounds();
-  if (initialBounds) {
-    $map.fitBounds(initialBounds);
-  }
 
   this.refresh = function(opt_force, opt_callback) {
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
@@ -2162,49 +2125,6 @@ function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
       }
     }
     return tripPlanDetails;
-  };
-}
-
-function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
-  $scope.allEntities = angular.copy($tripPlanModel.entities());
-  $scope.selectionState = {
-    selectedTripPlan: $allTripPlans.length ? $allTripPlans[0] : null
-  };
-
-  $scope.selectAll = function() {
-    $.each($scope.allEntities, function(i, entity) {
-      entity.selected = true;
-    });
-  };
-
-  $scope.selectNone = function() {
-    $.each($scope.allEntities, function(i, entity) {
-      entity.selected = false;
-    });
-  };
-
-  $scope.selectedEntities = function() {
-    return _.filter($scope.allEntities, function(entity) {
-      return entity.selected;
-    });
-  };
-
-  $scope.save = function() {
-    var entities = $scope.selectedEntities();
-    $.each(entities, function(i, entity) {
-      entity['day'] = null;
-      entity['day_position'] = null;
-      entity['entity_id'] = null;
-    });
-    $scope.saving = true;
-    $entityService.saveNewEntities(entities,
-      $scope.selectionState.selectedTripPlan['trip_plan_id'])
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.saving = false;
-          $scope.saved = true;
-        }
-      });
   };
 }
 
@@ -4901,7 +4821,6 @@ window['initApp'] = function(tripPlan, entities, notes,
       'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', RootCtrl)
-    .controller('BulkClipCtrl', BulkClipCtrl)
     .controller('EntitySummaryCtrl', EntitySummaryCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)

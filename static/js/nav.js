@@ -24,7 +24,6 @@
 // -Remove tutorial panel.
 // -Remove day planner.
 // -Remove notes
-// -Remove bulk clipper
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
