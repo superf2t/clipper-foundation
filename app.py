@@ -211,7 +211,7 @@ def profile(profile_name):
     trip_plans = trip_plan_service.get(req).trip_plans
 
     if featured_trip_plan_ids and trip_plans and not display_user.display_name:
-        display_user.display_name = trip_plans[0].user.display_name
+        display_user.display_name = trip_plans[0].source_display_name
 
     all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     sorted_user_trip_plans = sorted(all_user_trip_plans, cmp=lambda x, y: x.compare(y))
