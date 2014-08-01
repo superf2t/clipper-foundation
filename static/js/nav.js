@@ -11,6 +11,8 @@
 // -Do something with the entity editor.
 // -Lock down admin
 // -Add back a control to recenter the map on the trip.
+// -Figure out whether to render results/guide markers differently.
+// -ANALYTICS
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
@@ -47,7 +49,9 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
         $scope.makeTripPlanActive(tripPlan);
         $scope.allTripPlans.unshift(tripPlan);
         // Allow a digest cycle to happen before calling the callback.
-        $timeout(opt_callback);
+        $timeout(function() {
+          opt_callback && opt_callback(tripPlan);
+        });
         modal && modal.close();
       } else {
         $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];

@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+  <title>{% if location_name %}{{location_name}} - {% endif %}TravelClipper</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-animate.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/services.js"></script>
+  <script src="/static/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe.png">
+  {% include 'analytics.html' %}
+
+  <style>
+    .main-content {
+      position: fixed;
+      top: 41px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 41px);
+      overflow-y: auto;
+    }
+
+    .location-header {
+      text-align: center;
+      padding: 20px 0;
+      color: #333;
+      font-weight: 500;
+      font-size: 13pt;
+    }
+
+    .location-name {
+      font-size: 24pt;
+    }
+
+    .guides-container {
+      width: 800px;
+      margin: auto;
+      text-align: center;
+    }
+
+    .one-guide {
+      display: inline-block;
+      width: 350px;
+      margin: 10px;
+      vertical-align: top;
+    }
+
+    .one-guide:hover {
+      opacity: 0.8;
+    }
+
+    .no-guides {
+      text-align: center;
+      padding: 20px;
+    }
+
+    .no-guides .header-msg {
+      color: #333;
+      font-size: 18pt;
+      margin-bottom: 20px;
+    }
+
+    .no-guides .no-guide-img {
+      margin-top: 20px;
+    }
+  </style>
+
+  <script>
+    function GuidesCtrl($scope, $guides, $allTripPlans,
+        $accountInfo, $activeTripPlanState, $tripPlanCreator, $window) {
+      $scope.guides = $guides;
+      $scope.allTripPlans = $allTripPlans;
+      $scope.accountInfo = $accountInfo;
+      $scope.activeTripPlanState = $activeTripPlanState;   
+
+      $scope.createNewTripAndRedirect = function() {
+        $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
+          $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
+        });
+      };
+    }
+
+    window['initGuidesApp'] = function(guides, allTripPlans,
+        accountInfo, flashedMessages) {
+      angular.module('guidesInitialDataModule', [])
+        .value('$guides', guides)
+        .value('$allTripPlans', allTripPlans)
+        .value('$accountInfo', accountInfo)
+        .value('$flashedMessages', flashedMessages)
+        .value('$activeTripPlanState', new ActiveTripPlanStateModel());
+
+      angular.module('guidesAppModule',
+          ['guidesInitialDataModule', 'navModule', 'directivesModule'],
+          interpolator)
+        .controller('GuidesCtrl', GuidesCtrl)
+        .controller('FlashedMessagesCtrl', FlashedMessagesCtrl)
+        .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader);
+
+      angular.element(document).ready(function() {
+        angular.bootstrap(document, ['guidesAppModule']);
+      });
+    }
+  </script>
+</head>
+<body ng-controller="GuidesCtrl">
+  <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
+    num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
+    shopping-cart-mode="true">
+  </tc-nav>
+  <div tc-include-and-replace="flashed-messages-template"></div>
+
+  <div class="main-content">
+    {% if guides %}
+    <div class="location-header">
+      Browse guides for <span class="location-name">{{location_name.upper()}}</span>
+    </div>
+
+    <div class="guides-container">
+      <span ng-repeat="guide in guides" class="one-guide">
+        <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
+          <tc-trip-plan-details-header trip-plan="guide"
+            num-entities="guide['num_entities']" for-guide="true">
+          </tc-trip-plan-details-header>
+        </a>
+      </span>
+    </div>
+    {% else %}
+      <div class="no-guides">
+        <div class="header-msg">
+          We don't have any guides for that region yet.
+        </div>
+        <div class="create-cta">
+          <a ng-click="createNewTripAndRedirect()" href="javascript:void(0)">
+            Create your own
+          </a>
+          and share it with others.
+        </div>
+        <div class="no-guide-img">
+          <img src="http://www.coolanimalworld.com/wp-content/uploads/2013/05/Cute-cat-in-bule-Santorini-Greece-2-01.jpg"/>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  {% include 'nav.html' %}
+  {% include 'widgets.html' %}
+  {% include 'icons.html' %}
+  {% include 'trip_plan_common.html' %}
+
+  <script>
+    initGuidesApp(
+      {{to_json_str(guides) | safe}},
+      {{to_json_str(all_trip_plans) | safe}},
+      {{to_json_str(account_info) | safe}},
+      {{to_json_str(flashed_messages) | safe}});
+  </script>
+</body>
+</html>

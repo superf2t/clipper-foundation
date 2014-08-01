@@ -718,6 +718,7 @@ class TripPlanService(service.Service):
             trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids)
         else:
             trip_plans = data.load_all_trip_plans(self.session_info)
+        trip_plans = [t for t in trip_plans if t]
         if not request.include_entities:
             for trip_plan in trip_plans:
                 trip_plan.entities = ()

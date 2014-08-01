@@ -22,6 +22,7 @@ import constants
 import csv_export
 import data
 from database import user
+import guide_config
 import sample_sites
 from scraping import trip_plan_creator
 import serializable
@@ -137,7 +138,6 @@ def trip_plan_by_id(trip_plan_id):
         # We have them but we won't use them since there's no shopping cart.
         pass
 
-
     needs_tutorial = (allow_editing and len(all_trip_plans) == 1 and not entities) or (
         request.values.get('tutorial') and not entities)
     initial_state = data.InitialPageState(request.values.get('sort'),
@@ -186,6 +186,24 @@ def csv_trip_plan(trip_plan_id):
     response.headers['Content-Type'] = 'application/csv'
     response.headers['Content-Disposition'] = 'attachment; filename=%s.csv' % trip_plan.name
     return response
+
+@app.route('/guides/<location>')
+def guides(location):
+    config = guide_config.GUIDES_BY_CITY_URL_TOKEN.get(location)
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    if config:
+        guides_request = serviceimpls.TripPlanGetRequest(config.trip_plan_ids)
+        guides = trip_plan_service.get(guides_request).trip_plans
+    else:
+        guides = []
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+    sorted_user_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
+    return render_template('guides.html',
+        guides=guides,
+        all_trip_plans=sorted_user_trip_plans,
+        location_name=config.city_name if config else '',
+        flashed_messages=flashed_messages)
 
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
