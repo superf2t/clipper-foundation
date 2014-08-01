@@ -33,10 +33,10 @@ def main():
             writer.writerow([
                 host,
                 trip_plan.trip_plan_id,
-                trip_plan.name.encode('utf-8'),
-                trip_plan.location_name,
+                trip_plan.name.encode('utf-8') if trip_plan.name else None,
+                trip_plan.location_name.encode('utf-8') if trip_plan.location_name else None,
                 len(trip_plan.entities),
-                trip_plan.source_url])
+                trip_plan.source_url.encode('utf-8') if trip_plan.source_url else None])
 
     print outfile.getvalue()
     outfile.close()
