@@ -37,6 +37,15 @@
         <div ng-include="'one-entity-summary-template'">
         </div>
       </div>
+
+      <div ng-if="!planModel.hasEntities()" class="no-entities-message">
+        <p>
+          A summary of your places will show up here.
+        </p>
+        <p>
+          Drag and drop places to order them.
+        </p>
+      </div>
     </div>
   </div>
 
@@ -725,12 +734,31 @@
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
       </tc-entity-details>
-      <div class="back-to-top">
+      <div class="back-to-top" ng-show="planModel.hasEntities()">
         <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
           href="javascript:void(0)" class="cta-link">
           Back to top
           <span class="glyphicon glyphicon-chevron-up"></span>
         </a>
+      </div>
+      <div ng-if="!planModel.hasEntities()" class="no-entities-message">
+        <p>
+          Details about your places go here.
+        </p>
+        <p>
+          Get started by choosing<br/>
+          <span class="sample-link">
+            <span class="glyphicon glyphicon-book"></span>
+            Browse Guides
+          </span>
+          or
+          <span class="sample-link">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add Your Own
+          </span>
+          <br/>
+          from the menu above to add places to your trip.
+        </p>
       </div>
     </div>
   </script>

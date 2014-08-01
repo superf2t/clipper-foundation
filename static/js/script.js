@@ -229,6 +229,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.entityDatas;
   };
 
+  this.hasEntities = function() {
+    return this.entityDatas && this.entityDatas.length;
+  };
+
   this.noteItems = function() {
     return _.map(this.notes, function(note) {
       return new ItemModel(note);

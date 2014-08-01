@@ -436,70 +436,20 @@ hr.dropdown-separator {
   margin-bottom: 15px;
 }
 
-.one-entity-guideview .comments .one-comment {
-  margin: 10px 0px;
-}
-
-.one-entity-guideview .comments .one-comment .comment-sidebar {
-  display: inline-block;
-  vertical-align: top;
-}
-
-.one-entity-guideview .comments .one-comment .comment-timestamp {
-  display: inline-block;
-  color: #666666;
-  font-size: 0.8em;
-}
-
-.one-entity-guideview .comments .one-comment .comment-details {
-  display: inline-block;
-  width: calc(100% - 24px);
-}
-
-.one-entity-guideview .comments .one-comment .text {
-  white-space: pre-wrap;
-}
-
-.one-entity-guideview .comments .one-comment .comment-edit-link {
-  display: none;
-}
-
-.one-entity-guideview .comments .one-comment:hover .comment-edit-link {
-  display: inline;
-}
-
-.one-entity-guideview .controls {
-  margin-top: 10px;
-  position: relative;
-  min-height: 20px;
-  font-size: 1.4em;
-}
-
-.one-entity-guideview .clip-cta {
-  display: inline-block;
-  position: absolute;
-  top: 0px;
-  right: 0px;
-  font-size: 11pt;
-}
-
-.one-entity-guideview .inline-editor {
-  padding: 10px;
-  background-color: #eee;  
-}
-
-.one-entity-guideview .inline-editor.ng-enter {
-  -webkit-transition: all linear 1s;
-  transition: all linear 1s;
-  background-color: #ccc;
-}
-
-.one-entity-guideview .inline-editor.ng-enter-active { 
-  background-color: #eee;
-}
-
 .details-panel .tags {
   margin: 10px 0;
+}
+
+.details-panel .no-entities-message {
+  padding: 10px;
+  font-size: 12pt;
+  text-align: center;
+}
+
+.details-panel .no-entities-message .sample-link {
+  background-color: #fff;
+  padding: 5px 10px;
+  display: inline-block;
 }
 
 .one-entity-details {
@@ -980,6 +930,11 @@ hr.dropdown-separator {
   top: 0;
   right: 0;
   margin: 10px;
+}
+
+#summary-panel .no-entities-message {
+  padding: 10px;
+  background-color: #fff;
 }
 
 .trip-plan-details-header {
