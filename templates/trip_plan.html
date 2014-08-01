@@ -196,15 +196,30 @@
     <div class="infowindow" ng-controller="InfowindowCtrl">
       <div class="infowindow-internal">
         <div class="info-section">
-          <div class="name">
+          <span class="name">
             [[ed['name'] ]]
-          </div>
-          <div class="day-and-star" ng-show="showInfoSection()">
-            <span ng-show="ed['day']" class="day">Day [[ed['day'] ]]</span>
-            <span ng-show="ed['starred']" class="glyphicon glyphicon-star favorite-star"></span>
-            <span ng-show="ed['address_precision'] == 'Imprecise'" class="glyphicon glyphicon-exclamation-sign"
-              tooltip="Location is approximate"><span>
-          </div>
+          </span>
+          <span class="metadata">
+            <span ng-show="ed['address_precision'] == 'Imprecise'"
+              class="glyphicon glyphicon-exclamation-sign"
+              tooltip="Location is approximate">
+            </span>
+            <span tc-icon="comment" ng-show="em.hasComments()"
+              tooltip="[[ed['comments'].length ]] comments">
+            </span>
+            {% if allow_editing %}
+            <a ng-click="saveStarState(true)" ng-show="!ed['starred']"
+              href="javascript:void(0)" tooltip="Favorite">
+              <span class="glyphicon glyphicon-star-empty"></span>
+            </a>
+            <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite">
+              <span class="glyphicon glyphicon-star favorite-star"></span>
+            </a>
+            {% else %}
+            <span ng-show="ed['starred']" class="glyphicon glyphicon-star favorite-star">
+            </span>
+            {% endif %}
+          </span>
         </div>
         <div class="comments-section" ng-if="ed['comments'] && ed['comments'].length">
           <div ng-repeat="comment in ed['comments']" class="one-comment">
@@ -236,25 +251,22 @@
             </textarea>
             <div>
               <a ng-click="saveNewComment()" href="javascript:void(0)" class="color-link">Save</a>
-              <a ng-click="closeInlineEditor()" href="javascript:void(0)" class="cancel-link">Cancel</a>
+              <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
             </div>
-          </div>
-          <div ng-if="inlineEditMode == InlineEditMode.DAY_PLANNER">
-            <tc-day-select-dropdown entity-data="ed" on-select="closeInlineEditor()">
-            </tc-day-select-dropdown>
           </div>
           <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="directions-planner">
             Get directions
-            <a ng-click="toggleDirectionsDirection()" href="javascript:void(0)">
-              [[directionsState.direction == 'to' ? 'to' : 'from' ]]
+            <a ng-click="directionsHelper.toggleDirection()" href="javascript:void(0)">
+              [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
             </a>
             <select class="form-control"
-              ng-options="e['name'] for e in allEntities"
-              ng-model="directionsState.destination">
+              ng-options="e['name'] for e in directionsHelper.entities"
+              ng-model="directionsHelper.destination">
               <option value="">Select destination</option>
             </select>
-            <button class="btn btn-primary go-button" ng-click="getDirections()"
-              ng-disabled="!directionsState.destination">
+            <button class="btn btn-primary go-button"
+              ng-click="directionsHelper.getDirections(ed)"
+              ng-disabled="!directionsHelper.destination">
               Go
             </button>
           </div>
@@ -266,52 +278,25 @@
     </div>
   </script>
 
-  {% if allow_editing %}
-  <script type="text/ng-template" id="results-infowindow-template">
-    <div class="infowindow results-infowindow">
-      <div class="infowindow-internal">
-        <div class="info-section">
-          <div class="name">
-            [[ed['name'] ]]
-          </div>
-        </div>
-        <div class="tools-section">
-          <a ng-click="clipEntity()" href="javascript:void(0)"
-            ng-show="!resultAlreadySaved()">
-            <span class="glyphicon glyphicon-plus"></span> Add to trip
-          </a>
-          <div class="save-confirmation" ng-show="resultAlreadySaved()">
-            saved
-          </div>
-        </div>
-      </div>
-    </div>
-  </script>
-  {% endif %}
-
   <script type="text/ng-template" id="map-marker-tools-template">
     <div class="marker-tools">
       {% if allow_editing %}
       <span ng-show="showPrimaryControls">
-        <a ng-click="toggleInlineEdit(InlineEditMode.COMMENTS)" href="javascript:void(0)" tooltip="Comment" tooltip-placement="bottom">
+        <a ng-click="toggleTagsEdit()" href="javascript:void(0)"
+          tooltip="Add Tags" tooltip-placement="bottom">
+          <span class="glyphicon glyphicon-tag"></span>
+        </a>
+        <a ng-click="toggleDirectionsEdit()" href="javascript:void(0)"
+          tooltip="Get directions" tooltip-placement="bottom">
+          <span tc-icon="compass"></span>
+        </a>
+        <a ng-click="toggleCommentsEdit()" href="javascript:void(0)"
+          tooltip="Comment" tooltip-placement="bottom">
           <span tc-icon="comment"></span>
-        </a>
-        <a ng-click="toggleInlineEdit(InlineEditMode.DAY_PLANNER)" href="javascript:void(0)" tooltip="Add to day" tooltip-placement="bottom">
-          <span tc-icon="calendar"></span>
-        </a>
-        <a ng-click="saveStarState(true)" ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="bottom">
-          <span class="glyphicon glyphicon-star-empty"></span>
-        </a>
-        <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="bottom">
-          <span class="glyphicon glyphicon-star favorite-star"></span>
         </a>
       </span>
       <span ng-show="showSecondaryControls">
-        <a ng-click="toggleInlineEdit(InlineEditMode.DIRECTIONS)" href="javascript:void(0)" tooltip="Get directions"
-        tooltip-placement="bottom">
-          <span tc-icon="compass"></span>
-        </a>
-        <a ng-click="openEditPlaceModal('edit-place-modal')" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
+        <a ng-click="openEditPlaceModal()" href="javascript:void(0)" tooltip="Edit" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
         <a ng-click="deleteEntity()" href="javascript:void(0)"
@@ -339,6 +324,29 @@
       {% endif %}
     </div>
   </script>
+
+  {% if allow_editing %}
+  <script type="text/ng-template" id="results-infowindow-template">
+    <div class="infowindow results-infowindow">
+      <div class="infowindow-internal">
+        <div class="info-section">
+          <div class="name">
+            [[ed['name'] ]]
+          </div>
+        </div>
+        <div class="tools-section">
+          <a ng-click="clipEntity()" href="javascript:void(0)"
+            ng-show="!resultAlreadySaved()">
+            <span class="glyphicon glyphicon-plus"></span> Add to trip
+          </a>
+          <div class="save-confirmation" ng-show="resultAlreadySaved()">
+            saved
+          </div>
+        </div>
+      </div>
+    </div>
+  </script>
+  {% endif %}
 
   <script type="text/ng-template" id="day-select-dropdown-template">
     <select class="form-control"

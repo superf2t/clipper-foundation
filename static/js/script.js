@@ -919,51 +919,31 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope, $tripPlanModel, $entityService,
+function InfowindowCtrl($scope, $entityEditingService,
     $accountInfo, $window, $timeout) {
   $scope.inlineEditMode = null;
   $scope.InlineEditMode = InlineEditMode;
 
-  $scope.allEntities = $tripPlanModel.entities();
-  $scope.directionsState = {
-    direction: 'from',
-    destination: null
-  };
-
   $scope.showPrimaryControls = true;
   $scope.showSecondaryControls = false;
 
-  $scope.toggleDirectionsDirection = function() {
-    $scope.directionsState.direction = 
-      $scope.directionsState.direction == 'to' ? 'from' : 'to';
+  $scope.openNewComment = function() {
+    $scope.newComment = {
+      'entity_id': $scope.ed['entity_id'],
+      'text': null
+    };
+    $scope.openInlineEditorInternal(InlineEditMode.COMMENTS);
   };
 
-  $scope.getDirections = function() {
-    if (!$scope.directionsState.destination) {
-      return;
-    }
-    var origin = $scope.directionsState.direction == 'to'
-      ? $scope.ed : $scope.directionsState.destination;
-    var destination = $scope.directionsState.direction == 'to'
-      ? $scope.directionsState.destination : $scope.ed;
-    var url = 'https://www.google.com/maps/dir/' + 
-      new ItemModel(origin).latlngString() + '/' +
-      new ItemModel(destination).latlngString();
-    $window.open(url, '_blank');
+  $scope.closeNewComment = function() {
+    $scope.newComment = {};
+    $scope.closeInlineEditorInternal();
   };
 
   $scope.saveNewComment = function() {
-    if (!$scope.newComment['text']) {
-      return;
-    }
-    $entityService.addComment($scope.newComment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.addNewComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeInlineEditor();
-        }
-      });
+    $entityEditingService.saveNewComment($scope.newComment, function() {
+      $scope.closeNewComment();
+    });
   };
 
   $scope.showInfoSection = function() {
@@ -974,28 +954,32 @@ function InfowindowCtrl($scope, $tripPlanModel, $entityService,
     return !!$scope.inlineEditMode;
   };
 
-  $scope.toggleInlineEdit = function(inlineEditMode) {
-    if ($scope.inlineEditMode == inlineEditMode) {
-      $scope.inlineEditMode = null;
+  $scope.toggleCommentsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.COMMENTS) {
+      $scope.closeNewComment();
     } else {
-      if (!$accountInfo['logged_in']
-        && inlineEditMode == InlineEditMode.COMMENTS) {
+      if (!$accountInfo['logged_in']) {
         $window.alert('Please log in before making comments.');
         return;
       }
-
-      $scope.inlineEditMode = inlineEditMode;
-      if (inlineEditMode == InlineEditMode.COMMENTS) {
-        $scope.newComment = {
-          'entity_id': $scope.ed['entity_id'],
-          'text': ''
-        };
-      }
+      $scope.openNewComment();
     }
+  };
+
+  $scope.toggleDirectionsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.DIRECTIONS) {
+      $scope.closeInlineEditorInternal();
+    } else {
+      $scope.openInlineEditorInternal(InlineEditMode.DIRECTIONS);
+    }
+  };
+
+  $scope.openInlineEditorInternal = function(inlineEditMode) {
+    $scope.inlineEditMode = inlineEditMode;
     $timeout($scope.onSizeChange);
   };
 
-  $scope.closeInlineEditor = function() {
+  $scope.closeInlineEditorInternal = function() {
     $scope.inlineEditMode = null;
     $timeout($scope.onSizeChange);
   };

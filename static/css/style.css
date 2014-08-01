@@ -1047,7 +1047,6 @@ hr.dropdown-separator {
 .infowindow-internal {
   min-width: 200px;
   max-width: 400px;
-  text-align: center;
   border-radius: 1px;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
@@ -1063,8 +1062,17 @@ hr.dropdown-separator {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.infowindow .day-and-star {
-  font-size: 9pt;
+.infowindow .info-section .name {
+  display: inline-block;
+}
+
+.infowindow .info-section .metadata {
+  display: inline-block;
+  float: right;
+}
+
+.infowindow .info-section svg {
+  fill: #fff;
 }
 
 .infowindow .comments-section {
@@ -1107,6 +1115,7 @@ hr.dropdown-separator {
   padding: 5px 10px;
   border-bottom: 1px solid #777;
   font-size: 12px;
+  text-align: center;
 }
 
 .infowindow .workspace-section a {
@@ -1141,7 +1150,7 @@ hr.dropdown-separator {
 
 .marker-tools {
   background-color: #fff;
-  font-size: 14pt;
+  font-size: 12pt;
   padding: 5px;
   min-width: 130px;
 }
@@ -1160,6 +1169,10 @@ hr.dropdown-separator {
 
 .marker-tools a.already-clipped {
   color: #777;
+}
+
+.results-infowindow {
+  text-align: center;
 }
 
 .results-infowindow .tools-section {
