@@ -221,7 +221,7 @@
       <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan">
         <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
           <tc-trip-plan-details-header trip-plan="tripPlan"
-            num-entities="tripPlan['num_entities']" for-guide="{{is_featured | jsbool}}">
+            num-entities="tripPlan['num_entities']" include-creator="false">
           </tc-trip-plan-details-header>
         </a>
       </span>
@@ -233,7 +233,7 @@
     <div class="trip-plan-infowindow">
       <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
         <tc-trip-plan-details-header trip-plan="tripPlan"
-          num-entities="tripPlan['num_entities']" for-guide="{{is_featured | jsbool}}">
+          num-entities="tripPlan['num_entities']" include-creator="false">
         </tc-trip-plan-details-header>
       </a>
     </div>

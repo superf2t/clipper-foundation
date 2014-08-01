@@ -728,7 +728,8 @@
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
-        num-entities="planModel.numEntities()" for-guide="false" full-bleed="true" include-details="true">
+        num-entities="planModel.numEntities()" full-bleed="true"
+        include-details="true" include-creator="true">
       </tc-trip-plan-details-header>
       <tc-entity-details ng-repeat="entity in planModel.entities()"
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
@@ -1152,7 +1153,7 @@
         </div>
         <div ng-show="guides && guides.length">
           <tc-trip-plan-details-header ng-repeat="guide in guides" trip-plan="guide"
-            num-entities="guide['entities'].length" for-guide="true"
+            num-entities="guide['entities'].length" include-creator="true"
             clickable="true" on-click="selectGuide(guide)">
           </tc-trip-plan-details-header>
         </div>
@@ -1166,7 +1167,7 @@
           [[selectedGuide['name'] ]]
         </div>
         <tc-trip-plan-details-header trip-plan="selectedGuide"
-          num-entities="selectedGuide['entities'].length" for-guide="true" full-bleed="true" include-details="true">
+          num-entities="selectedGuide['entities'].length" full-bleed="true" include-details="true" include-creator="true">
         </tc-trip-plan-details-header>
         <tc-entity-details ng-repeat="entity in selectedGuide['entities']"
           entity="entity" is-editable="false" for-results="true"

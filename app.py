@@ -221,7 +221,6 @@ def profile(profile_name):
     return render_template('profile.html',
         display_user=display_user,
         trip_plans=trip_plans,
-        is_featured=is_featured,
         all_user_trip_plans=sorted_user_trip_plans,
         flashed_messages=flashed_messages)
 

@@ -860,10 +860,10 @@ function tcTripPlanDetailsHeader() {
     scope: {
       tripPlan: '=',
       numEntities: '=',
-      forGuide: '=',
       fullBleed: '=',
       clickable: '=',
       includeDetails: '=',
+      includeCreator: '=',
       onClick: '&'
     }
   };

@@ -9,6 +9,7 @@ from dateutil import tz
 
 import constants
 import crypto
+import featured_profiles
 import enums
 import serializable
 import struct
@@ -300,7 +301,7 @@ class TripPlan(serializable.Serializable):
         'content_date', 'view_count', 'clip_count',
         # Display-only fields
         'content_display_date', 'source_icon', 'source_display_name',
-        'num_entities')
+        'profile_url', 'num_entities')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
@@ -351,9 +352,13 @@ class TripPlan(serializable.Serializable):
                 source_host = urlparse.urlparse(self.source_url).netloc.lower()
                 self.source_icon = constants.SOURCE_HOST_TO_ICON_URL.get(source_host)
                 self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
+                self.profile_url = '/profile/' + featured_profiles.profile_name_token(source_host)
             else:
                 self.source_icon = None
                 self.source_display_name = None
+                self.profile_url = None
+        else:
+            self.profile_url = '/profile/' + self.user.public_id
 
     def entity_by_source_url(self, source_url):
         for entity in self.entities:
