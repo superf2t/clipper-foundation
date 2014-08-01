@@ -1174,9 +1174,19 @@ hr.dropdown-separator {
   padding: 0 3px;
 }
 
-.marker-tools a.already-clipped {
-  color: #777;
-;
+.marker-tools .non-editor-control-icon {
+  position: relative;
+  top: 3px;
+}
+
+.marker-tools .add-to-trip-cta {
+  color: #4087F9;
+  font-size: 11pt;
+}
+
+.marker-tools .already-saved {
+  color: #999;
+  padding: 0 3px;
 }
 
 .results-infowindow {

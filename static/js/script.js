@@ -927,13 +927,33 @@ function tcDaySelectDropdown() {
   };
 }
 
-function InfowindowCtrl($scope, $entityEditingService,
+function InfowindowCtrl($scope, $tripPlanModel, $activeTripPlanState,
+    $entityEditingService, $entityClippingService,
     $accountInfo, $window, $timeout) {
   $scope.inlineEditMode = null;
   $scope.InlineEditMode = InlineEditMode;
 
   $scope.showPrimaryControls = true;
   $scope.showSecondaryControls = false;
+
+  $scope.tagState = {rawInput: null};
+  $scope.newComment = {};
+
+  $scope.openTagsEditor = function() {
+    $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
+    $scope.openInlineEditorInternal(InlineEditMode.TAGS);
+  };
+
+  $scope.closeTagsEditor = function() {
+    $scope.tagState.rawInput = null;
+    $scope.closeInlineEditorInternal();
+  };
+
+  $scope.saveTags = function() {
+    $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
+      $scope.closeTagsEditor();
+    });
+  };
 
   $scope.openNewComment = function() {
     $scope.newComment = {
@@ -960,6 +980,14 @@ function InfowindowCtrl($scope, $entityEditingService,
 
   $scope.workspaceActive = function() {
     return !!$scope.inlineEditMode;
+  };
+
+  $scope.toggleTagsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.TAGS) {
+      $scope.closeTagsEditor();
+    } else {
+      $scope.openTagsEditor();
+    }
   };
 
   $scope.toggleCommentsEdit = function() {
@@ -995,6 +1023,14 @@ function InfowindowCtrl($scope, $entityEditingService,
   $scope.toggleControls = function() {
     $scope.showPrimaryControls = !$scope.showPrimaryControls;
     $scope.showSecondaryControls = !$scope.showSecondaryControls;
+  };
+
+  $scope.clipEntity = function() {
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
+  };
+
+  $scope.isAlreadySaved = function() {
+    return $activeTripPlanState.isSaved($scope.ed);
   };
 }
 
