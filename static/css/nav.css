@@ -59,6 +59,7 @@
 
 .navbar .place-count {
   background-color: #4087F9;
+  border-radius: 4px;
   color: #fff;
   padding: 2px 8px;
   margin: 7px 0 0 0;
