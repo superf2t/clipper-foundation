@@ -96,21 +96,15 @@ def clipper_map_iframe():
 @app.route('/trip_plan')
 def trip_plan():
     all_trip_plans = data.load_all_trip_plans(g.session_info)
-    if all_trip_plans and not request.values.get('tutorial'):
+    if all_trip_plans:
         trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
+        redirect_url = '/trip_plan/%s' % trip_plan.trip_plan_id
     else:
-        trip_plan = create_and_save_default_trip_plan(g.session_info)
-    redirect_url = '/trip_plan/%s' % trip_plan.trip_plan_id
-    if request.values.get('tutorial'):
-        redirect_url += '?tutorial=1'
+        redirect_url = '/'
     return redirect(redirect_url)
 
 @app.route('/trip_plan/<int:trip_plan_id>')
 def trip_plan_by_id(trip_plan_id):
-    # Temporary hack to allow old trip plan ids to redirect to new ones.
-    if trip_plan_id > 2**53:
-        return redirect('/trip_plan/%s' % str(trip_plan_id)[:15])
-
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)
     note_service = serviceimpls.NoteService(g.session_info)
@@ -138,11 +132,6 @@ def trip_plan_by_id(trip_plan_id):
         # We have them but we won't use them since there's no shopping cart.
         pass
 
-    needs_tutorial = (allow_editing and len(all_trip_plans) == 1 and not entities) or (
-        request.values.get('tutorial') and not entities)
-    initial_state = data.InitialPageState(request.values.get('sort'),
-        needs_tutorial=needs_tutorial)
-
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
 
     response = render_template('trip_plan.html',
@@ -153,12 +142,10 @@ def trip_plan_by_id(trip_plan_id):
         active_trip_plan=active_trip_plan,
         active_trip_plan_entity_count=len(active_entities) if active_entities else 0,
         allow_editing=allow_editing,
-        needs_tutorial=needs_tutorial,
         account_info=g.account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
-        initial_state=initial_state,
         flashed_messages=flashed_messages)
     return response
 
@@ -203,6 +190,27 @@ def guides(location):
         guides=guides,
         all_trip_plans=sorted_user_trip_plans,
         location_name=config.city_name if config else '',
+        flashed_messages=flashed_messages)
+
+@app.route('/profile/<profile_name>')
+def profile(profile_name):
+    try:
+        db_user = user.User.get_by_public_id(profile_name)
+    except:
+        return redirect('/')
+    display_user = data.DisplayUser(db_user.public_id if db_user else None, db_user.display_name)
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    req = serviceimpls.TripPlanGetRequest(public_user_id=profile_name)
+    trip_plans = trip_plan_service.get(req).trip_plans
+
+    all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+    sorted_user_trip_plans = sorted(all_user_trip_plans, cmp=lambda x, y: x.compare(y))
+
+    flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
+    return render_template('profile.html',
+        display_user=display_user,
+        trip_plans=trip_plans,
+        all_user_trip_plans=sorted_user_trip_plans,
         flashed_messages=flashed_messages)
 
 @app.route('/bookmarklet.js')

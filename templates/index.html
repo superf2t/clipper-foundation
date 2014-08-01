@@ -52,7 +52,7 @@
       -webkit-font-smoothing:antialiased;
     }
 
-    .my-trips {
+    .login {
       position: absolute;
       top: 20px;
       right: 20px;
@@ -60,11 +60,11 @@
       -webkit-font-smoothing:antialiased;
     }
 
-    .my-trips a {
+    .login a {
       color: #FFFFFF;
     }
 
-    .my-trips a:hover {
+    .login a:hover {
       color: #2D73A0;
     }
 
@@ -469,10 +469,16 @@
     <div class="logo">
       TravelClipper
     </div>
-    <div class="my-trips">
+    <div class="login">
+      {% if account_info.logged_in %}
       <a href="/trip_plan">
         My Trips
       </a>
+      {% else %}
+      <a href="{{url_for('user.login', next='/trip_plan')}}">
+        Login
+      </a>
+      {% endif %}
     </div>
   </div>
 

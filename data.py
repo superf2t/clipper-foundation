@@ -509,13 +509,6 @@ class FlashedMessage(serializable.Serializable):
         self.message = message
         self.category = category
 
-class InitialPageState(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('sort', 'needs_tutorial')
-
-    def __init__(self, sort=None, needs_tutorial=None):
-        self.sort = sort
-        self.needs_tutorial = needs_tutorial
-
 class AccountInfo(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('email',
         serializable.objf('user', DisplayUser), 'logged_in')

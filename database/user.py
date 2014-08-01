@@ -30,6 +30,11 @@ class User(db.Model, user.UserMixin):
         return cls.query.filter(User.id.in_(ids))
 
     @classmethod
+    def get_by_public_id(cls, public_id):
+        users = cls.get_by_public_ids([public_id])
+        return users[0] if users else None
+
+    @classmethod
     def get_by_email(cls, email):
         return cls.query.filter(func.lower(cls.email) == func.lower(email)).first()
 

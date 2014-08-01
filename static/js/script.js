@@ -229,6 +229,10 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.entityDatas;
   };
 
+  this.hasEntities = function() {
+    return this.entityDatas && this.entityDatas.length;
+  };
+
   this.noteItems = function() {
     return _.map(this.notes, function(note) {
       return new ItemModel(note);
@@ -1721,47 +1725,17 @@ var InfoPanelMode = {
   SETTINGS: 6
 };
 
-function PageStateModel(grouping, needsTutorial) {
-  this.omniboxOpen = false;
+function PageStateModel() {
   this.summaryPanelExpanded = true;
   this.infoPanelExpanded = true;
   this.infoPanelMode = InfoPanelMode.DETAILS;
   this.infoPanelShowExtendedNavItems = false;
-  this.inNewTripPlanModal = false;
-  this.grouping = grouping;
   this.selectedEntity = null;
-  this.needsTutorial = needsTutorial;
   this.showAfterNewTripPlanPanel = false;
-
-  this.isMapFullScreen = function() {
-    return this.inNewTripPlanModal;
-  };
-
-  this.isGroupByCategory = function() {
-    return this.grouping == Grouping.CATEGORY;
-  };
-
-  this.isGroupByDay = function() {
-    return this.grouping == Grouping.DAY;
-  };
-
-  this.groupByCategory = function() {
-    this.grouping = Grouping.CATEGORY;
-  };
-
-  this.groupByDay = function() {
-    this.grouping = Grouping.DAY;
-  };
 
   this.entityIsSelected = function(entityId) {
     return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
   };
-}
-
-PageStateModel.fromInitialState = function(initialState) {
-  var grouping = initialState['sort'] == 'day' ? Grouping.DAY : Grouping.CATEGORY;
-  var needsTutorial = initialState['needs_tutorial'];
-  return new PageStateModel(grouping, needsTutorial);
 }
 
 function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
@@ -1915,36 +1889,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.refreshState = {
     paused: false
   };
-  $scope.clipState = {
-    url: null,
-    clipping: false,
-    statusCode: null
-  };
-  this.processItemsIntoGroups = function() {
-    $scope.itemGroups = processIntoGroups($scope.pageStateModel.grouping, $scope.planModel.allItems());
-  };
-  this.processItemsIntoGroups();
-
-  $scope.scrollState = {
-    entityId: null
-  };
-
-  $scope.$on('scrolltoentity', function($event, entityId) {
-    $scope.scrollState.entityId = entityId;
-  });
-
-  $scope.$on('redrawgroupings', function($event, opt_callback) {
-    me.processItemsIntoGroups();
-    opt_callback && opt_callback();
-  });
-
-  $scope.emphasizeDay = function(dayNumber) {
-    $filterModel.emphasizedDayNumber = dayNumber;
-  };
-
-  $scope.deemphasizeDay = function() {
-    $filterModel.emphasizedDayNumber = null;
-  };
 
   $scope.resetMapState = function() {
     $scope.$broadcast('closeallinfowindows');
@@ -1977,10 +1921,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $searchResultState.clear();
   };
 
-  $scope.inTutorial = function() {
-    return $pageStateModel.needsTutorial && $tripPlanModel.isEmpty();
-  };
-
   $scope.updateMap = function() {
     google.maps.event.trigger($map, 'resize');
     $scope.$broadcast('mapresized');
@@ -1994,110 +1934,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $scope.$apply();
   });
 
-  $scope.groupByCategory = function() {
-    if (!$scope.pageStateModel.isGroupByCategory()) {
-      $scope.pageStateModel.groupByCategory();
-      me.processItemsIntoGroups();
-    }
-  };
-
-  $scope.groupByDay = function() {
-    if (!$scope.pageStateModel.isGroupByDay()) {
-      $scope.pageStateModel.groupByDay();
-      me.processItemsIntoGroups();
-    }
-  };
-
-  $scope.coverImageClicked = function() {
-    $scope.pageStateModel.selectedEntity = null;
-  };
-
-  $scope.selectEntity = function(entityData) {
-    $scope.pageStateModel.selectedEntity = entityData;
-    $searchResultState.selectedIndex = null;
-  };
-
-  $scope.saveTripPlanSettings = function() {
-    // Prevent double-submits
-    if (me.alreadySaving) {
-      return;
-    }
-    me.alreadySaving = true;
-    if ($scope.editableTripPlanSettings.name == $tripPlan['name']) {
-      $scope.editingTripPlanSettings = false;
-      me.alreadySaving = false;
-      return;
-    }
-    var editedTripPlan = {
-      'trip_plan_id': $tripPlan['trip_plan_id'],
-      'name': $scope.editableTripPlanSettings.name
-    };
-    $tripPlanService.editTripPlan(editedTripPlan)
-      .success(function(response) {
-        var newName = $scope.editableTripPlanSettings.name;
-        document.title = newName;
-        $tripPlanModel.tripPlanData['name'] = newName;
-        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
-        // TODO: This might be redundant now.
-        $tripPlan['name'] = newName;
-        me.alreadySaving = false;
-      })
-      .error(function() {
-        alert('Failed to save edits');
-        me.alreadySaving = false;
-      });
-    $scope.editingTripPlanSettings = false;
-  };
-
-  $scope.cloneCurrentTripPlan = function() {
-    $tripPlanService.cloneTripPlan($tripPlan['trip_plan_id'])
-      .success(function(response) {
-        var newTripPlanId = response['trip_plan']['trip_plan_id'];
-        location.href = '/trip_plan/' + newTripPlanId;
-      });
-  };
-
-  $scope.openBulkClipModal = function(windowClass) {
-    $modal.open({
-      templateUrl: 'bulk-clip-modal-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
+  var initialBounds = $tripPlanModel.getMapBounds();
+  if (initialBounds) {
+    $map.fitBounds(initialBounds);
+  }
 
   $scope.startGmapsImport = function() {
     $modal.open({
       templateUrl: 'gmaps-importer-template',
       scope: $scope.$new(true)
-    });
-  };
-
-  $scope.openDayPlanner = function(windowClass) {
-    $modal.open({
-      templateUrl: 'day-planner-template',
-      scope: $scope,
-      backdrop: 'static',
-      windowClass: windowClass
-    });
-  };
-
-  $scope.openTripPlanEditor = function(windowClass) {
-    $modal.open({
-      templateUrl: 'trip-plan-settings-editor-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
-
-  $scope.openSharingSettings = function(windowClass) {
-    if (!$accountInfo['logged_in']) {
-      alert('Please log in before sharing trip plans');
-      return;
-    }
-    $modal.open({
-      templateUrl: 'sharing-settings-editor-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
     });
   };
 
@@ -2109,47 +1954,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $scope.$broadcast('closeallcontrols');
   });
 
-  $scope.$on('asktoopeninlineedit', function($event, entityId, inlineEditMode) {
-    $scope.$broadcast('openinlineedit', entityId, inlineEditMode);
-  });
-
-  var startTripPlanModal = null;
-
-  this.selectTripLocation = function(tripPlanDetails) {
-    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
-    $tripPlanService.editTripPlan(tripPlanDetails)
-      .success(function(response) {
-        $map.setCenter(gmapsLatLngFromJson(tripPlanDetails['location_latlng']));
-        if (tripPlanDetails['location_bounds']) {
-          $map.fitBounds(gmapsBoundsFromJson(tripPlanDetails['location_bounds']));
-        }
-        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
-        document.title = response['trip_plans'][0]['name'];
-        startTripPlanModal && startTripPlanModal.close();
-      });
-  };
-
-  if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
-    $pageStateModel.inNewTripPlanModal = true;
-    startTripPlanModal = $modal.open({
-      templateUrl: 'start-new-trip-modal-template',
-      scope: $.extend($scope.$new(true), {selectTripLocation: this.selectTripLocation}),
-      backdrop: 'static',
-      windowClass: 'start-new-trip-modal-window',
-      keyboard: false
-    });
-    startTripPlanModal.result.finally(function() {
-      $pageStateModel.inNewTripPlanModal = false;
-    });
-  }
-
-  var initialBounds = $tripPlanModel.getMapBounds();
-  if (initialBounds) {
-    $map.fitBounds(initialBounds);
-  }
-
   this.refresh = function(opt_force, opt_callback) {
-    // TODO: Don't even register the refresh loop if editing is not allowed.
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
       return;
     }
@@ -2163,22 +1968,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
           || response['response_summary'] == 'NO_CHANGES_SINCE_LAST_MODIFIED') {
           return;
         }
-        var planModel = $scope.planModel;
-        var newEntities = response['entities'];
-        $tripPlan['last_modified'] = response['last_modified'];
-        // Angular's dirty-checking does not seem to pick up that the
-        // model has changed if we just assign to the new model...
-        // TODO: This is probably a non-issue now.  Dirty-checking should
-        // work if you update a model in-place instead of replacing it.
-        // So the timeout can probably be removed now.
-        $scope.planModel = null;
-        $timeout(function() {
-          planModel.resetEntities(newEntities);
-          $scope.planModel = planModel;
-          me.processItemsIntoGroups();
-          $map.fitBounds($tripPlanModel.getMapBounds());
-          opt_callback && opt_callback;
-        });
+        $tripPlanModel.updateLastModified(response['last_modified']);
+        $tripPlanModel.resetEntities(response['entities']);
+        $map.fitBounds($tripPlanModel.getMapBounds());
+        opt_callback && opt_callback;
       });
   };
 
@@ -2192,12 +1985,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $scope.refreshState.paused = false;
   });
 
-  var refreshInterval = 5000;
-  function refreshPoll() {
-    me.refresh();
+  if ($allowEditing) {
+    var refreshInterval = 5000;
+    function refreshPoll() {
+      me.refresh();
+      $timeout(refreshPoll, refreshInterval);
+    }
     $timeout(refreshPoll, refreshInterval);
   }
-  $timeout(refreshPoll, refreshInterval);
 }
 
 function gmapsLatLngFromJson(latlngJson) {
@@ -2334,49 +2129,6 @@ function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
       }
     }
     return tripPlanDetails;
-  };
-}
-
-function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
-  $scope.allEntities = angular.copy($tripPlanModel.entities());
-  $scope.selectionState = {
-    selectedTripPlan: $allTripPlans.length ? $allTripPlans[0] : null
-  };
-
-  $scope.selectAll = function() {
-    $.each($scope.allEntities, function(i, entity) {
-      entity.selected = true;
-    });
-  };
-
-  $scope.selectNone = function() {
-    $.each($scope.allEntities, function(i, entity) {
-      entity.selected = false;
-    });
-  };
-
-  $scope.selectedEntities = function() {
-    return _.filter($scope.allEntities, function(entity) {
-      return entity.selected;
-    });
-  };
-
-  $scope.save = function() {
-    var entities = $scope.selectedEntities();
-    $.each(entities, function(i, entity) {
-      entity['day'] = null;
-      entity['day_position'] = null;
-      entity['entity_id'] = null;
-    });
-    $scope.saving = true;
-    $entityService.saveNewEntities(entities,
-      $scope.selectionState.selectedTripPlan['trip_plan_id'])
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.saving = false;
-          $scope.saved = true;
-        }
-      });
   };
 }
 
@@ -5047,8 +4799,7 @@ angular.module('filtersModule', [])
 
 window['initApp'] = function(tripPlan, entities, notes,
     allTripPlans, activeTripPlan, activeTripPlanEntityCount,
-    accountInfo, datatypeValues, allowEditing, sampleSites,
-    initialState, flashedMessages) {
+    accountInfo, datatypeValues, allowEditing, sampleSites, flashedMessages) {
 
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
@@ -5056,7 +4807,7 @@ window['initApp'] = function(tripPlan, entities, notes,
     .value('$allTripPlans', allTripPlans)
     .value('$activeTripPlanState', new ActiveTripPlanStateModel(
       allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
-    .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
+    .value('$pageStateModel', new PageStateModel())
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
@@ -5074,7 +4825,6 @@ window['initApp'] = function(tripPlan, entities, notes,
       'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', RootCtrl)
-    .controller('BulkClipCtrl', BulkClipCtrl)
     .controller('EntitySummaryCtrl', EntitySummaryCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
