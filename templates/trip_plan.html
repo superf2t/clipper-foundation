@@ -38,11 +38,6 @@
         </div>
       </div>
     </div>
-
-    {% if needs_tutorial %}
-    <div ng-include="'tutorial-left-panel-template'" ng-if="inTutorial()">
-    </div>
-    {% endif %}
   </div>
 
   <div id="info-panel" ng-show="!pageStateModel.inNewTripPlanModal"
@@ -89,10 +84,6 @@
       <div id="map">
       </div>
     </div>
-    {% if needs_tutorial %}
-    <div ng-include="'tutorial-overlay-template'">
-    </div>
-    {% endif %}
     <div ng-include="'control-buttons-template'">
     </div>
   </div>
@@ -172,25 +163,6 @@
       </button>
     </div>
   </script>
-
-  {% if allow_editing %}
-  <script type="text/ng-template" id="trip-plan-settings-dropdown-template">
-    <ul class="dropdown-menu right-top-dropdown-menu">
-      <li>
-        <a ng-click="openTripPlanEditor('trip-plan-settings-editor-modal')" href="javascript:void(0)">Edit trip name and settings</a>
-      </li>
-      <li>
-        <a ng-click="openDayPlanner('day-planner-modal-window')" href="javascript:void(0)">Advanced Planner</a>
-      </li>
-      <li>
-        <a ng-click="startGmapsImport()" href="javascript:void(0)">Import Google Custom Map</a>
-      </li>
-      <li>
-        <a ng-click="deleteCurrentTripPlan()" href="javascript:void(0)">Delete Trip</a>
-      </li>
-    </ul>
-  </script>
-  {% endif %}
 
   <script type="text/ng-template" id="infowindow-template">
     <div class="infowindow" ng-controller="InfowindowCtrl">
@@ -1066,15 +1038,6 @@
     </div>
   </script>
 
-  {% if allow_editing and not plan.location_bounds %}
-  <script type="text/ng-template" id="start-new-trip-modal-template">
-    <div class="start-new-trip-modal">
-      <div tc-start-new-trip-input on-select-place="selectTripLocation($tripPlanDetails)">
-      </div>
-    </div>
-  </script>
-  {% endif %}
-
   {% if allow_editing %}
   <script type="text/ng-template" id="gmaps-importer-template">
     <div class="gmaps-importer-modal" ng-controller="GmapsImporterCtrl">
@@ -1646,80 +1609,6 @@
     </div>
   </script>
 
-  {% if needs_tutorial %}
-  <script type="text/ng-template" id="tutorial-left-panel-template">
-    <div class="tutorial-left-panel">
-      <div ng-repeat="ignored in [1, 2, 3]" class="entity-placeholder">
-        <span class="img-placeholder">
-        </span>
-        <span class="details-placeholder">
-        </span>
-      </div>
-    </div>
-  </script>
-
-  <script type="text/ng-template" id="tutorial-overlay-template">
-    <div class="tutorial-overlay" ng-if="planModel.isEmpty() && !pageStateModel.inNewTripPlanModal">
-      <div class="backdrop">
-      </div>
-      <div class="content" ng-show="!pageStateModel.infoPanelExpanded">
-        <div class="connector">
-        </div>
-        <div class="header">Welcome to your [[planModel.tripPlanName()]] trip plan!</div>
-        <div class="content-body" ng-controller="AddPlaceOptionsCtrl">
-          <div class="intro">Quickly build a personal trip plan by adding places</div>
-          <div class="section">
-            <span class="section-icon">
-              <span class="glyphicon glyphicon-search"></span>
-            </span><!--
-            --><span class="section-text">
-              <a ng-click="setOption(options[0])" href="javascript:void(0)" class="cta-link">
-                Search
-              </a>
-              for places - like those your friends and family have recommended
-            </span>
-          </div>
-          <div class="section">
-            <span class="section-icon">
-              <span class="glyphicon glyphicon-heart"></span>
-            </span><!--
-            --><span class="section-text">
-              Discover places rated highly by users
-              <a ng-click="setOption(options[1])" href="javascript:void(0)" class="cta-link">
-                from the web
-              </a>
-            </span>
-          </div>
-          <div class="section">
-            <span class="section-icon">
-              <span class="glyphicon glyphicon-book"></span>
-            </span><!--
-            --><span class="section-text">
-              View full
-              <a ng-click="setOption(options[2])" href="javascript:void(0)" class="cta-link">
-                travel guides
-              </a>
-              - then pick and choose the places that you like
-            </span>
-          </div>
-          <div class="section">
-            <span class="section-icon">
-              <span class="glyphicon glyphicon-paperclip"></span>
-            </span><!--
-            --><span class="section-text">
-              Perform research across the web and
-              <a ng-click="setOption(options[3])" href="javascript:void(0)" class="cta-link">
-                clip your own
-              </a>
-              places from any website
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </script>
-  {% endif %}
-
   <script type="text/ng-template" id="user-icon-template">
     <a href="javascript:void(0)" tooltip="[[noTooltip ? null : user['display_name'] ]]"
       tooltip-append-to-body="true">
@@ -1736,7 +1625,7 @@
       </div>
       <div class="panel-body">
         <div class="close-button">
-          <a ng-click="onClose()" href="javascript:void(0)">
+        <a ng-click="onClose()" href="javascript:void(0)">
             <span class="glyphicon glyphicon-remove"></span>
           </a>
         </div>
@@ -1787,7 +1676,6 @@
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}},
       {{sample_sites_json|safe}},
-      {{initial_state.to_json_str()|safe}},
       {{to_json_str(flashed_messages)|safe}});
   </script>
 </body>

@@ -13,6 +13,10 @@
 // -Add back a control to recenter the map on the trip.
 // -Figure out whether to render results/guide markers differently.
 // -ANALYTICS
+// -Set a referral cookie based on the source= url param and store
+//  the origina referral source when creating new trip plans.
+// -Have the sign up page link to the profile page after creation
+// -Add UI hook for Google Custom Maps import
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
