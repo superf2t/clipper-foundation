@@ -100,6 +100,8 @@ def trip_plan():
     if all_trip_plans:
         trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
         redirect_url = '/trip_plan/%s' % trip_plan.trip_plan_id
+    elif g.session_info.logged_in():
+        redirect_url = '/profile/' + g.account_info.user.public_id
     else:
         redirect_url = '/'
     return redirect(redirect_url)
@@ -217,10 +219,13 @@ def profile(profile_name):
     all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     sorted_user_trip_plans = sorted(all_user_trip_plans, cmp=lambda x, y: x.compare(y))
 
+    viewer_is_owner = g.session_info.logged_in() and current_user.id == db_user.id
+
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
     return render_template('profile.html',
         display_user=display_user,
         trip_plans=trip_plans,
+        viewer_is_owner=viewer_is_owner,
         all_user_trip_plans=sorted_user_trip_plans,
         flashed_messages=flashed_messages)
 

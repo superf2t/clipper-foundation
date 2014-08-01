@@ -471,7 +471,7 @@
     </div>
     <div class="login">
       {% if account_info.logged_in %}
-      <a href="/trip_plan">
+      <a href="/profile/{{account_info.user.public_id}}">
         My Trips
       </a>
       {% else %}

@@ -4,10 +4,8 @@
 // -Implement rendering for entity details listings that have no photos.
 // -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 // -Get an email sender account on the new domain.
-// -Make sure all featured guides have the GUIDE bit set.
 // -Check that rating_max is set on prod guides.
 // -Test help text for the clipper, and get IE commands.
-// -Render creator info in the details panel.
 // -Do something with the entity editor.
 // -Lock down admin
 // -Add back a control to recenter the map on the trip.

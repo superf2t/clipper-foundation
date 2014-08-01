@@ -343,6 +343,7 @@ class TripPlan(serializable.Serializable):
 
     def initialize(self):
         self.num_entities = len(self.entities)
+        self.profile_url = None
         if self.trip_plan_type == TripPlanType.GUIDE.name:
             if self.content_date:
                 self.content_display_date = self.content_date_datetime().strftime('%B %Y')
@@ -357,7 +358,7 @@ class TripPlan(serializable.Serializable):
                 self.source_icon = None
                 self.source_display_name = None
                 self.profile_url = None
-        else:
+        elif self.user and self.user.public_id:
             self.profile_url = '/profile/' + self.user.public_id
 
     def entity_by_source_url(self, source_url):
