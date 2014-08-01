@@ -196,7 +196,8 @@ def guides(location):
 @app.route('/profile/<profile_name>')
 def profile(profile_name):
     featured_trip_plan_ids = featured_profiles.PROFILE_NAME_TO_TRIP_PLAN_IDS.get(profile_name)
-    if featured_trip_plan_ids:
+    is_featured = bool(featured_trip_plan_ids)
+    if is_featured:
         req = serviceimpls.TripPlanGetRequest(trip_plan_ids=featured_trip_plan_ids)
         display_user = data.DisplayUser()
     else:
@@ -210,7 +211,7 @@ def profile(profile_name):
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     trip_plans = trip_plan_service.get(req).trip_plans
 
-    if featured_trip_plan_ids and trip_plans and not display_user.display_name:
+    if is_featured and trip_plans and not display_user.display_name:
         display_user.display_name = trip_plans[0].source_display_name
 
     all_user_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
@@ -220,6 +221,7 @@ def profile(profile_name):
     return render_template('profile.html',
         display_user=display_user,
         trip_plans=trip_plans,
+        is_featured=is_featured,
         all_user_trip_plans=sorted_user_trip_plans,
         flashed_messages=flashed_messages)
 
