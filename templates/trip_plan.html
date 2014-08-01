@@ -741,6 +741,7 @@
           <span class="glyphicon glyphicon-chevron-up"></span>
         </a>
       </div>
+      {% if allow_editing %}
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
         <p>
           Details about your places go here.
@@ -760,6 +761,7 @@
           from the menu above to add places to your trip.
         </p>
       </div>
+      {% endif %}
     </div>
   </script>
 
