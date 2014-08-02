@@ -34,7 +34,7 @@ a.white-link svg {
 }
 
 a.white-link:hover {
-  color: #2D73A0;
+  color: #FFFFFF;
 }
 
 a.warning-link {
@@ -52,6 +52,15 @@ a.underline-link {
 a.help-prompt {
   color: #000;
   opacity: 0.5;
+}
+
+a.add-to-trip-link {
+  color: #4087F9;
+  font-weight: 500;
+}
+
+a.add-to-trip-link:hover {
+  color: #4CBDC9;
 }
 
 a.cta-link {
@@ -146,8 +155,40 @@ a:hover .tc-icon svg {
   color: #86BBFF;
 }
 
+/*.bg-lodging {
+  border-bottom: 3px solid #456BE8;
+}
+
+.bg-food_and_drink {
+  border-bottom: 3px solid #D91848;
+}
+
+.bg-attractions {
+  border-bottom: 3px solid #4EACB2;
+}
+
+.bg-activities {
+  border-bottom: 3px solid #92BBFF;
+}
+
+.bg-shopping {
+  border-bottom: 3px solid #FEC569;
+}
+
+.bg-entertainment {
+  border-bottom: 3px solid #A957B2; 
+}
+
+.bg-region {
+  border-bottom: 3px solid #ADB9DD;
+}
+
+.bg-transportation {
+  border-bottom: 3px solid #86BBFF;
+}*/
+
 .favorite-star {
-  color: #FF9F00;
+  border-bottom: 3px solid #FF9F00;
 }
 
 .full-width {
@@ -525,10 +566,6 @@ hr.dropdown-separator {
   padding: 8px 5px 0 0;
 }
 
-.one-entity-details .star-section a {
-  color: #FFFFFF;
-}
-
 .one-entity-details .info-tabs {
   position: relative;
   margin: 10px 0;
@@ -559,9 +596,6 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .add-to-trip-link {
-  color: #4087F9;
-  font-weight: 500;
-  padding: 6px;
   position: relative;
   bottom: 3px;
   left: 3px;
@@ -1042,12 +1076,14 @@ hr.dropdown-separator {
   font-size: 10pt;
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   font-weight: 300;
+  text-align: center;
 }
 
 .infowindow-internal {
   min-width: 200px;
   max-width: 400px;
   border-radius: 1px;
+  text-align: center;
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.3);
@@ -1055,9 +1091,9 @@ hr.dropdown-separator {
 
 .infowindow .info-section {
   background-color: #4A4A4A;
-  color: #fff;
+  color: #FFFFFF;
   padding: 5px 10px;
-  font-size: 11pt;
+  font-size: 1.2em;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -1070,6 +1106,8 @@ hr.dropdown-separator {
 .infowindow .info-section .metadata {
   display: inline-block;
   float: right;
+  position: relative;
+  top: 2px;
 }
 
 .infowindow .info-section svg {
@@ -1083,7 +1121,6 @@ hr.dropdown-separator {
   text-align: left;
   padding: 0 5px 5px 5px;
   border-bottom: 1px solid #777;
-;
   max-height: 150px;
   overflow-y: auto;
 }
@@ -1116,7 +1153,6 @@ hr.dropdown-separator {
   background-color: #FFFFFF;
   padding: 5px 10px;
   border-bottom: 1px solid #777;
-;
   font-size: 12px;
   text-align: center;
 }
@@ -1153,17 +1189,20 @@ hr.dropdown-separator {
 
 .marker-tools {
   background-color: #fff;
-  font-size: 12pt;
+  font-size: 1.0em;
   padding: 5px;
   min-width: 130px;
+}
+
+.infowindow .primary-controls, .secondary-controls {
+  font-size: 1.2em;
 }
 
 .marker-tools .control-toggle {
   display: inline-block;
   position: absolute;
   right: 5px;
-  padding: 0 10px;
-  border-left: 1px solid #000;
+  bottom: 10px;
 }
 
 .marker-tools a {
@@ -1175,32 +1214,21 @@ hr.dropdown-separator {
   top: 3px;
 }
 
-.marker-tools .add-to-trip-cta {
-  color: #4087F9;
-  font-size: 11pt;
-}
-
 .marker-tools .already-saved {
   color: #999;
   padding: 0 3px;
 }
 
 .results-infowindow {
+  min-width: 200px;
+  max-width: 400px;
   text-align: center;
 }
 
 .results-infowindow .tools-section {
   background-color: #fff;
-  font-size: 1em;
+  font-size: 1.0em;
   padding: 5px;
-}
-
-.results-infowindow .tools-section a {
-  color: #428bca;
-}
-
-.results-infowindow .tools-section a:hover {
-  color: #2D73A0;
 }
 
 .results-infowindow .tools-section .save-confirmation {

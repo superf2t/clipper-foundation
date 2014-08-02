@@ -174,7 +174,7 @@
   <script type="text/ng-template" id="infowindow-template">
     <div class="infowindow" ng-controller="InfowindowCtrl">
       <div class="infowindow-internal">
-        <div class="info-section">
+        <div class="info-section" ng-class="em.hasCategory() && 'bg-' + ed['category']['name']">
           <span class="name">
             [[ed['name'] ]]
           </span>
@@ -187,13 +187,15 @@
               tooltip="[[ed['comments'].length ]] comments">
             </span>
             {% if allow_editing %}
-            <a ng-click="saveStarState(true)" ng-show="!ed['starred']" class="white-link"
-              href="javascript:void(0)" tooltip="Favorite">
-              <span class="glyphicon glyphicon-star-empty"></span>
-            </a>
-            <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite">
-              <span class="glyphicon glyphicon-star favorite-star"></span>
-            </a>
+            <span="star-section">
+              <a ng-click="saveStarState(true)" ng-show="!ed['starred']" class="white-link"
+                href="javascript:void(0)" tooltip="Favorite">
+                <span class="glyphicon glyphicon-star-empty"></span>
+              </a>
+              <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite">
+                <span class="glyphicon glyphicon-star favorite-star"></span>
+              </a>
+            </span>
             {% else %}
             <span ng-show="ed['starred']" class="glyphicon glyphicon-star favorite-star">
             </span>
@@ -274,22 +276,22 @@
   <script type="text/ng-template" id="map-marker-tools-template">
     <div class="marker-tools">
       {% if allow_editing %}
-      <span ng-show="showPrimaryControls">
+      <span ng-show="showPrimaryControls" class="primary-controls">
         <a ng-click="toggleTagsEdit()" href="javascript:void(0)"
           class="black-link"
           tooltip="Add Tags" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-tag"></span>
         </a>
-        <a ng-click="toggleDirectionsEdit()" href="javascript:void(0)"
+        <a ng-click="toggleDirectionsEdit()" href="javascript:void(0)" class="black-link"
           tooltip="Get directions" tooltip-placement="bottom">
           <span tc-icon="compass"></span>
         </a>
-        <a ng-click="toggleCommentsEdit()" href="javascript:void(0)"
+        <a ng-click="toggleCommentsEdit()" href="javascript:void(0)" class="black-link"
           tooltip="Comment" tooltip-placement="bottom">
           <span tc-icon="comment"></span>
         </a>
       </span>
-      <span ng-show="showSecondaryControls">
+      <span ng-show="showSecondaryControls" class="secondary-controls">
         <a ng-click="openEditPlaceModal()" href="javascript:void(0)" class="black-link"
           tooltip="Edit" tooltip-placement="bottom">
           <span class="glyphicon glyphicon-pencil"></span>
@@ -307,17 +309,12 @@
       </span>
       {% else %}
       <a ng-show="!isAlreadySaved()" ng-click="clipEntity()"
-        class="add-to-trip-cta" href="javascript:void(0)">
+        class="add-to-trip-link" href="javascript:void(0)">
         Add to My Trip
       </a>
       <span ng-show="isAlreadySaved()" class="already-saved">
         Saved
       </span>
-      <a ng-click="toggleDirectionsEdit()" href="javascript:void(0)"
-        class="non-editor-control-icon"
-        tooltip="Get directions" tooltip-placement="bottom">
-        <span tc-icon="compass"></span>
-      </a>
       {% endif %}
     </div>
   </script>
@@ -326,15 +323,15 @@
   <script type="text/ng-template" id="results-infowindow-template">
     <div class="infowindow results-infowindow">
       <div class="infowindow-internal">
-        <div class="info-section">
+        <div class="info-section" ng-class="em.hasCategory() && 'bg-' + ed['category']['name']">
           <div class="name">
             [[ed['name'] ]]
           </div>
         </div>
-        <div class="tools-section">
+        <div class="marker-tools">
           <a ng-click="clipEntity()" href="javascript:void(0)"
-            ng-show="!resultAlreadySaved()">
-            <span class="glyphicon glyphicon-plus"></span> Add to trip
+            class="add-to-trip-link" ng-show="!resultAlreadySaved()">
+            Add to My Trip
           </a>
           <div class="save-confirmation" ng-show="resultAlreadySaved()">
             saved
@@ -810,7 +807,7 @@
           </span>
           <span class="star-section">
             <span ng-if="isEditable">
-              <a ng-click="saveStarState(true)"
+              <a class="white-link" ng-click="saveStarState(true)"
                 ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="left">
                 <span class="glyphicon glyphicon-star-empty"></span>
               </a>
