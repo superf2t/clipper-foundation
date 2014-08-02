@@ -727,15 +727,21 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     }
     if ($filterModel.searchResultsEmphasized) {
       $scope.markerState.deemphasized = !$scope.forResults;
+    } else {
+      $scope.markerState.deemphasized = false;
     }
     if ($scope.forResults) {
       $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
+    } else {
+      $scope.markerState.emphasized = $filterModel.entityIsHighlighted($scope.ed['entity_id']);
     }
   };
 
   $scope.highlightMarker = function() {
     if ($scope.forResults) {
       $searchResultState.highlightedIndex = $scope.resultIndex;
+    } else {
+      $filterModel.highlightedEntity = $scope.ed;
     }
   };
 
@@ -860,10 +866,10 @@ function tcTripPlanDetailsHeader() {
     scope: {
       tripPlan: '=',
       numEntities: '=',
-      forGuide: '=',
       fullBleed: '=',
       clickable: '=',
       includeDetails: '=',
+      includeCreator: '=',
       onClick: '&'
     }
   };
@@ -1834,41 +1840,20 @@ function processIntoGroups(grouping, items) {
 }
 
 function FilterModel() {
-  this.selectedCategoryNames = {};
-  this.selectedDayNumbers = {};
-  this.emphasizedDayNumber = null;
   this.searchResultsEmphasized = false;
+  this.highlightedEntity = null;
 
-  this.isCategorySelected = function(category) {
-    return this.selectedCategoryNames[category['name']] != false;
-  };
-
-  this.isCategoryNameSelected = function(name) {
-    return this.selectedCategoryNames[name] != false;
-  };
-
-  this.isDaySelected = function(dayNumber) {
-    return this.selectedDayNumbers[dayNumber] != false;
-  };
-
-  this.toggleCategory = function(category) {
-    if (this.selectedCategoryNames[category['name']] == false) {
-      this.selectedCategoryNames[category['name']] = true;
-    } else {
-      this.selectedCategoryNames[category['name']] = false;
-    }
-  };
-
-  this.toggleDay = function(dayNumber) {
-    if (this.selectedDayNumbers[dayNumber] == false) {
-      this.selectedDayNumbers[dayNumber] = true;
-    } else {
-      this.selectedDayNumbers[dayNumber] = false;
-    }
+  this.entityIsHighlighted = function(entityId) {
+    return this.highlightedEntity && this.highlightedEntity['entity_id'] == entityId;
   };
 
   this.emphasisActive = function() {
     return this.emphasizedDayNumber != null || this.searchResultsEmphasized;
+  };
+
+  this.clear = function() {
+    this.searchResultsEmphasized = false;
+    this.highlightedEntity = null;
   };
 }
 
@@ -1911,14 +1896,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   };
 
   $scope.openDetailsPanel = function() {
-    $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
-    $scope.openInfoPanel();
+    $scope.goToInfoPanel(InfoPanelMode.DETAILS);
   };
 
   $scope.goToInfoPanel = function(infoPanelMode) {
     $pageStateModel.infoPanelMode = infoPanelMode;
     $scope.openInfoPanel();
     $searchResultState.clear();
+    $filterModel.clear();
   };
 
   $scope.updateMap = function() {

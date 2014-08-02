@@ -128,7 +128,7 @@
       <span ng-repeat="guide in guides" class="one-guide">
         <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
           <tc-trip-plan-details-header trip-plan="guide"
-            num-entities="guide['num_entities']" for-guide="true">
+            num-entities="guide['num_entities']" include-creator="true">
           </tc-trip-plan-details-header>
         </a>
       </span>

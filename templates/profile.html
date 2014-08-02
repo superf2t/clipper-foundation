@@ -72,11 +72,20 @@
     .trip-plan-infowindow .trip-plan-details-header .trip-plan-img {
       height: 200px;
     }
+
+    .no-trip-plans {
+      text-align: center;
+    }
+
+    .no-trip-plans .no-trips-msg {
+      font-size: 12pt;
+      margin-bottom: 20px;
+    }
   </style>
 
   <script>
     function ProfileCtrl($scope, $tripPlans, $allTripPlans,
-        $accountInfo, $activeTripPlanState,
+        $accountInfo, $activeTripPlanState, $tripPlanCreator,
         $templateToStringRenderer, $window) {
       // tripPlans refers to the trip plans for the profile user being viewed
       // allTripPlans refers to those belonging to the currently logged-in user.
@@ -85,6 +94,12 @@
       $scope.allTripPlans = $allTripPlans;
       $scope.accountInfo = $accountInfo;
       $scope.activeTripPlanState = $activeTripPlanState;   
+
+      $scope.createNewTripAndRedirect = function() {
+        $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
+          $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
+        });
+      };
 
       $scope.mapState = {
         map: null,
@@ -206,11 +221,14 @@
       <div class="display-name">
         {{display_user.display_name}}
       </div>
+      {% if trip_plans %}
       <div class="num-trips">
         {{trip_plans|length}} trips
       </div>
+      {% endif %}
     </div>
 
+    {% if trip_plans %}
     <div class="trip-plans-container">
       <div class="map-container">
         <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
@@ -221,11 +239,29 @@
       <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan">
         <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
           <tc-trip-plan-details-header trip-plan="tripPlan"
-            num-entities="tripPlan['num_entities']" for-guide="{{is_featured | jsbool}}">
+            num-entities="tripPlan['num_entities']" include-creator="false">
           </tc-trip-plan-details-header>
         </a>
       </span>
     </div>
+    {% else %}
+    <div class="no-trip-plans">
+      <div class="no-trips-msg">
+        {% if viewer_is_owner %}
+        You don't have any trips yet.
+        <a ng-click="createNewTripAndRedirect()" href="javascript:void(0)">
+          Create your first trip.
+        </a>
+        {% else %}
+        This user doesn't have any trips yet.
+        {% endif %}
+      </div>
+
+      <div class="filler-img">
+        <img src="http://www.coolanimalworld.com/wp-content/uploads/2013/05/Cute-cat-in-bule-Santorini-Greece-2-01.jpg"/>
+      </div>
+    </div>
+    {% endif %}
 
   </div>
 
@@ -233,7 +269,7 @@
     <div class="trip-plan-infowindow">
       <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
         <tc-trip-plan-details-header trip-plan="tripPlan"
-          num-entities="tripPlan['num_entities']" for-guide="{{is_featured | jsbool}}">
+          num-entities="tripPlan['num_entities']" include-creator="false">
         </tc-trip-plan-details-header>
       </a>
     </div>

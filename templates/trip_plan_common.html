@@ -8,14 +8,26 @@
     </div>
     <div class="trip-plan-info">
       <div class="trip-plan-metadata">
-        <span ng-if="forGuide">
-          Inspired by
-          <a href="#" class="source-url">
-            [[tripPlan['source_display_name'] ]]
-          </a>
+        <span ng-if="includeCreator">
+          <span ng-if="tripPlan['trip_plan_type'] == 'GUIDE'">
+            Inspired by
+            <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url">
+              [[tripPlan['source_display_name'] ]]
+            </a>
+          </span>
+          <span ng-if="!tripPlan['trip_plan_type'] && tripPlan['user']['display_name']">
+            Created by
+            <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url">
+              [[tripPlan['user']['display_name'] ]]
+            </a>
+          </span>
         </span>
-        <span class="source-publish-date" ng-show="forGuide && tripPlan['content_display_date']">
-          - [[tripPlan['content_display_date'] ]]
+        <span ng-show="includeCreator && tripPlan['trip_plan_type'] == 'GUIDE' && tripPlan['content_display_date']">
+          -
+        </span>
+        <span class="source-publish-date"
+          ng-show="tripPlan['trip_plan_type'] == 'GUIDE' && tripPlan['content_display_date']">
+          [[tripPlan['content_display_date'] ]]
         </span>              
         <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
         <div class="trip-plan-places">
