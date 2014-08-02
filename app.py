@@ -261,12 +261,16 @@ def tripplanservice(method_name):
 
 @app.route('/adminservice/<method_name>', methods=['POST'])
 def adminservice(method_name):
+    if not g.session_info.is_admin():
+        return '', 404
     service = serviceimpls.AdminService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
 @app.route('/admin')
 def adminpage():
+    if not g.session_info.is_admin():
+        return '', 404
     reverse = True if request.values.get('reverse') else False
     trip_plans = admin.fetch_trip_plans(
         sorting=request.values.get('sorting'), reverse=reverse)
@@ -275,6 +279,8 @@ def adminpage():
 
 @app.route('/admin/editor/<int:trip_plan_id>')
 def admin_editor(trip_plan_id):
+    if not g.session_info.is_admin():
+        return '', 404
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     entity_service = serviceimpls.EntityService(g.session_info)
@@ -287,6 +293,8 @@ def admin_editor(trip_plan_id):
 
 @app.route('/admin/editor/photos/<int:trip_plan_id>')
 def admin_photo_editor(trip_plan_id):
+    if not g.session_info.is_admin():
+        return '', 404
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     entity_service = serviceimpls.EntityService(g.session_info)
@@ -298,6 +306,8 @@ def admin_photo_editor(trip_plan_id):
 
 @app.route('/admin/scrape')
 def admin_scrape():
+    if not g.session_info.is_admin():
+        return '', 404
     return render_template('admin_scrape.html',
         all_scrapers=[s.__name__ for s in trip_plan_creator.ALL_PARSERS])
 

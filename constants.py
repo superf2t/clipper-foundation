@@ -22,8 +22,10 @@ FEATURED_PROFILES_CONFIG_FILE = os.path.join(PROJECTPATH, 'data/guides.csv')
 
 SOURCE_HOST_TO_ICON_URL = {
     'www.bonappetit.com': 'http://www.bonappetit.com/wp-content/themes/bonappetit-2.0.0/i/icons/favicon.ico',
+    'www.foodandwine.com': 'http://www.foodandwine.com/favicon.ico',
     'www.frommers.com': "http://www.frommers.com/favicon.ico",
     'www.fodors.com': "http://www.fodors.com/favicon.ico",
+    'www.letsgo.com': 'http://www.letsgo.com/favicon.ico',
     'www.lonelyplanet.com': 'http://www.lonelyplanet.com/favicon.ico',
     'www.nytimes.com': 'http://www.nytimes.com/favicon.ico',
     'www.nomadicmatt.com': 'http://www.nomadicmatt.com/wp-content/themes/NomadicMattV2/favicon.ico',
@@ -38,11 +40,13 @@ SOURCE_HOST_TO_ICON_URL = {
 
 SOURCE_HOST_TO_DISPLAY_NAME = {
     'www.bonappetit.com': 'Bon Appetit',
+    'www.foodandwine.com': 'Food & Wine',
     'www.foursquare.com': 'Foursquare',
     'foursquare.com': 'Foursquare',
     'www.frommers.com': "Frommer's",
     'www.fodors.com': "Fodor's",
     'www.google.com': 'Google',
+    'www.letsgo.com': "Let's Go",
     'www.lonelyplanet.com': 'Lonely Planet',
     'www.nytimes.com': 'The New York Times',
     'www.nomadicmatt.com': 'Nomadic Matt',

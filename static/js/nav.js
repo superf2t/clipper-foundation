@@ -2,18 +2,14 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
-// -Check new user flows, e.g. what happens if you come to /trip_plan without any trip plans.
 // -Get an email sender account on the new domain.
-// -Check that rating_max is set on prod guides.
 // -Test help text for the clipper, and get IE commands.
 // -Do something with the entity editor.
-// -Lock down admin
 // -Add back a control to recenter the map on the trip.
 // -Figure out whether to render results/guide markers differently.
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the origina referral source when creating new trip plans.
-// -Have the sign up page link to the profile page after creation
 // -Add UI hook for Google Custom Maps import
 
 // CLEANUP:
