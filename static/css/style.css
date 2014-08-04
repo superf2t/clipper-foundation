@@ -958,14 +958,29 @@ hr.dropdown-separator {
   box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);  
 }
 
+#map-buttons .recenter-control {
+  position: fixed;
+  left: 6px;
+  bottom: 73px;
+  transition: left 0.3s;
+}
+
+#map-buttons.info-panel-open .recenter-control {
+  left: calc(40% + 6px);
+}
+
+#map-buttons .recenter-btn {
+  font-size: 11px;
+  color: #666;
+  padding: 2px 3px 0 3px;
+  border-radius: 2px;
+}
+
 #summary-panel .trip-plan-header {
   background-color: #F9F9F9;
   color: #000;
   position: relative;
   padding: 10px;
-}
-
-#summary-panel .trip-plan-header .name-section {
 }
 
 #summary-panel .trip-plan-header .trip-plan-name {
