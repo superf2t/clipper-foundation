@@ -414,37 +414,47 @@
       </div>
 
       <div class="tab-header">
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.NAME_AND_DESCRIPTION)"
-          ng-class="{'selected': editorTab == EditorTab.NAME_AND_DESCRIPTION}">
-          Name and Description
-        </a>
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.DETAILS)"
-          ng-class="{'selected': editorTab == EditorTab.DETAILS}">
-          Details
-        </a>
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.ADDRESS_AND_LOCATION)"
-          ng-class="{'selected': editorTab == EditorTab.ADDRESS_AND_LOCATION}">
-          Address and Location
-        </a>
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.PHOTOS)"
-          ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
-          Photos
-        </a>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.NAME_AND_DESCRIPTION)"
+            ng-class="{'selected': editorTab == EditorTab.NAME_AND_DESCRIPTION}">
+            Name and Description
+          </a>
+        </span>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.DETAILS)"
+            ng-class="{'selected': editorTab == EditorTab.DETAILS}">
+            Details
+          </a>
+        </span>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.ADDRESS_AND_LOCATION)"
+            ng-class="{'selected': editorTab == EditorTab.ADDRESS_AND_LOCATION}">
+            Location
+          </a>
+        </span>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.PHOTOS)"
+            ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
+            Photos
+          </a>
+        </span>
       </div>
 
       <div class="editor-body">
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.NAME_AND_DESCRIPTION">
-          <input type="text" class="form-control" ng-model="ed['name']" placeholder="Place name"/>
+          <label>Name</label>
+          <input type="text" class="form-control" ng-model="ed['name']" placeholder="e.g. Eiffel Tower"/>
+          <label>Description</label>
           <textarea class="form-control description-input" ng-model="ed['description']"
-            placeholder="Description"></textarea>
+            placeholder="e.g. A great place to visit"></textarea>
           <form class="form-inline" role="form">
             <label class="category-label">Category</label>
             <select class="form-control category-input" ng-model="ed['category']"
@@ -455,19 +465,21 @@
               ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']">
             </select>
           </form>
+          <label>Tags</label>
           <input type="text" class="form-control" ng-model="tagState.rawInput"
             ng-change="tagsChanged()"
-            placeholder="e.g. greek food, day 1, recommended by Bob"/>
+            placeholder="e.g. Day 1, Chinese food, Recommended by Bob"/>
         </div>
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.DETAILS">
-          <input type="text" class="form-control" ng-model="ed['phone_number']"
-            placeholder="Phone number"/>
-          <input type="text" class="form-control" ng-model="ed['website']"
-            placeholder="Website"/>
-          <textarea class="form-control" ng-model="ed['opening_hours']['source_text']"
-            placeholder="Opening hours"/>
+          <label>Phone number</label>
+          <input type="text" class="form-control" ng-model="ed['phone_number']"/>
+          <label>Website</label>
+          <input type="text" class="form-control" ng-model="ed['website']"/>
+          <label>Opening Hours</label>
+          <textarea class="form-control" ng-model="ed['opening_hours']['source_text']"/>
         </div>
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.ADDRESS_AND_LOCATION">
+          <label>Address</label>
           <input type="text" class="form-control" ng-model="ed['address']" placeholder="Search for an address"
             tc-google-place-autocomplete search-bounds-json="locationBounds"
             location-types="geocode" on-place-change="addressChanged($newPlace)"/>

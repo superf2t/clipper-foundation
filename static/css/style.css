@@ -408,6 +408,7 @@ hr.dropdown-separator {
   height: 40px;
   display: inline-block;
   float: left;
+  font-weight: 500;
 }
 
 .info-panel-nav .info-panel-nav-more-items {
@@ -1537,7 +1538,7 @@ hr.dropdown-separator {
 }
 
 .modal-dialog {
-  width: 782px;
+  width: 600px;
 }
 
 .flush-left {
@@ -1571,7 +1572,8 @@ hr.dropdown-separator {
 }
 
 .edit-place .tab-header {
-  margin-bottom: 10px;
+  margin: 10px -10px;
+  background-color: #FAFAFA;  
 }
 
 .edit-place .one-editor-tab-header {
@@ -1579,14 +1581,19 @@ hr.dropdown-separator {
   padding: 10px;
   height: 40px;
   text-align: center;
+  font-weight: 500;
 }
 
-.edit-place a.one-editor-tab-header:hover {
+.edit-place label {
+  font-weight: 500;
+}
+
+.edit-place .one-editor-tab-header:hover a {
   padding-bottom: 5px;
   border-bottom: 3px solid #ddd;
 }
 
-.edit-place a.one-editor-tab-header.selected {
+.edit-place .one-editor-tab-header a.selected {
   padding-bottom: 5px;
   border-bottom: 3px solid #E33743;
 }
@@ -1623,13 +1630,12 @@ hr.dropdown-separator {
 .edit-place .category-label {
   vertical-align: top;
   margin-top: 7px;
-  font-weight: 400;
 }
 
 .edit-place .precision-label {
-  font-weight: 400;
   position: relative;
-  top: 2px; 
+  top: 2px;
+  font-weight: 400; 
 }
 
 .edit-place .editable-carousel {
