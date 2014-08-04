@@ -1663,6 +1663,27 @@ hr.dropdown-separator {
   bottom: 10px;
 }
 
+.edit-place .photo-drop-target {
+  padding: 10px;
+}
+
+.edit-place .photo-drop-target.dragactive {
+  -moz-box-shadow: 0px 0px 5px 2px #4CBDC9;
+  -webkit-box-shadow: 0px 0px 5px 2px #4CBDC9;
+  box-shadow: 0px 0px 5px 2px #4CBDC9;
+}
+
+.edit-place .photo-drop-input {
+  border: 1px dashed #777;
+  color: #777;
+  width: 50%;
+  margin: 20px auto;
+  min-width: 400px;
+  height: 100px;
+  text-align: center;
+  padding-top: 37px;
+}
+
 .pac-container {
   z-index: 1100;
 }

@@ -402,7 +402,7 @@
   <script type="text/ng-template" id="edit-place-modal-template">
     <div class="edit-place" ng-controller="EditPlaceCtrl">
       <div class="edit-header">
-        <div class="editor-title">[[ed['name'] ]]</div>
+        <div class="editor-title">[[originalEntity['name'] ]]</div>
         <div class="button-panel">
           <button class="btn btn-cta" ng-click="saveEntity()">
             Save
@@ -490,19 +490,29 @@
           </form>
         </div>
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.PHOTOS">
-          <div class="editable-carousel" ng-if="ed['photo_urls'] && ed['photo_urls'].length">
-            <div tc-image-carousel urls="ed['photo_urls']" current-index="selectedPhoto.index">
+          <div class="photo-drop-target" ng-class="{'dragactive': photoEditState.dragActive}"
+            tc-dragenter="photoDropTargetDragenter($event)"
+            tc-dragover="photoDropTargetDragenter($event)"
+            tc-dragleave="photoDropTargetDragleave()"
+            tc-drop="photoDropped($event)">
+            <div class="editable-carousel" ng-if="ed['photo_urls'] && ed['photo_urls'].length">
+              <div tc-image-carousel urls="ed['photo_urls']" current-index="selectedPhoto.index">
+              </div>
+              <div class="photo-top-control">
+                <a ng-click="setPhotoAsPrimary()" href="javascript:void(0)">
+                  Set as Primary <span class="glyphicon glyphicon-picture"></span>
+                </a>
+              </div>
+              <div class="photo-bottom-control">
+                <a ng-click="deletePhoto()" href="javascript:void(0)">
+                  Delete Photo <span class="glyphicon glyphicon-trash"></span>
+                </a>
+              </div>
             </div>
-            <div class="photo-top-control">
-              <a ng-click="setPhotoAsPrimary()" href="javascript:void(0)">
-                Set as Primary <span class="glyphicon glyphicon-picture"></span>
-              </a>
-            </div>
-            <div class="photo-bottom-control">
-              <a ng-click="deletePhoto()" href="javascript:void(0)">
-                Delete Photo <span class="glyphicon glyphicon-trash"></span>
-              </a>
-            </div>
+            <textarea class="form-control photo-drop-input" ng-model="photoEditState.rawInput"
+              ng-paste="photoUrlPasted()"
+              placeholder="Drag and drop photos or paste a URL">
+            </textarea>
           </div>
         </div>
       </div>
