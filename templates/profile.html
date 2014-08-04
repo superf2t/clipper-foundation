@@ -28,8 +28,6 @@
     }
 
     .trip-plans-container {
-      margin: 0 50px;
-      text-align: center;
       height: 100%;
     }
 
@@ -37,32 +35,33 @@
       text-align: center;
       color: #333;
       padding: 20px 0;
+      font-size: 1.2em;
+      font-weight: 500;
     }
 
     .header .display-name {
-      font-size: 24pt;
-    }
-
-    .header .num-trips {
-      font-size: 16pt;
+      font-size: 2.2em;
     }
 
     .one-trip-plan {
-      display: inline-block;
-      width: 350px;
-      margin: 0 10px 20px 10px;
       vertical-align: top;
+      margin-bottom: 10px;
+    }
+
+    .one-trip-plan .trip-plan-details-header:hover .trip-plan-img-overlay{
+      background-color: rgba(0, 0, 0, 0.75);
     }
 
     .map-container {
-      width: calc(100% - 100px - 350px);
-      height: calc(100% - 115px - 20px);
+      height: 376px;
       float: right;
+      margin-bottom: 20px;
     }
 
     .map {
       width: 100%;
       height: 100%;
+      border: 1px solid #dce0e0;
     }
 
     .trip-plan-infowindow {
@@ -229,16 +228,16 @@
     </div>
 
     {% if trip_plans %}
-    <div class="trip-plans-container">
-      <div class="map-container">
+    <div class="trip-plans-container container">
+      <div class="map-container col-md-8 col-sm-12">
         <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
           after-creation="setupMap($map)">
         </div>
       </div>
 
-      <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan">
+      <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan col-md-4">
         <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
-          <tc-trip-plan-details-header trip-plan="tripPlan"
+          <tc-trip-plan-details-header trip-plan="tripPlan" show-border="true"
             num-entities="tripPlan['num_entities']" include-creator="false">
           </tc-trip-plan-details-header>
         </a>
