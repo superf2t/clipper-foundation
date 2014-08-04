@@ -868,6 +868,7 @@ function tcTripPlanDetailsHeader() {
       numEntities: '=',
       fullBleed: '=',
       clickable: '=',
+      showBorder: '=',
       includeDetails: '=',
       includeCreator: '=',
       onClick: '&'

@@ -2,6 +2,7 @@ html, body {
   width: 100%;
   height: 100%;
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  background-color: #FAFAFA;
 }
 
 a {
@@ -534,10 +535,6 @@ hr.dropdown-separator {
   height: 36px;
 }
 
-.one-entity-details .name-and-photos:hover .name-section {
-  background-color: rgba(0, 0, 0, 0.75);
-}
-
 .one-entity-details .entity-icon {
   display: inline-block;
   padding: 0px 5px;
@@ -996,9 +993,8 @@ hr.dropdown-separator {
 }
 
 .trip-plan-details-header {
-  margin-bottom: 10px;
   background-color: #FFFFFF;
-  border-bottom: 1px solid #dce0e0;
+  margin-bottom: 10px;
 }
 
 .trip-plan-details-header .trip-plan-img {
@@ -1014,6 +1010,15 @@ hr.dropdown-separator {
   position: relative;
   width: calc(100% + 20px);
   left: -10px;
+  border-bottom: 1px solid #dce0e0;
+}
+
+.trip-plan-details-header.clickable {
+  cursor: pointer;
+}
+
+.trip-plan-details-header.show-border {
+  border: 1px solid #dce0e0;  
 }
 
 .trip-plan-details-header .trip-plan-img .trip-plan-img-overlay {
@@ -1030,6 +1035,10 @@ hr.dropdown-separator {
   background-color: rgba(0, 0, 0, 0.75);
 }
 
+.trip-plan-details-header .trip-plan-info {
+  min-height: 74px;
+}
+
 .trip-plan-details-header .trip-plan-metadata .source-icon {
   position: relative;
   bottom: 36px;
@@ -1042,10 +1051,6 @@ hr.dropdown-separator {
   -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
   box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);  
-}
-
-.trip-plan-details-header.clickable {
-  cursor: pointer;
 }
 
 .trip-plan-details-header .trip-plan-name {
@@ -1064,10 +1069,15 @@ hr.dropdown-separator {
 
 .trip-plan-details-header .trip-plan-info .trip-plan-metadata {
   font-size: 1.15em;
+  color: #333333;
 }
 
 .trip-plan-details-header .description {
   margin-bottom: 15px;
+}
+
+.trip-plan-details-header.anchor-guide {
+  border: 1px solid #dce0e0;
 }
 
 .infowindow {

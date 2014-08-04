@@ -32,28 +32,19 @@
       padding: 20px 0;
       color: #333;
       font-weight: 500;
-      font-size: 13pt;
+      font-size: 1.2em;
     }
 
     .location-name {
-      font-size: 24pt;
+      font-size: 2.2em;
     }
 
-    .guides-container {
-      width: 800px;
-      margin: auto;
-      text-align: center;
+    .one-trip-plan {
+      margin-bottom: 10px;
     }
 
-    .one-guide {
-      display: inline-block;
-      width: 350px;
-      margin: 10px;
-      vertical-align: top;
-    }
-
-    .one-guide:hover {
-      opacity: 0.8;
+    .one-trip-plan .trip-plan-details-header:hover .trip-plan-img-overlay{
+      background-color: rgba(0, 0, 0, 0.75);
     }
 
     .no-guides {
@@ -124,14 +115,16 @@
       Browse guides for <span class="location-name">{{location_name.upper()}}</span>
     </div>
 
-    <div class="guides-container">
-      <span ng-repeat="guide in guides" class="one-guide">
-        <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
-          <tc-trip-plan-details-header trip-plan="guide"
-            num-entities="guide['num_entities']" include-creator="true">
-          </tc-trip-plan-details-header>
-        </a>
-      </span>
+    <div class="trip-plan-container container">
+      <div class="row">
+        <span ng-repeat="guide in guides" class="one-trip-plan col-md-6">
+          <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
+            <tc-trip-plan-details-header trip-plan="guide" show-border="true"
+              num-entities="guide['num_entities']" include-creator="true">
+            </tc-trip-plan-details-header>
+          </a>
+        </span>
+      </div>
     </div>
     {% else %}
       <div class="no-guides">
