@@ -3,13 +3,14 @@
 // -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
 // -Get an email sender account on the new domain.
-// -Test help text for the clipper, and get IE commands.
+// -Get icon screenshots for Windows browsers for clipper help text.
 // -Do something with the entity editor.
 // -Add back a control to recenter the map on the trip.
 // -Figure out whether to render results/guide markers differently.
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
-//  the origina referral source when creating new trip plans.
+//  the original referral source when creating new trip plans.
+// -Add filtering for tags.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
