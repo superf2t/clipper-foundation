@@ -272,18 +272,6 @@ class Entity(serializable.Serializable):
             return cmp(e1.day, e2.day)
         return -cmp(e1.day, e2.day)
 
-class Note(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('note_id', 'text', 'day', 'day_position', 'status')
-
-    Status = enums.enum('ACTIVE', 'DELETED')
-
-    def __init__(self, note_id=None, text=None, day=None, day_position=None, status=None):
-        self.note_id = note_id
-        self.text = text
-        self.day = day
-        self.day_position = day_position
-        self.status = status
-
 TripPlanType = enums.enum('NONE', 'GUIDE')
 
 class TripPlan(serializable.Serializable):
@@ -292,7 +280,6 @@ class TripPlan(serializable.Serializable):
         serializable.objf('location_bounds', LatLngBounds),
         'description', 'cover_image_url', 'source_url',
         serializable.objlistf('entities', Entity),
-        serializable.objlistf('notes', Note),
         'creator', serializable.objf('user', DisplayUser),
         serializable.objlistf('editors', DisplayUser),
         serializable.listf('invitee_emails'),
@@ -308,7 +295,7 @@ class TripPlan(serializable.Serializable):
     def __init__(self, trip_plan_id=None, name=None,
             location_name=None, location_latlng=None, location_bounds=None,
             description=None, cover_image_url=None, source_url=None,
-            entities=(), notes=(),
+            entities=(),
             creator=None, user=None, editors=(), invitee_emails=(),
             last_modified=None, status=Status.ACTIVE.name,
             trip_plan_type=None, tags=(),
@@ -323,7 +310,6 @@ class TripPlan(serializable.Serializable):
         self.cover_image_url = cover_image_url
         self.source_url = source_url
         self.entities = entities or []
-        self.notes = notes or []
         self.last_modified = last_modified
         self.status = status
         self.trip_plan_type = trip_plan_type
@@ -459,7 +445,6 @@ class TripPlan(serializable.Serializable):
 
     def strip_readonly_fields(self):
         self.entities = ()
-        self.notes = ()
         self.creator = None
         self.last_modified = None
         self.editors = ()
@@ -548,9 +533,6 @@ class TripPlanLoader(object):
 
 
 def generate_entity_id():
-    return generate_id()
-
-def generate_note_id():
     return generate_id()
 
 def generate_trip_plan_id():
