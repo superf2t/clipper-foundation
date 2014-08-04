@@ -62,6 +62,7 @@ SOURCE_HOST_TO_DISPLAY_NAME = {
 }
 
 TRUSTED_REPUTATION_SOURCES = set([
+    'www.airbnb.com',
     'www.booking.com',
     'www.foursquare.com',
     'foursquare.com',

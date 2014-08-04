@@ -2302,13 +2302,17 @@ var EditorTab = {
 };
 
 function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
-    $entityService, $entityEditingService, $dataRefreshManager) {
+    $entityService, $entityEditingService, $timeout) {
   var me = this;
   $scope.ed = angular.copy($scope.originalEntity);
   $scope.editorTab = EditorTab.NAME_AND_DESCRIPTION;
   $scope.EditorTab = EditorTab;
   $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
   $scope.selectedPhoto = {index: null};
+  $scope.photoEditState = {
+    rawInput: null,
+    dragActive: false
+  };
   $scope.tagState = {
     rawInput: _.pluck($scope.ed['tags'], 'text').join(', ')
   };
@@ -2442,86 +2446,36 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
         alert('Failed to save, please try again.');
       });
   };
-}
 
-function EditImagesCtrl($scope, $timeout) {
-  var me = this;
-  $scope.imgDragActive = false;
-  var pasteActive = false;
-  $scope.photoUrlInputText = ''
-  var urls = $scope.entityModel.data['photo_urls'];
-  if (!urls) {
-    urls = $scope.entityModel.data['photo_urls'] = [];
-  }
-  var currentIndex = 0;
-  $scope.currentImgUrl = urls.length ? urls[currentIndex] : '';
-
-  $scope.$on('image-dropped', function(event, data) {
-    var url = data['tc-drag-image-url'];
-    if (url) {
-      me.addImgUrl(url);
-    }
-  });
-
-  $scope.photoUrlDragEnter = function($event) {
-    $scope.imgDragActive = true;
+  $scope.photoDropTargetDragenter = function($event) {
+    $scope.photoEditState.dragActive = true;
+    $event.preventDefault();
   };
 
-  $scope.photoUrlDropped = function($event) {
+  $scope.photoDropTargetDragleave = function() {
+    $scope.photoEditState.dragActive = false;
+  };
+
+  $scope.photoDropped = function($event) {
     var imgUrl = $event.originalEvent.dataTransfer.getData('text/uri-list');
-    me.addImgUrl(imgUrl);
+    if (imgUrl) {
+      $scope.ed['photo_urls'].push(imgUrl);
+      $scope.selectedPhoto.index = $scope.ed['photo_urls'].length - 1;
+    }
+    $scope.photoEditState.dragActive = false;
     $event.stopPropagation();
     $event.preventDefault();
-    $scope.imgDragActive = false;
   };
 
   $scope.photoUrlPasted = function() {
-    pasteActive = true;
     $timeout(function() {
-      me.addImgUrl($scope.photoUrlInputText);
-      $scope.photoUrlInputText = '';
-      pasteActive = false;
+      var url = $scope.photoEditState.rawInput;
+      if (url) {
+        $scope.ed['photo_urls'].push(url);
+        $scope.selectedPhoto.index = $scope.ed['photo_urls'].length - 1;        
+        $scope.photoEditState.rawInput = '';
+      }
     });
-  };
-
-  $scope.photoUrlChanged = function() {
-    if (!pasteActive) {
-      $scope.photoUrlInputText = '';
-    }
-  };
-
-  this.addImgUrl = function(url) {
-    if (url) {
-      urls.splice(urls.length, 0, url);
-      currentIndex = urls.length - 1;
-      $scope.currentImgUrl = urls[currentIndex];
-    }
-  };
-
-  $scope.removeActiveImg = function() {
-    urls.splice(currentIndex, 1);
-    if (currentIndex >= urls.length) {
-      currentIndex = Math.max(urls.length - 1, 0);
-    }
-    $scope.currentImgUrl = urls[currentIndex];
-  };
-
-  $scope.hasPrevImg = function() {
-    return currentIndex > 0;
-  };
-
-  $scope.hasNextImg = function() {
-    return currentIndex < (urls.length - 1);
-  };
-
-  $scope.nextImg = function() {
-    currentIndex += 1;
-    $scope.currentImgUrl = urls[currentIndex];
-  };
-
-  $scope.prevImg = function() {
-    currentIndex -= 1;
-    $scope.currentImgUrl = urls[currentIndex];
   };
 }
 
@@ -4658,7 +4612,6 @@ window['initApp'] = function(tripPlan, entities,
     .controller('GuidesPanelCtrl', GuidesPanelCtrl)
     .controller('AddYourOwnPanelCtrl', AddYourOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
-    .controller('EditImagesCtrl', EditImagesCtrl)
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
     .controller('DayPlannerCtrl', DayPlannerCtrl)
