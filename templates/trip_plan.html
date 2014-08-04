@@ -274,7 +274,7 @@
               ng-model="directionsHelper.destination">
               <option value="">Select destination</option>
             </select>
-            <button class="btn btn-primary go-button"
+            <button class="btn btn-cta go-button"
               ng-click="directionsHelper.getDirections(ed)"
               ng-disabled="!directionsHelper.destination">
               Go
@@ -399,15 +399,14 @@
     </div>
   </script>
 
+<!-- HERE 1 -->
+
   <script type="text/ng-template" id="edit-place-modal-template">
     <div class="edit-place" ng-controller="EditPlaceCtrl">
       <div class="edit-header">
-        <span class="editor-title">Editor</span>
-        <select ng-options="e['name'] for e in allEntities track by e['entity_id']"
-          ng-model="selectedEntity" ng-change="selectedEntityChanged()">
-        </select>
+        <span class="editor-title">Edit [[selectedEntity['name'] ]]</span>
         <div class="button-panel">
-          <button class="btn btn-primary" ng-click="saveEntity()">
+          <button class="btn btn-cta" ng-click="saveEntity()">
             Save
           </button>
           <button class="btn btn-default" ng-click="$close()">
@@ -930,7 +929,7 @@
           <div ng-show="infoTab == InfoTab.DETAILS">
             <div class="source-attribution" ng-show="ed['source_url']">
               Place info from
-              <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_display_name'] ]]</a>
+              <a class="underline-link" ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_display_name'] ]]</a>
             </div>
             <div ng-show="ed['address']" class="detail-item">
               Address: [[ed['address'] ]]
@@ -943,7 +942,7 @@
             </div>
             <div ng-show="ed['website']" class="detail-item">
               Website:
-              <a ng-href="[[ed['website'] ]]" target="_blank" class="cta-link">
+              <a class="underline-link" ng-href="[[ed['website'] ]]" target="_blank">
                 [[ed['website'] ]]
               </a>
             </div>
@@ -1041,7 +1040,7 @@
               </div>
               <div>
                 <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link">Save</a>
-                <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
+                <a ng-click="closeNewComment()" href="javascript:void(0)">Cancel</a>
               </div>
             </div>
           </div>
@@ -1363,7 +1362,7 @@
         Take your trip plan with you on the road
       </div>
 
-      <div>
+      <div class="explanation-text">
         Export your trip in your preferred format. Offline mobile support for iOS and Android coming soon!
       </div>
       <div class="export-buttons">
@@ -1455,10 +1454,9 @@
       </div>
 
       <div>
-        <label>Paste a Google Maps Engine or My Maps url</label>
-        <p>The sharing settings for the map must be set to "Public"
-          or "Anyone with the link" in order for it to be imported.
-        </p>
+        <div class="explanation-text">
+          Paste a Google Maps Engine or My Maps URL to import to TravelClipper. The sharing settings for the Google map must be set to "Public" or "Anyone with the link".
+        </div>
         <div class="paste-input">
           <input type="text" class="form-control" placeholder="Paste a url"
             ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"

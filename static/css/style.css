@@ -617,10 +617,6 @@ hr.dropdown-separator {
   margin-bottom: 10px;
 }
 
-.one-entity-details .source-attribution a {
-  text-decoration: underline;
-}
-
 .one-entity-details .description {
   margin-bottom: 15px;
 }
@@ -1155,6 +1151,7 @@ hr.dropdown-separator {
   border-bottom: 1px solid #777;
   max-height: 150px;
   overflow-y: auto;
+  font-size: 1.05em;
 }
 
 .infowindow .comments-section .one-comment {
@@ -1182,10 +1179,10 @@ hr.dropdown-separator {
 }
 
 .infowindow .workspace-section {
-  background-color: #FFFFFF;
+  background-color: #F9F9F9;
   padding: 5px 10px;
   border-bottom: 1px solid #777;
-  font-size: 12px;
+  font-size: 1.05em;
   text-align: center;
 }
 
@@ -1195,6 +1192,10 @@ hr.dropdown-separator {
 
 .infowindow .workspace-section a:hover {
   color: #2D73A0;
+}
+
+.infowindow .inline-editor-prompt {
+  font-weight: 500;
 }
 
 .infowindow .workspace-section .directions-planner select {
@@ -1209,14 +1210,6 @@ hr.dropdown-separator {
   font-weight: 500;
   text-align: left;
   margin-bottom: 5px;
-}
-
-.infowindow .inline-comment-editor a.cancel-link {
-  color: #000;
-}
-
-.infowindow .inline-comment-editor a.cancel-link:hover {
-  color: #2D73A0;
 }
 
 .marker-tools {
@@ -1367,9 +1360,13 @@ hr.dropdown-separator {
   margin-top: 10px;
 }
 
+.export-panel .explanation-text {
+  margin-bottom: 10px;
+}
+
 .export-panel .export-buttons {
   text-align: center;
-  margin: 20px 0;
+  margin: 10px 0 20px 0px;
 }
 
 .export-panel .export-buttons .btn-export {
@@ -1411,6 +1408,10 @@ hr.dropdown-separator {
   cursor: text;
 }
 
+.import-panel .explanation-text {
+  margin-bottom: 10px;
+}
+
 .import-panel .paste-input {
   position: relative;
   width: 80%;
@@ -1449,7 +1450,7 @@ hr.dropdown-separator {
   position: relative;
 }
 
-.settings-panel .settings-panel-body .label {
+.settings-panel .settings-panel-body label {
   font-weight: 500;
 }
 
@@ -1460,7 +1461,7 @@ hr.dropdown-separator {
 .settings-panel .delete-trip-link {
   position: absolute;
   top: 0;
-  right: 0;
+  right: 0;ƒ
 }
 
 .settings-panel .description-input {
