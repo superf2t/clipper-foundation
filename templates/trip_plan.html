@@ -1298,20 +1298,27 @@
       <div ng-if="browserInfo.platform == BrowserPlatform.WINDOWS">
         <div ng-if="browserInfo.app == BrowserApp.CHROME">
           For Chrome/Windows: First make sure your bookmarks bar is shown, by pressing
-          control-shift-B or View -> Always Show Bookmarks Bar.
+          Control-Shift-B, or click the Settings icon 
+          (<img ng-src="/static/img/chrome-settings.png"/>) -> Bookmarks -> Show Bookmarks Bar.
           Then click and drag the clipper bookmark above into the bookmarks bar
           and release it to create a new bookmark item.
         </div>
         <div ng-if="browserInfo.app == BrowserApp.FIREFOX">
           For Firefox/Windows: First make sure your bookmarks bar is shown, clicking
-          View -> Toolbars -> Bookmarks Toolbar.
+          the Bookmarks icon -> Bookmarks Toolbar -> View Bookmarks Toolbar.
           Then click and drag the clipper bookmark above into the bookmarks bar
           and release it to create a new bookmark item.
         </div>
         <div ng-if="browserInfo.app == BrowserApp.SAFARI">
           For Safari/Windows: First make sure your bookmarks bar is shown, by pressing
-          control-shift-B or View -> Show Favorites Bar.
+          Control-Shift-B or View -> Show Favorites Bar.
           Then click and drag the clipper bookmark above into the bookmarks bar
+          and release it to create a new bookmark item.
+        </div>
+        <div ng-if="browserInfo.app == BrowserApp.IE">
+          Press Alt-C or click the Star icon to open the Favorites menu, then click
+          the icon for Pin the Favorites Center.
+          Then click and drag the clipper bookmark above into the Favorites section
           and release it to create a new bookmark item.
         </div>
       </div>
