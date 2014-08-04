@@ -3195,15 +3195,13 @@ function DayPlannerCtrl($scope, $entityService, $tripPlanModel, $dataRefreshMana
 }
 
 function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
-    $entityService, $dataRefreshManager, $tripPlanModel) {
+    $entityService, $tripPlanModel, $searchResultState, $mapManager) {
   var me = this;
   $scope.url = '';
   $scope.importing = false;
   $scope.saving = false;
-  $scope.importAction = 'new';
-  $scope.currentTripPlanName = $tripPlanModel.tripPlanData['name'];
-  $scope.pendingTripPlan = null;
-  $scope.newTripPlan = null;
+  $scope.allSaved = false;
+  $scope.importedTripPlan = null;
   $scope.urlInvalid = false;
 
   $scope.ready = false;
@@ -3219,11 +3217,15 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
         return;
       }
       $scope.importing = true;
+      $scope.importedTripPlan = null;
       $tripPlanService.gmapsimport($scope.url)
         .success(function(response) {
           if (response['response_code'] == ResponseCode.SUCCESS) {
-            $scope.pendingTripPlan = response['trip_plan'];
+            $scope.importedTripPlan = response['trip_plan'];
             $scope.importing = false;
+            $scope.allSaved = false;
+            $searchResultState.savedResultIndices = [];
+            $mapManager.fitBoundsToEntities($scope.importedTripPlan['entities']);
           } else if (extractError(response, TripPlanServiceError.INVALID_GOOGLE_MAPS_URL)) {
             $scope.urlInvalid = true;
             $scope.importing = false;
@@ -3232,52 +3234,20 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
       });
   };
 
-  $scope.save = function() {
-    if ($scope.importAction == 'new') {
-      $scope.savePendingAsNewTripPlan();
-    } else if ($scope.importAction == 'import') {
-      $scope.importPendingToExistingTrip();
-    }
-  };
-
-  $scope.savePendingAsNewTripPlan = function() {
-    var tripPlan = $scope.pendingTripPlan;
-    tripPlan['location_bounds'] = me.computeBoundsFromEntities(tripPlan['entities']);
+  $scope.saveAllPendingPlacesToTrip = function() {
     $scope.saving = true;
-    $tripPlanService.saveNewTripPlan(tripPlan)
-      .success(function(newTripPlanResponse) {
-        var newTripPlan = newTripPlanResponse['trip_plans'][0];
-        $entityService.saveNewEntities(tripPlan['entities'], newTripPlan['trip_plan_id'])
-          .success(function(entityResponse) {
-            var newEntities = entityResponse['entities'];
-            newTripPlan['entities'] = newEntities;
-            $scope.newTripPlan = newTripPlan;
-            $scope.saving = false;
-        });
-    });
-  };
-
-  $scope.importPendingToExistingTrip = function() {
-    var tripPlan = $scope.pendingTripPlan;
-    $scope.saving = true;
-    $entityService.saveNewEntities(tripPlan['entities'], $tripPlanModel.tripPlanId())
+    $entityService.saveNewEntities($scope.importedTripPlan['entities'], $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.saving = false;
-          $dataRefreshManager.askToRefresh();
-          $scope.$close();
+          $scope.allSaved = true;
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.addNewEntities(response['entities']);
+          $.each($scope.importedTripPlan['entities'], function(i, entity) {
+            $searchResultState.savedResultIndices[i] = true;
+          });
         }
       });
-  };
-
-  this.computeBoundsFromEntities = function(entities) {
-    var gmapsBounds = new google.maps.LatLngBounds();
-    $.each(entities, function(i, entity) {
-      if (!_.isEmpty(entity['latlng'])) {
-        gmapsBounds.extend(gmapsLatLngFromJson(entity['latlng']));
-      }
-    });
-    return boundsJsonFromGmapsBounds(gmapsBounds);
   };
 }
 
@@ -3474,7 +3444,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
       $entityService.saveNewEntity(entityToSave, $tripPlanModel.tripPlanId())
         .success(function(response) {
           if (response['response_code'] == ResponseCode.SUCCESS) {
-           $tripPlanModel.updateLastModified(response['last_modified']);
+            $tripPlanModel.updateLastModified(response['last_modified']);
             $tripPlanModel.addNewEntities(response['entities']);
             $pageStateModel.selectedEntity = response['entities'][0];
             $searchResultState.savedResultIndices[resultIndex] = true;

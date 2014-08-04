@@ -10,13 +10,11 @@
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the origina referral source when creating new trip plans.
-// -Add UI hook for Google Custom Maps import
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
 //  or just as scope methods.
 // -Remove day planner.
-// -Remove notes
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {

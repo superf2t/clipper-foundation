@@ -77,6 +77,10 @@
         class="full-width full-height"
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
       </div>
+      <div ng-include="'import-panel-template'"
+        class="full-width full-height"
+        ng-if="pageStateModel.infoPanelMode == InfoPanelMode.IMPORT">
+      </div>
       <div ng-include="'settings-panel-template'"
         class="full-width full-height"
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
@@ -139,6 +143,12 @@
             ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SHARING}">
             <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.SHARING)" href="javascript:void(0)">
               <span class="glyphicon glyphicon-share-alt info-nav-item-icon"></span> Share
+            </a>
+          </span>
+          <span class="info-nav-item"
+            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.IMPORT}">
+            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.IMPORT)" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-import info-nav-item-icon"></span> Import
             </a>
           </span>
           <span class="info-nav-item"
@@ -1067,70 +1077,6 @@
   </script>
 
   {% if allow_editing %}
-  <script type="text/ng-template" id="gmaps-importer-template">
-    <div class="gmaps-importer-modal" ng-controller="GmapsImporterCtrl">
-      <h3>Import a Google custom map</h3>
-      <div ng-show="!pendingTripPlan && !newTripPlan">
-        <div class="paste-prompt-text">
-          Paste a Google Maps Engine or My Maps url
-        </div>
-        <input type="text" class="form-control" placeholder="Paste a url"
-          ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"
-          tc-focus-on="ready"/>
-        <div ng-show="importing" class="search-spinner">
-          <img src="/static/img/spinner-small.gif"/>
-        </div>
-        <div ng-show="urlInvalid" class="text-danger">
-          That's not a vaid Google custom maps url.
-        </div>
-      </div>
-      <div ng-if="saving" class="save-spinner">
-        <img src="/static/img/spinner2.gif"/>
-      </div>
-      <div ng-show="pendingTripPlan && !newTripPlan && !saving">
-        <div class="import-success-text">
-          Successfully imported [[pendingTripPlan['entities'].length ]] places
-          from the map
-          <span class="map-name">[[pendingTripPlan['name'] ]]</span>
-        </div>
-        <form class="form-inline" role="form">
-          <input type="radio" class="form-control" value="new" ng-model="importAction" id="new-action"/>
-          <label for="new-action">
-            Create a new trip plan
-          </label>
-          <br/>
-          <input type="radio" class="form-control" value="import" ng-model="importAction" id="import-action"/>
-          <label for="import-action">
-            Add all [[pendingTripPlan['entities'].length ]] places to the current trip plan (<span class="map-name">[[currentTripPlanName]]</span>)
-          </label>
-        </form>
-        <div class="buttons">
-          <button class="btn btn-primary" ng-click="save()">
-            Save
-          </button>
-          <button class="btn" ng-click="$close()">
-            Cancel
-          </button>
-        </div>
-      </div>
-      <div ng-show="newTripPlan">
-        <div class="import-success-text" ng-show="importAction == 'new'">
-          Successfully created the new trip plan
-          <a ng-href="/trip_plan/[[newTripPlan['trip_plan_id'] ]]">
-            [[newTripPlan['name'] ]]
-          </a>
-        </div>
-        <div class="buttons">
-          <button class="btn" ng-click="$close()">
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  </script>
-  {% endif %}
-
-  {% if allow_editing %}
   <script type="text/ng-template" id="guides-panel-template">
     <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
@@ -1486,6 +1432,52 @@
           Anyone with the following link can view your trip.
         </div>
         <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
+      </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="import-panel-template">
+    <div class="import-panel one-info-panel" ng-controller="GmapsImporterCtrl">
+      <div class="header">
+        Import a Google custom map
+      </div>
+
+      <div>
+        <label>Paste a Google Maps Engine or My Maps url</label>
+        <p>The sharing settings for the map must be set to "Public"
+          or "Anyone with the link" in order for it to be imported.
+        </p>
+        <div class="paste-input">
+          <input type="text" class="form-control" placeholder="Paste a url"
+            ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"
+            tc-focus-on="ready"/>
+          <div ng-show="importing" class="search-spinner">
+            <img src="/static/img/spinner-small.gif"/>
+          </div>
+        </div>
+        <div ng-show="urlInvalid" class="url-invalid text-danger">
+          That's not a vaid Google custom maps url.
+        </div>
+      </div>
+
+      <div ng-if="importedTripPlan">
+        <div class="results-header">
+          [[importedTripPlan['entities'].length]] places from the map
+          <i>[[importedTripPlan['name'] ]]</i>
+        </div>
+        <div class="add-all-link">
+          <a ng-click="saveAllPendingPlacesToTrip()" ng-show="!allSaved"
+            class="add-to-trip-link" href="javascript:void(0)">
+            Add All To Trip
+          </a>
+          <span class="saved-status" ng-show="allSaved">
+            Saved
+          </span>
+        </div>
+        <tc-entity-details ng-repeat="entity in importedTripPlan['entities']"
+          entity="entity" is-editable="false" for-results="true"
+          trip-plan-id="null" result-index="$index">
+        </tc-entity-details>
       </div>
     </div>
   </script>

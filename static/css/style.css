@@ -1379,6 +1379,39 @@ hr.dropdown-separator {
   cursor: text;
 }
 
+.import-panel .paste-input {
+  position: relative;
+  width: 80%;
+  margin: auto;
+}
+
+.import-panel .paste-input .search-spinner {
+  position: absolute;
+  top: 6px;
+  width: 100%;
+  text-align: center;
+}
+
+.import-panel .url-invalid {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.import-panel .results-header {
+  font-size: 13pt;
+  margin-top: 15px;
+}
+
+.import-panel .add-all-link {
+  font-size: 11pt;
+  margin-bottom: 10px;
+}
+
+.import-panel .saved-status {
+  color: #999;
+  font-weight: 500;
+}
+
 .settings-panel .settings-panel-body {
   margin: 0 10px 20px 10px;
   position: relative;
@@ -1784,50 +1817,6 @@ hr.dropdown-separator {
 
 .day-planner-right-panel .day-planner-draggable-entity:hover .draggable-entity-controls {
   display: block;
-}
-
-.gmaps-importer-modal {
-  margin: 20px;
-}
-
-.gmaps-importer-modal h3 {
-  text-align: center;
-}
-
-.gmaps-importer-modal .paste-prompt-text {
-  font-size: 12pt;
-  text-align: center;
-}
-
-.gmaps-importer-modal .search-spinner {
-  position: relative;
-  top: -28px;
-  left: 50%;
-}
-
-.gmaps-importer-modal .save-spinner {
-  text-align: center;
-}
-
-.gmaps-importer-modal .import-success-text {
-  font-size: 12pt;
-}
-
-.gmaps-importer-modal .map-name {
-  color: #000;
-}
-
-.gmaps-importer-modal .buttons {
-  text-align: center;
-  margin-top: 10px;
-}
-
-.gmaps-importer-modal a {
-  color: #428bca;
-}
-
-.gmaps-importer-modal a:hover {
-  color: #2D73A0;
 }
 
 .after-new-trip-plan-panel {
