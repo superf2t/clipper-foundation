@@ -110,7 +110,6 @@ def trip_plan():
 def trip_plan_by_id(trip_plan_id):
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)
-    note_service = serviceimpls.NoteService(g.session_info)
 
     current_trip_plan = trip_plan_service.get(serviceimpls.TripPlanGetRequest([trip_plan_id])).trip_plans[0]
     if current_user and not current_user.is_anonymous() and current_user.email == 'travel@unicyclelabs.com':
@@ -118,7 +117,6 @@ def trip_plan_by_id(trip_plan_id):
     else:
         all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
     entities = entity_service.get(serviceimpls.EntityGetRequest(trip_plan_id)).entities
-    notes = note_service.get(serviceimpls.NoteGetRequest(trip_plan_id)).notes
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     allow_editing = current_trip_plan and current_trip_plan.editable_by(g.session_info)
     if allow_editing:
@@ -140,7 +138,6 @@ def trip_plan_by_id(trip_plan_id):
     response = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
-        notes_json=serializable.to_json_str(notes),
         all_trip_plans=sorted_trip_plans,
         active_trip_plan=active_trip_plan,
         active_trip_plan_entity_count=len(active_entities) if active_entities else 0,
@@ -244,12 +241,6 @@ def internal_bookmarklet_js():
 @app.route('/entityservice/<method_name>', methods=['POST'])
 def entityservice(method_name):
     service = serviceimpls.EntityService(g.session_info)
-    response = service.invoke_with_json(method_name, request.json)
-    return json.jsonify(response)
-
-@app.route('/noteservice/<method_name>', methods=['POST'])
-def noteservice(method_name):
-    service = serviceimpls.NoteService(g.session_info)
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 

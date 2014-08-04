@@ -192,26 +192,16 @@ function EntityModel(entityData, editable) {
   };
 }
 
-function TripPlanModel(tripPlanData, entityDatas, notes) {
+function TripPlanModel(tripPlanData, entityDatas) {
   var me = this;
 
   this.resetEntities = function(entities) {
     this.entitiesById = dictByAttr(entities, 'entity_id');
     this.entityDatas = entities || [];
-    if (this.dayPlannerModel) {
-      this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
-    }
   };
 
   this.tripPlanData = tripPlanData;
-  this.notes = notes || [];
   this.resetEntities(entityDatas);
-
-  this.allItems = function() {
-    return _.map(this.entityDatas.concat(this.notes), function(data) {
-      return new ItemModel(data);
-    });
-  };
 
   this.entityItems = function() {
     return _.map(this.entityDatas, function(data) {
@@ -231,29 +221,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
 
   this.hasEntities = function() {
     return this.entityDatas && this.entityDatas.length;
-  };
-
-  this.noteItems = function() {
-    return _.map(this.notes, function(note) {
-      return new ItemModel(note);
-    });
-  };
-
-  this.noteItemCopies = function() {
-    return _.map(this.notes, function(note) {
-      return new ItemModel(angular.copy(note));
-    });
-  };
-
-  // TODO: Remove
-  this.entitiesForCategory = function(category) {
-    var entities = [];
-    $.each(this.entityDatas, function(i, entity) {
-      if (entity['category'] && entity['category']['category_id'] == category['category_id']) {
-        entities.push(entity);
-      }
-    });
-    return entities;
   };
 
   this.isEmpty = function() {
@@ -330,14 +297,12 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
         me.entitiesById[updatedEntity['entity_id']] = updatedEntity;
       }
     });
-    this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
   };
 
   this.addNewEntities = function(entityDatas) {
     this.entityDatas.push.apply(this.entityDatas, entityDatas);
     $.each(entityDatas, function(i, entityData) {
       me.entitiesById[entityData['entity_id']] = entityData;
-      me.dayPlannerModel.insertNewItem(new ItemModel(entityData));
     });
   };
 
@@ -350,7 +315,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
         }
       }
       delete me.entitiesById[entityData['entity_id']];
-      me.dayPlannerModel.removeItem(new ItemModel(entityData));
     });
   };
 
@@ -387,26 +351,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     });
   };
 
-  this.updateNotes = function(noteDatas) {
-    var newNotesById = dictByAttr(noteDatas, 'note_id');
-    for (var i = this.notes.length - 1; i >= 0; i--) {
-      var noteId = this.notes[i]['note_id'];
-      var updatedNote = newNotesById[noteId];
-      if (updatedNote) {
-        if (updatedNote['status'] == 'DELETED') {
-          this.notes.splice(i, 1);
-        } else {
-          this.notes[i] = updatedNote;
-        }
-        delete newNotesById[noteId];
-      };
-    }
-    // Any leftover values are new notes, so we should append them.
-    this.notes.push.apply(this.notes, _.values(newNotesById));
-
-    this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
-  };
-
   this.updateCollaborators = function(tripPlanCollaborators) {
     this.tripPlanData['editors'] = tripPlanCollaborators['editors'];
     this.tripPlanData['invitee_emails'] = tripPlanCollaborators['invitee_emails'];
@@ -434,8 +378,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     }
     return null;
   };
-
-  this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
 }
 
 function ActiveTripPlanStateModel(tripPlan, numEntities) {
@@ -872,68 +814,6 @@ function tcTripPlanDetailsHeader() {
       includeCreator: '=',
       onClick: '&'
     }
-  };
-}
-
-function DaySelectDropdownCtrl($scope, $tripPlanModel, $entityService,
-    $dataRefreshManager, $pageStateModel, $timeout) {
-  $scope.selectedDayState = {dayModel: null};
-  if ($scope.ed['day']) {
-    $scope.selectedDayState.dayModel =
-      $tripPlanModel.dayPlannerModel.dayModelForDay($scope.ed['day']);
-  }
-
-  $scope.getDaySelectOptions = function() {
-    var daySelectOptions = $tripPlanModel.dayPlannerModel.dayModels.slice(0);
-    daySelectOptions.push({createNew: true});
-    return daySelectOptions;
-  };
-
-  $scope.organizeIntoDay = function(opt_callback) {
-    var dayPlannerModel = $tripPlanModel.dayPlannerModel;
-    var item = dayPlannerModel.findItemByEntityId($scope.ed['entity_id']);
-    var dayModel = $scope.selectedDayState.dayModel =
-      $scope.selectedDayState.dayModel.createNew
-      ? dayPlannerModel.addNewDay() : $scope.selectedDayState.dayModel;
-    var affectedItems = dayPlannerModel.organizeItem(
-      item, dayModel.dayNumber, dayModel.getItems().length);
-    var modifiedEntities = _.map(affectedItems, function(item) {
-      return {
-        'entity_id': item.data['entity_id'],
-        'day': item.day(),
-        'day_position': item.position()
-      }
-    });
-    $dataRefreshManager.freeze();
-    $entityService.editEntities(modifiedEntities, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.updateEntities(response['entities']);
-          // This is kind of hacky.  Need to make it so that updateEntities()
-          // somehow updates the data in this scope.
-          $scope.ed['day'] = dayModel.dayNumber;
-          if ($pageStateModel.isGroupByDay()) {
-            $dataRefreshManager.redrawGroupings();
-          }
-        }
-        $dataRefreshManager.unfreeze();
-        $scope.onSelect && $scope.onSelect();
-      }).error(function() {
-        $dataRefreshManager.unfreeze();
-      });
-  };
-}
-
-function tcDaySelectDropdown() {
-  return {
-    restrict: 'AE',
-    scope: {
-      'ed': '=entityData',
-      'onSelect': '&'
-    },
-    templateUrl: 'day-select-dropdown-template',
-    controller: DaySelectDropdownCtrl
   };
 }
 
@@ -3209,7 +3089,7 @@ function DayPlannerDraggableEntityCtrl($scope) {
   };
 }
 
-function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $dataRefreshManager) {
+function DayPlannerCtrl($scope, $entityService, $tripPlanModel, $dataRefreshManager) {
   var me = this;
   var unorderedItems = [];
   var orderedItems = [];
@@ -3302,51 +3182,15 @@ function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $d
       return $entityService.operationFromEntity(
         entity, $tripPlanModel.tripPlanId(), Operator.EDIT);
     });
-    if (!operations.length) {
-      return me.saveNotes(me.afterSaving);
-    }
     var request = {'operations': operations};
     $entityService.mutate(request)
       .success(function(response) {
         var modifiedEntities = response['entities'];
         $tripPlanModel.updateEntities(modifiedEntities);
         $tripPlanModel.updateLastModified(response['last_modified']);
-        me.saveNotes(me.afterSaving);
+        $dataRefreshManager.forceRefresh();
+        $scope.$close();
       });
-  };
-
-  this.saveNotes = function(opt_callback) {
-    var allNotes = _.map($scope.dayPlannerModel.allNoteItems(), function(item) { return item.data; });
-    var operations = [];
-    var tripPlanId = $tripPlanModel.tripPlanId();
-    $.each(allNotes, function(i, note) {
-      if (note['note_id']) {
-        if (!note['text'] || isWhitespace(note['text'])) {
-          operations.push($noteService.operationFromNote(note, tripPlanId, Operator.DELETE));
-        } else {
-          operations.push($noteService.operationFromNote(note, tripPlanId, Operator.EDIT));
-        }
-      } else if (!note['note_id'] && note['text'] && !isWhitespace(note['text'])) {
-        operations.push($noteService.operationFromNote(note, tripPlanId, Operator.ADD));
-      }
-    });
-    if (!operations.length) {
-      opt_callback && opt_callback();
-      return;
-    }
-    var request = {'operations': operations};
-    $noteService.mutate(request)
-      .success(function(response) {
-        var modifiedNotes = response['notes'];
-        $tripPlanModel.updateNotes(modifiedNotes);
-        $tripPlanModel.updateLastModified(response['last_modified']);
-        opt_callback && opt_callback();
-      });
-  };
-
-  this.afterSaving = function() {
-    $dataRefreshManager.forceRefresh();
-    $scope.$close();
   };
 }
 
@@ -4782,13 +4626,13 @@ angular.module('filtersModule', [])
   .filter('hostNoSuffix', makeFilter(hostNoSuffix))
   .filter('hostToIcon', makeFilter(hostToIcon));
 
-window['initApp'] = function(tripPlan, entities, notes,
+window['initApp'] = function(tripPlan, entities,
     allTripPlans, activeTripPlan, activeTripPlanEntityCount,
     accountInfo, datatypeValues, allowEditing, sampleSites, flashedMessages) {
 
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
+    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities))
     .value('$allTripPlans', allTripPlans)
     .value('$activeTripPlanState', new ActiveTripPlanStateModel(
       allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
@@ -4829,7 +4673,6 @@ window['initApp'] = function(tripPlan, entities, notes,
     .directive('tcDraggableEntity', tcDraggableEntity)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
-    .directive('tcDaySelectDropdown', tcDaySelectDropdown)
     .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
