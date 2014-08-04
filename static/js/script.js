@@ -2293,20 +2293,34 @@ function tcEntityListing() {
   };
 }
 
+var EditorTab = {
+  NAME_AND_DESCRIPTION: 1,
+  DETAILS: 2,
+  ADDRESS_AND_LOCATION: 3,
+  PHOTOS: 4
+};
 
 function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
-    $entityService, $dataRefreshManager) {
+    $entityService, $entityEditingService, $dataRefreshManager) {
   var me = this;
-  $scope.allEntities = $tripPlanModel.entities();
-  $scope.selectedEntity = $scope.ed;
+  $scope.ed = angular.copy($scope.originalEntity);
+  $scope.editorTab = EditorTab.NAME_AND_DESCRIPTION;
+  $scope.EditorTab = EditorTab;
   $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
   $scope.selectedPhoto = {index: null};
+  $scope.tagState = {
+    rawInput: _.pluck($scope.ed['tags'], 'text').join(', ')
+  };
   $scope.mapState = {map: null};
 
   $scope.categories = $taxonomy.allCategories();
   $scope.getSubCategories = function(categoryId) {
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
+
+  $scope.selectTab = function(editorTab) {
+    $scope.editorTab = editorTab;
+  }
 
   $scope.markerDragged = function($position) {
     var entityData = $scope.ed;
@@ -2346,11 +2360,12 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
   };
   $scope.markerState = {
     marker: null,
-    position: mapCenter  
+    position: mapCenter
   };
 
   $scope.setupMap = function($map) {
     $scope.markerState.marker.setMap($map);
+    $map.setCenter(me.findMapCenter());
   };
 
   $scope.addressChanged = function(place) {
@@ -2375,6 +2390,17 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     }
   }
 
+  $scope.tagsChanged = function() {
+    var tags = [];
+    $.each($scope.tagState.rawInput.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    $scope.ed['tags'] = tags;
+  };
+
   $scope.categoryChanged = function() {
     $scope.ed['sub_category'] = $taxonomy.getSubCategoriesForCategory(
       $scope.ed['category']['category_id'])[0];
@@ -2395,21 +2421,20 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     }
   };
 
-  $scope.selectedEntityChanged = function() {
-    $scope.ed = angular.copy($scope.selectedEntity);
-    var mapCenter = me.findMapCenter();
-    $scope.map.setCenter(mapCenter);
-    marker && marker.setMap(null);
-    marker = me.createMarker(mapCenter, $scope.map);
-    $scope.selectedPhotoIndex = null;
-  };
-
   $scope.saveEntity = function() {
     $entityService.editEntity($scope.ed, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.forceRefresh();
-          $scope.$close();
+          var doneSaving = function() {
+            $tripPlanModel.updateEntities(response['entities']);
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            $scope.$close();
+          }
+          if (_.isEmpty($scope.ed['tags']) && !_.isEmpty($scope.originalEntity['tags'])) {
+            $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, doneSaving);
+          } else {
+            doneSaving();
+          }
         }
       })
       .error(function() {
@@ -3329,7 +3354,7 @@ function EntityEditingService($entityService, $tripPlanModel,
 
   this.openEditPlaceModal = function(entity) {
     var scope = $rootScope.$new(true);
-    scope.ed = angular.copy(entity);
+    scope.originalEntity = angular.copy(entity);
     $modal.open({
       templateUrl: 'edit-place-modal-template',
       windowClass: 'edit-place-modal',
