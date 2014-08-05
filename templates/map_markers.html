@@ -7,7 +7,6 @@
   .map-marker .marker-shape {
     width: 36px;
     height: 54px;
-    transition: width 0.3s, height 0.3s;
   }
 
   .edit-place .map-marker .marker-shape {
@@ -75,25 +74,15 @@
   }
 
   .map-marker.deemphasized {
-    opacity: 0.5;
+    opacity: 0.7;
   }
 
-  .search-result-marker .result-letter {
-    width: 100%;
-    text-align: center;
-    position: absolute;
-    top: 21%;
-    color: #fff;
-    font-size: 1.2em;
-    transition: font-size 0.3s;
+  .map-marker.for-results .marker-shape svg {
+    stroke: #263452;
+    stroke-width: 8px;
   }
 
-  .search-result-marker .result-letter.selected,
-  .search-result-marker .result-letter.emphasized {
-    font-size: 1.6em;
-  }
-
-  .map-marker.search-result-marker .marker-shape svg {
+  .map-marker.for-results .marker-icon svg {
     fill: #263452;
   }
 
@@ -121,6 +110,28 @@
     border: 1px solid #AAAAAA;
     padding: 1px;
     border-radius: 9px;  
+  }
+
+  .marker-annotations .result-letter {
+    position: absolute;
+    bottom: 15%;
+    left: 33%;
+    width: 12px;
+    text-align: center;
+    font-weight: 500;
+    color: #263452;
+  }
+
+  .map-marker .marker-shape.selected ~ .marker-annotations .result-letter,
+  .map-marker .marker-shape.emphasized ~ .marker-annotations .result-letter {
+    position: absolute;
+    bottom: 15%;
+    left: 33%;
+    width: 18px;
+    text-align: center;
+    font-weight: 500;
+    color: #263452;
+    font-size: 1.5em;
   }
 
   .map-marker .drag-halo {
@@ -165,6 +176,9 @@
       </div>
       <div ng-if="hasComments" class="comment-annotation">
         <span tc-icon="comment"></span>
+      </div>
+      <div ng-if="resultLetter != undefined && resultLetter != null" class="result-letter">
+        [[resultLetter]]
       </div>
     </div>
   </div>

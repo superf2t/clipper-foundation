@@ -1,5 +1,11 @@
 <script type="text/ng-template" id="trip-plan-details-header-template">
-  <div class="trip-plan-details-header" ng-class="{'full-bleed': fullBleed, 'clickable': clickable, 'show-border': showBorder}">
+  <div class="trip-plan-details-header" 
+    ng-class="{
+      'full-bleed': fullBleed, 
+      'clickable': clickable, 
+      'show-border': showBorder, 
+      'hidden-mode': hiddenMode
+    }">
     <div class="trip-plan-img" 
     ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}" ng-click="clickable && onClick()">
       <div class="trip-plan-img-overlay">
@@ -54,7 +60,7 @@
         </span>
       </div>
       <div ng-if="tripPlan['source_url']" class="source-link">
-        <a ng-href="[[tripPlan['source_url'] ]]" target="_blank">
+        <a class="underline-link" ng-href="[[tripPlan['source_url'] ]]" target="_blank">
           View original article at [[tripPlan['source_display_name'] ]]
         </a>
       </div>

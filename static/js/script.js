@@ -666,6 +666,11 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     return null;
   };
 
+  $scope.resultLetter = function() {
+    return String.fromCharCode(65 + $scope.resultIndex);
+
+  };
+
   $scope.showCommentsTab = function() {
     return $scope.isEditable || $scope.em.hasComments();
   };
@@ -945,6 +950,7 @@ function tcTripPlanDetailsHeader() {
       fullBleed: '=',
       clickable: '=',
       showBorder: '=',
+      hiddenMode: '=',
       includeDetails: '=',
       includeCreator: '=',
       onClick: '&'
@@ -1357,6 +1363,8 @@ function tcEntityMarker() {
       hasComments: '=',
       emphasized: '=',
       deemphasized: '=',
+      forResults: '=',
+      resultLetter: '=',
       draggable: '=',
       onDragEnd: '&',
       selected: '&',
@@ -1377,6 +1385,9 @@ function tcEntityMarker() {
         }
         if ($scope.deemphasized) {
           classes.push('deemphasized');
+        }
+        if ($scope.forResults) {
+          classes.push('for-results');
         }
         return classes;
       };
@@ -1410,13 +1421,18 @@ function tcEntityIcon() {
     scope: {
       precise: '=',
       categoryName: '=',
-      iconTemplateName: '='
+      iconTemplateName: '=',
+      forResults: '=',
+      resultLetter: '=',
     },
     controller: function($scope) {
       $scope.getClasses = function() {
         var classes = [];
         if ($scope.categoryName) {
           classes.push($scope.categoryName);
+        }
+        if ($scope.forResults) {
+          classes.push('for-results');
         }
         return classes;
       };

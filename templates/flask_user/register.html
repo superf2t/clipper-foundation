@@ -74,7 +74,7 @@
       {{ render_field(form.retype_password, label_visible=False, placeholder='Confirm password', tabindex=240) }}
     {% endif %}
     <div class="btn-wrapper">
-      <input type="submit" class="btn modal-btn" value="Sign Up">
+      <input type="submit" class="btn btn-cta" value="Sign Up">
     </div>
     <div class="modal-bottom-cta">
       <a href="{{ url_for('user.login', next=request.args.get('next', ''), iframe=request.args.get('iframe')) }}" tabindex='290'>

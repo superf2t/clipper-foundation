@@ -40,11 +40,11 @@
       </div>
 
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
+        <p> 
+          After you add places, a summary of your trip will show up here. 
+        <p/>
         <p>
-          A summary of your places will show up here.
-        </p>
-        <p>
-          Drag and drop places to order them.
+          Drag and drop places to re-order them.
         </p>
       </div>
     </div>
@@ -275,7 +275,7 @@
               ng-model="directionsHelper.destination">
               <option value="">Select destination</option>
             </select>
-            <button class="btn btn-primary go-button"
+            <button class="btn btn-cta go-button"
               ng-click="directionsHelper.getDirections(ed)"
               ng-disabled="!directionsHelper.destination">
               Go
@@ -405,7 +405,7 @@
       <div class="edit-header">
         <div class="editor-title">[[originalEntity['name'] ]]</div>
         <div class="button-panel">
-          <button class="btn btn-primary" ng-click="saveEntity()">
+          <button class="btn btn-cta" ng-click="saveEntity()">
             Save
           </button>
           <button class="btn btn-default" ng-click="$close()">
@@ -415,37 +415,47 @@
       </div>
 
       <div class="tab-header">
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.NAME_AND_DESCRIPTION)"
-          ng-class="{'selected': editorTab == EditorTab.NAME_AND_DESCRIPTION}">
-          Name and Description
-        </a>
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.DETAILS)"
-          ng-class="{'selected': editorTab == EditorTab.DETAILS}">
-          Details
-        </a>
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.ADDRESS_AND_LOCATION)"
-          ng-class="{'selected': editorTab == EditorTab.ADDRESS_AND_LOCATION}">
-          Address and Location
-        </a>
-        <a class="one-editor-tab-header black-link"
-          href="javascript:void(0)"
-          ng-click="selectTab(EditorTab.PHOTOS)"
-          ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
-          Photos
-        </a>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.NAME_AND_DESCRIPTION)"
+            ng-class="{'selected': editorTab == EditorTab.NAME_AND_DESCRIPTION}">
+            Name and Description
+          </a>
+        </span>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.DETAILS)"
+            ng-class="{'selected': editorTab == EditorTab.DETAILS}">
+            Details
+          </a>
+        </span>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.ADDRESS_AND_LOCATION)"
+            ng-class="{'selected': editorTab == EditorTab.ADDRESS_AND_LOCATION}">
+            Location
+          </a>
+        </span>
+        <span class="one-editor-tab-header">
+          <a class="black-link"
+            href="javascript:void(0)"
+            ng-click="selectTab(EditorTab.PHOTOS)"
+            ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
+            Photos
+          </a>
+        </span>
       </div>
 
       <div class="editor-body">
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.NAME_AND_DESCRIPTION">
-          <input type="text" class="form-control" ng-model="ed['name']" placeholder="Place name"/>
+          <label>Name</label>
+          <input type="text" class="form-control" ng-model="ed['name']" placeholder="e.g. Eiffel Tower"/>
+          <label>Description</label>
           <textarea class="form-control description-input" ng-model="ed['description']"
-            placeholder="Description"></textarea>
+            placeholder="e.g. A great place to visit"></textarea>
           <form class="form-inline" role="form">
             <label class="category-label">Category</label>
             <select class="form-control category-input" ng-model="ed['category']"
@@ -456,19 +466,21 @@
               ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']">
             </select>
           </form>
+          <label>Tags</label>
           <input type="text" class="form-control" ng-model="tagState.rawInput"
             ng-change="tagsChanged()"
-            placeholder="e.g. greek food, day 1, recommended by Bob"/>
+            placeholder="e.g. Day 1, Chinese food, Recommended by Bob"/>
         </div>
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.DETAILS">
-          <input type="text" class="form-control" ng-model="ed['phone_number']"
-            placeholder="Phone number"/>
-          <input type="text" class="form-control" ng-model="ed['website']"
-            placeholder="Website"/>
-          <textarea class="form-control" ng-model="ed['opening_hours']['source_text']"
-            placeholder="Opening hours"/>
+          <label>Phone number</label>
+          <input type="text" class="form-control" ng-model="ed['phone_number']"/>
+          <label>Website</label>
+          <input type="text" class="form-control" ng-model="ed['website']"/>
+          <label>Opening Hours</label>
+          <textarea class="form-control" ng-model="ed['opening_hours']['source_text']"/>
         </div>
         <div class="one-editor-tab" ng-if="editorTab == EditorTab.ADDRESS_AND_LOCATION">
+          <label>Address</label>
           <input type="text" class="form-control" ng-model="ed['address']" placeholder="Search for an address"
             tc-google-place-autocomplete search-bounds-json="locationBounds"
             location-types="geocode" on-place-change="addressChanged($newPlace)"/>
@@ -744,16 +756,6 @@
         </span>
       </div>
       {% endif %}
-      <XXtc-entity-marker ng-if="position"
-        map="map" marker="markerState.marker" position="position"
-        category-name="ed['category'] && ed['category']['name']"
-        icon-template-name="markerState.iconTemplateName"
-        selected="pageStateModel.entityIsSelected(ed['entity_id'])"
-        precise="ed['address_precision'] == 'Precise'"
-        starred="ed['starred']" has-comments="ed['comments'] && ed['comments'].length"
-        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
-        on-click="markerClicked($event)">
-      </XXtc-entity-marker>
     </div>
   </script>
 
@@ -789,10 +791,10 @@
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
-        num-entities="planModel.numEntities()" full-bleed="true"
+        num-entities="planModel.numEntities()" full-bleed="true" hidden-mode="!planModel.hasEntities()"
         include-details="true" include-creator="true">
       </tc-trip-plan-details-header>
-      <tc-entity-details ng-repeat="entity in planModel.entities()"
+      <tc-entity-details ng-repeat="entity in planModel.entities()" 
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
       </tc-entity-details>
@@ -800,27 +802,25 @@
         <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
           href="javascript:void(0)">
           Back to top
-          <span class="glyphicon glyphicon-chevron-up"></span>
+          <span class="glyphicon glyphicon-chevron-up back-to-top-chevron"></span>
         </a>
       </div>
       {% if allow_editing %}
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
-        <p>
-          Details about your places go here.
-        </p>
-        <p>
-          Get started by choosing<br/>
-          <span class="sample-link">
-            <span class="glyphicon glyphicon-book"></span>
-            Browse Guides
-          </span>
-          or
-          <span class="sample-link">
-            <span class="glyphicon glyphicon-plus"></span>
-            Add Your Own
-          </span>
+          Welcome! Get started on building your trip plan for [[planModel.tripPlanData['location_name'] ]].
+          <div class="sample-links">
+            <span class="sample-link">
+              <span class="glyphicon glyphicon-book"></span>
+              Browse Guides
+            </span>
+            or
+            <span class="sample-link">
+              <span class="glyphicon glyphicon-plus"></span>
+              Add Your Own
+            </span>
+            </div>
           <br/>
-          from the menu above to add places to your trip.
+          to find places to add to your trip plan. After you're done planning, share it with friends to collaborate or export it to take with you on your trip.
         </p>
       </div>
       {% endif %}
@@ -864,7 +864,8 @@
           <span class="entity-icon">
             <tc-entity-icon precise="ed['address_precision'] == 'Precise'"
               category-name="ed['category'] && ed['category']['name']"
-              icon-template-name="iconTemplateName()">>
+              icon-template-name="iconTemplateName()"
+              for-results="forResults" result-letter="resultLetter()">>
             </tc-entity-icon>
           </span>
           <span class="entity-name">
@@ -924,8 +925,7 @@
           <div ng-show="infoTab == InfoTab.ABOUT">
             <div ng-show="ed['origin_trip_plan_name']" class="origin-trip-name">
               Originally from
-              <a ng-href="/trip_plan/[[ed['origin_trip_plan_id'] ]]" target="_blank"
-                class="underline-link">
+              <a ng-href="/trip_plan/[[ed['origin_trip_plan_id'] ]]" target="_blank">
                 [[ed['origin_trip_plan_name'] ]]
               </a>
             </div>
@@ -979,7 +979,7 @@
           <div ng-show="infoTab == InfoTab.DETAILS">
             <div class="source-attribution" ng-show="ed['source_url']">
               Place info from
-              <a ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_display_name'] ]]</a>
+              <a class="underline-link" ng-href="[[ed['source_url'] ]]" target="_blank">[[ed['source_display_name'] ]]</a>
             </div>
             <div ng-show="ed['address']" class="detail-item">
               Address: [[ed['address'] ]]
@@ -992,7 +992,7 @@
             </div>
             <div ng-show="ed['website']" class="detail-item">
               Website:
-              <a ng-href="[[ed['website'] ]]" target="_blank" class="cta-link">
+              <a class="underline-link" ng-href="[[ed['website'] ]]" target="_blank">
                 [[ed['website'] ]]
               </a>
             </div>
@@ -1090,7 +1090,7 @@
               </div>
               <div>
                 <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link">Save</a>
-                <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
+                <a ng-click="closeNewComment()" href="javascript:void(0)">Cancel</a>
               </div>
             </div>
           </div>
@@ -1124,7 +1124,8 @@
         selected="entityIsSelected()"
         precise="ed['address_precision'] == 'Precise'"
         starred="ed['starred']" has-comments="em.hasComments()"
-        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
+        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized" 
+        for-results="forResults" result-letter="resultLetter()"
         on-click="markerClicked($event)">
       </tc-entity-marker>
     </div>
@@ -1412,21 +1413,21 @@
         Take your trip plan with you on the road
       </div>
 
-      <div>
+      <div class="explanation-text">
         Export your trip in your preferred format. Offline mobile support for iOS and Android coming soon!
       </div>
       <div class="export-buttons">
-        <btn class="btn btn-export btn-default">
-          <a class="export-button" target="_blank"
+        <a class="export-button" target="_blank"
             ng-href="/trip_plan/[[planModel.tripPlanId()]]/print">
+          <btn class="btn btn-export btn-default">
             Print
-          </a>
-        </btn>
-        <btn class="btn btn-export btn-default">
-          <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+          </btn>
+        </a>
+        <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+          <btn class="btn btn-export btn-default">
             Spreadsheet
-          </a>
-        </btn>
+          </btn>
+        </a>
       </div>
     </div>
   </script>
@@ -1504,10 +1505,9 @@
       </div>
 
       <div>
-        <label>Paste a Google Maps Engine or My Maps url</label>
-        <p>The sharing settings for the map must be set to "Public"
-          or "Anyone with the link" in order for it to be imported.
-        </p>
+        <div class="explanation-text">
+          Paste a Google Maps Engine or My Maps URL to import to TravelClipper. The sharing settings for the Google map must be set to "Public" or "Anyone with the link".
+        </div>
         <div class="paste-input">
           <input type="text" class="form-control" placeholder="Paste a url"
             ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"

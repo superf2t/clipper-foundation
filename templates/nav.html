@@ -77,7 +77,7 @@
         ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
         <div class="flash-msg" ng-class="textClass">
           <div class="dismiss-link">
-            <a ng-click="dismiss($index)" href="javascript:void(0)">
+            <a class="black-link" ng-click="dismiss($index)" href="javascript:void(0)">
               <span class="glyphicon glyphicon-remove"></span>
             </a>
           </div>
