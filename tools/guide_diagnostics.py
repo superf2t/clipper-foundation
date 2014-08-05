@@ -26,6 +26,7 @@ def main():
         'missing_location_name',
         'missing_location_latlng',
 
+        'num_entities',
         'num_missing_name',
         'num_missing_photos',
         'num_missing_location',
@@ -63,9 +64,9 @@ def main():
             trip_plan.source_url.encode('utf-8') if trip_plan.source_url else None,
             '%s/trip_plan/%s' % (constants.BASE_URL, trip_plan.trip_plan_id),
             '%s/admin/editor/%s' % (constants.BASE_URL, trip_plan.trip_plan_id),
-            len(trip_plan.entities),
             0 if trip_plan.location_name else 1,
             0 if trip_plan.location_latlng else 1,
+            len(trip_plan.entities),
             num_missing_name,
             num_missing_photos,
             num_missing_location,
