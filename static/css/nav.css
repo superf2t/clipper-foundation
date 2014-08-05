@@ -1,3 +1,15 @@
+a.black-link {
+  color: #000000 !important;
+}
+
+a.black-link:hover {
+  color: #444444 !important;
+}
+
+a.black-link:hover .tc-icon svg {
+  fill: #444444 !important;
+}
+
 .navbar {
   min-height: 40px;
   margin-bottom: 0;
@@ -109,11 +121,15 @@
   width: 400px;
   left: calc(50% - 200px);
   padding: 10px;
-  background-color: #fff;
+  background-color: rgb(255, 242, 204);
   z-index: 2000;
-  border: 1px solid #777;
-  border-radius: 2px;
+  border: 1px solid rgb(249, 203, 156);
+  border-radius: 4px;
   text-align: center;
+}
+
+.flashed-msgs .text-success {
+  color:#000000;
 }
 
 .flash-msg {
@@ -127,8 +143,8 @@
 }
 
 .login-modal-window {
-  width: 600px;
-  height: 460px;
+  width: 500px;
+  height: 420px;
   margin: auto;
   overflow: hidden;
 }
