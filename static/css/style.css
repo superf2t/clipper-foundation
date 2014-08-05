@@ -257,7 +257,6 @@ hr.dropdown-separator {
 
 #entity-container {
   overflow-y: auto;
-  background-color: #FAFAFA;
   color: #000;
   z-index: 1;
 
@@ -283,10 +282,19 @@ hr.dropdown-separator {
     display: none; 
 }
 
+#entity-container,
+.one-entity-summary {
+  background-color: #FAFAFA;
+}
+
 .one-entity-summary {
   padding: 7px 10px;
   cursor: pointer;
   position: relative;
+}
+
+.one-entity-summary.being-dragged {
+  visibility: hidden;
 }
 
 .one-entity-summary .scroll-anchor {

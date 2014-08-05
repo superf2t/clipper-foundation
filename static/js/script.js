@@ -425,7 +425,7 @@ var InlineEditMode = {
 };
 
 function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
-    $entityClippingService, $entityCtrlProxy) {
+    $entityClippingService, $entityCtrlProxy, $entityDragStateModel, $timeout) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
@@ -469,6 +469,78 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
 
   $scope.openInlineEdit = function(inlineEditMode) {
     $entityCtrlProxy.openInlineEdit($scope.ed, inlineEditMode);
+  };
+
+  $scope.isBeingDragged = function() {
+    return $entityDragStateModel.isBeingDragged($scope.ed);
+  };
+}
+
+function tcTrackDragState($timeout, $entityDragStateModel) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var ed = scope.ed;
+      element.on('dragstart', function(event) {
+        $timeout(function() {
+          // Do this in a timeout so that settings visiblity:hidden
+          // on the dragged element doesn't cause the drag ghost image
+          // to also go invisible.
+          $entityDragStateModel.setDraggedEntity(ed, element);
+        });
+      }).on('dragend', function() {
+        $entityDragStateModel.dragEnded()
+        scope.$apply();
+      }).on('dragleave', function() {
+        $entityDragStateModel.activeComparisonEntity = null;
+        scope.$apply();
+      }).on('dragover', function(event) {
+        var mouseY = event.originalEvent.clientY;
+        var midY = element.offset().top + element.height() / 2;
+        if ((mouseY > midY
+            && $entityDragStateModel.isOrderedAfterDraggedEntity(ed))
+          || (mouseY < midY
+            && $entityDragStateModel.isOrderedBeforeDraggedEntity(ed))) {
+          $entityDragStateModel.swapPositions(ed);
+        }
+        event.preventDefault();
+        scope.$apply();
+      });
+
+      scope.$watch(function() {
+        return $entityDragStateModel.draggedEntity;
+      }, function(draggedEntity) {
+        if (!draggedEntity) {
+          element.css('top', '');
+        }
+      });
+
+      scope.$watch(function() {
+        return $entityDragStateModel.orderedEntityIds;
+      }, function(newOrdering, oldOrdering) {
+        if (!$entityDragStateModel.shiftHeight()
+          || $entityDragStateModel.isBeingDragged(ed)) {
+          return;
+        }
+        if (!_.isEmpty(newOrdering) && !_.isEmpty(oldOrdering)) {
+          var oldIndex = oldOrdering.indexOf(ed['entity_id']);
+          var newIndex = newOrdering.indexOf(ed['entity_id']);
+          if (newIndex > oldIndex) {
+            if (element.css('top') == 'auto') {
+              element.css('top', $entityDragStateModel.shiftHeight());
+            } else {
+              element.css('top', '');
+            }
+          } else if (newIndex < oldIndex) {
+            if (element.css('top') == 'auto') {
+              element.css('top', -$entityDragStateModel.shiftHeight());
+            } else {
+              element.css('top', '');
+            }
+          }
+        }
+      }, true);
+    }
   };
 }
 
@@ -1735,6 +1807,67 @@ function FilterModel() {
   this.clear = function() {
     this.searchResultsEmphasized = false;
     this.highlightedEntity = null;
+  };
+}
+
+function EntityDragStateModel(tripPlanModel) {
+  this.draggedEntity = null;
+  this.draggedElement = null;
+  this.draggedElementHeight = null;
+  this.orderedEntityIds = [];
+  this.originalOrderedEntityIds = [];
+  this.activeComparisonEntity = null;
+
+  this.setDraggedEntity = function(entity, element) {
+    this.draggedEntity = entity;
+    this.draggedElement = element;
+    this.draggedElementHeight = element.height();
+  };
+
+  this.dragEnded = function() {
+    this.draggedEntity = null;
+    this.draggedElement = null
+    this.draggedElementHeight = null;
+    this.activeComparisonEntity = null;
+    this.orderedEntityIds = angular.copy(this.originalOrderedEntityIds);
+  };
+
+  this.createOrdering = function(entities) {
+    var me = this;
+    $.each(entities, function(i, entity) {
+      me.orderedEntityIds[i] = entity['entity_id'];
+      me.originalOrderedEntityIds[i] = entity['entity_id'];
+    });
+  };
+  this.createOrdering(tripPlanModel.entities());
+
+  this.isBeingDragged = function(entity) {
+    return this.draggedEntity && this.draggedEntity['entity_id'] == entity['entity_id'];
+  };
+
+  this.isOrderedBeforeDraggedEntity = function(entity) {
+    return this.orderedEntityIds.indexOf(entity['entity_id'])
+      < this.orderedEntityIds.indexOf(this.draggedEntity['entity_id']);
+  };
+
+  this.isOrderedAfterDraggedEntity = function(entity) {
+    return this.orderedEntityIds.indexOf(entity['entity_id'])
+      > this.orderedEntityIds.indexOf(this.draggedEntity['entity_id']);
+  };
+
+  this.swapPositions = function(entity) {
+    if (this.activeComparisonEntity === entity) {
+      return;
+    }
+    this.activeComparisonEntity = entity;
+    var targetIndex = this.orderedEntityIds.indexOf(entity['entity_id']);
+    var currentIndex = this.orderedEntityIds.indexOf(this.draggedEntity['entity_id']);
+    this.orderedEntityIds.splice(currentIndex, 1);
+    this.orderedEntityIds.splice(targetIndex, 0, this.draggedEntity['entity_id']);
+  };
+
+  this.shiftHeight = function() {
+    return this.draggedElementHeight;
   };
 }
 
@@ -4580,15 +4713,17 @@ window['initApp'] = function(tripPlan, entities,
     allTripPlans, activeTripPlan, activeTripPlanEntityCount,
     accountInfo, datatypeValues, allowEditing, sampleSites, flashedMessages) {
 
+  var tripPlanModel = new TripPlanModel(tripPlan, entities);
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities))
+    .value('$tripPlanModel', tripPlanModel)
     .value('$allTripPlans', allTripPlans)
     .value('$activeTripPlanState', new ActiveTripPlanStateModel(
       allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
     .value('$pageStateModel', new PageStateModel())
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
+    .value('$entityDragStateModel', new EntityDragStateModel(tripPlanModel))
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
@@ -4632,6 +4767,7 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
     .directive('tcEntityDetails', tcEntityDetails)
     .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
+    .directive('tcTrackDragState', tcTrackDragState)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)

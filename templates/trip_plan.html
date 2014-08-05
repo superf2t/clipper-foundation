@@ -656,9 +656,13 @@
   <script type="text/ng-template" id="one-entity-summary-template">
     <div ng-controller="EntitySummaryCtrl" class="one-entity-summary"
       tc-entity-id="[[ed['entity_id'] ]]"
-      ng-class="{'selected': pageStateModel.entityIsSelected(ed['entity_id']),
-        'controls-open': controlState.open}"
-      ng-click="selectEntity()">
+      ng-class="{
+        'selected': pageStateModel.entityIsSelected(ed['entity_id']),
+        'controls-open': controlState.open,
+        'being-dragged': isBeingDragged()
+      }"
+      ng-click="selectEntity()"
+      draggable="true" tc-track-drag-state>
       <a class="scroll-anchor"></a>
       <span class="entity-circle-img">
         <img ng-src="[[em.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
