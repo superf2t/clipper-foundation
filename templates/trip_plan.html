@@ -32,7 +32,8 @@
       ng-class="{'expanded': pageStateModel.summaryPanelExpanded}"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       skip-scroll-when-in-view="true"
-      scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor">
+      scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor"
+      tc-track-entity-drag-state>
       <div ng-repeat="entity in planModel.entities()">
         <div ng-include="'one-entity-summary-template'">
         </div>
@@ -662,7 +663,7 @@
         'being-dragged': isBeingDragged()
       }"
       ng-click="selectEntity()"
-      draggable="true" tc-track-drag-state>
+      draggable="true" tc-draggable-entity-summary>
       <a class="scroll-anchor"></a>
       <span class="entity-circle-img">
         <img ng-src="[[em.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
