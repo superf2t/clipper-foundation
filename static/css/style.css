@@ -61,7 +61,7 @@ a.add-to-trip-link {
 }
 
 a.add-to-trip-link:hover {
-  color: #4CBDC9;
+  color: #4A90E2;
 }
 
 a.cta-link {
@@ -189,7 +189,7 @@ a:hover .tc-icon svg {
 }*/
 
 .favorite-star {
-  border-bottom: 3px solid #FF9F00;
+  color: #FF9F00;
 }
 
 .full-width {
@@ -485,8 +485,15 @@ hr.dropdown-separator {
 
 .details-panel .no-entities-message {
   padding: 10px;
-  font-size: 12pt;
+  font-size: 1.1em;
+  margin-top: 10px;
+  background-color: rgb(255, 242, 204);
+  border: 1px solid rgb(249, 203, 156);
+}
+
+.details-panel .sample-links {
   text-align: center;
+  margin-top: 10px;
 }
 
 .details-panel .no-entities-message .sample-link {
@@ -532,18 +539,17 @@ hr.dropdown-separator {
 }
 
 .one-entity-details .map-marker {
-  width: 24px;
-  height: 36px;
+  position: relative;
+  bottom: 20px;
+}
+
+.one-entity-details .result-letter {
+  font-size: 0.8em;
 }
 
 .one-entity-details .entity-icon {
   display: inline-block;
   padding: 0px 5px;
-}
-
-.one-entity-details .entity-icon .map-marker .marker-shape {
-  width: 24px;
-  height: 36px;
 }
 
 .one-entity-details .entity-name {
@@ -597,6 +603,7 @@ hr.dropdown-separator {
   position: relative;
   bottom: 3px;
   left: 3px;
+  padding: 6px;
 }
 
 .one-entity-details .add-to-trip-link:hover {
@@ -1008,7 +1015,8 @@ hr.dropdown-separator {
 
 #summary-panel .no-entities-message {
   padding: 10px;
-  background-color: #fff;
+  background-color: rgb(255, 242, 204);
+  border: 1px solid rgb(249, 203, 156);
 }
 
 .trip-plan-details-header {
@@ -1038,6 +1046,10 @@ hr.dropdown-separator {
 
 .trip-plan-details-header.show-border {
   border: 1px solid #dce0e0;  
+}
+
+.trip-plan-details-header.mini-mode {
+  display: none;
 }
 
 .trip-plan-details-header .trip-plan-img .trip-plan-img-overlay {

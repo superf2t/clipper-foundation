@@ -39,11 +39,11 @@
       </div>
 
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
+        <p> 
+          After you add places, a summary of your trip will show up here. 
+        <p/>
         <p>
-          A summary of your places will show up here.
-        </p>
-        <p>
-          Drag and drop places to order them.
+          Drag and drop places to re-order them.
         </p>
       </div>
     </div>
@@ -751,16 +751,6 @@
         </span>
       </div>
       {% endif %}
-      <XXtc-entity-marker ng-if="position"
-        map="map" marker="markerState.marker" position="position"
-        category-name="ed['category'] && ed['category']['name']"
-        icon-template-name="markerState.iconTemplateName"
-        selected="pageStateModel.entityIsSelected(ed['entity_id'])"
-        precise="ed['address_precision'] == 'Precise'"
-        starred="ed['starred']" has-comments="ed['comments'] && ed['comments'].length"
-        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
-        on-click="markerClicked($event)">
-      </XXtc-entity-marker>
     </div>
   </script>
 
@@ -796,10 +786,10 @@
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
-        num-entities="planModel.numEntities()" full-bleed="true"
+        num-entities="planModel.numEntities()" full-bleed="true" hidden-mode="!planModel.hasEntities()"
         include-details="true" include-creator="true">
       </tc-trip-plan-details-header>
-      <tc-entity-details ng-repeat="entity in planModel.entities()"
+      <tc-entity-details ng-repeat="entity in planModel.entities()" 
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         trip-plan-id="planModel.tripPlanId()">
       </tc-entity-details>
@@ -812,22 +802,20 @@
       </div>
       {% if allow_editing %}
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
-        <p>
-          Details about your places go here.
-        </p>
-        <p>
-          Get started by choosing<br/>
-          <span class="sample-link">
-            <span class="glyphicon glyphicon-book"></span>
-            Browse Guides
-          </span>
-          or
-          <span class="sample-link">
-            <span class="glyphicon glyphicon-plus"></span>
-            Add Your Own
-          </span>
+          Welcome! Get started on building your trip plan for [[planModel.tripPlanData['location_name'] ]].
+          <div class="sample-links">
+            <span class="sample-link">
+              <span class="glyphicon glyphicon-book"></span>
+              Browse Guides
+            </span>
+            or
+            <span class="sample-link">
+              <span class="glyphicon glyphicon-plus"></span>
+              Add Your Own
+            </span>
+            </div>
           <br/>
-          from the menu above to add places to your trip.
+          to find places to add to your trip plan. After you're done planning, share it with friends to collaborate or export it to take with you on your trip.
         </p>
       </div>
       {% endif %}
@@ -871,7 +859,8 @@
           <span class="entity-icon">
             <tc-entity-icon precise="ed['address_precision'] == 'Precise'"
               category-name="ed['category'] && ed['category']['name']"
-              icon-template-name="iconTemplateName()">>
+              icon-template-name="iconTemplateName()"
+              for-results="forResults" result-letter="resultLetter()">>
             </tc-entity-icon>
           </span>
           <span class="entity-name">
@@ -1131,7 +1120,8 @@
         selected="entityIsSelected()"
         precise="ed['address_precision'] == 'Precise'"
         starred="ed['starred']" has-comments="em.hasComments()"
-        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized"
+        emphasized="markerState.emphasized" deemphasized="markerState.deemphasized" 
+        for-results="forResults" result-letter="resultLetter()"
         on-click="markerClicked($event)">
       </tc-entity-marker>
     </div>
@@ -1423,17 +1413,17 @@
         Export your trip in your preferred format. Offline mobile support for iOS and Android coming soon!
       </div>
       <div class="export-buttons">
-        <btn class="btn btn-export btn-default">
-          <a class="export-button" target="_blank"
+        <a class="export-button" target="_blank"
             ng-href="/trip_plan/[[planModel.tripPlanId()]]/print">
+          <btn class="btn btn-export btn-default">
             Print
-          </a>
-        </btn>
-        <btn class="btn btn-export btn-default">
-          <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+          </btn>
+        </a>
+        <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv">
+          <btn class="btn btn-export btn-default">
             Spreadsheet
-          </a>
-        </btn>
+          </btn>
+        </a>
       </div>
     </div>
   </script>
