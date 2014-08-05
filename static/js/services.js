@@ -165,6 +165,14 @@ function EntityService($http) {
   this.mutatetags = function(request) {
     return $http.post('/entityservice/mutatetags', request);
   };
+
+  this.orderentities = function(tripPlanId, orderedEntityIds) {
+    var request = {
+      'trip_plan_id': tripPlanId,
+      'ordered_entity_ids': orderedEntityIds
+    };
+    return $http.post('/entityservice/orderentities', request);
+  };
 }
 
 

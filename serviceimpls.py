@@ -66,7 +66,8 @@ def decorate_with_trip_plans(trip_plan_id_attr_name, ops):
     return trip_plans
 
 
-EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS', 'UNKNOWN_SITE')
+EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS',
+    'UNKNOWN_SITE', 'INVALID_ORDERING')
 
 class EntityGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
@@ -176,7 +177,6 @@ class EntityMutateTagResponse(service.ServiceResponse):
         self.entities = entities
         self.last_modified = last_modified
 
-
 class GooglePlaceToEntityRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('reference')
 
@@ -235,6 +235,24 @@ class GenericMultiEntityResponse(service.ServiceResponse):
         super(GenericMultiEntityResponse, self).__init__(**kwargs)
         self.entities = entities
 
+class OrderEntitiesRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id', serializable.listf('ordered_entity_ids'))
+
+    def __init__(self, trip_plan_id=None, ordered_entity_ids=()):
+        self.trip_plan_id = trip_plan_id
+        self.ordered_entity_ids = ordered_entity_ids
+
+class OrderEntitiesResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('entities', data.Entity),
+        'last_modified'))
+
+    def __init__(self, entities=(), last_modified=None, **kwargs):
+        super(OrderEntitiesResponse, self).__init__(**kwargs)
+        self.entities = entities
+        self.last_modified = last_modified
+
 class EntityService(service.Service):
     METHODS = service.servicemethods(
         ('get', EntityGetRequest, EntityGetResponse),
@@ -245,7 +263,8 @@ class EntityService(service.Service):
         ('urltoentities', UrlToEntitiesRequest, GenericMultiEntityResponse),
         ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
         ('googletextsearchtoentities', GoogleTextSearchToEntitiesRequest, GenericMultiEntityResponse),
-        ('sitesearchtoentities', SiteSearchToEntitiesRequest, GenericMultiEntityResponse))
+        ('sitesearchtoentities', SiteSearchToEntitiesRequest, GenericMultiEntityResponse),
+        ('orderentities', OrderEntitiesRequest, OrderEntitiesResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -542,6 +561,36 @@ class EntityService(service.Service):
         for entity in entities:
             if entity.origin_trip_plan_id:
                 entity.origin_trip_plan_name = loader.get_field(entity.origin_trip_plan_id, 'name')
+
+    def orderentities(self, request):
+        trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
+        if not trip_plan.editable_by(self.session_info):
+            self.validation_errors.append(service.ServiceError(
+                CommonError.NOT_AUTHORIZED_FOR_OPERATION,
+                'The user is not allowed to edit this trip plan.', 'trip_plan_id'))
+            self.raise_if_errors()
+        if len(request.ordered_entity_ids) != len(trip_plan.entities):
+            self.validation_errors.append(service.ServiceError(
+                EntityServiceError.INVALID_ORDERING.name,
+                'The given ordering has an invalid length', 'ordered_entity_ids'))
+            self.raise_if_errors()
+        incoming_entity_ids = set(request.ordered_entity_ids)
+        existing_entity_ids = set([e.entity_id for e in trip_plan.entities])
+        if incoming_entity_ids != existing_entity_ids:
+            self.validation_errors.append(service.ServiceError(
+                EntityServiceError.INVALID_ORDERING.name,
+                'The given ordering contains invalid entity ids', 'ordered_entity_ids'))
+            self.raise_if_errors()
+        ordering_dict = dict((entity_id, i) for i, entity_id in enumerate(request.ordered_entity_ids))
+        sorted_entities = sorted(trip_plan.entities,
+            cmp=lambda e1, e2: cmp(ordering_dict[e1.entity_id], ordering_dict[e2.entity_id]))
+        assert len(sorted_entities) == len(trip_plan.entities)
+        trip_plan.entities = sorted_entities
+        data.save_trip_plan(trip_plan)
+        return OrderEntitiesResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=sorted_entities,
+            last_modified=trip_plan.last_modified)
 
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 

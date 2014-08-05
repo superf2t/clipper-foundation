@@ -425,7 +425,7 @@ var InlineEditMode = {
 };
 
 function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
-    $entityClippingService, $entityCtrlProxy) {
+    $entityClippingService, $entityCtrlProxy, $entityDragStateModel, $timeout) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
@@ -469,6 +469,140 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
 
   $scope.openInlineEdit = function(inlineEditMode) {
     $entityCtrlProxy.openInlineEdit($scope.ed, inlineEditMode);
+  };
+
+  $scope.isBeingDragged = function() {
+    return $entityDragStateModel.isBeingDragged($scope.ed);
+  };
+}
+
+function EntityOrderingService($entityDragStateModel, $tripPlanModel, $entityService) {
+  this.onDrop = function() {
+    if (!$entityDragStateModel.orderingChanged()) {
+      return;
+    }
+
+    var oldIndex = $entityDragStateModel.originalOrderingMap[
+      $entityDragStateModel.draggedEntity['entity_id']];
+    var newIndex = $entityDragStateModel.orderingMap[
+      $entityDragStateModel.draggedEntity['entity_id']];
+    var entity = $tripPlanModel.entityDatas.splice(oldIndex, 1)[0];
+    $tripPlanModel.entityDatas.splice(newIndex, 0, entity);
+
+    $entityService.orderentities($tripPlanModel.tripPlanId(), $entityDragStateModel.orderedEntityIds)
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $entityDragStateModel.createOrdering(response['entities']);
+        }
+      });
+  };
+
+  this.dragEnded = function() {
+    $entityDragStateModel.dragEnded();
+  };
+}
+
+function tcTrackEntityDragState($entityDragStateModel, $entityOrderingService) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(function() {
+        return $entityDragStateModel.orderingMap;
+      }, function(newOrdering, oldOrdering) {
+        if ($entityDragStateModel.shiftHeight()
+            && !_.isEmpty(newOrdering) && !_.isEmpty(oldOrdering)) {
+          scope.$broadcast('entity-ordering-changed', newOrdering, oldOrdering);
+        }
+      });
+
+      scope.$watch(function() {
+        return $entityDragStateModel.draggedEntity;
+      }, function(draggedEntity) {
+        if (!draggedEntity) {
+          scope.$broadcast('entity-dragging-ended');
+        }
+      });
+
+
+      element.on('dragover', function(event) {
+        if ($entityDragStateModel.draggingActive()) {
+          event.preventDefault();
+        }
+      });
+
+      element.on('drop', function(event) {
+        if ($entityDragStateModel.draggingActive()) {
+          $entityOrderingService.onDrop();
+          event.preventDefault();
+          scope.$apply();
+        }
+      });
+    }
+  };
+}
+
+function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService, $entityDragStateModel) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var ed = scope.ed;
+      var cachedHalfHeight = null;
+      element.on('dragstart', function(event) {
+        $timeout(function() {
+          // Do this in a timeout so that settings visiblity:hidden
+          // on the dragged element doesn't cause the drag ghost image
+          // to also go invisible.
+          $entityDragStateModel.setDraggedEntity(ed, element);
+        });
+      }).on('dragend', function() {
+        $entityOrderingService.dragEnded();
+        scope.$apply();
+      }).on('dragover', function(event) {
+        if (!cachedHalfHeight) {
+          cachedHalfHeight = element.height() / 2;
+        }
+        var mouseY = event.originalEvent.clientY;
+        var midY = element.offset().top + cachedHalfHeight;
+        if ((mouseY > midY
+            && $entityDragStateModel.isOrderedAfterDraggedEntity(ed))
+          || (mouseY < midY
+            && $entityDragStateModel.isOrderedBeforeDraggedEntity(ed))) {
+          $entityDragStateModel.swapPositions(ed);
+          scope.$apply();
+        }
+      }).on('dragleave', function() {
+        $entityDragStateModel.activeComparisonEntity = null;
+        scope.$apply();
+      });
+
+      scope.$on('entity-dragging-ended', function() {
+        element.css('top', '');
+        cachedHalfHeight = null;
+      });
+
+      scope.$on('entity-ordering-changed', function(event, newOrdering, oldOrdering) {
+        if ($entityDragStateModel.isBeingDragged(ed)) {
+          return;
+        }
+        var oldIndex = oldOrdering[ed['entity_id']];
+        var newIndex = newOrdering[ed['entity_id']];
+        var shiftHeight = $entityDragStateModel.shiftHeight();
+        if (newIndex > oldIndex) {
+          if (element.css('top') == 'auto') {
+            element.css('top', shiftHeight);
+          } else {
+            element.css('top', '');
+          }
+        } else if (newIndex < oldIndex) {
+          if (element.css('top') == 'auto') {
+            element.css('top', -shiftHeight);
+          } else {
+            element.css('top', '');
+          }
+        }
+      });
+    }
   };
 }
 
@@ -1754,6 +1888,86 @@ function FilterModel() {
   };
 }
 
+function EntityDragStateModel(tripPlanModel) {
+  this.draggedEntity = null;
+  this.draggedElement = null;
+  this.draggedElementHeight = null;
+  this.activeComparisonEntity = null;
+
+  this.orderedEntityIds = [];
+  this.orderingMap = {};
+  this.originalOrderedEntityIds = [];
+  this.originalOrderingMap = {};
+
+  this.setDraggedEntity = function(entity, element) {
+    this.draggedEntity = entity;
+    this.draggedElement = element;
+    this.draggedElementHeight = element.height();
+  };
+
+  this.dragEnded = function() {
+    this.draggedEntity = null;
+    this.draggedElement = null
+    this.draggedElementHeight = null;
+    this.activeComparisonEntity = null;
+    this.orderedEntityIds = angular.copy(this.originalOrderedEntityIds);
+  };
+
+  this.createOrdering = function(entities) {
+    var me = this;
+    $.each(entities, function(i, entity) {
+      var entityId = entity['entity_id'];
+      me.orderedEntityIds[i] = entityId;
+      me.orderingMap[entityId] = i;
+      me.originalOrderedEntityIds[i] = entityId;
+      me.originalOrderingMap[entityId] = i;
+    });
+  };
+  this.createOrdering(tripPlanModel.entities());
+
+  this.draggingActive = function() {
+    return !!this.draggedEntity;
+  };
+
+  this.isBeingDragged = function(entity) {
+    return this.draggedEntity && this.draggedEntity['entity_id'] == entity['entity_id'];
+  };
+
+  this.isOrderedBeforeDraggedEntity = function(entity) {
+    return this.orderingMap[entity['entity_id']]
+      < this.originalOrderingMap[this.draggedEntity['entity_id']];
+  };
+
+  this.isOrderedAfterDraggedEntity = function(entity) {
+    return this.orderingMap[entity['entity_id']]
+      > this.originalOrderingMap[this.draggedEntity['entity_id']];
+  };
+
+  this.swapPositions = function(entity) {
+    if (this.activeComparisonEntity === entity) {
+      return;
+    }
+    this.activeComparisonEntity = entity;
+    var targetIndex = this.orderingMap[entity['entity_id']];
+    var currentIndex = this.orderingMap[this.draggedEntity['entity_id']];
+    this.orderedEntityIds.splice(currentIndex, 1);
+    this.orderedEntityIds.splice(targetIndex, 0, this.draggedEntity['entity_id']);
+    var newOrderingMap = {};
+    $.each(this.orderedEntityIds, function(i, entityId) {
+      newOrderingMap[entityId] = i;
+    });
+    this.orderingMap = newOrderingMap;
+  };
+
+  this.orderingChanged = function() {
+    return this.orderedEntityIds != this.originalOrderedEntityIds;
+  };
+
+  this.shiftHeight = function() {
+    return this.draggedElementHeight;
+  };
+}
+
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityService, $allowEditing, $accountInfo,
@@ -1820,13 +2034,6 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   if (initialBounds) {
     $map.fitBounds(initialBounds);
   }
-
-  $scope.startGmapsImport = function() {
-    $modal.open({
-      templateUrl: 'gmaps-importer-template',
-      scope: $scope.$new(true)
-    });
-  };
 
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
@@ -4596,15 +4803,17 @@ window['initApp'] = function(tripPlan, entities,
     allTripPlans, activeTripPlan, activeTripPlanEntityCount,
     accountInfo, datatypeValues, allowEditing, sampleSites, flashedMessages) {
 
+  var tripPlanModel = new TripPlanModel(tripPlan, entities);
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities))
+    .value('$tripPlanModel', tripPlanModel)
     .value('$allTripPlans', allTripPlans)
     .value('$activeTripPlanState', new ActiveTripPlanStateModel(
       allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
     .value('$pageStateModel', new PageStateModel())
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
+    .value('$entityDragStateModel', new EntityDragStateModel(tripPlanModel))
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
@@ -4648,6 +4857,8 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
     .directive('tcEntityDetails', tcEntityDetails)
     .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
+    .directive('tcTrackEntityDragState', tcTrackEntityDragState)
+    .directive('tcDraggableEntitySummary', tcDraggableEntitySummary)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)
@@ -4655,6 +4866,7 @@ window['initApp'] = function(tripPlan, entities,
     .service('$entityCtrlProxy', EntityCtrlProxy)
     .service('$entityClippingService', EntityClippingService)
     .service('$entityEditingService', EntityEditingService)
+    .service('$entityOrderingService', EntityOrderingService)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {
