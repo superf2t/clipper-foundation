@@ -797,7 +797,7 @@
         <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
           href="javascript:void(0)">
           Back to top
-          <span class="glyphicon glyphicon-chevron-up"></span>
+          <span class="glyphicon glyphicon-chevron-up back-to-top-chevron"></span>
         </a>
       </div>
       {% if allow_editing %}
@@ -920,8 +920,7 @@
           <div ng-show="infoTab == InfoTab.ABOUT">
             <div ng-show="ed['origin_trip_plan_name']" class="origin-trip-name">
               Originally from
-              <a ng-href="/trip_plan/[[ed['origin_trip_plan_id'] ]]" target="_blank"
-                class="underline-link">
+              <a ng-href="/trip_plan/[[ed['origin_trip_plan_id'] ]]" target="_blank">
                 [[ed['origin_trip_plan_name'] ]]
               </a>
             </div>
