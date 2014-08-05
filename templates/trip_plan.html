@@ -34,6 +34,10 @@
       skip-scroll-when-in-view="true"
       scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor"
       tc-track-entity-drag-state>
+
+      <tc-filter-bar filter-model="filterModel">
+      </tc-filter-bar>
+
       <div ng-repeat="entity in planModel.entities()">
         <div ng-include="'one-entity-summary-template'">
         </div>
@@ -166,6 +170,18 @@
           &hellip;
         </a>
       </div>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="filter-bar-template">
+    <div ng-if="filterModel.tagFilteringActive()" class="filter-bar">
+      <span class="filter-message">
+        Currently filtering to places tagged with
+        <span class="tag-filter-text">[[filterModel.activeTagText]]</span>
+      </span>
+      <a ng-click="filterModel.clearTagFilters()" class="close-link color-link" href="javascript:void(0)">
+        <span class="glyphicon glyphicon-remove"></span>
+      </a>
     </div>
   </script>
 
@@ -672,10 +688,11 @@
       ng-class="{
         'selected': pageStateModel.entityIsSelected(ed['entity_id']),
         'controls-open': controlState.open,
-        'being-dragged': isBeingDragged()
+        'being-dragged': isBeingDragged(),
+        'inactive': !isActive()
       }"
       ng-click="selectEntity()"
-      draggable="true" tc-draggable-entity-summary>
+      tc-draggable="isDraggable" tc-draggable-entity-summary>
       <a class="scroll-anchor"></a>
       <span class="entity-circle-img">
         <img ng-src="[[em.getBackgroundImageUrl(planModel.locationLatlng())]]"/>
@@ -790,6 +807,8 @@
     <div class="details-panel one-info-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
+      <tc-filter-bar filter-model="filterModel">
+      </tc-filter-bar>
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
         num-entities="planModel.numEntities()" full-bleed="true" hidden-mode="!planModel.hasEntities()"
         include-details="true" include-creator="true">
@@ -854,7 +873,8 @@
     <div class="one-entity-details"
       tc-entity-id="[[forResults ? null : ed['entity_id'] ]]"
       tc-entity-result-id="[[forResults ? resultIndex : null]]"
-      ng-mouseenter="highlightMarker()">
+      ng-mouseenter="highlightMarker()"
+      ng-class="{'inactive': !isActive()}">
       <div class="name-and-photos">
         <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">
           <div tc-image-carousel urls="ed['photo_urls']" full-bleed="true" class="carousel-content">
@@ -952,10 +972,13 @@
               </a>
             </div>
             <div class="tags" ng-show="showTags()">
-              Tags: 
-              <span ng-repeat="tag in ed['tags']" class="one-tag">
-                [[tag['text'] ]]
-              </span>
+              Tags:
+              <a ng-repeat="tag in ed['tags']" ng-click="makeTagActive(tag)"
+                href="javascript:void(0)">
+                <span class="one-tag">
+                  [[tag['text'] ]]
+                </span>
+              </a>
               <a ng-show="!em.hasTags()" ng-click="openTagsEditor()"
                 class="cta-link" href="javascript:void(0)">
                 Add tags

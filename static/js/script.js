@@ -425,11 +425,13 @@ var InlineEditMode = {
 };
 
 function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
-    $entityClippingService, $entityCtrlProxy, $entityDragStateModel, $timeout) {
+    $entityClippingService, $entityCtrlProxy, $entityDragStateModel,
+    $filterModel, $timeout) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.InlineEditMode = InlineEditMode;
+  $scope.isDraggable = true;
 
   $scope.controlState = {
     open: false,
@@ -474,6 +476,17 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
   $scope.isBeingDragged = function() {
     return $entityDragStateModel.isBeingDragged($scope.ed);
   };
+
+  $scope.isActive = function() {
+    return !$filterModel.tagFilteringActive()
+      ||$filterModel.hasActiveTag($scope.ed['tags']);
+  };
+
+  $scope.$watch(function() {
+    return $filterModel.tagFilteringActive();
+  }, function(filteringActive) {
+    $scope.isDraggable = !filteringActive;
+  });
 }
 
 function EntityOrderingService($entityDragStateModel, $tripPlanModel, $entityService) {
@@ -793,6 +806,16 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $scope.inlineEditMode = null;
   };
 
+  $scope.isActive = function() {
+    return $scope.forResults
+      || !$filterModel.tagFilteringActive()
+      || $filterModel.hasActiveTag($scope.ed['tags']);
+  };
+
+  $scope.makeTagActive = function(tag) {
+    $filterModel.setActiveTag(tag);
+  };
+
   $scope.markerClicked = function($event) {
     if ($scope.forResults) {
       $scope.selectResult();
@@ -815,6 +838,8 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
       $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
     } else {
       $scope.markerState.emphasized = $filterModel.entityIsHighlighted($scope.ed['entity_id']);
+      $scope.markerState.deemphasized = $filterModel.tagFilteringActive()
+        && !$filterModel.hasActiveTag($scope.ed['tags']);
     }
   };
 
@@ -1873,6 +1898,7 @@ function processIntoGroups(grouping, items) {
 function FilterModel() {
   this.searchResultsEmphasized = false;
   this.highlightedEntity = null;
+  this.activeTagText = null;
 
   this.entityIsHighlighted = function(entityId) {
     return this.highlightedEntity && this.highlightedEntity['entity_id'] == entityId;
@@ -1885,6 +1911,41 @@ function FilterModel() {
   this.clear = function() {
     this.searchResultsEmphasized = false;
     this.highlightedEntity = null;
+    this.activeTagText = null;
+  };
+
+  this.tagFilteringActive = function() {
+    return !!this.activeTagText;
+  };
+
+  this.setActiveTag = function(tag) {
+    this.activeTagText = tag['text'].toLowerCase().trim();
+  };
+
+  this.hasActiveTag = function(tags) {
+    if (!this.tagFilteringActive() || _.isEmpty(tags)) {
+      return false;
+    }
+    for (var i = 0, I = tags.length; i < I; i++) {
+      if (tags[i]['text'].toLowerCase().trim() == this.activeTagText) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  this.clearTagFilters = function() {
+    this.activeTagText = null;
+  };
+}
+
+function tcFilterBar() {
+  return {
+    restrict: 'AE',
+    scope: {
+      filterModel: '='
+    },
+    templateUrl: 'filter-bar-template'
   };
 }
 
@@ -4689,6 +4750,17 @@ function tcExpandableContent($timeout) {
   };
 }
 
+function tcDraggable() {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcDraggable, function(draggable) {
+        element.attr('draggable', draggable);
+      });
+    }
+  };
+}
+
 var BrowserPlatform = {
   WINDOWS: 1,
   MAC: 2
@@ -4786,7 +4858,8 @@ angular.module('directivesModule', [])
   .directive('tcIcon', tcIcon)
   .directive('tcSvgHack', tcSvgHack)
   .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo)
-  .directive('tcExpandableContent', tcExpandableContent);
+  .directive('tcExpandableContent', tcExpandableContent)
+  .directive('tcDraggable', tcDraggable);
 
 function makeFilter(fn) {
   return function() {
@@ -4859,6 +4932,7 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
     .directive('tcTrackEntityDragState', tcTrackEntityDragState)
     .directive('tcDraggableEntitySummary', tcDraggableEntitySummary)
+    .directive('tcFilterBar', tcFilterBar)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)
