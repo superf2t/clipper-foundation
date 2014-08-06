@@ -260,7 +260,13 @@ hr.dropdown-separator {
   position: relative;
 }
 
-.filter-bar .close-link {
+.details-panel .filter-bar .close-link {
+  position: absolute;
+  top: 11px;
+  right: 5px;
+}
+
+#summary-panel .filter-bar .close-link {
   position: absolute;
   top: 5px;
   right: 5px;
@@ -273,7 +279,7 @@ hr.dropdown-separator {
 
 .filter-bar .tag-filter-text {
   font-style: italic;
-  font-weight: bold;
+  font-weight: 600;
 }
 
 a.category-filter-link {
@@ -516,10 +522,18 @@ a.category-filter-link:hover {
   overflow-y: auto;
 }
 
-.details-panel .filter-bar {
+#info-panel .info-panel-content.with-nav .details-panel .filter-bar {
   position: fixed;
   left: 0;
   top: 81px;
+  width: 40%;
+  z-index: 1;
+}
+
+#info-panel .info-panel-content .details-panel .filter-bar {
+  position: fixed;
+  left: 0;
+  top: 41px;
   width: 40%;
   z-index: 1;
 }
@@ -679,7 +693,7 @@ a.category-filter-link:hover {
 }
 
 .one-entity-details .description {
-  margin-bottom: 15px;
+  margin-bottom: 10px;
 }
 
 .one-entity-details .detail-item {
@@ -1101,7 +1115,7 @@ a.category-filter-link:hover {
   border: 1px solid #dce0e0;  
 }
 
-.trip-plan-details-header.mini-mode {
+.trip-plan-details-header.hidden-mode {
   display: none;
 }
 
