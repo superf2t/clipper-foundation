@@ -71,8 +71,9 @@
 </script>
 
 <script type="text/ng-template" id="flashed-messages-template">
-  <div ng-controller="FlashedMessagesCtrl" class="ng-cloak">
-    <div class="flashed-msgs" ng-if="hasMessages()">
+  <div class="ng-cloak">
+    <div class="flashed-msgs" ng-if="hasMessages()"
+      ng-class="{'dismissed': dismissing}">
       <div ng-repeat="msg in messages"
         ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
         <div class="flash-msg" ng-class="textClass">

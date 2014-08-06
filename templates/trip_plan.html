@@ -22,7 +22,8 @@
     num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
     shopping-cart-mode="!{{allow_editing | jsbool}}">
   </tc-nav>
-  <div tc-include-and-replace="flashed-messages-template"></div>
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
 
   <div id="summary-panel" ng-if="{{allow_editing | jsbool}}">
     <div ng-include="'trip-plan-header-template'">

@@ -85,7 +85,7 @@
   <script>
     function ProfileCtrl($scope, $tripPlans, $allTripPlans,
         $accountInfo, $activeTripPlanState, $tripPlanCreator,
-        $templateToStringRenderer, $window) {
+        $templateToStringRenderer, $flashedMessages, $window) {
       // tripPlans refers to the trip plans for the profile user being viewed
       // allTripPlans refers to those belonging to the currently logged-in user.
       // This is confusing, rename these.
@@ -93,6 +93,7 @@
       $scope.allTripPlans = $allTripPlans;
       $scope.accountInfo = $accountInfo;
       $scope.activeTripPlanState = $activeTripPlanState;   
+      $scope.flashedMessages = $flashedMessages;
 
       $scope.createNewTripAndRedirect = function() {
         $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
@@ -198,7 +199,6 @@
           ['profileInitialDataModule', 'navModule', 'directivesModule'],
           interpolator)
         .controller('ProfileCtrl', ProfileCtrl)
-        .controller('FlashedMessagesCtrl', FlashedMessagesCtrl)
         .service('$templateToStringRenderer', TemplateToStringRenderer)
         .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader);
 
@@ -213,7 +213,8 @@
     num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
     shopping-cart-mode="true">
   </tc-nav>
-  <div tc-include-and-replace="flashed-messages-template"></div>
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
 
   <div class="main-content">
     <div class="header">

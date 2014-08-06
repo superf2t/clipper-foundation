@@ -8,8 +8,8 @@
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the original referral source when creating new trip plans.
-// -Make flashed messages auto-dismissable.
 // -Add related guides at bottom of guide.
+// -Don't allow tags to be clickable in guides/results.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
@@ -170,6 +170,25 @@ function TripPlanCreator($rootScope) {
   };
 }
 
+function FlashedMessagesCtrl($scope, $timeout) {
+  $scope.dismissing = false;
+
+  $scope.hasMessages = function() {
+    return !_.isEmpty($scope.messages);
+  };
+
+  $scope.dismiss = function(index) {
+    $scope.messages.splice(index, 1);
+  };
+
+  $timeout(function() {
+    $scope.dismissing = true;
+    $timeout(function() {
+      $scope.messages = [];
+    }, 1000);
+  }, 4000);
+}
+
 function tcNav() {
   return {
     restrict: 'AE',
@@ -201,8 +220,21 @@ function tcNavTripPlanDropdown() {
   };
 }
 
+function tcFlashedMessages() {
+  return {
+    restrict: 'AE',
+    replace: true,
+    templateUrl: 'flashed-messages-template',
+    controller: FlashedMessagesCtrl,
+    scope: {
+      messages: '='
+    }
+  };
+}
+
 angular.module('navModule', ['servicesModule', 'directivesModule', 'ui.bootstrap'])
   .service('$tripPlanCreator', TripPlanCreator)
   .directive('tcNav', tcNav)
   .directive('tcAccountDropdown', tcAccountDropdown)
-  .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown);
+  .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown)
+  .directive('tcFlashedMessages', tcFlashedMessages);

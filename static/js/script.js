@@ -1925,7 +1925,7 @@ function EntityDragStateModel(tripPlanModel) {
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityService, $allowEditing, $accountInfo,
-    $allTripPlans, $activeTripPlanState) {
+    $allTripPlans, $activeTripPlanState, $flashedMessages) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -1936,6 +1936,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.allowEditing = $allowEditing;
   $scope.allTripPlans = $allTripPlans;
   $scope.activeTripPlanState = $activeTripPlanState;
+  $scope.flashedMessages = $flashedMessages;
   $scope.refreshState = {
     paused: false
   };
@@ -2865,18 +2866,6 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
           });
         }
       });
-  };
-}
-
-function FlashedMessagesCtrl($scope, $flashedMessages) {
-  $scope.messages = $flashedMessages;
-
-  $scope.hasMessages = function() {
-    return !_.isEmpty($scope.messages);
-  };
-
-  $scope.dismiss = function(index) {
-    $scope.messages.splice(index, 1);
   };
 }
 
@@ -4236,7 +4225,6 @@ window['initApp'] = function(tripPlan, entities,
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
-    .controller('FlashedMessagesCtrl', FlashedMessagesCtrl)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcEntityListing', tcEntityListing)
