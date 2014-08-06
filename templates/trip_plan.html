@@ -1010,6 +1010,16 @@
           trip-plan-id="selectedGuide['trip_plan_id']" result-index="$index">
         </tc-entity-details>
 
+        <div ng-if="relatedGuides && relatedGuides.length">
+          <div class="related-guides-header">Related Guides</div>
+          <div ng-repeat="guide in relatedGuides">
+            <tc-trip-plan-details-header trip-plan="guide"
+              num-entities="guide['entities'].length" include-creator="true"
+              clickable="true" show-border="true" on-click="selectGuide(guide)">
+            </tc-trip-plan-details-header>
+          </div>
+        </div>
+
         <div class="back-to-top">
           <a tc-scroll-on-click scroll-parent=".guides-panel" scroll-target=".guides-panel"
             href="javascript:void(0)" class="cta-link">

@@ -7,7 +7,6 @@
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the original referral source when creating new trip plans.
-// -Add related guides at bottom of guide.
 // -Don't allow tags to be clickable in guides/results.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {

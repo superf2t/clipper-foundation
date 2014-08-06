@@ -1922,6 +1922,14 @@ function EntityDragStateModel(tripPlanModel) {
   };
 }
 
+function DataCache() {
+  this.guides = null;
+
+  this.clear = function() {
+    this.guides = null;
+  };
+}
+
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityService, $allowEditing, $accountInfo,
@@ -2286,28 +2294,46 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
 }
 
 function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
-    $mapManager, $filterModel, $searchResultState) {
+    $mapManager, $filterModel, $searchResultState, $dataCache) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
-  $scope.loading = true;
+  $scope.loading = false;
   $scope.guides = null;
   $scope.selectedGuide = null;
+  $scope.relatedGuides = null;
 
-  $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
-    .success(function(response) {
-      $scope.loading = false;
-      $scope.guides = response['trip_plans'];
-    });
+  if ($dataCache.guides) {
+    $scope.guides = $dataCache.guides;
+  } else {
+    $scope.loading = true;
+    $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
+      .success(function(response) {
+        $scope.loading = false;
+        $scope.guides = response['trip_plans'];
+        $dataCache.guides = $scope.guides;
+      });    
+  }
 
   $scope.selectGuide = function(guide) {
     $scope.selectedGuide = guide;
     $mapManager.fitBoundsToEntities(guide['entities']);
     $filterModel.searchResultsEmphasized = true;
+    $scope.relatedGuides = $scope.generateRelatedGuides(guide);
   };
 
   $scope.backToListings = function() {
     $scope.selectedGuide = null;
     $filterModel.searchResultsEmphasized = false;
     $searchResultState.clear();
+  };
+
+  var MAX_NUM_RELATED_GUIDES = 3;
+
+  $scope.generateRelatedGuides = function(selectedGuide) {
+    return _.chain($scope.guides)
+      .sample(MAX_NUM_RELATED_GUIDES + 1)
+      .without(selectedGuide)
+      .value()
+      .slice(0, MAX_NUM_RELATED_GUIDES);
   };
 }
 
@@ -4208,7 +4234,8 @@ window['initApp'] = function(tripPlan, entities,
     .value('$sampleSites', sampleSites)
     .value('$hasGuides', hasGuides)
     .value('$flashedMessages', flashedMessages)
-    .value('$browserInfo', BrowserInfo.parse(navigator.userAgent));
+    .value('$browserInfo', BrowserInfo.parse(navigator.userAgent))
+    .value('$dataCache', new DataCache());
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
