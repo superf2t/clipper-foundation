@@ -8,13 +8,11 @@
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the original referral source when creating new trip plans.
-// -Add filtering for tags.
 // -Make flashed messages auto-dismissable.
 
 // CLEANUP:
 // -Delete the item model and put its remaining funcionality in EntityModel,
 //  or just as scope methods.
-// -Remove day planner.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
