@@ -138,6 +138,7 @@ def trip_plan_by_id(trip_plan_id):
         # We have them but we won't use them since there's no shopping cart.
         pass
 
+    has_guides = bool(guide_config.find_nearby_city_config(current_trip_plan.location_latlng))
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
 
     response = render_template('trip_plan.html',
@@ -151,6 +152,7 @@ def trip_plan_by_id(trip_plan_id):
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
+        has_guides=has_guides,
         flashed_messages=flashed_messages)
     return response
 

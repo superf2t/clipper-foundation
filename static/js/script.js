@@ -1925,7 +1925,7 @@ function EntityDragStateModel(tripPlanModel) {
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityService, $allowEditing, $accountInfo,
-    $allTripPlans, $activeTripPlanState, $flashedMessages) {
+    $allTripPlans, $activeTripPlanState, $hasGuides, $flashedMessages) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -1936,6 +1936,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.allowEditing = $allowEditing;
   $scope.allTripPlans = $allTripPlans;
   $scope.activeTripPlanState = $activeTripPlanState;
+  $scope.hasGuides = $hasGuides;
   $scope.flashedMessages = $flashedMessages;
   $scope.refreshState = {
     paused: false
@@ -4187,7 +4188,8 @@ angular.module('filtersModule', [])
 
 window['initApp'] = function(tripPlan, entities,
     allTripPlans, activeTripPlan, activeTripPlanEntityCount,
-    accountInfo, datatypeValues, allowEditing, sampleSites, flashedMessages) {
+    accountInfo, datatypeValues, allowEditing, sampleSites,
+    hasGuides, flashedMessages) {
 
   var tripPlanModel = new TripPlanModel(tripPlan, entities);
   angular.module('initialDataModule', [])
@@ -4204,6 +4206,7 @@ window['initApp'] = function(tripPlan, entities,
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
     .value('$sampleSites', sampleSites)
+    .value('$hasGuides', hasGuides)
     .value('$flashedMessages', flashedMessages)
     .value('$browserInfo', BrowserInfo.parse(navigator.userAgent));
 

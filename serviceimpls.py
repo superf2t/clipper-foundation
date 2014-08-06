@@ -10,7 +10,6 @@ from database import user
 import clip_logic
 import enums
 import geocode
-import geometry
 import google_places
 import guide_config
 import kml_import
@@ -1050,13 +1049,10 @@ class TripPlanService(service.Service):
 
     def findtripplans(self, request):
         trip_plans = []
-        for city_config in guide_config.GUIDES_BY_CITY.itervalues():
-            distance = geometry.earth_distance_meters(
-                city_config.latlng['lat'], city_config.latlng['lng'],
-                request.location_latlng.lat, request.location_latlng.lng)
-            if distance < 40000:
-                guides = data.load_trip_plans_by_ids(city_config.trip_plan_ids)
-                trip_plans.extend([guide for guide in guides if guide])
+        city_config = guide_config.find_nearby_city_config(request.location_latlng)
+        if city_config:
+            guides = data.load_trip_plans_by_ids(city_config.trip_plan_ids)
+            trip_plans.extend([guide for guide in guides if guide])
 
         self.migrate_creators(trip_plans)
         self.resolve_display_users(trip_plans)

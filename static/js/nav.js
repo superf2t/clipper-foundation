@@ -4,7 +4,6 @@
 // -Implement rendering for entity details listings that have no photos.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
-// -Figure out whether to render results/guide markers differently.
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the original referral source when creating new trip plans.
