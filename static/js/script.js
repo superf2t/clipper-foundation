@@ -190,6 +190,16 @@ function EntityModel(entityData, editable) {
       return '';
     }
   };
+
+  this.iconTemplateName = function() {
+    if (this.hasSubCategory()) {
+      return this.data['sub_category']['name'] + '-icon-template';
+    }
+    if (this.hasCategory()) {
+      return this.data['category']['name'] + '-icon-template';
+    }
+    return null;
+  };
 }
 
 function TripPlanModel(tripPlanData, entityDatas) {
@@ -660,16 +670,6 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $scope.infoTab = infoTab;
     $scope.inlineEditMode = null;
     $scope.directionsHelper.reset();
-  };
-
-  $scope.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
   };
 
   $scope.resultLetter = function() {
@@ -2477,28 +2477,6 @@ var SAMPLE_SUPPORTED_SITES = _.map([
   };
 });
 
-
-function EntityListingCtrl($scope) {
-  $scope.ed = $scope.entityData;
-  $scope.em = new EntityModel($scope.ed);
-}
-
-function tcEntityListing() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      isSelected: '&',
-      onSelect: '&',
-      onMouseenter: '&',
-      onMouseleave: '&',
-      shouldShowDay: '@'
-    },
-    templateUrl: 'one-entity-listing-template',
-    controller: EntityListingCtrl
-  };
-}
-
 var EditorTab = {
   NAME_AND_DESCRIPTION: 1,
   DETAILS: 2,
@@ -2510,6 +2488,7 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     $entityService, $entityEditingService, $timeout) {
   var me = this;
   $scope.ed = angular.copy($scope.originalEntity);
+  $scope.em = new EntityModel($scope.ed);
   $scope.editorTab = EditorTab.NAME_AND_DESCRIPTION;
   $scope.EditorTab = EditorTab;
   $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
@@ -2540,16 +2519,6 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     entityData['latlng']['lat'] = $position.lat();
     entityData['latlng']['lng'] = $position.lng();
     entityData['address_precision'] = 'Precise';
-  };
-
-  $scope.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
   };
 
   this.findMapCenter = function() {
@@ -4257,7 +4226,6 @@ window['initApp'] = function(tripPlan, entities,
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
-    .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)

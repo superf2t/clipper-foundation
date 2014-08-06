@@ -25,7 +25,7 @@ a:hover {
 
 .clipper-panel {
   width: 100%;
-  height: 50%;
+  height: calc(100% - 150px);
   position: fixed;
   top: 0;
   left: 0;
@@ -35,9 +35,9 @@ a:hover {
 
 .trip-plan-panel {
   width: 100%;
-  height: 50%;
+  height: 150px;
   position: fixed;
-  top: 50%;
+  bottom: 0;
   left: 0;
   overflow-y: auto;
   box-shadow: 0px -1px 2px #aaaaaa;
@@ -49,24 +49,6 @@ a:hover {
 
 .loading-panel {
   height: 100%;
-}
-
-.clipper-panel .bottom-spacer {
-  height: 52px;
-}
-
-.clipper-panel .save-button-panel {
-  text-align: center;
-  position: fixed;
-  bottom: calc(50% + 10px);
-  width: 100%;
-  padding: 5px;
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-.clipper-panel .save-button-panel .save-to-trip-btn {
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 .clipper-panel .search-panel-header {
@@ -94,37 +76,33 @@ a:hover {
 }
 
 .trip-plan-panel .current-trip-header {
-  text-align: center;
+  position: relative;
+  margin: 10px;
+}
+
+.trip-plan-panel .current-trip-header .header-text {
   font-size: 1.2em;
-  padding-top: 10px;
+}
+
+.trip-plan-panel .current-trip-header .trip-plan-in-new-window {
+  position: absolute;
+  top: 3px;
+  right: 0;
 }
 
 .trip-plan-panel .trip-plan-dropdown {
-  padding: 10px;
+  padding: 0 10px;
 }
 
-.trip-plan-panel .trip-plan-in-new-window {
-  position: absolute;
-  top: 52px;
-  right: 35px;
-}
-
-.trip-plan-panel .no-places-yet {
+.trip-plan-panel .save-button-panel {
   text-align: center;
-  font-size: 1.2em;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
-.trip-plan-panel .no-places-yet .filler-icon {
-  width: 100px;
-  height: 100px;
-  margin: auto;
-}
-
-.trip-plan-panel .no-places-yet .filler-icon svg {
-  width: 100%;
-  height: 100%;
-  fill: #fff;
+.trip-plan-panel .save-button-panel .save-to-trip-btn {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14pt;
 }
 
 .dropdown-menu.right-bottom-dropdown-menu { /* DUPE */
@@ -280,18 +258,13 @@ a:hover {
 .one-entity-result .result-letter-icon {
   display: inline-block;
   vertical-align: top;
-}
-
-.one-entity-result .result-letter-icon .map-marker .marker-shape {
-  width: 24px;
-  height: 37px;
+  height: 35px;
   position: relative;
-  top: -3px;
+  top: -12px;
 }
 
-.one-entity-result .result-letter-icon .search-result-marker .result-letter {
-  font-size: 1.1em;
-  top: 1px;
+.one-entity-result .result-letter-icon.selected .map-marker.for-results .marker-shape svg {
+  stroke: #fff;
 }
 
 .one-entity-result .entity-info {
@@ -300,7 +273,7 @@ a:hover {
 }
 
 .one-entity-result.multiple-results .entity-info {
-  max-width: calc(100% - 56px);
+  max-width: calc(100% - 61px);
 }
 
 .one-entity-result .entity-info .name  {

@@ -58,8 +58,8 @@ function ClipperRootCtrl($scope, $clipperStateModel, $window) {
   });
 }
 
-function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entityService, $mapProxy,
-    $datatypeValues, $window, $timeout) {
+function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
+    $entityService, $mapProxy, $datatypeValues, $window, $timeout) {
   var me = this;
 
   $scope.entities = [];
@@ -88,6 +88,21 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     }
     $mapProxy.plotResultEntities(entities);
   }, true);
+
+  $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
+    if (!tripPlan || !tripPlan['trip_plan_id']) {
+      $scope.tripPlanState.entities = null;
+      return;
+    }
+    $tripPlanState.entities = null;
+    $entityService.getByTripPlanId(tripPlan['trip_plan_id'])
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanState.entities = response['entities'];
+          $mapProxy.plotTripPlanEntities(response['entities']);
+        }
+      });
+  });
 
   this.setupEntityState = function(entities) {
     $scope.entities = entities;
@@ -181,6 +196,12 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
     });
   };
 
+  $scope.$on('askifediting', function(event, result) {
+    if (!$tripPlanState.tripPlan['trip_plan_id']) {
+      result.editing = true;
+    }
+  });
+
   $scope.$on('shortcutkeypressed', function(event, keyCode, stateInfo) {
     if (keyCode == 78 /* n */
       && $scope.clipperState.status == ClipperState.SUMMARY
@@ -220,63 +241,6 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState, $entitySer
   });
 
   $window.parent.postMessage('tc-needs-page-source', '*'); 
-}
-
-function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy,
-    $tripPlanService, $entityService) {
-  $scope.tripPlanState = $tripPlanState;
-
-  $scope.loadingEntities = false;
-
-  $scope.showNoPlacesText = function() {
-    return !$scope.loadingEntities
-      && $scope.tripPlanState.tripPlan['trip_plan_id']
-      && (!$scope.tripPlanState.entities || !$scope.tripPlanState.entities.length);
-  };
-
-  $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
-    if (!tripPlan || !tripPlan['trip_plan_id']) {
-      $scope.tripPlanState.entities = null;
-      return;
-    }
-    $scope.tripPlanState.entities = null;
-    $scope.loadingEntities = true;
-    $entityService.getByTripPlanId(tripPlan['trip_plan_id'])
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.loadingEntities = false;
-          $scope.tripPlanState.entities = response['entities'];
-          $mapProxy.plotTripPlanEntities(response['entities']);
-        }
-      });
-  });
-
-  $scope.$on('askifediting', function(event, result) {
-    if (!$tripPlanState.tripPlan['trip_plan_id']) {
-      result.editing = true;
-    }
-  });
-}
-
-function ClipperTripPlanEntityCtrl($scope, $clipperStateModel) {
-  $scope.ed = $scope.entity;
-  $scope.em = new EntityModel($scope.ed);
-
-  $scope.selectEntity = function() {
-    $clipperStateModel.selectedEntityId = $scope.ed['entity_id'];
-  };
-
-  $scope.isSelected = function() {
-    return $scope.ed['entity_id'] == $clipperStateModel.selectedEntityId;
-  };
-
-  $scope.highlightEntity = function() {
-    $clipperStateModel.highlightedEntityId = $scope.ed['entity_id'];
-  };
-
-  $scope.unhighlightEntity = function() {
-    $clipperStateModel.highlightedEntityId = null;
-  };
 }
 
 function MapProxy($window) {
@@ -577,16 +541,14 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
       interpolator)
     .controller('ClipperRootCtrl', ClipperRootCtrl)
     .controller('ClipperPanelCtrl', ClipperPanelCtrl)
-    .controller('TripPlanPanelCtrl', TripPlanPanelCtrl)
-    .controller('ClipperTripPlanEntityCtrl', ClipperTripPlanEntityCtrl)
     .controller('ClipperOmniboxCtrl', ClipperOmniboxCtrl)
     .controller('ClipperResultEntityCtrl', ClipperResultEntityCtrl)
     .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
     .service('$mapProxy', MapProxy)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
-    .directive('tcEntityListing', tcEntityListing)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
-    .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
+    .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
+    .directive('tcEntityIcon', tcEntityIcon);
 
   angular.element(document).ready(function() {
     angular.bootstrap(document, ['clipperModule']);
