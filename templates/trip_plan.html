@@ -22,7 +22,8 @@
     num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
     shopping-cart-mode="!{{allow_editing | jsbool}}">
   </tc-nav>
-  <div tc-include-and-replace="flashed-messages-template"></div>
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
 
   <div id="summary-panel" ng-if="{{allow_editing | jsbool}}">
     <div ng-include="'trip-plan-header-template'">
@@ -608,33 +609,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="one-entity-listing-template">
-    <div class="one-entity-listing"
-      tc-entity-id="[[ed['entity_id'] ]]"
-      ng-class="{'selected': isSelected({$entityData: ed})}"
-      ng-click="onSelect({$entityData: ed})">
-      <span class="entity-circle-img">
-        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
-      </span>
-      <span class="entity-info">
-        <div class="name">
-          [[ed['name'] ]]
-        </div>
-        <div class="details">
-          <span ng-show="im.hasCategory()"
-            ng-class="'text-' + ed['category']['name']">
-            [[im.categoryDisplayText()]]
-          </span>
-          <span ng-show="im.day() && shouldShowDay" ng-class="day">
-            Day [[im.day()]]
-          </span>
-          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
-          </span>
-        </div>
-      </span>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="details-panel-template">
     <div class="details-panel one-info-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
@@ -1035,6 +1009,16 @@
           entity="entity" is-editable="false" for-results="true"
           trip-plan-id="selectedGuide['trip_plan_id']" result-index="$index">
         </tc-entity-details>
+
+        <div ng-if="relatedGuides && relatedGuides.length">
+          <div class="related-guides-header">Related Guides</div>
+          <div ng-repeat="guide in relatedGuides">
+            <tc-trip-plan-details-header trip-plan="guide"
+              num-entities="guide['entities'].length" include-creator="true"
+              clickable="true" show-border="true" on-click="selectGuide(guide)">
+            </tc-trip-plan-details-header>
+          </div>
+        </div>
 
         <div class="back-to-top">
           <a tc-scroll-on-click scroll-parent=".guides-panel" scroll-target=".guides-panel"
@@ -1550,6 +1534,7 @@
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}},
       {{sample_sites_json|safe}},
+      {{has_guides|jsbool}},
       {{to_json_str(flashed_messages)|safe}});
   </script>
 </body>

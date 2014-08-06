@@ -260,6 +260,7 @@ function TripPlanPanelCtrl($scope, $clipperStateModel, $tripPlanState, $mapProxy
 
 function ClipperTripPlanEntityCtrl($scope, $clipperStateModel) {
   $scope.ed = $scope.entity;
+  $scope.em = new EntityModel($scope.ed);
 
   $scope.selectEntity = function() {
     $clipperStateModel.selectedEntityId = $scope.ed['entity_id'];
@@ -395,7 +396,6 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
-  $scope.im = new ItemModel($scope.ed);
 
   $scope.editNotesState = {active: false};
   $scope.editPhotosState = {active: false};

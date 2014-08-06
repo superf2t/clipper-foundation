@@ -126,6 +126,12 @@ a.black-link:hover .tc-icon svg {
   border: 1px solid rgb(249, 203, 156);
   border-radius: 4px;
   text-align: center;
+  opacity: 1;
+  transition: opacity 1s;
+}
+
+.flashed-msgs.dismissed {
+  opacity: 0;
 }
 
 .flashed-msgs .text-success {

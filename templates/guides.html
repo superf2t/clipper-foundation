@@ -65,11 +65,13 @@
 
   <script>
     function GuidesCtrl($scope, $guides, $allTripPlans,
-        $accountInfo, $activeTripPlanState, $tripPlanCreator, $window) {
+        $accountInfo, $activeTripPlanState, $tripPlanCreator,
+        $flashedMessages, $window) {
       $scope.guides = $guides;
       $scope.allTripPlans = $allTripPlans;
       $scope.accountInfo = $accountInfo;
-      $scope.activeTripPlanState = $activeTripPlanState;   
+      $scope.activeTripPlanState = $activeTripPlanState;  
+      $scope.flashedMessages = $flashedMessages; 
 
       $scope.createNewTripAndRedirect = function() {
         $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
@@ -93,7 +95,6 @@
           ['guidesInitialDataModule', 'navModule', 'directivesModule'],
           interpolator)
         .controller('GuidesCtrl', GuidesCtrl)
-        .controller('FlashedMessagesCtrl', FlashedMessagesCtrl)
         .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader);
 
       angular.element(document).ready(function() {
@@ -107,7 +108,8 @@
     num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
     shopping-cart-mode="true">
   </tc-nav>
-  <div tc-include-and-replace="flashed-messages-template"></div>
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
 
   <div class="main-content">
     {% if guides %}

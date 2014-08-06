@@ -1,3 +1,5 @@
+import geometry
+
 class GuideConfig(object):
     def __init__(self, city_name, latlng_tuple, trip_plan_ids):
         self.city_name = city_name
@@ -13,6 +15,15 @@ class GuideConfig(object):
 
 def make_guide_configs(*args_list):
     return tuple(GuideConfig(*args) for args in args_list)
+
+def find_nearby_city_config(latlng):
+    for city_config in GUIDES_BY_CITY.itervalues():
+        distance = geometry.earth_distance_meters(
+            city_config.latlng['lat'], city_config.latlng['lng'],
+            latlng.lat, latlng.lng)
+        if distance < 40000:
+            return city_config
+    return None
 
 GUIDES = make_guide_configs(
     ('London', (51.5073509, -0.1277583), (

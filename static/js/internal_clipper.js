@@ -553,7 +553,7 @@ function tcEntityListing() {
     },
     controller: function($scope) {
       $scope.ed = $scope.entity;
-      $scope.im = new ItemModel($scope.entity);
+      $scope.em = new EntityModel($scope.ed);
 
       $scope.missingRequiredFields = function() {
         var requiredFieldNames = ['name', 'address', 'latlng', 'photo_urls'];
