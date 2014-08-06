@@ -214,9 +214,9 @@
             [[ed['name'] ]]
           </div>
           <div class="details">
-            <span ng-show="im.hasCategory()"
+            <span ng-show="em.hasCategory()"
               ng-class="'text-' + ed['category']['name']">
-              [[im.categoryDisplayText()]]
+              [[em.categoryDisplayText()]]
             </span>
           </div>
         </span>
@@ -299,19 +299,16 @@
       ng-mouseenter="onMouseenter()"
       ng-mouseleave="onMouseleave()">
       <span class="entity-circle-img">
-        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
+        <img ng-src="[[em.getBackgroundImageUrl()]]" draggable="false"/>
       </span>
       <span class="entity-info">
         <div class="name">
           [[ed['name'] ]]
         </div>
         <div class="details">
-          <span ng-show="im.hasCategory()"
+          <span ng-show="em.hasCategory()"
             ng-class="'text-' + ed['category']['name']">
-            [[im.categoryDisplayText()]]
-          </span>
-          <span ng-show="im.day() && shouldShowDay" ng-class="day">
-            Day [[im.day()]]
+            [[em.categoryDisplayText()]]
           </span>
           <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
           </span>

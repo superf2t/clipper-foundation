@@ -608,33 +608,6 @@
     </div>
   </script>
 
-  <script type="text/ng-template" id="one-entity-listing-template">
-    <div class="one-entity-listing"
-      tc-entity-id="[[ed['entity_id'] ]]"
-      ng-class="{'selected': isSelected({$entityData: ed})}"
-      ng-click="onSelect({$entityData: ed})">
-      <span class="entity-circle-img">
-        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
-      </span>
-      <span class="entity-info">
-        <div class="name">
-          [[ed['name'] ]]
-        </div>
-        <div class="details">
-          <span ng-show="im.hasCategory()"
-            ng-class="'text-' + ed['category']['name']">
-            [[im.categoryDisplayText()]]
-          </span>
-          <span ng-show="im.day() && shouldShowDay" ng-class="day">
-            Day [[im.day()]]
-          </span>
-          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
-          </span>
-        </div>
-      </span>
-    </div>
-  </script>
-
   <script type="text/ng-template" id="details-panel-template">
     <div class="details-panel one-info-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"

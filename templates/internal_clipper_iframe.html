@@ -191,23 +191,20 @@
   <script type="text/ng-template" id="one-entity-listing-template">
     <div class="one-entity-listing">
       <span class="entity-circle-img">
-        <img ng-src="[[im.getBackgroundImageUrl()]]" draggable="false"/>
+        <img ng-src="[[em.getBackgroundImageUrl()]]" draggable="false"/>
       </span>
       <span class="entity-info">
         <div class="name">
           [[ed['name'] ]]
         </div>
         <div class="details">
-          <span ng-show="im.hasCategory()"
+          <span ng-show="em.hasCategory()"
             ng-class="'text-' + ed['category']['name']">
             [[ed['category']['display_name'] ]]
           </span>
-          <span ng-show="im.hasSubCategory()"
+          <span ng-show="em.hasSubCategory()"
             ng-class="'text-' + ed['category']['name']">
             > [[ed['sub_category']['display_name'] ]]
-          </span>
-          <span ng-show="im.day()" ng-class="day">
-            Day [[im.day()]]
           </span>
           <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
           </span>
