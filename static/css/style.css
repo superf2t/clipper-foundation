@@ -276,6 +276,14 @@ hr.dropdown-separator {
   font-weight: bold;
 }
 
+a.category-filter-link {
+  color: inherit;
+}
+
+a.category-filter-link:hover {
+  text-decoration: underline;
+}
+
 #entity-container {
   overflow-y: auto;
   color: #000;

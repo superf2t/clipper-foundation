@@ -478,15 +478,20 @@ function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
   };
 
   $scope.isActive = function() {
-    return !$filterModel.tagFilteringActive()
-      ||$filterModel.hasActiveTag($scope.ed['tags']);
+    return !$filterModel.attributeFilteringActive()
+      || $filterModel.hasActiveAttributeFilter($scope.ed);
   };
 
   $scope.$watch(function() {
-    return $filterModel.tagFilteringActive();
+    return $filterModel.attributeFilteringActive();
   }, function(filteringActive) {
     $scope.isDraggable = !filteringActive;
   });
+
+  $scope.filterToCategory = function($event) {
+    $filterModel.setActiveCategory($scope.ed['category']);
+    $event.stopPropagation();
+  };
 }
 
 function EntityOrderingService($entityDragStateModel, $tripPlanModel, $entityService) {
@@ -808,12 +813,16 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
 
   $scope.isActive = function() {
     return $scope.forResults
-      || !$filterModel.tagFilteringActive()
-      || $filterModel.hasActiveTag($scope.ed['tags']);
+      || !$filterModel.attributeFilteringActive()
+      || $filterModel.hasActiveAttributeFilter($scope.ed);
   };
 
   $scope.makeTagActive = function(tag) {
     $filterModel.setActiveTag(tag);
+  };
+
+  $scope.filterToCategory = function() {
+    $filterModel.setActiveCategory($scope.ed['category']);
   };
 
   $scope.markerClicked = function($event) {
@@ -838,8 +847,8 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
       $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
     } else {
       $scope.markerState.emphasized = $filterModel.entityIsHighlighted($scope.ed['entity_id']);
-      $scope.markerState.deemphasized = $filterModel.tagFilteringActive()
-        && !$filterModel.hasActiveTag($scope.ed['tags']);
+      $scope.markerState.deemphasized = $filterModel.attributeFilteringActive()
+        && !$filterModel.hasActiveAttributeFilter($scope.ed);
     }
   };
 
@@ -1898,7 +1907,9 @@ function processIntoGroups(grouping, items) {
 function FilterModel() {
   this.searchResultsEmphasized = false;
   this.highlightedEntity = null;
+
   this.activeTagText = null;
+  this.activeCategory = null;
 
   this.entityIsHighlighted = function(entityId) {
     return this.highlightedEntity && this.highlightedEntity['entity_id'] == entityId;
@@ -1914,16 +1925,17 @@ function FilterModel() {
     this.activeTagText = null;
   };
 
-  this.tagFilteringActive = function() {
-    return !!this.activeTagText;
+  this.attributeFilteringActive = function() {
+    return this.activeTagText || this.activeCategory;
   };
 
   this.setActiveTag = function(tag) {
+    this.clearAttributeFilters();
     this.activeTagText = tag['text'].toLowerCase().trim();
   };
 
   this.hasActiveTag = function(tags) {
-    if (!this.tagFilteringActive() || _.isEmpty(tags)) {
+    if (!this.activeTagText || _.isEmpty(tags)) {
       return false;
     }
     for (var i = 0, I = tags.length; i < I; i++) {
@@ -1934,8 +1946,23 @@ function FilterModel() {
     return false;
   };
 
-  this.clearTagFilters = function() {
+  this.clearAttributeFilters = function() {
     this.activeTagText = null;
+    this.activeCategory = null;
+  };
+
+  this.setActiveCategory = function(category) {
+    this.clearAttributeFilters();
+    this.activeCategory = category && category['category_id'] ? category : null;
+  };
+
+  this.hasActiveCategory = function(category) {
+    return this.activeCategory && category
+      && this.activeCategory['category_id'] == category['category_id'];
+  };
+
+  this.hasActiveAttributeFilter = function(entity) {
+    return this.hasActiveTag(entity['tags']) || this.hasActiveCategory(entity['category']);
   };
 }
 

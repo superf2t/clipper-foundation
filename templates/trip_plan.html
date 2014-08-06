@@ -174,12 +174,18 @@
   </script>
 
   <script type="text/ng-template" id="filter-bar-template">
-    <div ng-if="filterModel.tagFilteringActive()" class="filter-bar">
+    <div ng-if="filterModel.attributeFilteringActive()" class="filter-bar">
       <span class="filter-message">
-        Currently filtering to places tagged with
-        <span class="tag-filter-text">[[filterModel.activeTagText]]</span>
+        <span ng-show="filterModel.activeTagText">
+          Currently filtering to places tagged with
+          <span class="tag-filter-text">[[filterModel.activeTagText]]</span>
+        </span>
+        <span ng-show="filterModel.activeCategory">
+          Currently filtering to places with category
+           <span class="tag-filter-text">[[filterModel.activeCategory['display_name'] ]]</span>
+        </span>
       </span>
-      <a ng-click="filterModel.clearTagFilters()" class="close-link color-link" href="javascript:void(0)">
+      <a ng-click="filterModel.clearAttributeFilters()" class="close-link color-link" href="javascript:void(0)">
         <span class="glyphicon glyphicon-remove"></span>
       </a>
     </div>
@@ -702,9 +708,11 @@
           [[ed['name'] ]]
         </div>
         <div class="details">
-          <span ng-show="em.hasCategory()"
-            ng-class="'text-' + ed['category']['name']">
-            [[em.categoryDisplayText()]]
+          <span ng-show="em.hasCategory()" ng-class="'text-' + ed['category']['name']">
+            <a ng-click="filterToCategory($event)" class="category-filter-link"
+              href="javascript:void(0)">
+              [[em.categoryDisplayText()]]
+            </a>
           </span>
           <span ng-show="ed['comments'] && ed['comments'].length" class="quickinfo-icon" tc-icon="comment">
           </span>
@@ -955,7 +963,7 @@
                 max-lines="5">
               </tc-expandable-content>
             </div>
-            <div ng-show="showAddDescriptionPrompt()">
+            <div ng-show="showAddDescriptionPrompt()" class="description">
               <a ng-click="openDescriptionEditor()" class="cta-link" href="javascript:void(0)">
                 Add a description
               </a>
@@ -969,6 +977,16 @@
               </a>
               <a ng-click="closeDescriptionEditor()" href="javascript:void(0)">
                 Cancel
+              </a>
+            </div>
+            <div ng-show="em.hasCategory()"
+              ng-class="'text-' + ed['category']['name']">
+              <a ng-click="filterToCategory()" class="category-filter-link"
+                href="javascript:void(0)">
+                [[ed['category']['display_name'] ]]
+                <span ng-show="em.hasSubCategory()">
+                  &gt; [[ed['sub_category']['display_name'] ]]
+                </span>
               </a>
             </div>
             <div class="tags" ng-show="showTags()">
