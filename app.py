@@ -9,6 +9,7 @@ from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask import request_finished
 from flask import session
 from flask import url_for
 from flask.ext import user as flask_user
@@ -24,6 +25,7 @@ import data
 from database import user as user_module
 import featured_profiles
 import guide_config
+import request_logging
 import sample_sites
 from scraping import trip_plan_creator
 import serializable
@@ -439,6 +441,10 @@ user_manager = flask_user.UserManager(user_db_adapter, app,
     login_view_function=login,
     confirm_email_view_function=confirm_email)
 
+def log_response(send, response, **kwargs):
+    request_logging.log_request(request, response, g.get('session_info', None))
+
+request_finished.connect(log_response, app)
 
 if __name__ == '__main__':
     app.debug = constants.DEBUG

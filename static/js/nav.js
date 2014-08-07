@@ -8,9 +8,14 @@
 // -Don't allow tags and categories to be clickable in guides/results.
 // -Add flashed messages to the homepage.
 // -Add call to action to add a cover image.
+// -Add an internal IP check and filter out analytics requests.
 
 // For release:
 // -Create new db tables
+// -Remove index on frontend_request for efficiency: 
+//  alter table frontend_request drop constraint frontend_request_pkey;
+// -Create a WSGIDaemonProcess entry in custom.conf for apache to configure
+//  number of application processes.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
