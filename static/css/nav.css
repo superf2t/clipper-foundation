@@ -250,6 +250,7 @@ a.black-link:hover .tc-icon svg {
 
 .new-trip-modal .new-trip-modal-body {
   width: 400px;
+  max-width: 100%;
   margin: 30px auto 0 auto;
 }
 

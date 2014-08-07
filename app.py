@@ -52,11 +52,7 @@ def clipper_iframe():
     if not (g.session_info.visitor_id or g.session_info.email):
         return render_template('clipper_iframe_not_logged_in.html')
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
-    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
-    if not all_trip_plans:
-        # User is so new she doesn't even have an empty trip plan
-        trip_plan = create_and_save_default_trip_plan(g.session_info)
-        all_trip_plans = [trip_plan]
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans or []
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     return render_template('clipper_iframe.html',
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
@@ -308,12 +304,6 @@ def admin_scrape():
         return '', 404
     return render_template('admin_scrape.html',
         all_scrapers=[s.__name__ for s in trip_plan_creator.ALL_PARSERS])
-
-def create_and_save_default_trip_plan(session_info):
-    operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))
-    mutate_request = serviceimpls.TripPlanMutateRequest(operations=[operation])
-    response = serviceimpls.TripPlanService(session_info).mutate(mutate_request)
-    return response.trip_plans[0]
 
 @app.before_request
 def process_cookies():

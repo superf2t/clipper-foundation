@@ -90,7 +90,7 @@ a:hover {
   right: 0;
 }
 
-.trip-plan-panel .trip-plan-dropdown {
+.trip-plan-panel .trip-plan-selector {
   padding: 0 10px;
 }
 
@@ -103,6 +103,11 @@ a:hover {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 14pt;
+}
+
+.clipper-new-trip-modal-window .modal-dialog {
+  width: calc(100% - 20px);
+  margin: 10px;
 }
 
 .dropdown-menu.right-bottom-dropdown-menu { /* DUPE */

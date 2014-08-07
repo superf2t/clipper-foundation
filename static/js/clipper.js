@@ -59,7 +59,8 @@ function ClipperRootCtrl($scope, $clipperStateModel, $window) {
 }
 
 function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
-    $entityService, $mapProxy, $datatypeValues, $window, $timeout) {
+    $entityService, $allTripPlans, $mapProxy, $datatypeValues,
+    $modal, $window, $timeout) {
   var me = this;
 
   $scope.entities = [];
@@ -68,6 +69,7 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
   };
   $scope.ClipperState = ClipperState;
   $scope.tripPlanState = $tripPlanState;
+  $scope.allTripPlans = $allTripPlans;
 
   $scope.categories = $datatypeValues['categories'];
   $scope.subCategories = $datatypeValues['sub_categories'];
@@ -193,6 +195,30 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
     $.each($scope.entities, function(i, entity) {
       entity.selected = false;
       $clipperStateModel.resultIndicesToSave[i] = false;
+    });
+  };
+
+  $scope.openNewTripPanel = function() {
+    var modal = null;
+    var scope = $scope.$new(true);
+    scope.hideLoginPrompt = true;
+    scope.onCreate = function(newTripPlan) {
+      $allTripPlans.unshift(newTripPlan);
+      $tripPlanState.tripPlan = newTripPlan;
+      modal.close();
+    };
+    scope.onClose = function() {
+      if (!$tripPlanState.tripPlan || !$tripPlanState.tripPlan['trip_plan_id']) {
+        $tripPlanState.tripPlan = null;
+      }
+    };
+    var modal = $modal.open({
+      templateUrl: 'new-trip-modal-template',
+      windowClass: 'clipper-new-trip-modal-window',
+      backdrop: 'static',
+      keyboard: false,
+      controller: NewTripCtrl,
+      scope: scope
     });
   };
 
@@ -547,7 +573,7 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .service('$mapProxy', MapProxy)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
-    .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
+    .directive('tcTripPlanSelector', tcTripPlanSelector)
     .directive('tcEntityIcon', tcEntityIcon);
 
   angular.element(document).ready(function() {

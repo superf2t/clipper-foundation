@@ -155,10 +155,10 @@
           </a>
         </div>
       </div>
-      <div tc-trip-plan-select-dropdown
+      <tc-trip-plan-selector trip-plans="allTripPlans"
         select-trip-plan-to="tripPlanState.tripPlan"
-        class="trip-plan-dropdown">
-      </div>
+        show-create-new="true" on-create-new-selected="openNewTripPanel()">
+      </tc-trip-plan-selector>
 
       <div class="save-button-panel">
         <button class="btn btn-cta save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
@@ -281,6 +281,7 @@
     </div>
   </script>
 
+  {% include 'nav.html' %}
   {% include 'widgets.html' %}
   {% include 'icons.html' %}
   {% include 'map_markers.html' %}
