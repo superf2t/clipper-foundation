@@ -216,7 +216,7 @@
       });
 
       $scope.$on('openinfowindow', function(event, entityId) {
-        if (entityId == $scope.ed['entity_id']) {
+        if (entityId == $scope.ed['entity_id'] && $clipperStateModel.mapOpen) {
           $scope.openInfowindow();
         }
       });
@@ -278,7 +278,7 @@
       });
 
       $scope.$on('openresultsinfowindow', function(event, resultIndex) {
-        if (resultIndex == $scope.$index) {
+        if (resultIndex == $scope.$index && $clipperStateModel.mapOpen) {
           $scope.openInfowindow();
         }
       });

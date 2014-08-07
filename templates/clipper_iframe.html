@@ -235,66 +235,84 @@
         </span>
       </div>
       <div class="editor" ng-if="isEditing()">
-        <tabset>
-          <tab heading="Name and Address" select="stopEditingPhotos()" active="editLocationState.active">
-            <div class="location-editor">
-              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
-                tc-focus-on="editLocationState.active"/>
-              <input class="form-control" ng-model="ed['address']" placeholder="Address"
-                tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
-                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
-              <div class="tip-text">
-                Tip: drag the marker on the
-                <a ng-show="!clipperStateModel.mapOpen" class="color-link"
-                ng-click="openMap()" href="javascript:void(0)">
-                  map
+        <div class="editor-tabs">
+          <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.LOCATION}">
+            <a class="black-link"
+              ng-click="selectEditorTab(EditorTab.LOCATION); stopEditingPhotos()"
+              href="javascript:void(0)">
+              Name and Address
+            </a>
+          </span>
+          <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.DESCRIPTION}">
+            <a class="black-link"
+              ng-click="selectEditorTab(EditorTab.DESCRIPTION); stopEditingPhotos()"
+              href="javascript:void(0)">
+              Description
+            </a>
+          </span>
+          <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
+            <a class="black-link"
+              ng-click="selectEditorTab(EditorTab.PHOTOS); startEditingPhotos()"
+              href="javascript:void(0)">
+              Photos
+            </a>
+          </span>
+        </div>
+
+        <div class="location-editor" ng-show="editorTab == EditorTab.LOCATION">
+          <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
+            tc-focus-on="editLocationState.active"/>
+          <input class="form-control" ng-model="ed['address']" placeholder="Address"
+            tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
+            location-types="geocode" on-place-change="addressSelected($newPlace)"/>
+          <div class="tip-text">
+            Tip: drag the marker on the
+            <a ng-show="!clipperStateModel.mapOpen" class="color-link"
+            ng-click="openMap()" href="javascript:void(0)">
+              map
+            </a>
+            <span ng-show="clipperStateModel.mapOpen">
+              map
+            </span>
+            to adjust the location
+          </div>
+        </div>
+
+        <div class="description-editor" ng-show="editorTab == EditorTab.DESCRIPTION">
+          <textarea ng-model="ed['description']" class="form-control description-input"
+            tc-focus-on="editDescriptionState.active" placeholder="Add a description">
+          </textarea>
+          <div class="tip-text">
+            Tip: highlight text on the page to copy it here automatically.
+          </div>
+        </div>
+
+        <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor" ng-show="editorTab == EditorTab.PHOTOS">
+          <div ng-if="hasImgs()" class="photo-carousel">
+            <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+            <span class="carousel-img-container">
+              <div class="img-overlay-control top">
+                <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-picture"></span> Set as primary
                 </a>
-                <span ng-show="clipperStateModel.mapOpen">
-                  map
-                </span>
-                to adjust the location
               </div>
-            </div>
-          </tab>
-          <tab heading="Description" select="stopEditingPhotos()" active="editDescriptionState.active">
-            <div class="description-editor">
-              <textarea ng-model="ed['description']" class="form-control description-input"
-                tc-focus-on="editDescriptionState.active" placeholder="Add a description">
-              </textarea>
-              <div class="tip-text">
-                Tip: highlight text on the page to copy it here automatically.
-              </div>
-            </div>
-          </tab>
-          <tab heading="Photos" select="startEditingPhotos()" active="editPhotosState.active">
-            <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor">
-              <div ng-if="hasImgs()" class="photo-carousel">
-                <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-chevron-left"></span>
-                </a>
-                <span class="carousel-img-container">
-                  <div class="img-overlay-control top">
-                    <a ng-click="setAsPrimary()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-picture"></span> Set as primary
-                    </a>
-                  </div>
-                  <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
-                  <div class="img-overlay-control bottom">
-                    <a ng-click="deletePhoto()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-trash"></span> Delete photo
-                    </a>
-                  </div>
-                </span>
-                <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-chevron-right"></span>
+              <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+              <div class="img-overlay-control bottom">
+                <a ng-click="deletePhoto()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-trash"></span> Delete photo
                 </a>
               </div>
-              <div class="imgs-prompt">
-                <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
-              </div>
-            </div>
-          </tab>
-        </tabset>
+            </span>
+            <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+          </div>
+          <div class="imgs-prompt">
+            <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
+          </div>
+        </div>
       </div>
     </div>
   </script>

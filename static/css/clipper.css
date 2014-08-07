@@ -304,14 +304,23 @@
   position: relative;
 }
 
-.one-entity-result .editor  .nav-tabs>li>a {
-  border-radius: 2px 2px 0 0;
-  padding: 5px 10px;
-  cursor: pointer;
+.one-entity-result .editor-tabs {
+  position: relative;
+  margin: 10px 0;
 }
 
-.one-entity-result .editor .tab-content {
-  margin-top: 7px;
+.one-entity-result .editor-tab {
+  display: inline-block;
+  margin-right: 20px;
+  font-weight: 500;
+}
+
+.one-entity-result .editor-tab:hover {
+  border-bottom: 3px solid #ddd;
+}
+
+.one-entity-result .editor-tab.selected {
+  border-bottom: 3px solid #E33743;
 }
 
 .one-entity-result .editor .description-input {

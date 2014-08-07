@@ -135,7 +135,8 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
   $scope.startManualEntry = function() {
     var entityData = {
       'source_url': getParameterByName('url'),
-      'latlng': $tripPlanState.tripPlan ? $tripPlanState.tripPlan['location_latlng'] : {'lat': 0, 'lng': 0}
+      'latlng': $tripPlanState.tripPlan ? $tripPlanState.tripPlan['location_latlng'] : {'lat': 0, 'lng': 0},
+      'address_precision': 'Precise'
     };
     $scope.addEntity(entityData);
   };
@@ -394,18 +395,19 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   });
 }
 
+var EditorTab = {
+  LOCATION: 1,
+  DESCRIPTION: 2,
+  PHOTOS: 3
+};
+
 function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
 
-  $scope.editLocationState = {active: !$scope.ed['name']};
-  $scope.editDescriptionState = {active: false};
-  $scope.editPhotosState = {active: false};
-  var editorStates = [$scope.editLocationState, $scope.editDescriptionState, $scope.editPhotosState];
-  if ($scope.editLocationState.active) {
-    $mapProxy.resultMarkerSetDraggable($scope.$index, true);
-  }
+  $scope.editorTab = null;
+  $scope.EditorTab = EditorTab;
 
   $scope.toggleSelectResultForSaving = function() {
     if ($scope.entities.length == 1) {
@@ -440,9 +442,7 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   };
 
   $scope.isEditing = function() {
-    return _.some(editorStates, function(state) {
-      return state.active;
-    });
+    return !!$scope.editorTab;
   };
 
   $scope.startEditingPhotos = function() {
@@ -454,14 +454,20 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   };
 
   $scope.openEditor = function() {
-    $scope.editLocationState.active = true;
-    $mapProxy.resultMarkerSetDraggable($scope.$index, true);
+    $scope.selectEditorTab(EditorTab.LOCATION);
+  };
+
+  $scope.selectEditorTab = function(editorTab) {
+    $scope.editorTab = editorTab;
+    if (editorTab == EditorTab.LOCATION) {
+      $mapProxy.resultMarkerSetDraggable($scope.$index, true);
+    }
   };
 
   $scope.closeEditor = function() {
+    $scope.editorTab = null;
     $scope.stopEditingPhotos();
-    _.each(editorStates, function(state) {state.active = false});
-   $mapProxy.resultMarkerSetDraggable($scope.$index, false);
+    $mapProxy.resultMarkerSetDraggable($scope.$index, false);
   };
 
   $scope.$on('closealleditors', function() {
@@ -495,7 +501,7 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   };
 
   $scope.$on('pagetextselected', function(event, text) {
-    if (!$scope.editDescriptionState.active) {
+    if ($scope.editorTab != EditorTab.DESCRIPTION) {
       return;
     }
     if ($scope.ed['description']) {
@@ -504,6 +510,10 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
       $scope.ed['description'] = text;
     }
   });
+
+  if (!$scope.ed['name']) {
+    $scope.openEditor();
+  }
 }
 
 function ClipperEntityPhotoCtrl($scope, $window) {
