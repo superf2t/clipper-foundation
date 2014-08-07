@@ -236,10 +236,30 @@
       </div>
       <div class="editor" ng-if="isEditing()">
         <tabset>
-          <tab heading="Notes" select="stopEditingPhotos()" active="editNotesState.active">
-            <div class="notes-editor">
+          <tab heading="Name and Address" select="stopEditingPhotos()" active="editLocationState.active">
+            <div class="location-editor">
+              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
+                tc-focus-on="editLocationState.active"/>
+              <input class="form-control" ng-model="ed['address']" placeholder="Address"
+                tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
+                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
+              <div class="tip-text">
+                Tip: drag the marker on the
+                <a ng-show="!clipperStateModel.mapOpen" class="color-link"
+                ng-click="openMap()" href="javascript:void(0)">
+                  map
+                </a>
+                <span ng-show="clipperStateModel.mapOpen">
+                  map
+                </span>
+                to adjust the location
+              </div>
+            </div>
+          </tab>
+          <tab heading="Description" select="stopEditingPhotos()" active="editDescriptionState.active">
+            <div class="description-editor">
               <textarea ng-model="ed['description']" class="form-control description-input"
-                tc-focus-on="editNotesState.active" placeholder="Add a note">
+                tc-focus-on="editDescriptionState.active" placeholder="Add a description">
               </textarea>
               <div class="tip-text">
                 Tip: highlight text on the page to copy it here automatically.
@@ -271,18 +291,6 @@
               </div>
               <div class="imgs-prompt">
                 <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
-              </div>
-            </div>
-          </tab>
-          <tab heading="Name and Address" select="stopEditingPhotos()" active="editLocationState.active">
-            <div class="location-editor">
-              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
-                tc-focus-on="editLocationState.active"/>
-              <input class="form-control" ng-model="ed['address']" placeholder="Address"
-                tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
-                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
-              <div class="tip-text">
-                Tip: drag the marker on the map to adjust the location
               </div>
             </div>
           </tab>

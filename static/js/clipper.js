@@ -399,10 +399,10 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
 
-  $scope.editNotesState = {active: false};
-  $scope.editPhotosState = {active: false};
   $scope.editLocationState = {active: !$scope.ed['name']};
-  var editorStates = [$scope.editNotesState, $scope.editPhotosState, $scope.editLocationState];
+  $scope.editDescriptionState = {active: false};
+  $scope.editPhotosState = {active: false};
+  var editorStates = [$scope.editLocationState, $scope.editDescriptionState, $scope.editPhotosState];
   if ($scope.editLocationState.active) {
     $mapProxy.resultMarkerSetDraggable($scope.$index, true);
   }
@@ -454,7 +454,7 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   };
 
   $scope.openEditor = function() {
-    $scope.editNotesState.active = true;
+    $scope.editLocationState.active = true;
     $mapProxy.resultMarkerSetDraggable($scope.$index, true);
   };
 
@@ -495,7 +495,7 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   };
 
   $scope.$on('pagetextselected', function(event, text) {
-    if (!$scope.editNotesState.active) {
+    if (!$scope.editDescriptionState.active) {
       return;
     }
     if ($scope.ed['description']) {
