@@ -7,7 +7,7 @@
 // -ANALYTICS
 // -Set a referral cookie based on the source= url param and store
 //  the original referral source when creating new trip plans.
-// -Don't allow tags to be clickable in guides/results.
+// -Don't allow tags and categories to be clickable in guides/results.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {

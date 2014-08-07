@@ -1931,8 +1931,9 @@ function DataCache() {
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
-    $searchResultState, $entityService, $allowEditing, $accountInfo,
-    $allTripPlans, $activeTripPlanState, $hasGuides, $flashedMessages) {
+    $searchResultState, $entityDragStateModel, $entityService,
+    $allowEditing, $accountInfo, $allTripPlans, $activeTripPlanState,
+    $hasGuides, $flashedMessages) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -2005,6 +2006,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.$on('asktocloseallcontrols', function() {
     $scope.$broadcast('closeallcontrols');
   });
+
+  $scope.$watch(function() {
+    return $tripPlanModel.entities();
+  }, function(entities) {
+    if (entities) {
+      $entityDragStateModel.createOrdering(entities);
+    }
+  }, true);
 
   this.refresh = function(opt_force, opt_callback) {
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
