@@ -50,6 +50,12 @@ class TCRegisterForm(forms.RegisterForm):
     next = wtforms.StringField()
     iframe = wtforms.StringField()
 
+
+class UserMetadata(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    referral_source = db.Column(db.String(50))
+
+
 class DisplayNameResolver(object):
     def __init__(self):
         self.names_by_public_id = {}

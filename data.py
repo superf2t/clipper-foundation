@@ -288,7 +288,9 @@ class TripPlan(serializable.Serializable):
         'content_date', 'view_count', 'clip_count',
         # Display-only fields
         'content_display_date', 'source_icon', 'source_display_name',
-        'profile_url', 'num_entities')
+        'profile_url', 'num_entities',
+        # Internal fields
+        'referral_source')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
@@ -300,7 +302,7 @@ class TripPlan(serializable.Serializable):
             last_modified=None, status=Status.ACTIVE.name,
             trip_plan_type=None, tags=(),
             content_date=None, content_date_datetime=None,
-            view_count=0, clip_count=0):
+            view_count=0, clip_count=0, referral_source=None):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.location_name = location_name
@@ -325,6 +327,8 @@ class TripPlan(serializable.Serializable):
         self.creator = creator  # Deprecated in favor of user
         self.editors = editors or []
         self.invitee_emails = invitee_emails or []
+
+        self.referral_source = referral_source
 
 
     def initialize(self):
@@ -470,11 +474,13 @@ class TripPlan(serializable.Serializable):
 
 
 class SessionInfo(object):
-    def __init__(self, email=None, old_email=None, visitor_id=None, db_user=None):
+    def __init__(self, email=None, old_email=None, visitor_id=None,
+            db_user=None, referral_source=None):
         self.email = email
         self.old_email = old_email
         self.visitor_id = visitor_id
         self.db_user = db_user
+        self.referral_source = referral_source
 
     @property
     def public_visitor_id(self):

@@ -169,7 +169,7 @@
         Create a New Trip
       </span>
       <div class="close-link">
-        <a ng-click="$close()" href="javascript:void(0)">
+        <a ng-click="$close(); onClose && onClose()" href="javascript:void(0)">
           <span class="glyphicon glyphicon-remove"></span>
         </a>
       </div>
@@ -205,7 +205,7 @@
         </div>
       </div>
       {% if not account_info.logged_in %}
-      <div class="login-prompt">
+      <div class="login-prompt" ng-show="!hideLoginPrompt">
         Already have a trip you're planning?
         <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
           href="javascript:void(0)">

@@ -9,6 +9,7 @@ from flask import make_response
 from flask import redirect
 from flask import render_template
 from flask import request
+from flask import request_finished
 from flask import session
 from flask import url_for
 from flask.ext import user as flask_user
@@ -21,9 +22,10 @@ import cookies
 import constants
 import csv_export
 import data
-from database import user
+from database import user as user_module
 import featured_profiles
 import guide_config
+import request_logging
 import sample_sites
 from scraping import trip_plan_creator
 import serializable
@@ -52,11 +54,7 @@ def clipper_iframe():
     if not (g.session_info.visitor_id or g.session_info.email):
         return render_template('clipper_iframe_not_logged_in.html')
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
-    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
-    if not all_trip_plans:
-        # User is so new she doesn't even have an empty trip plan
-        trip_plan = create_and_save_default_trip_plan(g.session_info)
-        all_trip_plans = [trip_plan]
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans or []
     sorted_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
     return render_template('clipper_iframe.html',
         all_trip_plans_json=serializable.to_json_str(sorted_trip_plans),
@@ -208,7 +206,7 @@ def profile(profile_name):
         display_user = data.DisplayUser()
     else:
         try:
-            db_user = user.User.get_by_public_id(profile_name)
+            db_user = user_module.User.get_by_public_id(profile_name)
         except:
             return redirect('/')
         req = serviceimpls.TripPlanGetRequest(public_user_id=profile_name)
@@ -309,12 +307,6 @@ def admin_scrape():
     return render_template('admin_scrape.html',
         all_scrapers=[s.__name__ for s in trip_plan_creator.ALL_PARSERS])
 
-def create_and_save_default_trip_plan(session_info):
-    operation = serviceimpls.TripPlanOperation(serviceimpls.Operator.ADD.name, data.TripPlan(name='My First Trip'))
-    mutate_request = serviceimpls.TripPlanMutateRequest(operations=[operation])
-    response = serviceimpls.TripPlanService(session_info).mutate(mutate_request)
-    return response.trip_plans[0]
-
 @app.before_request
 def process_cookies():
     if request.path.startswith('/static/'):
@@ -339,7 +331,14 @@ def process_cookies():
     db_user = current_user if not current_user.is_anonymous() else None
     email = db_user.email if db_user else None
     display_name = db_user.display_name if db_user else old_email
-    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user)
+
+    referral_source = request.args.get('source') or request.cookies.get('rsource')
+    if request.args.get('source'):
+        @after_this_request
+        def set_referral_source(response):
+            set_cookie(response, 'rsource', request.args.get('source'))
+
+    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user, referral_source)
     display_user = data.DisplayUser(db_user.public_id if db_user else None, display_name, g.session_info.public_visitor_id)
     g.account_info = data.AccountInfo(email, display_user)
         
@@ -380,6 +379,7 @@ def inject_extended_template_builtins():
     }
 
 def register():
+    flask_user.signals.user_registered.connect(after_registration, app)
     response = flask_user.views.register()
     if hasattr(response, 'status') and response.status == '302 FOUND':
         next_url = '/registration_complete'
@@ -387,6 +387,13 @@ def register():
             next_url += '?iframe=1'
         return redirect(next_url)
     return response
+
+def after_registration(sender, user, **kwargs):
+    if g.session_info.referral_source:
+        user_metadata = user_module.UserMetadata(user_id=user.id,
+            referral_source=g.session_info.referral_source)
+        db.session.add(user_metadata)
+        db.session.commit()
 
 def login():
     response = flask_user.views.login()
@@ -427,13 +434,17 @@ def confirm_email(token):
 def registration_complete():
     return render_template('flask_user/registration_complete.html')
 
-user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
+user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user_module.User)
 user_manager = flask_user.UserManager(user_db_adapter, app,
-    register_form=user.TCRegisterForm,
+    register_form=user_module.TCRegisterForm,
     register_view_function=register,
     login_view_function=login,
     confirm_email_view_function=confirm_email)
 
+def log_response(send, response, **kwargs):
+    request_logging.log_request(request, response, g.get('session_info', None))
+
+request_finished.connect(log_response, app)
 
 if __name__ == '__main__':
     app.debug = constants.DEBUG

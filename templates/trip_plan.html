@@ -472,7 +472,7 @@
           <tc-entity-marker map="mapState.map" marker="markerState.marker"
             position="markerState.position"
             category-name="ed['category'] && ed['category']['name']"
-            icon-template-name="iconTemplateName()"
+            icon-template-name="em.iconTemplateName()"
             precise="ed['address_precision'] == 'Precise'"
             draggable="true" on-drag-end="markerDragged($position)">
           </tc-entity-marker>
@@ -690,8 +690,8 @@
           <span class="entity-icon">
             <tc-entity-icon precise="ed['address_precision'] == 'Precise'"
               category-name="ed['category'] && ed['category']['name']"
-              icon-template-name="iconTemplateName()"
-              for-results="forResults" result-letter="resultLetter()">>
+              icon-template-name="em.iconTemplateName()"
+              for-results="forResults" result-letter="resultLetter()">
             </tc-entity-icon>
           </span>
           <span class="entity-name">
@@ -959,7 +959,7 @@
       <tc-entity-marker ng-if="markerState.position"
         map="markerState.map" marker="markerState.marker" position="markerState.position"
         category-name="ed['category'] && ed['category']['name']"
-        icon-template-name="iconTemplateName()"
+        icon-template-name="em.iconTemplateName()"
         selected="entityIsSelected()"
         precise="ed['address_precision'] == 'Precise'"
         starred="ed['starred']" has-comments="em.hasComments()"

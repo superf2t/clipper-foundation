@@ -190,6 +190,16 @@ function EntityModel(entityData, editable) {
       return '';
     }
   };
+
+  this.iconTemplateName = function() {
+    if (this.hasSubCategory()) {
+      return this.data['sub_category']['name'] + '-icon-template';
+    }
+    if (this.hasCategory()) {
+      return this.data['category']['name'] + '-icon-template';
+    }
+    return null;
+  };
 }
 
 function TripPlanModel(tripPlanData, entityDatas) {
@@ -660,16 +670,6 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $scope.infoTab = infoTab;
     $scope.inlineEditMode = null;
     $scope.directionsHelper.reset();
-  };
-
-  $scope.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
   };
 
   $scope.resultLetter = function() {
@@ -1686,38 +1686,37 @@ HtmlInfowindow.prototype.panMap = function() {
   map.panTo(new google.maps.LatLng(centerY, centerX));
 };
 
-function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
-  $scope.tripPlanSelectOptions = $allTripPlans.slice(0);
-  $scope.tripPlanSelectOptions.push({
-    'name': 'Create a new trip',
-    'trip_plan_id': 0,
-    createNew: true
-  });
-  if (!$scope.selectedTripPlan) {
-    $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
-  }
-  $scope.newTripPlanRawLocation = ''
-  $scope.showCreateTripPlanForm = false;
-  $scope.$watch('selectedTripPlan', function(newValue) {
-    if (newValue.createNew) {
-      $scope.showCreateTripPlanForm = true;
-    } else {
-      $scope.showCreateTripPlanForm = false;
-    }
-  });
-
-  $scope.saveNewTripPlan = function(tripPlanDetails) {
-    var newTripPlan = {'name': $scope.newTripPlanName};
-    $tripPlanService.saveNewTripPlan(tripPlanDetails)
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.showCreateTripPlanForm = false;
-          $scope.newTripPlanName = '';
-          var newTripPlan = response['trip_plans'][0];
-          $scope.tripPlanSelectOptions.splice(0, 0, newTripPlan);
-          $scope.selectedTripPlan = newTripPlan;
+function tcTripPlanSelector() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'trip-plan-selector-template',
+    scope: {
+      tripPlans: '=',
+      selectedTripPlan: '=selectTripPlanTo',
+      showCreateNew: '=',
+      onCreateNewSelected: '&'
+    },
+    controller: function($scope) {
+      $scope.$watch('tripPlans', function(tripPlans) {
+        if (!tripPlans) return;
+        $scope.tripPlanSelectOptions = tripPlans.slice(0);
+        if ($scope.showCreateNew) {
+          $scope.tripPlanSelectOptions.push({
+            'name': 'Create a new trip',
+            'trip_plan_id': 0,
+            createNew: true
+          });    
+        }
+        if (!$scope.selectedTripPlan) {
+          $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
+        }
+      }, true);
+      $scope.$watch('selectedTripPlan', function(newValue) {
+        if (newValue && newValue.createNew) {
+          $scope.onCreateNewSelected();
         }
       });
+    }
   };
 }
 
@@ -1932,8 +1931,9 @@ function DataCache() {
 
 function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
-    $searchResultState, $entityService, $allowEditing, $accountInfo,
-    $allTripPlans, $activeTripPlanState, $hasGuides, $flashedMessages) {
+    $searchResultState, $entityDragStateModel, $entityService,
+    $allowEditing, $accountInfo, $allTripPlans, $activeTripPlanState,
+    $hasGuides, $flashedMessages) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -2006,6 +2006,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.$on('asktocloseallcontrols', function() {
     $scope.$broadcast('closeallcontrols');
   });
+
+  $scope.$watch(function() {
+    return $tripPlanModel.entities();
+  }, function(entities) {
+    if (entities) {
+      $entityDragStateModel.createOrdering(entities);
+    }
+  }, true);
 
   this.refresh = function(opt_force, opt_callback) {
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
@@ -2477,28 +2485,6 @@ var SAMPLE_SUPPORTED_SITES = _.map([
   };
 });
 
-
-function EntityListingCtrl($scope) {
-  $scope.ed = $scope.entityData;
-  $scope.em = new EntityModel($scope.ed);
-}
-
-function tcEntityListing() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      isSelected: '&',
-      onSelect: '&',
-      onMouseenter: '&',
-      onMouseleave: '&',
-      shouldShowDay: '@'
-    },
-    templateUrl: 'one-entity-listing-template',
-    controller: EntityListingCtrl
-  };
-}
-
 var EditorTab = {
   NAME_AND_DESCRIPTION: 1,
   DETAILS: 2,
@@ -2510,6 +2496,7 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     $entityService, $entityEditingService, $timeout) {
   var me = this;
   $scope.ed = angular.copy($scope.originalEntity);
+  $scope.em = new EntityModel($scope.ed);
   $scope.editorTab = EditorTab.NAME_AND_DESCRIPTION;
   $scope.EditorTab = EditorTab;
   $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
@@ -2540,16 +2527,6 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     entityData['latlng']['lat'] = $position.lat();
     entityData['latlng']['lng'] = $position.lng();
     entityData['address_precision'] = 'Precise';
-  };
-
-  $scope.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
   };
 
   this.findMapCenter = function() {
@@ -3256,17 +3233,6 @@ function tcFocusOn() {
           element[0].focus();
         }
       });
-    }
-  };
-}
-
-function tcTripPlanSelectDropdown() {
-  return {
-    restrict: 'AE',
-    templateUrl: 'trip-plan-select-dropdown-template',
-    controller: TripPlanSelectDropdownCtrl,
-    scope: {
-      selectedTripPlan: '=selectTripPlanTo'
     }
   };
 }
@@ -4257,13 +4223,11 @@ window['initApp'] = function(tripPlan, entities,
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
     .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcCoverScroll', tcCoverScroll)
-    .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .directive('tcUserIcon', tcUserIcon)
-    .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown)
     .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
     .directive('tcEntityDetails', tcEntityDetails)
     .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)

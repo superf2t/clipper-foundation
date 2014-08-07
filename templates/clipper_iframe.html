@@ -19,20 +19,18 @@
 </head>
 <body ng-controller="ClipperRootCtrl" class="clipper-body">
 
-  <div class="clipper-panel" ng-include="'clipper-panel-template'"
-    tc-scroll-to-selector scroll-on-changes-to="clipperStateModel.selectedResultIndex"
-    skip-scroll-when-in-view="true"
-    scroll-dest-selector=".one-entity-result[tc-entity-result-id='[[clipperStateModel.selectedResultIndex]]']">
-  </div>
+  <div ng-controller="ClipperPanelCtrl">
+    <div class="clipper-panel" ng-include="'clipper-panel-template'"
+      tc-scroll-to-selector scroll-on-changes-to="clipperStateModel.selectedResultIndex"
+      skip-scroll-when-in-view="true"
+      scroll-dest-selector=".one-entity-result[tc-entity-result-id='[[clipperStateModel.selectedResultIndex]]']">
+    </div>
 
-  <div class="trip-plan-panel" ng-include="'trip-plan-panel-template'"
-    tc-scroll-to-selector scroll-on-changes-to="clipperStateModel.selectedEntityId"
-    skip-scroll-when-in-view="true"
-    scroll-dest-selector=".one-entity-listing[tc-entity-id='[[clipperStateModel.selectedEntityId]]']">
+    <div ng-include="'trip-plan-panel-template'"></div>
   </div>
 
   <script type="text/ng-template" id="clipper-panel-template">
-    <div ng-controller="ClipperPanelCtrl" class="full-width full-height">
+    <div class="full-width full-height">
       <div ng-if="clipperState.status == ClipperState.SUMMARY"
         class="summary-panel"
         tc-watch-for-overflow class-when-overflowing="has-overflow"
@@ -40,13 +38,23 @@
         <div class="intro-text">
           Places on this page:
         </div>
+        <div class="map-link">
+          <a ng-click="openMap()" class="color-link"
+            ng-show="!clipperStateModel.mapOpen" href="javascript:void(0)">
+            <span tc-icon="map"></span> Open map
+          </a>
+          <a ng-click="closeMap()" class="color-link"
+            ng-show="clipperStateModel.mapOpen" href="javascript:void(0)">
+            <span tc-icon="map"></span> Close map
+          </a>
+        </div>
 
         <div class="entity-results">
           <div ng-show="entities.length > 1" class="select-info">
-            <a ng-click="selectAll()" href="javascript:void(0)">
+            <a ng-click="selectAll()" class="black-link" href="javascript:void(0)">
               <span class="glyphicon glyphicon-plus-sign"></span>
             </a>
-            <a ng-click="deselectAll()" href="javascript:void(0)">
+            <a ng-click="deselectAll()" class="black-link" href="javascript:void(0)">
               <span class="glyphicon glyphicon-minus-sign"></span>
             </a>
             <span class="info-text">
@@ -60,19 +68,6 @@
           <a ng-click="openAddOther()" href="javascript:void(0)" class="cta-link">
             Add another place
           </a>
-        </div>
-        <div class="bottom-spacer">
-        </div>
-        <div class="save-button-panel">
-          <button class="btn btn-primary save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
-            ng-click="saveEntities()">
-            <span ng-if="selectedEntities().length != 1">
-              Save [[selectedEntities().length]] places to trip
-            </span>
-            <span ng-if="selectedEntities().length == 1">
-              Save place to trip
-            </span>
-          </button>
         </div>
       </div>
 
@@ -157,32 +152,35 @@
   </script>
 
   <script type="text/ng-template" id="trip-plan-panel-template">
-    <div ng-controller="TripPlanPanelCtrl" class="full-width full-height"
-      ng-class="{'full-spinner': loadingEntities}">
+    <div class="trip-plan-panel full-width full-height">
       <div class="current-trip-header">
-        Places in selected trip
-      </div>
-      <div tc-trip-plan-select-dropdown
-        select-trip-plan-to="tripPlanState.tripPlan"
-        class="trip-plan-dropdown">
-      </div>
-      <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
-        <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
-          target="_blank" class="cta-link">
-          <span class="glyphicon glyphicon-new-window"></span>
-        </a>
-      </div>
-      <div ng-show="showNoPlacesText()" class="no-places-yet">
-        No places yet!  Add some above.
-        <div ng-include="'seal-icon-template'" class="filler-icon">
+        <div class="header-text">
+          Trip to save places:
+        </div>
+        <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
+          <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
+            target="_blank" class="cta-link">
+            View trip
+            <span class="glyphicon glyphicon-new-window"></span>
+          </a>
         </div>
       </div>
-      <tc-entity-listing ng-repeat="entity in tripPlanState.entities"
-        ng-controller="ClipperTripPlanEntityCtrl"
-        entity-data="entity" should-show-day="true" on-select="selectEntity()"
-        is-selected="isSelected()"
-        on-mouseenter="highlightEntity()" on-mouseleave="unhighlightEntity()">
-      </tc-entity-listing>
+      <tc-trip-plan-selector trip-plans="allTripPlans"
+        select-trip-plan-to="tripPlanState.tripPlan"
+        show-create-new="true" on-create-new-selected="openNewTripPanel()">
+      </tc-trip-plan-selector>
+
+      <div class="save-button-panel">
+        <button class="btn btn-cta save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
+          ng-click="saveEntities()">
+          <span ng-if="selectedEntities().length != 1">
+            Save [[selectedEntities().length]] places to trip
+          </span>
+          <span ng-if="selectedEntities().length == 1">
+            Save place to trip
+          </span>
+        </button>
+      </div>
     </div>
   </script>
 
@@ -200,14 +198,17 @@
       <div class="summary">
         <span class="select-handle" ng-show="entities.length > 1">
           <a ng-click="toggleSelectResultForSaving(); $event.stopPropagation()"
-            href="javascript:void(0)">
+            class="black-link" href="javascript:void(0)">
             <span class="glyphicon glyphicon-plus-sign" ng-show="!ed.selected"></span>
             <span class="glyphicon glyphicon-minus-sign" ng-show="ed.selected"></span>
           </a>
         </span>
-        <span class="result-letter-icon" tc-search-result-icon
-          precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
-          selected="ed.selected">
+        <span class="result-letter-icon" ng-class="{'selected': ed.selected}">
+          <tc-entity-icon precise="ed['address_precision'] == 'Precise'"
+            category-name="ed['category'] && ed['category']['name']"
+            icon-template-name="em.iconTemplateName()"
+            for-results="true" result-letter="resultLetter()">
+          </tc-entity-icon>
         </span>
         <span class="entity-info">
           <div class="name">
@@ -234,108 +235,92 @@
         </span>
       </div>
       <div class="editor" ng-if="isEditing()">
-        <tabset>
-          <tab heading="Notes" select="stopEditingPhotos()" active="editNotesState.active">
-            <div class="notes-editor">
-              <textarea ng-model="ed['description']" class="form-control description-input"
-                tc-focus-on="editNotesState.active" placeholder="Add a note">
-              </textarea>
-              <div class="tip-text">
-                Tip: highlight text on the page to copy it here automatically.
-              </div>
-            </div>
-          </tab>
-          <tab heading="Photos" select="startEditingPhotos()" active="editPhotosState.active">
-            <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor">
-              <div ng-if="hasImgs()" class="photo-carousel">
-                <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-chevron-left"></span>
+        <div class="editor-tabs">
+          <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.LOCATION}">
+            <a class="black-link"
+              ng-click="selectEditorTab(EditorTab.LOCATION); stopEditingPhotos()"
+              href="javascript:void(0)">
+              Name and Address
+            </a>
+          </span>
+          <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.DESCRIPTION}">
+            <a class="black-link"
+              ng-click="selectEditorTab(EditorTab.DESCRIPTION); stopEditingPhotos()"
+              href="javascript:void(0)">
+              Description
+            </a>
+          </span>
+          <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
+            <a class="black-link"
+              ng-click="selectEditorTab(EditorTab.PHOTOS); startEditingPhotos()"
+              href="javascript:void(0)">
+              Photos
+            </a>
+          </span>
+        </div>
+
+        <div class="location-editor" ng-show="editorTab == EditorTab.LOCATION">
+          <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
+            tc-focus-on="editLocationState.active"/>
+          <input class="form-control" ng-model="ed['address']" placeholder="Address"
+            tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
+            location-types="geocode" on-place-change="addressSelected($newPlace)"/>
+          <div class="tip-text">
+            Tip: drag the marker on the
+            <a ng-show="!clipperStateModel.mapOpen" class="color-link"
+            ng-click="openMap()" href="javascript:void(0)">
+              map
+            </a>
+            <span ng-show="clipperStateModel.mapOpen">
+              map
+            </span>
+            to adjust the location
+          </div>
+        </div>
+
+        <div class="description-editor" ng-show="editorTab == EditorTab.DESCRIPTION">
+          <textarea ng-model="ed['description']" class="form-control description-input"
+            tc-focus-on="editDescriptionState.active" placeholder="Add a description">
+          </textarea>
+          <div class="tip-text">
+            Tip: highlight text on the page to copy it here automatically.
+          </div>
+        </div>
+
+        <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor" ng-show="editorTab == EditorTab.PHOTOS">
+          <div ng-if="hasImgs()" class="photo-carousel">
+            <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-chevron-left"></span>
+            </a>
+            <span class="carousel-img-container">
+              <div class="img-overlay-control top">
+                <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-picture"></span> Set as primary
                 </a>
-                <span class="carousel-img-container">
-                  <div class="img-overlay-control top">
-                    <a ng-click="setAsPrimary()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-picture"></span> Set as primary
-                    </a>
-                  </div>
-                  <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
-                  <div class="img-overlay-control bottom">
-                    <a ng-click="deletePhoto()" href="javascript:void(0)">
-                      <span class="glyphicon glyphicon-trash"></span> Delete photo
-                    </a>
-                  </div>
-                </span>
-                <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
-                  <span class="glyphicon glyphicon-chevron-right"></span>
+              </div>
+              <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+              <div class="img-overlay-control bottom">
+                <a ng-click="deletePhoto()" href="javascript:void(0)">
+                  <span class="glyphicon glyphicon-trash"></span> Delete photo
                 </a>
               </div>
-              <div class="imgs-prompt">
-                <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
-              </div>
-            </div>
-          </tab>
-          <tab heading="Name and Address" select="stopEditingPhotos()" active="editLocationState.active">
-            <div class="location-editor">
-              <input class="form-control" ng-model="ed['name']" placeholder="Name of place"
-                tc-focus-on="editLocationState.active"/>
-              <input class="form-control" ng-model="ed['address']" placeholder="Address"
-                tc-google-place-autocomplete search-bounds-json="tripPlanState.tripPlan['location_bounds']"
-                location-types="geocode" on-place-change="addressSelected($newPlace)"/>
-              <div class="tip-text">
-                Tip: drag the marker on the map to adjust the location
-              </div>
-            </div>
-          </tab>
-        </tabset>
+            </span>
+            <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+              <span class="glyphicon glyphicon-chevron-right"></span>
+            </a>
+          </div>
+          <div class="imgs-prompt">
+            <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
+          </div>
+        </div>
       </div>
     </div>
   </script>
 
-  {# TODO: Move to widgets.html #}
-  <script type="text/ng-template" id="one-entity-listing-template">
-    <div class="one-entity-listing"
-      tc-entity-id="[[ed['entity_id'] ]]"
-      ng-class="{'selected': isSelected({$entityData: ed})}"
-      ng-click="onSelect({$entityData: ed})"
-      ng-mouseenter="onMouseenter()"
-      ng-mouseleave="onMouseleave()">
-      <span class="entity-circle-img">
-        <img ng-src="[[em.getBackgroundImageUrl()]]" draggable="false"/>
-      </span>
-      <span class="entity-info">
-        <div class="name">
-          [[ed['name'] ]]
-        </div>
-        <div class="details">
-          <span ng-show="em.hasCategory()"
-            ng-class="'text-' + ed['category']['name']">
-            [[em.categoryDisplayText()]]
-          </span>
-          <span class="glyphicon glyphicon-star favorite-star" ng-show="ed['starred']">
-          </span>
-        </div>
-      </span>
-    </div>
-  </script>
-
+  {% include 'nav.html' %}
   {% include 'widgets.html' %}
   {% include 'icons.html' %}
   {% include 'map_markers.html' %}
-
-  <script type="text/ng-template" id="seal-icon-template">
-    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="100px" height="100px" viewBox="0 0 100 100" enable-background="new 0 0 100 100" xml:space="preserve">
-    <path d="M47.447,50.017c0,0.258-0.211,0.461-0.461,0.461c-0.258,0-0.461-0.203-0.461-0.461  c0-0.254,0.203-0.461,0.461-0.461C47.236,49.556,47.447,49.763,47.447,50.017z"/>
-    <path d="M53.471,50.017c0,0.258-0.211,0.461-0.461,0.461c-0.258,0-0.461-0.203-0.461-0.461  c0-0.254,0.203-0.461,0.461-0.461C53.26,49.556,53.471,49.763,53.471,50.017z"/>
-    <path d="M42.947,41.724c-1.281,0-2.324-1.047-2.324-2.332c0-1.281,1.043-2.324,2.324-2.324  c1.285,0,2.332,1.043,2.332,2.324C45.279,40.677,44.232,41.724,42.947,41.724z M42.947,38.669c-0.398,0-0.723,0.324-0.723,0.723  c0,0.402,0.324,0.73,0.723,0.73c0.402,0,0.73-0.328,0.73-0.73C43.678,38.993,43.35,38.669,42.947,38.669z"/>
-    <path d="M57.045,41.724c-1.285,0-2.332-1.047-2.332-2.332c0-1.281,1.047-2.324,2.332-2.324s2.328,1.043,2.328,2.324  C59.373,40.677,58.33,41.724,57.045,41.724z M57.045,38.669c-0.402,0-0.73,0.324-0.73,0.723c0,0.402,0.328,0.73,0.73,0.73  s0.727-0.328,0.727-0.73C57.771,38.993,57.447,38.669,57.045,38.669z"/>
-    <path d="M69.732,44.038c0-9.711-8.852-17.611-19.73-17.611s-19.734,7.9-19.734,17.611  c0,6.168,2.758,10.998,7.445,13.957c-2.004,4.037-3.707,9.006-5.047,14.867l3.117,0.711c1.281-5.605,2.895-10.326,4.781-14.131  c2.727,1.117,5.863,1.781,9.434,1.781c3.527,0,6.652-0.682,9.379-1.82c1.898,3.699,3.535,8.338,4.852,13.865l3.109-0.742  c-1.375-5.775-3.102-10.656-5.117-14.586C66.916,54.95,69.732,50.108,69.732,44.038z M33.471,44.038  c0-7.947,7.414-14.412,16.531-14.412c9.113,0,16.527,6.465,16.527,14.412c0,8.496-6.488,13.986-16.531,13.986  C39.803,58.024,33.471,52.665,33.471,44.038z"/>
-    <path d="M53.592,51.806l-2.793-0.428v-2.012c0.531-0.377,1.074-1.09,1.645-2.223c0.121-0.309,0.152-0.828-0.16-1.283  c-0.387-0.572-1.141-0.852-2.301-0.852c-1.121,0-1.859,0.273-2.25,0.836c-0.316,0.451-0.293,0.973-0.145,1.365  c0.543,1.086,1.082,1.785,1.609,2.158v2.01l-2.793,0.428c-0.438,0.066-0.738,0.475-0.668,0.912c0.062,0.436,0.438,0.736,0.91,0.67  l3.352-0.514l3.352,0.514c0.043,0.006,0.082,0.01,0.121,0.01c0.391,0,0.73-0.283,0.789-0.68  C54.33,52.28,54.029,51.872,53.592,51.806z M49.982,46.61c0.488,0,0.75,0.061,0.879,0.109c-0.285,0.523-0.633,1.033-0.863,1.273  c-0.23-0.24-0.578-0.75-0.859-1.273C49.26,46.673,49.514,46.61,49.982,46.61z"/>
-    <path d="M57.021,50.366c-0.344,0-0.664-0.225-0.766-0.572c-0.543-1.82-2.242-6.053-6.254-6.053  s-5.719,4.234-6.266,6.055c-0.129,0.422-0.551,0.67-0.996,0.535c-0.422-0.127-0.664-0.572-0.535-0.996  c0.648-2.162,2.711-7.195,7.797-7.195c5.09,0,7.141,5.033,7.785,7.197c0.129,0.424-0.113,0.869-0.535,0.996  C57.174,50.354,57.096,50.366,57.021,50.366z"/>
-    <path d="M54.393,48.429c0,0.254-0.203,0.461-0.461,0.461s-0.461-0.207-0.461-0.461s0.203-0.461,0.461-0.461  S54.393,48.175,54.393,48.429z"/>
-    <path d="M55.318,50.017c0,0.258-0.211,0.461-0.461,0.461c-0.258,0-0.461-0.203-0.461-0.461  c0-0.254,0.203-0.461,0.461-0.461C55.107,49.556,55.318,49.763,55.318,50.017z"/>
-    <path d="M45.404,48.429c0,0.254,0.203,0.461,0.461,0.461s0.461-0.207,0.461-0.461s-0.203-0.461-0.461-0.461  S45.404,48.175,45.404,48.429z"/>
-    <path d="M44.479,50.017c0,0.258,0.211,0.461,0.461,0.461c0.258,0,0.461-0.203,0.461-0.461  c0-0.254-0.203-0.461-0.461-0.461C44.689,49.556,44.479,49.763,44.479,50.017z"/>
-    </svg>
-  </script>
 
   <script>
     initClipper(
