@@ -49,6 +49,7 @@
       var me = this;
       $scope.tripPlanEntities = null;
       $scope.resultEntities = null;
+      $scope.clipperStateModel = $clipperStateModel;
 
       $scope.mapState = {map: null};
       $scope.mapOptions = {
@@ -78,6 +79,12 @@
           $scope.$apply();
         });
       };
+
+      $scope.$watch('clipperStateModel.mapOpen', function(isOpen, wasOpen) {
+        if (isOpen && !wasOpen) {
+          me.updateMapBounds();
+        }
+      });
 
       this.plotTripPlanEntities = function(data) {
         $scope.tripPlanEntities = data['entities'];
@@ -343,7 +350,7 @@
 </head>
 <body ng-controller="ClipperMapCtrl">
   <div id="map" tc-google-map map="mapState.map" map-options="mapOptions"
-    after-creation="mapReady($map)">
+    after-creation="mapReady($map)" resize-when="clipperStateModel.mapOpen">
   </div>
   <div style="display: none" ng-repeat="entity in tripPlanEntities"
     ng-controller="MapEntityCtrl">

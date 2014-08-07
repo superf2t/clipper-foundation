@@ -22,6 +22,10 @@ a.black-link:hover {
   color: #444444;
 }
 
+a.black-link .tc-icon svg {
+  fill: #000000;
+}
+
 a.black-link:hover .tc-icon svg {
   fill: #444444;
 }
@@ -83,8 +87,12 @@ a.cta-link:hover {
   height: 100%;
 }
 
-a:hover .tc-icon svg {
+a .tc-icon svg {
   fill: #2D73A0;
+}
+
+a:hover .tc-icon svg {
+  fill: #428bca;
 }
 
 .light-label {

@@ -38,13 +38,23 @@
         <div class="intro-text">
           Places on this page:
         </div>
+        <div class="map-link">
+          <a ng-click="openMap()" class="color-link"
+            ng-show="!clipperStateModel.mapOpen" href="javascript:void(0)">
+            <span tc-icon="map"></span> Open map
+          </a>
+          <a ng-click="closeMap()" class="color-link"
+            ng-show="clipperStateModel.mapOpen" href="javascript:void(0)">
+            <span tc-icon="map"></span> Close map
+          </a>
+        </div>
 
         <div class="entity-results">
           <div ng-show="entities.length > 1" class="select-info">
-            <a ng-click="selectAll()" href="javascript:void(0)">
+            <a ng-click="selectAll()" class="black-link" href="javascript:void(0)">
               <span class="glyphicon glyphicon-plus-sign"></span>
             </a>
-            <a ng-click="deselectAll()" href="javascript:void(0)">
+            <a ng-click="deselectAll()" class="black-link" href="javascript:void(0)">
               <span class="glyphicon glyphicon-minus-sign"></span>
             </a>
             <span class="info-text">
@@ -188,7 +198,7 @@
       <div class="summary">
         <span class="select-handle" ng-show="entities.length > 1">
           <a ng-click="toggleSelectResultForSaving(); $event.stopPropagation()"
-            href="javascript:void(0)">
+            class="black-link" href="javascript:void(0)">
             <span class="glyphicon glyphicon-plus-sign" ng-show="!ed.selected"></span>
             <span class="glyphicon glyphicon-minus-sign" ng-show="ed.selected"></span>
           </a>

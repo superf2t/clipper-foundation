@@ -25,6 +25,7 @@ function ClipperStateModel() {
   this.selectedResultIndex = null;
   this.highlightedResultIndex = null;
   this.resultIndicesToSave = [];
+  this.mapOpen = false;
 }
 
 function ClipperRootCtrl($scope, $clipperStateModel, $window) {
@@ -198,6 +199,14 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
     });
   };
 
+  $scope.openMap = function() {
+    $clipperStateModel.mapOpen = true;
+  };
+
+  $scope.closeMap = function() {
+    $clipperStateModel.mapOpen = false;
+  };
+
   $scope.openNewTripPanel = function() {
     var modal = null;
     var scope = $scope.$new(true);
@@ -262,6 +271,9 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
       $scope.$apply();
     } else if (messageName == 'tc-text-selected') {
       $scope.$broadcast('pagetextselected', data['selection']);
+      $scope.$apply();
+    } else if (messageName == 'tc-parent-to-clipper-close-map') {
+      $clipperStateModel.mapOpen = false;
       $scope.$apply();
     }
   });

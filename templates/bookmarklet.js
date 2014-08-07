@@ -130,6 +130,7 @@
         border: 1px solid #bbbbbb;
         box-shadow: 0px 1px 2px #aaaaaa;
         z-index: 2147483647;
+        display: none;
       }
 
       .__tc-map-iframe-container {
@@ -149,6 +150,37 @@
         position: relative;
         cursor: move;
         box-shadow: 0px 1px 2px #aaaaaa;
+      }
+
+      .__tc-map-resize-icon {
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+        padding: 2px;
+      }
+
+      .__tc-map-resize-icon svg {
+        width: 100%;
+        height: 100%;
+      }
+
+      #__tc-map-close-button.__tc-button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: #ddd;
+        margin: 2px;
+        padding: 0;
+        width: 16px;
+        height: 16px;
+        color: #000;
+        font-family: Arial;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      #__tc-map-close-button:hover {
+        background-color: #777;
       }
 
       .__tc-iframe-dragging-shim {
@@ -208,11 +240,34 @@
         width: 21px;
         height: 20px;
         color: #000;
+        font-family: Arial;
+        font-size: 12px;
       }
 
       #__tc-x-button:hover {
         background-color: #777;
       }
+
+      .__tc-map-container .ui-resizable-se,
+      .__tc-map-container .ui-resizable-sw,
+      .__tc-map-container .ui-resizable-nw {
+        width: 12px;
+        height: 12px;
+      }
+
+      .__tc-map-container .ui-resizable-se {
+        right: 1px;
+        bottom: 1px;
+      }
+      .__tc-map-container .ui-resizable-sw {
+        left: 1px;
+        bottom: 1px;
+      }
+      .__tc-map-container .ui-resizable-nw {
+        top: 1px;
+        left: 1px;
+      }
+
     {% endstrip %}');
     window['__tcNodes'].push(style);
 
@@ -237,6 +292,14 @@
     var mapWrapper = $('{% strip %}
       <div class="__tc-map-container">
         <div class="__tc-map-header">
+          <span class="__tc-map-resize-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="16" height="16" data-container-transform="scale(1 1 ) translate(0 )" viewBox="0 0 16 16">
+              <path d="M0 0v6l2.281-2.281 3 3 1.438-1.438-3-3 2.281-2.281h-6zm10.719 9.281l-1.438 1.438 3 3-2.281 2.281h6v-6l-2.281 2.281-3-3z" />
+            </svg>
+          </span>
+          <button class="__tc-button" id="__tc-map-close-button">
+            X
+          </button>
         </div>
         <div class="__tc-map-iframe-container">
           <iframe class="__tc-iframe __tc-map-iframe">
@@ -258,10 +321,14 @@
     mapIframe.attr('src', absUrl('/clipper_map_iframe'));
     $(document.body).append(mapWrapper);
     mapWrapper.draggable({iframeFix: true, containment: 'window'});
-    mapWrapper.resizable({'handles': 'all', containment: 'document'});
+    mapWrapper.resizable({handles: 'all', containment: 'document'});
 
     $('#__tc-x-button').on('click', function(event) {
       clearElements();
+    });
+
+    $('#__tc-map-close-button').on('click', function(event) {
+      sendMessageToClipper({message: 'tc-parent-to-clipper-close-map'});
     });
 
     var dropTarget = null;
@@ -318,7 +385,7 @@
           'text/html': dataTransfer.getData('text/html')
         }
       };
-      iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+      sendMessageToClipper(data);
     });
 
     var handleTextSelection = function(event) {
@@ -332,12 +399,20 @@
           message: 'tc-text-selected',
           selection: textSelection
         }
-        iframe[0].contentWindow.postMessage(message, 'https://' + HOST);
+        sendMessageToClipper(message);
       }
     };
 
     $(document.body).on('mouseup', handleTextSelection);
     markListenerForCleanup($(document.body), 'mouseup', handleTextSelection);
+
+    function sendMessageToClipper(data) {
+      iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+    }
+
+    function sendMessageToMap(data) {
+      mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+    }
 
     var clipperToMapMessageQueue = [];
     var mapToClipperMessageQueue = [];
@@ -354,7 +429,7 @@
           message: 'tc-page-source',
           pageSource: $('html')[0].innerHTML
         };
-        iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+        sendMessageToClipper(data);
       } else if (data == 'tc-photo-editing-active') {
         photoEditingActive = true;
       } else if (data == 'tc-photo-editing-inactive') {
@@ -362,24 +437,30 @@
       } else if (data['message'] && data['message'] == 'tc-clipper-ready') {
         clipperReady = true;
         $.each(mapToClipperMessageQueue, function(i, message) {
-          iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+          sendMessageToClipper(data);
         });
         mapToClipperMessageQueue = [];
       } else if (data['message'] && data['message'] == 'tc-map-ready') {
         mapReady = true;
         $.each(clipperToMapMessageQueue, function(i, message) {
-          mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+          sendMessageToMap(data);
         });
         clipperToMapMessageQueue = [];
       } else if (data['message'] && data['message'].indexOf('tc-clipper-to-map') == 0) {
+        if (data['message'] == 'tc-clipper-to-map-state-changed') {
+          mapWrapper.toggle(data['clipperStateModel']['mapOpen']);
+        }
         if (mapReady) {
-          mapIframe[0].contentWindow.postMessage(data, 'https://' + HOST);         
+          sendMessageToMap(data);
         } else {
           clipperToMapMessageQueue.push(data);
         }
       } else if (data['message'] && data['message'].indexOf('tc-map-to-clipper') == 0) {
+        if (data['message'] == 'tc-map-to-clipper-state-changed') {
+          mapWrapper.toggle(data['clipperStateModel']['mapOpen']);
+        }
         if (clipperReady) {
-          iframe[0].contentWindow.postMessage(data, 'https://' + HOST);
+          sendMessageToClipper(data);
         } else {
           mapToClipperMessageQueue.push(data);
         }
