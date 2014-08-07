@@ -5,9 +5,12 @@
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -ANALYTICS
-// -Set a referral cookie based on the source= url param and store
-//  the original referral source when creating new trip plans.
 // -Don't allow tags and categories to be clickable in guides/results.
+// -Add flashed messages to the homepage.
+// -Add call to action to add a cover image.
+
+// For release:
+// -Create new db tables
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {

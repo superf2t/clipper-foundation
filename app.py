@@ -21,7 +21,7 @@ import cookies
 import constants
 import csv_export
 import data
-from database import user
+from database import user as user_module
 import featured_profiles
 import guide_config
 import sample_sites
@@ -204,7 +204,7 @@ def profile(profile_name):
         display_user = data.DisplayUser()
     else:
         try:
-            db_user = user.User.get_by_public_id(profile_name)
+            db_user = user_module.User.get_by_public_id(profile_name)
         except:
             return redirect('/')
         req = serviceimpls.TripPlanGetRequest(public_user_id=profile_name)
@@ -329,7 +329,14 @@ def process_cookies():
     db_user = current_user if not current_user.is_anonymous() else None
     email = db_user.email if db_user else None
     display_name = db_user.display_name if db_user else old_email
-    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user)
+
+    referral_source = request.args.get('source') or request.cookies.get('rsource')
+    if request.args.get('source'):
+        @after_this_request
+        def set_referral_source(response):
+            set_cookie(response, 'rsource', request.args.get('source'))
+
+    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user, referral_source)
     display_user = data.DisplayUser(db_user.public_id if db_user else None, display_name, g.session_info.public_visitor_id)
     g.account_info = data.AccountInfo(email, display_user)
         
@@ -370,6 +377,7 @@ def inject_extended_template_builtins():
     }
 
 def register():
+    flask_user.signals.user_registered.connect(after_registration, app)
     response = flask_user.views.register()
     if hasattr(response, 'status') and response.status == '302 FOUND':
         next_url = '/registration_complete'
@@ -377,6 +385,13 @@ def register():
             next_url += '?iframe=1'
         return redirect(next_url)
     return response
+
+def after_registration(sender, user, **kwargs):
+    if g.session_info.referral_source:
+        user_metadata = user_module.UserMetadata(user_id=user.id,
+            referral_source=g.session_info.referral_source)
+        db.session.add(user_metadata)
+        db.session.commit()
 
 def login():
     response = flask_user.views.login()
@@ -417,9 +432,9 @@ def confirm_email(token):
 def registration_complete():
     return render_template('flask_user/registration_complete.html')
 
-user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user.User)
+user_db_adapter = flask_user.SQLAlchemyAdapter(db,  user_module.User)
 user_manager = flask_user.UserManager(user_db_adapter, app,
-    register_form=user.TCRegisterForm,
+    register_form=user_module.TCRegisterForm,
     register_view_function=register,
     login_view_function=login,
     confirm_email_view_function=confirm_email)
