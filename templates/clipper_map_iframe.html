@@ -168,21 +168,12 @@
 
     function MapEntityCtrl($scope, $clipperStateModel, $templateToStringRenderer) {
       $scope.ed = $scope.entity;
-      var entityModel = new EntityModel($scope.ed);
+      $scope.em = new EntityModel($scope.ed);
+
       $scope.markerState = {
         marker: null,
-        position: entityModel.gmapsLatLng(),
+        position: $scope.em.gmapsLatLng(),
         infowindow: null
-      };
-
-      $scope.iconTemplateName = function() {
-        if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-          return $scope.ed['sub_category']['name'] + '-icon-template';
-        }
-        if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-          return $scope.ed['category']['name'] + '-icon-template';
-        }
-        return null;
       };
 
       $scope.isSelected = function() {
@@ -231,10 +222,11 @@
     function MapResultEntityCtrl($scope, $clipperStateModel,
         $templateToStringRenderer, $clipperProxy) {
       $scope.ed = $scope.entity;
-      var entityModel = new EntityModel($scope.ed);
+      $scope.em = new EntityModel($scope.ed);
+
       $scope.markerState = {
         marker: null,
-        position: entityModel.gmapsLatLng(),
+        position: $scope.em.gmapsLatLng(),
         infowindow: null
       };
 
@@ -290,8 +282,8 @@
         }
         $scope.destroyInfowindow();
         _.extend($scope.ed, entity);
-        $scope.markerState.marker.setPosition(entityModel.gmapsLatLng());
-        $scope.mapState.map.setCenter(entityModel.gmapsLatLng())
+        $scope.markerState.marker.setPosition($scope.em.gmapsLatLng());
+        $scope.mapState.map.setCenter($scope.em.gmapsLatLng())
         if (viewport) {
           $scope.mapState.map.fitBounds(gmapsBoundsFromJson(viewport));
         }
@@ -359,7 +351,7 @@
       map="mapState.map" marker="markerState.marker"
       position="markerState.position"
       category-name="ed['category'] && ed['category']['name']"
-      icon-template-name="iconTemplateName()"
+      icon-template-name="em.iconTemplateName()"
       precise="ed['address_precision'] == 'Precise'"
       selected="isSelected()"
       deemphasized="true"
@@ -368,13 +360,17 @@
   </div>
   <div style="display: none" ng-repeat="entity in resultEntities"
     ng-controller="MapResultEntityCtrl">
-    <tc-search-result-marker ng-if="markerState.position"
-        marker="markerState.marker" position="markerState.position" map="mapState.map"
-        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
-        selected="isSelected()"
-        emphasized="isEmphasized()"
-        on-click="selectResult(); $event.stopPropagation()">
-    </tc-search-result-marker>
+    <tc-entity-marker ng-if="markerState.position"
+      map="mapState.map" marker="markerState.marker"
+      position="markerState.position"
+      category-name="ed['category'] && ed['category']['name']"
+      icon-template-name="em.iconTemplateName()"
+      precise="ed['address_precision'] == 'Precise'"
+      result-letter="resultLetter()"
+      for-results="true"
+      selected="isSelected()"
+      on-click="selectResult(); $event.stopPropagation()">
+    </tc-entity-marker>
   </div>
 
   <script type="text/ng-template" id="clipper-infowindow-template">
