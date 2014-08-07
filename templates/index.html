@@ -14,14 +14,47 @@
   {% include 'analytics.html' %}
 
   <style type="text/css">
-    .splash-section {
+
+    html, body {
       width: 100%;
-      height: 85%;
-      position: relative;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      font-family: 'Avenir';
+    }
+
+    a:hover {
+      text-decoration: none;
+    }
+
+    a.white-link {
+      color: #FFFFFF;
+    }
+
+    a.white-link:hover {
+      color: #FFFFFF;
+    }
+
+    .section-header {
+      padding: 30px 0px;
+      text-align: center;
+      font-size: 1.0em;
+      font-weight: 600;
+    }
+
+    .lg-text {
+      font-size: 2.8em;
+    }
+
+    .splash-section {
+      background: url('https://lh3.googleusercontent.com/-diOm3evODHI/UspG8vGt9fI/AAAAAAAAmKQ/sb1Cmjy8ZrQ/w1272-h848-no/IMG_5735.jpg') 50% 700px repeat fixed;
       background-size: cover;
-      background-repeat: no-repeat;
-      background-position: 50% 50%;
-      background-image: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg')
+      min-height: 60%;
+      height: 60%;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1920px;
+      position: relative;
     }
 
     .site-header {
@@ -31,11 +64,12 @@
     }
 
     .logo {
-      font: 'Raleway';
+      font-family: 'Raleway';
       background-color: #000000;
-      padding: 6px 10px;
+      padding: 4px 6px;
       color: #FFFFFF;
-      font-size: 1.3em;
+      font-size: 1.2em;
+      line-height: 1.0;
       position: absolute;
       top: 5px;
       left: 5px;
@@ -44,24 +78,111 @@
     .login {
       position: absolute;
       top: 5px;
-      right: 5px;
+      right: 10px;
+    }
+
+    .tagline {
+      position: absolute;
+      margin: 0 auto;
+      text-align: center;
+      height: 70px;
+      top: calc(50% - 35px);
+      width: 100%;
+      color: #FFFFFF;
+      background-color: rgba(0,0,0,0.75);
+      font-size: 2.4em;
+      line-height: 2.0;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .featured-cities-section {
+      position: relative;
+      margin: 0 auto;
+      width: 100%;
+      background-color: #FFFFFF;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      z-index: 1;
+    }
+
+    .featured-cities-section .city-metadata {
+      position: relative;
+      top: 180px;
+      height: 40px;
+      margin-bottom: -40px;
+      background-color: rgba(0,0,0,0.5);
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .featured-cities-section .city {
+      width: 100%;
+      height: 220px;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: cover !important;
+      -webkit-background-size: cover !important;
+      -moz-background-size: cover !important;
+      margin-bottom: 30px;
+    }
+
+    .featured-cities-section .city-name {
+      float: left;
+      font-size: 1.4em;
+      font-weight: 500;
+      padding: 6px 10px;
+    }
+
+    .featured-cities-section .city-guides-number {
+      float: right;
+      font-size: 1.1em;
+      font-weight: 500;
+      padding: 10px;    
+    }
+
+    .featured-cities-section .featured-city:hover .city-metadata {
+      background-color: rgba(0,0,0,0.25);
     }
 
     .search-section {
-      position: absolute;
-      top: 80%;
-      left: 0;
+      background: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg') 50% 1000px repeat fixed;
       width: 100%;
-      z-index: 1;
+      max-width: 1920px;
+      min-height: 400px;
+      height: 400px;
+      background-size: cover;
+      position: relative;
+    }
+
+    .search-section .section-header {
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     .search-input-section {
       width: 500px;
       margin: auto;
+      margin-top: 50px;
+      font-size: 1.1em;
+    }
+
+    .search-input-section .search-input {
+      height: 46px;
+    }
+
+    .search-input-section .btn-search {
+      color: #FFFFFF;
+      height: 46px;
+      background-color: #4A90E2;
+      padding: 6px 20px;
     }
 
     .search-results {
-      background-color: #fff;
+      background-color: #FFFFFF;
       max-height: 300px;
       overflow-y: scroll;
     }
@@ -79,12 +200,102 @@
       max-width: 24px;
     }
 
-    .btn-search {
-      color: #FFFFFF;
-      background-color: #4A90E2;
-      padding: 6px 20px;
+    .featured-sources-section {
+      position: relative;
+      width: 100%;
+      background-color: #EAEAEA;
+      text-align: center;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      z-index: 2;
     }
+
+    .source-metadata {
+      position: relative;
+      top: 180px;
+      height: 40px;
+      margin-bottom: -40px;
+      background-color: rgba(0,0,0,0.5);
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .source {
+      width: 100%;
+      height: 220px;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: cover !important;
+      -webkit-background-size: cover !important;
+      -moz-background-size: cover !important;
+      margin-bottom: 30px;
+    }
+
+    .source-name {
+      float: left;
+      font-size: 1.4em;
+      font-weight: 500;
+      padding: 6px 10px;
+    }
+
+    .source-guides-number {
+      float: right;
+      font-size: 1.1em;
+      font-weight: 500;
+      padding: 10px;    
+    }
+
+    .top-source:hover .source-metadata {
+      background-color: rgba(0,0,0,0.25);
+    }
+
+    .more-cities-section {
+      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0 repeat fixed;
+      width: 100%;
+      max-width: 1920px;
+      min-height: 300px;
+      height: 400px;
+      background-size: cover;
+      position: relative;
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a.city-link {
+      color: #FFFFFF;
+      font-size: 1.2em;
+    }
+
+    a.city-link:hover {
+      color: #FFFFFF;
+      font-weight: 500;
+    }
+
+    .footer-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      text-align: center;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      height: 200px;
+      background-color: #FFFFFF;
+      text-align: center;
+    }
+
+    .copyright {
+      position: relative;
+      height: 16px;
+      top: calc(50% - 8px);
+      color: #777;
+      font-size: 1.1em;
+    }
+
   </style>
+
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
   <script>
     function IndexCtrl($scope, $http, $window) {
@@ -197,54 +408,58 @@
       angular.bootstrap(document, ['indexAppModule']);
       angular.element('#main-input').focus();
     });
+
+    $(document).ready(function() {
+      $window = $(window);
+
+      $('div[data-type="background"]').each(function() {
+        var backgroundObject = $(this);
+        var currentbackgroundPosition = $(this).css('backgroundPosition').split(" ");
+        var currentXPos = currentbackgroundPosition[0];
+        var currentYPos = currentbackgroundPosition[1];
+        currentYPos = parseInt(currentYPos, 10);
+
+        $(window).scroll(function() {
+          var yOffset = -($window.scrollTop() / backgroundObject.data('speed'));
+          var backgroundCoordinates = currentXPos + (yOffset + currentYPos)+'px';
+          backgroundObject.css({ backgroundPosition: backgroundCoordinates});
+        });
+      });
+    });
   </script>
 </head>
 <body ng-controller="IndexCtrl">
-  <div class="splash-section">
-
+  <div class="splash-section" data-type="background" data-speed="20">
     <div class="site-header">
       <div class="logo">
         TravelClipper
       </div>
       <div class="login">
         {% if account_info.logged_in %}
-        <a href="/profile/{{account_info.user.public_id}}">
+        <a class="white-link" href="/profile/{{account_info.user.public_id}}">
           My Trips
         </a>
         {% else %}
-        <a href="{{url_for('user.login', next='/trip_plan')}}">
-          Login
+        <a class="white-link" href="{{url_for('user.login', next='/trip_plan')}}">
+          Log In
         </a>
         {% endif %}
       </div>
     </div>
-
-    <div class="search-section">
-      <div class="search-input-section">
-        <div class="input-group">
-          <input type="text" class="form-control search-input" id="main-input"
-            ng-model="searchState.rawInput"
-            placeholder="Where do you want to go?"
-            tc-google-place-autocomplete on-place-change="placeChanged($newPlace)">
-          <span class="input-group-btn">
-            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
-              <span class="glyphicon glyphicon-search"></span>
-            </button>
-          </span>
-        </div>
-        <div ng-include="'search-results-template'">
-        </div>
-      </div>
+    <div class="tagline">
+      Travel guides with interactive maps from reputable sources
     </div>
   </div>
 
-  <div class="featured-regions-section">
-    <div>Browse TOP REGIONS</div>
-    <div class="city-container container-fluid">
-      <div class="top-cities row">
+  <div class="featured-cities-section">
+    <div class="section-header">
+      Browse <span class="lg-text">FEATURED DESTINATIONS</span>
+    </div>
+    <div class="cities-container container">
+      <div class="featured-cities row">
         {% for config in featured_guide_configs %}
         <a href="/guides/{{config.city_name_url_token}}">
-          <div class="top-city col-md-3">
+          <div class="top-city col-md-4">
             <div class="city"
               style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
               <div class="city-metadata">
@@ -260,6 +475,76 @@
         </a>
         {% endfor %}
       </div>
+    </div>
+  </div>
+
+  <div class="search-section" data-type="background" data-speed="20">
+    <div class="section-header">
+      Plan your <span class="lg-text">NEW TRIP</span>
+    </div>
+    <div class="search-input-section">
+      <div class="input-group">
+        <input type="text" class="form-control search-input" id="main-input"
+          ng-model="searchState.rawInput"
+          placeholder="Where do you want to go?"
+          tc-google-place-autocomplete on-place-change="placeChanged($newPlace)">
+        <span class="input-group-btn">
+          <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
+            New Trip
+          </button>
+        </span>
+      </div>
+      <div ng-include="'search-results-template'">
+      </div>
+    </div>
+  </div>
+
+  <div class="featured-sources-section">
+    <div class="section-header">
+      Browse <span class="lg-text">FEATURED SOURCES</span>
+    </div>
+    <div class="sources-container container">
+      <div class="top-sources row">
+        {% for config in featured_guide_configs %}
+        <a href="/guides/{{config.city_name_url_token}}">
+          <div class="top-source col-md-4">
+            <div class="source"
+              style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
+              <div class="source-metadata">
+                <span class="source-name">
+                  {{config.city_name}}
+                </span>
+                <span class="source-guides-number">
+                  {{config.trip_plan_ids | length}} Guides
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="more-cities-section">
+    <div class="section-header">
+      <span class="lg-text">MORE DESTINATIONS</span>
+    </div>
+    <div class="more-cities-container container">
+      <div class="more-cities row">
+        {% for config in featured_guide_configs %}
+        <a class="city-link" href="/guides/{{config.city_name_url_token}}">
+          <div class="col-md-3">
+            {{config.city_name}}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>    
+  </div>
+  <div class="footer-section">
+    <div class="copyright">
+      © Unicycle Labs Inc. All rights reserved.
     </div>
   </div>
 
