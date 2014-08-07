@@ -1,3 +1,4 @@
+import ctypes
 import datetime
 import os
 import socket
@@ -27,6 +28,24 @@ class FrontendRequestLogRecord(db.Model):
     server_ip = db.Column(db.String(50), primary_key=True)
     process_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
 
+class FrontendInteractionLogRecord(db.Model):
+    __tablename__ = 'frontend_interaction'
+
+    event_name = db.Column(db.String(50))
+    event_location = db.Column(db.String(50))
+    event_value = db.Column(db.String(50))
+
+    user_agent = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime(timezone=True), primary_key=True)
+    remote_addr = db.Column(db.String(255))
+
+    user_id = db.Column(db.Integer)
+    visitor_id = db.Column(db.BigInteger)
+    referral_source = db.Column(db.String(50))
+
+    server_ip = db.Column(db.String(50), primary_key=True)
+    process_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
+
 def log_request(request, response, session_info):
     timestamp = datetime.datetime.now(tz.tzutc())
     record = FrontendRequestLogRecord(
@@ -38,7 +57,24 @@ def log_request(request, response, session_info):
         remote_addr=request.remote_addr or '',
         response_code=response.status_code or 0,
         user_id=session_info.db_user.id if session_info and session_info.logged_in() else None,
-        visitor_id=session_info.visitor_id if session_info else None,
+        visitor_id=ctypes.c_long(session_info.visitor_id).value if session_info else None,
+        referral_source=session_info.referral_source if session_info else None,
+        server_ip=SERVER_IP,
+        process_id=PID)
+    db.session.add(record)
+    db.session.commit()
+
+def log_interaction(request, session_info, event_name, event_location=None, event_value=None):
+    timestamp = datetime.datetime.now(tz.tzutc())
+    record = FrontendInteractionLogRecord(
+        event_name=event_name,
+        event_location=event_location,
+        event_value=event_value,
+        user_agent=request.user_agent.string or '',
+        timestamp=timestamp,
+        remote_addr=request.remote_addr or '',
+        user_id=session_info.db_user.id if session_info and session_info.logged_in() else None,
+        visitor_id=ctypes.c_long(session_info.visitor_id).value if session_info else None,
         referral_source=session_info.referral_source if session_info else None,
         server_ip=SERVER_IP,
         process_id=PID)
