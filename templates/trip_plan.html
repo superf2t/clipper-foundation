@@ -419,10 +419,12 @@
       <div class="edit-header">
         <div class="editor-title">[[originalEntity['name'] ]]</div>
         <div class="button-panel">
-          <button class="btn btn-cta" ng-click="saveEntity()">
+          <button class="btn btn-cta" ng-click="saveEntity()"
+            tc-track-click="{name: 'editor-save', location: trackingLocation}">
             Save
           </button>
-          <button class="btn btn-default" ng-click="$close()">
+          <button class="btn btn-default" ng-click="$close()"
+            tc-track-click="{name: 'editor-cancel', location: trackingLocation}">
             Cancel
           </button>
         </div>
@@ -433,7 +435,8 @@
           <a class="black-link"
             href="javascript:void(0)"
             ng-click="selectTab(EditorTab.NAME_AND_DESCRIPTION)"
-            ng-class="{'selected': editorTab == EditorTab.NAME_AND_DESCRIPTION}">
+            ng-class="{'selected': editorTab == EditorTab.NAME_AND_DESCRIPTION}"
+            tc-track-click="{name: 'editor-tab-change', location: trackingLocation, value: 'name'}">
             Name and Description
           </a>
         </span>
@@ -441,7 +444,8 @@
           <a class="black-link"
             href="javascript:void(0)"
             ng-click="selectTab(EditorTab.DETAILS)"
-            ng-class="{'selected': editorTab == EditorTab.DETAILS}">
+            ng-class="{'selected': editorTab == EditorTab.DETAILS}"
+            tc-track-click="{name: 'editor-tab-change', location: trackingLocation, value: 'details'}">
             Details
           </a>
         </span>
@@ -449,7 +453,8 @@
           <a class="black-link"
             href="javascript:void(0)"
             ng-click="selectTab(EditorTab.ADDRESS_AND_LOCATION)"
-            ng-class="{'selected': editorTab == EditorTab.ADDRESS_AND_LOCATION}">
+            ng-class="{'selected': editorTab == EditorTab.ADDRESS_AND_LOCATION}"
+            tc-track-click="{name: 'editor-tab-change', location: trackingLocation, value: 'location'}">
             Location
           </a>
         </span>
@@ -457,7 +462,8 @@
           <a class="black-link"
             href="javascript:void(0)"
             ng-click="selectTab(EditorTab.PHOTOS)"
-            ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
+            ng-class="{'selected': editorTab == EditorTab.PHOTOS}"
+            tc-track-click="{name: 'editor-tab-change', location: trackingLocation, value: 'photos'}">
             Photos
           </a>
         </span>
@@ -474,10 +480,12 @@
             <label class="category-label">Category</label>
             <select class="form-control category-input" ng-model="ed['category']"
               ng-options="c['display_name'] for c in categories track by c['category_id']"
-              ng-change="categoryChanged()">
+              ng-change="categoryChanged();
+                et.track({name: 'category-changed', location: trackingLocation, value: ed['category']['name']})">
             </select>
             <select class="form-control category-input" ng-model="ed['sub_category']"
-              ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']">
+              ng-options="s['display_name'] for s in getSubCategories(ed['category']['category_id']) track by s['sub_category_id']"
+              ng-change="et.track({name: 'sub-category-changed', location: trackingLocation, value: ed['sub_category']['name']})">
             </select>
           </form>
           <label>Tags</label>
@@ -526,12 +534,14 @@
               <div tc-image-carousel urls="ed['photo_urls']" current-index="selectedPhoto.index">
               </div>
               <div class="photo-top-control">
-                <a ng-click="setPhotoAsPrimary()" href="javascript:void(0)">
+                <a ng-click="setPhotoAsPrimary()" href="javascript:void(0)"
+                  tc-track-click="{name: 'primary-photo-changed', location: trackingLocation, value: ed['photo_urls'][selectedPhoto.index]}">
                   Set as Primary <span class="glyphicon glyphicon-picture"></span>
                 </a>
               </div>
               <div class="photo-bottom-control">
-                <a ng-click="deletePhoto()" href="javascript:void(0)">
+                <a ng-click="deletePhoto()" href="javascript:void(0)"
+                  tc-track-click="{name: 'primary-photo-removed', location: trackingLocation}">
                   Delete Photo <span class="glyphicon glyphicon-trash"></span>
                 </a>
               </div>

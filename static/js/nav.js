@@ -11,9 +11,8 @@
 
 // Tracking TODOs:
 // -Add Mixpanel mappings for tracking events.
-// -Track the editor modal.
+// -Track the clipper.
 // -Track nav bar events.
-// -Track the main map and infowindows.
 // -Track home page searches.
 // -Track interactions on city and profile pages.
 
