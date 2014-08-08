@@ -13,12 +13,58 @@
   <link rel="stylesheet" href="/static/css/admin.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
   <style>
+    a.white-link {
+      color: #FFFFFF;
+    }
+
+    a.white-link:hover {
+      color: #FFFFFF;
+    }
+
     .title {
       margin: 15px;
     }
 
     .quick-links {
       margin: 0 15px;
+    }
+
+    .cover-image-section {
+      margin: 30px 15px;
+      padding: 10px;
+      height: 350px;
+      background-color: #efefef;
+      box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
+    }
+
+    .cover-image-section .header {
+      font-size: 14pt;
+      font-weight: bold;
+    }
+
+    .cover-image-section .cover-image-preview {
+      width: 100%;
+      height: 300px;
+    }
+
+    .cover-image-section .cover-image-preview img {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .cover-image-section .cover-image-preview .cover-image-control {
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      text-shadow: 1px 1px 2px #000;
+    }
+
+    .cover-image-section .no-cover-image {
+      position: relative;
+      top: 100px;
+      font-weight: bold;
+      text-align: center;
     }
 
     .one-entity {
@@ -34,37 +80,37 @@
       font-weight: bold;
     }
 
-    .one-entity .search-form {
+    .img-search-panel .search-form {
       display: inline-block;
       vertical-align: middle;
     }
 
-    .one-entity .search-form .wtf-bootstrap {
+    .img-search-panel .search-form .wtf-bootstrap {
       display: inline-block;
     }
 
-    .one-entity .query-input {
+    .img-search-panel .query-input {
       width: 300px;
     }
 
-    .one-entity .size-select {
+    .img-search-panel .size-select {
       width: 100px;
       display: inline-block;
     }
 
-    .one-entity .pagination {
+    .img-search-panel .pagination {
       position: relative;
       left: 25px;
     }
 
-    .one-entity .imgs-container {
+    .img-search-panel .imgs-container {
       padding: 0;
-      height: calc(100% - 30px);
+      height: 300px;
     }
 
     .one-entity .photo-carousel {
       width: 100%;
-      height: calc(100% - 30px);
+      height: 300px;
       text-align: center;
       position: relative;
     }
@@ -196,8 +242,113 @@
     }
   </style>
   <script>
+    var IMG_SIZES = [
+       'icon', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'huge'
+    ];
+    var DEFAULT_IMG_SIZE = 'xlarge';
+
+    function buildQueryUrl(query, imgSize, start) {
+      return 'https://www.googleapis.com/customsearch/v1?q='
+        + encodeURIComponent(query)
+        + '&cx=011806488279685692499%3Acfgf9pxdika'
+        + '&imgSize=' + imgSize
+        + '&imgType=photo&searchType=image'
+        + '&start=' + start
+        + '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ';
+    }
+
+
     function PhotoEditorCtrl($scope, $tripPlan, $entities) {
       $scope.entities = $entities;
+    }
+
+    function CoverImageCtrl($scope, $tripPlan, $tripPlanService, $modal, $http, $sce) {
+      $scope.tripPlan = $tripPlan;
+
+      $scope.loadingImgResults = false;
+      $scope.imgResults = [];
+      $scope.resultStart = 1;
+      $scope.imgSizes = IMG_SIZES;
+      $scope.imgSize = {value: DEFAULT_IMG_SIZE};
+      $scope.queryState = {
+        query: ($tripPlan['location_name'] || '').trim()
+      };
+
+      $scope.hasResults = function() {
+        return $scope.imgResults && $scope.imgResults.length;
+      };
+
+      $scope.loadImgResults = function() {
+        $scope.loadingImgResults = true;
+        $scope.imgResults = [];
+        var url = buildQueryUrl($scope.queryState.query,
+          $scope.imgSize.value, $scope.resultStart);
+        $http.get(url).success(function(response) {
+          $scope.imgResults = response['items'];
+          $scope.loadingImgResults = false;
+        });
+      };
+
+      $scope.prevResults = function() {
+        if ($scope.resultStart == 1) {
+          return;
+        }
+        $scope.resultStart -= 10;
+        $scope.loadImgResults();
+      };
+
+      $scope.nextResults = function() {
+        $scope.resultStart += 10;
+        $scope.loadImgResults();
+      };
+
+      $scope.newSearch = function() {
+        $scope.resultStart = 1;
+        $scope.loadImgResults();
+      };
+
+      $scope.openImgSelectModal = function(result) {
+        var scope = $scope.$new();
+        scope.result = result;
+        scope.trust = $sce.trustAsHtml;
+        $modal.open({
+          templateUrl: 'img-select-modal-template',
+          scope: scope
+        });
+      };
+
+      $scope.removeCoverImg = function() {
+        $tripPlan['cover_image_url'] = '';
+      };
+
+      // Just aliases because we're reusing the same template
+      // as we use for entity images.
+      // TODO: Rewrite the modal as a customizable directive.
+      $scope.appendPhoto = function(url) {
+        $scope.setCoverImg(url);
+      };
+      $scope.addAsPrimary = function(url) {
+        $scope.setCoverImg(url);
+      };
+
+      $scope.setCoverImg = function(url) {
+        $tripPlan['cover_image_url'] = url;
+        $scope.saveImg();
+      };
+
+      $scope.saveImg = function() {
+        $tripPlanService.editTripPlan({
+          'trip_plan_id': $tripPlan['trip_plan_id'],
+          'cover_image_url': $tripPlan['cover_image_url']
+        })
+        .error(function(response) {
+          $window.alert('Error while saving cover image.');
+        });
+      };
+
+      if (!$tripPlan['cover_image_url']) {
+        $scope.loadImgResults();
+      }
     }
 
     function EntityPhotoEditorCtrl($scope, $tripPlan, $entityService, $http, $window, $sce, $modal) {
@@ -266,10 +417,8 @@
       $scope.loadingImgResults = false;
       $scope.imgResults = [];
       $scope.resultStart = 1;
-      $scope.imgSizes = [
-         'icon', 'small', 'medium', 'large', 'xlarge', 'xxlarge', 'huge'
-      ];
-      $scope.imgSize = {value: 'xlarge'};
+      $scope.imgSizes = IMG_SIZES;
+      $scope.imgSize = {value: DEFAULT_IMG_SIZE};
       $scope.queryState = {
         query: ($scope.ed['name'] + ' ' + $tripPlan['location_name']).trim()
       };
@@ -281,13 +430,8 @@
       $scope.loadImgResults = function() {
         $scope.loadingImgResults = true;
         $scope.imgResults = [];
-        var url = 'https://www.googleapis.com/customsearch/v1?q='
-        + $window.encodeURIComponent($scope.queryState.query)
-        + '&cx=011806488279685692499%3Acfgf9pxdika'
-        + '&imgSize=' + $scope.imgSize.value
-        + '&imgType=photo&searchType=image'
-        + '&start=' + $scope.resultStart
-        + '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ';
+        var url = buildQueryUrl($scope.queryState.query,
+          $scope.imgSize.value, $scope.resultStart);
         $http.get(url).success(function(response) {
           $scope.imgResults = response['items'];
           $scope.loadingImgResults = false;
@@ -344,6 +488,7 @@
 
     angular.module('photoEditorApp', ['servicesModule', 'ui.bootstrap'], interpolator)
       .controller('PhotoEditorCtrl', PhotoEditorCtrl)
+      .controller('CoverImageCtrl', CoverImageCtrl)
       .controller('EntityPhotoEditorCtrl', EntityPhotoEditorCtrl)
       .value('$tripPlan', {{trip_plan.to_json_str() | safe}})
       .value('$entities', {{to_json_str(entities) | safe}});
@@ -360,6 +505,32 @@
       Open admin editor
     </a>
   </div>
+
+  <div class="cover-image-section" ng-controller="CoverImageCtrl">
+    <div class="container-fluid imgs-container">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="header">Cover Image</div>
+          <div ng-if="tripPlan['cover_image_url']" class="cover-image-preview">
+            <img ng-src="[[tripPlan['cover_image_url'] ]]"/>
+            <div class="cover-image-control">
+              <a ng-click="removeCoverImg()" class="white-link" href="javascript:void(0)">
+                <span class="glyphicon glyphicon-trash"></span> Remove
+              </a>
+            </div>
+          </div>
+          <div ng-if="!tripPlan['cover_image_url']" class="no-cover-image">
+            No cover image
+          </div>
+        </div>
+        <div class="col-md-8" ng-class="{'loading-img-results': loadingImgResults}">
+          <div ng-include="'img-search-panel-template'"></div>
+          <div ng-include="'img-results-template'"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div ng-repeat="entity in entities" ng-controller="EntityPhotoEditorCtrl"
     class="one-entity">
     <div class="container-fluid imgs-container">
@@ -370,40 +541,7 @@
           </div>
         </div>
         <div class="col-md-8" ng-class="{'loading-img-results': loadingImgResults}">
-          <div>
-            Results for
-            <form class="form-inline search-form" role="form" ng-submit="newSearch()">
-              <div class="input-group wtf-bootstrap">
-                <span class="input-group query-input">
-                  <input type="text" class="form-control" ng-model="queryState.query"/>
-                  <div class="input-group-btn">
-                    <button class="btn btn-default">
-                      <span class="glyphicon glyphicon-search"></span>
-                    </button>
-                  </div>
-                </span>
-              </div>
-              <div class="input-group wtf-bootstrap">
-                <span class="size-select">
-                  <select class="form-control"
-                    ng-model="imgSize.value" ng-change="loadImgResults()"
-                    ng-options="size for size in imgSizes">
-                  </select>
-                </span>
-              </div>
-            </form>
-            <span class="pagination" ng-show="hasResults()">
-              <span ng-show="resultStart > 1">
-                <a href="javascript:void(0)" ng-click="prevResults()">
-                  &laquo; Prev results
-                </a>
-                |
-              </span>
-              <a href="javascript:void(0)" ng-click="nextResults()">
-                Next results &raquo;
-              </a>
-            </span>
-          </div>
+          <div ng-include="'img-search-panel-template'"></div>
           <div ng-include="'img-results-template'"></div>
         </div>
       </div>
@@ -431,6 +569,43 @@
       <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
         <span class="glyphicon glyphicon-chevron-right"></span>
       </a>
+    </div>
+  </script>
+
+  <script type="text/ng-template" id="img-search-panel-template">
+    <div class="img-search-panel">
+      Results for
+      <form class="form-inline search-form" role="form" ng-submit="newSearch()">
+        <div class="input-group wtf-bootstrap">
+          <span class="input-group query-input">
+            <input type="text" class="form-control" ng-model="queryState.query"/>
+            <div class="input-group-btn">
+              <button class="btn btn-default">
+                <span class="glyphicon glyphicon-search"></span>
+              </button>
+            </div>
+          </span>
+        </div>
+        <div class="input-group wtf-bootstrap">
+          <span class="size-select">
+            <select class="form-control"
+              ng-model="imgSize.value" ng-change="loadImgResults()"
+              ng-options="size for size in imgSizes">
+            </select>
+          </span>
+        </div>
+      </form>
+      <span class="pagination" ng-show="hasResults()">
+        <span ng-show="resultStart > 1">
+          <a href="javascript:void(0)" ng-click="prevResults()">
+            &laquo; Prev results
+          </a>
+          |
+        </span>
+        <a href="javascript:void(0)" ng-click="nextResults()">
+          Next results &raquo;
+        </a>
+      </span>
     </div>
   </script>
 

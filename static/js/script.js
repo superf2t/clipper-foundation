@@ -562,7 +562,8 @@ function tcTrackEntityDragState($entityDragStateModel, $entityOrderingService) {
   };
 }
 
-function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService, $entityDragStateModel) {
+function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
+    $entityDragStateModel, $eventTracker) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
@@ -575,6 +576,7 @@ function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService, 
           // to also go invisible.
           $entityDragStateModel.setDraggedEntity(ed, element);
         });
+        $eventTracker.track({name: 'entity-dragged', location: 'summary-panel', value: ed['entity_id']});
       }).on('dragend', function() {
         $entityOrderingService.dragEnded();
         scope.$apply();
@@ -1850,7 +1852,8 @@ function tcFilterBar() {
   return {
     restrict: 'AE',
     scope: {
-      filterModel: '='
+      filterModel: '=',
+      trackingLocation: '@'
     },
     templateUrl: 'filter-bar-template'
   };
@@ -2129,6 +2132,7 @@ function createMap(tripPlanData) {
   return map;
 }
 
+// TODO: See if this is unused
 function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
   var me = this;
   $scope.ready = false;
@@ -2522,7 +2526,7 @@ var EditorTab = {
 };
 
 function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
-    $entityService, $entityEditingService, $timeout) {
+    $entityService, $entityEditingService, $eventTracker, $timeout) {
   var me = this;
   $scope.ed = angular.copy($scope.originalEntity);
   $scope.em = new EntityModel($scope.ed);
@@ -2538,6 +2542,9 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     rawInput: _.pluck($scope.ed['tags'], 'text').join(', ')
   };
   $scope.mapState = {map: null};
+
+  $scope.et = $eventTracker;
+  $scope.trackingLocation = 'entity-editor';
 
   $scope.categories = $taxonomy.allCategories();
   $scope.getSubCategories = function(categoryId) {
@@ -2556,6 +2563,8 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     entityData['latlng']['lat'] = $position.lat();
     entityData['latlng']['lng'] = $position.lng();
     entityData['address_precision'] = 'Precise';
+    $eventTracker.track({name: 'marker-dragged',
+      location: $scope.trackingLocation, value: $scope.ed['entity_id']});
   };
 
   this.findMapCenter = function() {
@@ -2604,6 +2613,8 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
         $scope.map.fitBounds(place['geometry']['viewport']);
       }
     }
+    $eventTracker.track({name: 'address-changed',
+      location: $scope.trackingLocation, value: $scope.ed['address']});
   }
 
   $scope.tagsChanged = function() {
@@ -2676,6 +2687,7 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     $scope.photoEditState.dragActive = false;
     $event.stopPropagation();
     $event.preventDefault();
+    $eventTracker.track({name: 'photo-dropped', location: $scope.trackingLocation, value: imgUrl});
   };
 
   $scope.photoUrlPasted = function() {
@@ -2686,6 +2698,7 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
         $scope.selectedPhoto.index = $scope.ed['photo_urls'].length - 1;        
         $scope.photoEditState.rawInput = '';
       }
+      $eventTracker.track({name: 'photo-url-pasted', location: $scope.trackingLocation, value: url});
     });
   };
 }

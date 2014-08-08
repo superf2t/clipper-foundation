@@ -85,7 +85,7 @@
   <script>
     function ProfileCtrl($scope, $tripPlans, $allTripPlans,
         $accountInfo, $activeTripPlanState, $tripPlanCreator,
-        $templateToStringRenderer, $flashedMessages, $window) {
+        $templateToStringRenderer, $flashedMessages, $eventTracker, $window) {
       // tripPlans refers to the trip plans for the profile user being viewed
       // allTripPlans refers to those belonging to the currently logged-in user.
       // This is confusing, rename these.
@@ -160,6 +160,7 @@
         $scope.mapState.markers.push(marker);
         google.maps.event.addListener(marker, 'click', function() {
           $scope.openInfowindow(map, marker, tripPlan);
+          $eventTracker.track({name: 'map-marker-clicked', location: 'profile-page-map', value: tripPlan['trip_plan_id']});
         });
       };
 

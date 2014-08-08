@@ -61,7 +61,7 @@ function ClipperRootCtrl($scope, $clipperStateModel, $window) {
 
 function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
     $entityService, $allTripPlans, $mapProxy, $datatypeValues,
-    $modal, $window, $timeout) {
+    $eventTracker, $modal, $window, $timeout) {
   var me = this;
 
   $scope.entities = [];
@@ -92,7 +92,7 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
     $mapProxy.plotResultEntities(entities);
   }, true);
 
-  $scope.$watch('tripPlanState.tripPlan', function(tripPlan) {
+  $scope.$watch('tripPlanState.tripPlan', function(tripPlan, oldTripPlan) {
     if (!tripPlan || !tripPlan['trip_plan_id']) {
       $scope.tripPlanState.entities = null;
       return;
@@ -105,6 +105,10 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
           $mapProxy.plotTripPlanEntities(response['entities']);
         }
       });
+    if (tripPlan !== oldTripPlan) {
+      $eventTracker.track({name: 'active-trip-plan-change',
+        location: 'clipper-save-panel', value: tripPlan['trip_plan_id']});      
+    }
   });
 
   this.setupEntityState = function(entities) {
@@ -230,6 +234,7 @@ function ClipperPanelCtrl($scope, $clipperStateModel, $tripPlanState,
       controller: NewTripCtrl,
       scope: scope
     });
+    $eventTracker.track({name: 'open-new-trip-modal', location: 'clipper-save-panel'});
   };
 
   $scope.$on('askifediting', function(event, result) {
@@ -320,7 +325,7 @@ function MapProxy($window) {
   this.sendMessage('tc-clipper-ready');
 }
 
-function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
+function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService, $eventTracker) {
   var me = this;
   $scope.loadingData = false;
   $scope.rawInputText = '';
@@ -335,8 +340,12 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
     }
     if (!newPlace['reference']) {
       me.searchForPlace(newPlace['name']);
+      $eventTracker.track({name: 'place-text-search',
+        location: 'clipper-search', value: newPlace['name']});
     } else {
       me.loadEntityByGooglePlaceReference(newPlace['reference']);      
+      $eventTracker.track({name: 'place-search-autocomplete',
+        location: 'clipper-search', value: newPlace['name']});
     }
   };
 
@@ -384,6 +393,8 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
   $scope.selectResult = function(result) {
     $scope.searchResults = null;
     me.loadEntityByGooglePlaceReference(result['reference']);
+    $eventTracker.track({name: 'place-search-result-selected',
+      location: 'clipper-search', value: result['name']});
   };
 
   $scope.$on('pagetextselected', function(event, text) {
@@ -392,6 +403,8 @@ function ClipperOmniboxCtrl($scope, $tripPlanState, $entityService) {
     }
     $scope.rawInputText = text;
     me.searchForPlace(text);
+    $eventTracker.track({name: 'place-search-text-highlighted',
+      location: 'clipper-search', value: text});
   });
 }
 
@@ -401,7 +414,8 @@ var EditorTab = {
   PHOTOS: 3
 };
 
-function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window) {
+function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy,
+    $eventTracker, $window) {
   var me = this;
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
@@ -509,6 +523,8 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
     } else {
       $scope.ed['description'] = text;
     }
+    $eventTracker.track({name: 'description-text-highlighted',
+      location: 'clipper-editor', value: text});
   });
 
   if (!$scope.ed['name']) {
@@ -516,7 +532,7 @@ function ClipperResultEntityCtrl($scope, $clipperStateModel, $mapProxy, $window)
   }
 }
 
-function ClipperEntityPhotoCtrl($scope, $window) {
+function ClipperEntityPhotoCtrl($scope, $eventTracker, $window) {
   if (_.isEmpty($scope.ed['photo_urls'])) {
     $scope.ed['photo_urls'] = [];
   }
@@ -533,6 +549,7 @@ function ClipperEntityPhotoCtrl($scope, $window) {
         } else {
           alert("Sorry, we couldn't recognize that image!");
         }
+        $eventTracker.track({name: 'photo-dropped', location: 'clipper-editor', value: imgUrl});
       }
     });
   });
@@ -585,7 +602,8 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .value('$clipperStateModel', new ClipperStateModel());
 
   angular.module('clipperModule',
-      ['clipperInitialDataModule', 'directivesModule', 'filtersModule', 'servicesModule', 'ui.bootstrap'],
+      ['clipperInitialDataModule', 'directivesModule', 'filtersModule',
+       'navModule', 'servicesModule', 'ui.bootstrap'],
       interpolator)
     .controller('ClipperRootCtrl', ClipperRootCtrl)
     .controller('ClipperPanelCtrl', ClipperPanelCtrl)

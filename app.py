@@ -41,7 +41,9 @@ FEATURED_GUIDE_CONFIGS = [guide_config.GUIDES_BY_CITY[name] for name in FEATURED
 
 @app.route('/')
 def index():
-    return render_template('index.html', featured_guide_configs=FEATURED_GUIDE_CONFIGS);
+    return render_template('index.html',
+        featured_guide_configs=FEATURED_GUIDE_CONFIGS,
+        flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]);
 
 @app.route('/get_clipper')
 def get_clipper():
@@ -273,6 +275,7 @@ def adminpage():
     return render_template('admin.html', trip_plans=trip_plans,
         source_host=lambda url: urlparse.urlparse(url).netloc.split('.')[-2])
 
+@app.route('/xadmin/editor/<int:trip_plan_id>')
 @app.route('/admin/editor/<int:trip_plan_id>')
 def admin_editor(trip_plan_id):
     if not g.session_info.is_admin():
@@ -287,6 +290,7 @@ def admin_editor(trip_plan_id):
         all_datatype_values=values.ALL_VALUES,
         account_info=g.account_info)
 
+@app.route('/xadmin/editor/photos/<int:trip_plan_id>')
 @app.route('/admin/editor/photos/<int:trip_plan_id>')
 def admin_photo_editor(trip_plan_id):
     if not g.session_info.is_admin():
@@ -309,7 +313,7 @@ def admin_scrape():
 
 @app.before_request
 def process_cookies():
-    if request.path.startswith('/static/'):
+    if request.path.startswith('/static/') or request.path == '/user/sign-out':
         return
     try:
         old_sessionid = int(request.cookies.get('sessionid'))
@@ -376,7 +380,11 @@ def inject_extended_template_builtins():
     return {
         'url_quote_plus': urllib.quote_plus,
         'to_json_str': serializable.to_json_str,
+        'is_internal': is_internal(request),
     }
+
+def is_internal(req):
+    return req.remote_addr in constants.INTERNAL_IPS
 
 def register():
     flask_user.signals.user_registered.connect(after_registration, app)
