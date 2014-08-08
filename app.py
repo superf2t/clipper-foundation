@@ -35,7 +35,7 @@ import values
 app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 
 FEATURED_CITY_NAMES = ('Bangkok', 'London', 'Paris', 'Barcelona',
-    'Rome', 'San Francisco', 'New York City', 'Las Vegas')
+    'Rome', 'San Francisco', 'New York City', 'Las Vegas', 'Hong Kong')
 FEATURED_GUIDE_CONFIGS = [guide_config.GUIDES_BY_CITY[name] for name in FEATURED_CITY_NAMES]
 
 

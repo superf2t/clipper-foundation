@@ -20,7 +20,7 @@
       height: 100%;
       padding: 0;
       margin: 0;
-      font-family: 'Avenir';
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
     }
 
     a:hover {
@@ -95,6 +95,8 @@
       font-weight: 500;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
     }
 
     .featured-cities-section {
@@ -109,7 +111,7 @@
 
     .featured-cities-section .city-metadata {
       position: relative;
-      top: 180px;
+      top: 178px;
       height: 40px;
       margin-bottom: -40px;
       background-color: rgba(0,0,0,0.5);
@@ -127,6 +129,8 @@
       -webkit-background-size: cover !important;
       -moz-background-size: cover !important;
       margin-bottom: 30px;
+      border: 1px solid #dce0e0;
+      border-radius: 2px;
     }
 
     .featured-cities-section .city-name {
@@ -148,7 +152,7 @@
     }
 
     .search-section {
-      background: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg') 50% 1000px repeat fixed;
+      background: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg') 50% 0px repeat fixed;
       width: 100%;
       max-width: 1920px;
       min-height: 400px;
@@ -210,9 +214,9 @@
       z-index: 2;
     }
 
-    .source-metadata {
+    .featured-source .source-metadata {
       position: relative;
-      top: 180px;
+      top: 178px;
       height: 40px;
       margin-bottom: -40px;
       background-color: rgba(0,0,0,0.5);
@@ -221,7 +225,7 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    .source {
+    .featured-source .source {
       width: 100%;
       height: 220px;
       background-repeat: no-repeat;
@@ -230,28 +234,30 @@
       -webkit-background-size: cover !important;
       -moz-background-size: cover !important;
       margin-bottom: 30px;
+      border: 1px solid #dce0e0;
+      border-radius: 2px;
     }
 
-    .source-name {
+    .featured-source .source-name {
       float: left;
       font-size: 1.4em;
       font-weight: 500;
       padding: 6px 10px;
     }
 
-    .source-guides-number {
+    .featured-source .source-guides-number {
       float: right;
       font-size: 1.1em;
       font-weight: 500;
       padding: 10px;    
     }
 
-    .top-source:hover .source-metadata {
+    .featured-source:hover .source-metadata {
       background-color: rgba(0,0,0,0.25);
     }
 
     .more-cities-section {
-      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0 repeat fixed;
+      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0px repeat fixed;
       width: 100%;
       max-width: 1920px;
       min-height: 300px;
@@ -429,7 +435,7 @@
   </script>
 </head>
 <body ng-controller="IndexCtrl">
-  <div class="splash-section" data-type="background" data-speed="20">
+  <div class="splash-section" data-type="background" data-speed="5">
     <div class="site-header">
       <div class="logo">
         TravelClipper
@@ -459,7 +465,7 @@
       <div class="featured-cities row">
         {% for config in featured_guide_configs %}
         <a href="/guides/{{config.city_name_url_token}}">
-          <div class="top-city col-md-4">
+          <div class="featured-city col-md-4">
             <div class="city"
               style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
               <div class="city-metadata">
@@ -478,7 +484,7 @@
     </div>
   </div>
 
-  <div class="search-section" data-type="background" data-speed="20">
+  <div class="search-section" data-type="background" data-speed="10">
     <div class="section-header">
       Plan your <span class="lg-text">NEW TRIP</span>
     </div>
@@ -507,7 +513,7 @@
       <div class="top-sources row">
         {% for config in featured_guide_configs %}
         <a href="/guides/{{config.city_name_url_token}}">
-          <div class="top-source col-md-4">
+          <div class="featured-source col-md-4">
             <div class="source"
               style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
               <div class="source-metadata">
@@ -526,7 +532,7 @@
     </div>
   </div>
 
-  <div class="more-cities-section">
+  <div class="more-cities-section" data-type="background" data-speed="20">
     <div class="section-header">
       <span class="lg-text">MORE DESTINATIONS</span>
     </div>
