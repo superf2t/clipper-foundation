@@ -239,9 +239,40 @@ function tcFlashedMessages() {
   };
 }
 
-angular.module('navModule', ['servicesModule', 'directivesModule', 'ui.bootstrap'])
+angular.module('navModule', ['servicesModule', 'directivesModule',
+    'eventTrackingModule', 'ui.bootstrap'])
   .service('$tripPlanCreator', TripPlanCreator)
   .directive('tcNav', tcNav)
   .directive('tcAccountDropdown', tcAccountDropdown)
   .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown)
   .directive('tcFlashedMessages', tcFlashedMessages);
+
+
+// TODO: Move event code to its own file.
+
+function EventTracker() {
+  this.track = function(data) {
+    if (!_.isEmpty(data)) {
+      // Use jquery and not angular here so we don't incur the cost
+      // of an unnecessary digest on the reply.
+      $.get('/event', data);          
+    }    
+  };
+}
+
+function tcTrackClick($parse, $eventTracker) {
+  return {
+    link: function(scope, element, attrs) {
+      element.on('click', function() {
+        var data = $parse(attrs.tcTrackClick)(scope);
+        $eventTracker.track(data);
+      });
+    }
+  };
+}
+
+angular.module('eventTrackingModule', [])
+  .service('$eventTracker', EventTracker)
+  .directive('tcTrackClick', tcTrackClick);
+
+// End event code

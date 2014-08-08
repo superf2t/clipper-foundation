@@ -33,7 +33,7 @@ class FrontendInteractionLogRecord(db.Model):
 
     event_name = db.Column(db.String(50))
     event_location = db.Column(db.String(50))
-    event_value = db.Column(db.String(50))
+    event_value = db.Column(db.String(255))
 
     user_agent = db.Column(db.Text)
     timestamp = db.Column(db.DateTime(timezone=True), primary_key=True)
@@ -58,7 +58,7 @@ def log_request(request, response, session_info):
         response_code=response.status_code or 0,
         user_id=session_info.db_user.id if session_info and session_info.logged_in() else None,
         visitor_id=ctypes.c_long(session_info.visitor_id).value if session_info else None,
-        referral_source=session_info.referral_source if session_info else None,
+        referral_source=safe_trim(session_info.referral_source, 50) if session_info else None,
         server_ip=SERVER_IP,
         process_id=PID)
     db.session.add(record)
@@ -67,16 +67,21 @@ def log_request(request, response, session_info):
 def log_interaction(request, session_info, event_name, event_location=None, event_value=None):
     timestamp = datetime.datetime.now(tz.tzutc())
     record = FrontendInteractionLogRecord(
-        event_name=event_name,
-        event_location=event_location,
-        event_value=event_value,
+        event_name=safe_trim(event_name, 50),
+        event_location=safe_trim(event_location, 50),
+        event_value=safe_trim(event_value, 255),
         user_agent=request.user_agent.string or '',
         timestamp=timestamp,
         remote_addr=request.remote_addr or '',
         user_id=session_info.db_user.id if session_info and session_info.logged_in() else None,
         visitor_id=ctypes.c_long(session_info.visitor_id).value if session_info else None,
-        referral_source=session_info.referral_source if session_info else None,
+        referral_source=safe_trim(session_info.referral_source, 50) if session_info else None,
         server_ip=SERVER_IP,
         process_id=PID)
     db.session.add(record)
     db.session.commit()
+
+def safe_trim(value, max_length):
+    if not value:
+        return value
+    return value[:max_length]

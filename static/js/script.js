@@ -265,6 +265,10 @@ function TripPlanModel(tripPlanData, entityDatas) {
     return !!this.tripPlanData['source_url'];
   };
 
+  this.isGuide = function() {
+    return this.tripPlanData['trip_plan_type'] == 'GUIDE';
+  };
+
   this.locationLatlng = function() {
     return this.tripPlanData['location_latlng'];
   };
@@ -631,11 +635,21 @@ var InfoTab = {
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
     $entityEditingService, $entityClippingService,
-    $templateToStringRenderer, $sizeHelper,
+    $templateToStringRenderer, $sizeHelper, $eventTracker,
     $window, $timeout) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.accountInfo = $accountInfo;
+
+  $scope.et = $eventTracker;
+  this.getTrackingLocation = function() {
+    var location = $scope.forResults ? 'entity-details/result' : 'entity-details';
+    if ($scope.forGuide) {
+      location = location + '/guide';
+    }
+    return location;
+  };
+  $scope.trackingLocation = this.getTrackingLocation();
 
   $scope.showAboutTab = function() {
     return $scope.isEditable || (
@@ -957,6 +971,7 @@ function tcEntityDetails() {
       tripPlanId: '=',
       isEditable: '=',
       forResults: '=',
+      forGuide: '=',
       resultIndex: '='
     }
   };
@@ -1933,7 +1948,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityDragStateModel, $entityService,
     $allowEditing, $accountInfo, $allTripPlans, $activeTripPlanState,
-    $hasGuides, $flashedMessages) {
+    $hasGuides, $flashedMessages, $eventTracker) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -1946,6 +1961,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.activeTripPlanState = $activeTripPlanState;
   $scope.hasGuides = $hasGuides;
   $scope.flashedMessages = $flashedMessages;
+  $scope.et = $eventTracker;
   $scope.refreshState = {
     paused: false
   };
@@ -2302,7 +2318,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
 }
 
 function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
-    $mapManager, $filterModel, $searchResultState, $dataCache) {
+    $mapManager, $filterModel, $searchResultState, $dataCache, $eventTracker) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
   $scope.loading = false;
   $scope.guides = null;
@@ -2318,6 +2334,11 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
         $scope.loading = false;
         $scope.guides = response['trip_plans'];
         $dataCache.guides = $scope.guides;
+        if (_.isEmpty($scope.guides)) {
+          $eventTracker.track({name: 'guides-panel-load-no-guides', value: $tripPlanModel.tripPlanData['location_name']});
+        } else {
+          $eventTracker.track({name: 'guides-panel-load-has-guides', value: $tripPlanModel.tripPlanData['location_name']});
+        }
       });    
   }
 
@@ -3527,6 +3548,7 @@ function tcImageCarousel() {
     scope: {
       urls: '=',
       onChange: '&',
+      trackChange: '&',
       fullBleed: '=',
       currentIndex: '='
     },
@@ -3564,6 +3586,7 @@ function tcImageCarousel() {
         if ($scope.hasNextImg()) {
           $scope.currentIndex_++;
           me.notifyChange();
+          $scope.trackChange && $scope.trackChange();
         }
       };
 
@@ -3571,6 +3594,7 @@ function tcImageCarousel() {
         if ($scope.hasPrevImg()) {
           $scope.currentIndex_--;
           me.notifyChange();
+          $scope.trackChange && $scope.trackChange();
         }
       };
 
@@ -4019,7 +4043,9 @@ function tcExpandableContent($timeout) {
       expandLinkText: '@',
       collapseLinkText: '@',
       maxLines: '=',
-      numBufferLines: '='
+      numBufferLines: '=',
+      trackExpand: '=',
+      trackCollapse: '='
     },
     link: function(scope, element, attrs) {
       var contentElem = element.find('.text-content');
