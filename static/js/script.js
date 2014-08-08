@@ -265,6 +265,10 @@ function TripPlanModel(tripPlanData, entityDatas) {
     return !!this.tripPlanData['source_url'];
   };
 
+  this.isGuide = function() {
+    return this.tripPlanData['trip_plan_type'] == 'GUIDE';
+  };
+
   this.locationLatlng = function() {
     return this.tripPlanData['location_latlng'];
   };
@@ -631,11 +635,21 @@ var InfoTab = {
 function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
     $entityEditingService, $entityClippingService,
-    $templateToStringRenderer, $sizeHelper,
+    $templateToStringRenderer, $sizeHelper, $eventTracker,
     $window, $timeout) {
   $scope.ed = $scope.entity;
   $scope.em = new EntityModel($scope.ed);
   $scope.accountInfo = $accountInfo;
+
+  $scope.et = $eventTracker;
+  this.getTrackingLocation = function() {
+    var location = $scope.forResults ? 'entity-details/result' : 'entity-details';
+    if ($scope.forGuide) {
+      location = location + '/guide';
+    }
+    return location;
+  };
+  $scope.trackingLocation = this.getTrackingLocation();
 
   $scope.showAboutTab = function() {
     return $scope.isEditable || (
@@ -957,6 +971,7 @@ function tcEntityDetails() {
       tripPlanId: '=',
       isEditable: '=',
       forResults: '=',
+      forGuide: '=',
       resultIndex: '='
     }
   };
@@ -1933,7 +1948,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityDragStateModel, $entityService,
     $allowEditing, $accountInfo, $allTripPlans, $activeTripPlanState,
-    $hasGuides, $flashedMessages) {
+    $hasGuides, $flashedMessages, $eventTracker) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -1946,6 +1961,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
   $scope.activeTripPlanState = $activeTripPlanState;
   $scope.hasGuides = $hasGuides;
   $scope.flashedMessages = $flashedMessages;
+  $scope.et = $eventTracker;
   $scope.refreshState = {
     paused: false
   };
@@ -2302,7 +2318,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
 }
 
 function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
-    $mapManager, $filterModel, $searchResultState, $dataCache) {
+    $mapManager, $filterModel, $searchResultState, $dataCache, $eventTracker) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
   $scope.loading = false;
   $scope.guides = null;
@@ -2318,6 +2334,11 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
         $scope.loading = false;
         $scope.guides = response['trip_plans'];
         $dataCache.guides = $scope.guides;
+        if (_.isEmpty($scope.guides)) {
+          $eventTracker.track({name: 'guides-panel-load-no-guides', value: $tripPlanModel.tripPlanData['location_name']});
+        } else {
+          $eventTracker.track({name: 'guides-panel-load-has-guides', value: $tripPlanModel.tripPlanData['location_name']});
+        }
       });    
   }
 
@@ -2357,7 +2378,8 @@ var ResultType = {
 };
 
 function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
-    $filterModel, $entityService, $mapManager, $browserInfo, $window, $timeout) {
+    $filterModel, $entityService, $mapManager, $browserInfo,
+    $eventTracker, $window, $timeout) {
 
   $scope.tab = AddYourOwnTab.SEARCH;
   $scope.AddYourOwnTab = AddYourOwnTab;
@@ -2384,10 +2406,14 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
     if (place['reference']) {
       $entityService.googleplacetoentity(place['reference'])
         .success($scope.processSearchResponse);
+      $eventTracker.track({name: 'add-your-own-autocomplete',
+        location: 'add-your-own-panel', value: place['name']});
     } else {
       $entityService.googletextsearchtoentities(place['name'],
         $tripPlanModel.tripPlanData['location_latlng'])
           .success($scope.processSearchResponse);
+      $eventTracker.track({name: 'add-your-own-text-search',
+        location: 'add-your-own-panel', value: place['name']});
     }
   };
 
@@ -2444,6 +2470,9 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
       $scope.linkState.formattedUrl = null;
       $entityService.urltoentities($scope.linkState.rawInput)
         .success($scope.processLinkClipResponse);
+
+      $eventTracker.track({name: 'clip-link-pasted',
+        location: 'add-your-own-paste-link-panel', value: $scope.linkState.rawInput})
     });
   };
 
@@ -2662,7 +2691,7 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
 }
 
 function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
-    $timeout, $window, $document) {
+    $eventTracker, $timeout, $window, $document) {
   $scope.tpd = angular.copy($tripPlanModel.tripPlanData);
   $scope.editingImage = !$scope.tpd['cover_image_url'];
   $scope.coverImgDragActive = false;
@@ -2696,6 +2725,8 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
     $event.preventDefault();
     $scope.coverImgDragActive = false;
     $scope.editingImage = false;
+    $eventTracker.track({name: 'cover-image-dropped',
+      location: 'settings-panel', value: imgUrl});
   };
 
   var pasteActive = false;
@@ -2707,6 +2738,8 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
       $scope.coverImgUrlInput.text = '';
       pasteActive = false;
       $scope.editingImage = false;
+      $eventTracker.track({name: 'cover-image-pasted',
+        location: 'settings-panel', value: $scope.tpd['cover_image_url']});
     });
   };
 
@@ -2817,7 +2850,8 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
 }
 
 function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
-    $entityService, $tripPlanModel, $searchResultState, $mapManager) {
+    $entityService, $tripPlanModel, $searchResultState, $mapManager,
+    $eventTracker) {
   var me = this;
   $scope.url = '';
   $scope.importing = false;
@@ -2853,6 +2887,7 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
             $scope.importing = false;
           }
         });
+        $eventTracker.track({name: 'gmaps-url-pasted', location: 'import-panel', value: $scope.url});
       });
   };
 
@@ -3527,6 +3562,7 @@ function tcImageCarousel() {
     scope: {
       urls: '=',
       onChange: '&',
+      trackChange: '&',
       fullBleed: '=',
       currentIndex: '='
     },
@@ -3564,6 +3600,7 @@ function tcImageCarousel() {
         if ($scope.hasNextImg()) {
           $scope.currentIndex_++;
           me.notifyChange();
+          $scope.trackChange && $scope.trackChange();
         }
       };
 
@@ -3571,6 +3608,7 @@ function tcImageCarousel() {
         if ($scope.hasPrevImg()) {
           $scope.currentIndex_--;
           me.notifyChange();
+          $scope.trackChange && $scope.trackChange();
         }
       };
 
@@ -4019,7 +4057,9 @@ function tcExpandableContent($timeout) {
       expandLinkText: '@',
       collapseLinkText: '@',
       maxLines: '=',
-      numBufferLines: '='
+      numBufferLines: '=',
+      trackExpand: '=',
+      trackCollapse: '='
     },
     link: function(scope, element, attrs) {
       var contentElem = element.find('.text-content');

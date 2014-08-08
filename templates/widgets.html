@@ -180,11 +180,15 @@
   <div class="expandable-content">
     <div class="text-content" ng-class="{'collapsed': needsExpansion && !isExpanded}"><span ng-bind-html="textContent | linky:'_blank'"></span></div>
     <div class="toggle-link" ng-show="needsExpansion">
-      <a ng-click="toggleExpanded()" class="color-link" ng-show="!isExpanded" href="javascript:void(0)">
+      <a ng-click="toggleExpanded()" class="color-link" ng-show="!isExpanded"
+        tc-track-click="trackExpand"
+        href="javascript:void(0)">
         [[expandLinkText]]
         <span class="caret"></span>
       </a>
-      <a ng-click="toggleExpanded()" class="color-link" ng-show="isExpanded" href="javascript:void(0)">
+      <a ng-click="toggleExpanded()" class="color-link" ng-show="isExpanded"
+        tc-track-click="trackCollapse"
+        href="javascript:void(0)">
         [[collapseLinkText]]
         <span class="caret caret-up"></span>
       </a>

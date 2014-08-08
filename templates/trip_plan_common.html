@@ -17,11 +17,13 @@
         <span ng-if="includeCreator">
           <span ng-if="tripPlan['trip_plan_type'] == 'GUIDE'">
             Inspired by
-            <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url">
+            <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url"
+              tc-track-click="{name: 'guide-creator-name-click', location: 'trip-plan-header', value: tripPlan['source_display_name']}">
               [[tripPlan['source_display_name'] ]]
             </a>
           </span>
-          <span ng-if="!tripPlan['trip_plan_type'] && tripPlan['user']['display_name']">
+          <span ng-if="!tripPlan['trip_plan_type'] && tripPlan['user']['display_name']"
+            tc-track-click="{name: 'creator-name-click', location: 'trip-plan-header', value: tripPlan['user']['public_id']}">
             Created by
             <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url">
               [[tripPlan['user']['display_name'] ]]
@@ -50,7 +52,9 @@
       <div class="description" ng-if="tripPlan['description']">
         <tc-expandable-content text-content="tripPlan['description']"
           expand-link-text="Read more" collapse-link-text="Read less"
-          max-lines="5">
+          max-lines="5"
+          track-expand="{name: 'toggle-read-more-text', location: 'trip-plan-header', value: 'open'}"
+          track-collapse="{name: 'toggle-read-more-text', location: 'trip-plan-header', value: 'close'}">
         </tc-expandable-content>
       </div>
       <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
@@ -60,7 +64,8 @@
         </span>
       </div>
       <div ng-if="tripPlan['source_url']" class="source-link">
-        <a class="underline-link" ng-href="[[tripPlan['source_url'] ]]" target="_blank">
+        <a class="underline-link" ng-href="[[tripPlan['source_url'] ]]" target="_blank"
+          tc-track-click="{name: 'view-guide-source-article', location: 'trip-plan-header', value: tripPlan['source_url']}">
           View original article at [[tripPlan['source_display_name'] ]]
         </a>
       </div>

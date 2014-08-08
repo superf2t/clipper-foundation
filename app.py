@@ -442,9 +442,15 @@ user_manager = flask_user.UserManager(user_db_adapter, app,
     confirm_email_view_function=confirm_email)
 
 def log_response(send, response, **kwargs):
-    request_logging.log_request(request, response, g.get('session_info', None))
+    request_logging.log_request(request, response, g.get('session_info'))
 
 request_finished.connect(log_response, app)
+
+@app.route('/event')
+def event():
+    request_logging.log_interaction(request, g.get('session_info'),
+        request.args.get('name'), request.args.get('location'), request.args.get('value'))
+    return '', 204
 
 if __name__ == '__main__':
     app.debug = constants.DEBUG

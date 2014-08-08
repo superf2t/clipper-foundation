@@ -14,6 +14,7 @@
 // -Create new db tables
 // -Remove index on frontend_request for efficiency: 
 //  alter table frontend_request drop constraint frontend_request_pkey;
+//  alter table frontend_interaction drop constraint frontend_interaction_pkey;
 // -Create a WSGIDaemonProcess entry in custom.conf for apache to configure
 //  number of application processes.
 
@@ -238,9 +239,52 @@ function tcFlashedMessages() {
   };
 }
 
-angular.module('navModule', ['servicesModule', 'directivesModule', 'ui.bootstrap'])
+angular.module('navModule', ['servicesModule', 'directivesModule',
+    'eventTrackingModule', 'ui.bootstrap'])
   .service('$tripPlanCreator', TripPlanCreator)
   .directive('tcNav', tcNav)
   .directive('tcAccountDropdown', tcAccountDropdown)
   .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown)
   .directive('tcFlashedMessages', tcFlashedMessages);
+
+
+// TODO: Move event code to its own file.
+
+function EventTracker() {
+  this.track = function(data) {
+    if (!_.isEmpty(data)) {
+      // Use jquery and not angular here so we don't incur the cost
+      // of an unnecessary digest on the reply.
+      $.get('/event', data);          
+    }    
+  };
+}
+
+function tcTrackClick($parse, $eventTracker) {
+  return {
+    link: function(scope, element, attrs) {
+      element.on('click', function() {
+        var data = $parse(attrs.tcTrackClick)(scope);
+        $eventTracker.track(data);
+      });
+    }
+  };
+}
+
+function tcTrackMousedown($parse, $eventTracker) {
+  return {
+    link: function(scope, element, attrs) {
+      element.on('mousedown', function() {
+        var data = $parse(attrs.tcTrackMousedown)(scope);
+        $eventTracker.track(data);
+      });
+    }
+  };
+}
+
+angular.module('eventTrackingModule', [])
+  .service('$eventTracker', EventTracker)
+  .directive('tcTrackClick', tcTrackClick)
+  .directive('tcTrackMousedown', tcTrackMousedown);
+
+// End event code
