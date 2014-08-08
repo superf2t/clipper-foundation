@@ -45,8 +45,10 @@
       };
     }
 
-    function ClipperMapCtrl($scope, $clipperStateModel, $clipperProxy, $window) {
+    function ClipperMapCtrl($scope, $clipperStateModel, $clipperProxy,
+        $eventTracker, $window) {
       var me = this;
+      $scope.et = $eventTracker;
       $scope.tripPlanEntities = null;
       $scope.resultEntities = null;
       $scope.clipperStateModel = $clipperStateModel;
@@ -227,7 +229,7 @@
     }
 
     function MapResultEntityCtrl($scope, $clipperStateModel,
-        $templateToStringRenderer, $clipperProxy) {
+        $templateToStringRenderer, $clipperProxy, $eventTracker) {
       $scope.ed = $scope.entity;
       $scope.em = new EntityModel($scope.ed);
 
@@ -305,6 +307,7 @@
           google.maps.event.addListener($scope.markerState.marker, 'dragstart', function() {
             $scope.destroyInfowindow();
             $scope.$apply();
+            $eventTracker.track({name: 'result-entity-marker-dragged', location: 'clipper-map', value: $scope.ed['entity_id']});
           });
           google.maps.event.addListener($scope.markerState.marker, 'dragend', function() {
             var position = $scope.markerState.marker.getPosition();
@@ -332,7 +335,7 @@
     }
 
     angular.module('clipperMapModule',
-        ['directivesModule', 'filtersModule'],
+        ['directivesModule', 'filtersModule', 'eventTrackingModule'],
         interpolator)
       .controller('ClipperMapCtrl', ClipperMapCtrl)
       .controller('MapEntityCtrl', MapEntityCtrl)
@@ -362,7 +365,9 @@
       precise="ed['address_precision'] == 'Precise'"
       selected="isSelected()"
       deemphasized="true"
-      on-click="selectEntity(); $event.stopPropagation()">
+      on-click="selectEntity();
+        et.track({name: 'entity-marker-clicked', location: 'clipper-map'});
+        $event.stopPropagation()">
     </tc-entity-marker>
   </div>
   <div style="display: none" ng-repeat="entity in resultEntities"
@@ -376,7 +381,9 @@
       result-letter="resultLetter()"
       for-results="true"
       selected="isSelected()"
-      on-click="selectResult(); $event.stopPropagation()">
+      on-click="selectResult();
+        et.track({name: 'result-entity-marker-clicked', location: 'clipper-map'});
+        $event.stopPropagation()">
     </tc-entity-marker>
   </div>
 
@@ -386,6 +393,7 @@
     </div>
   </script>
 
+  {% include 'nav.html' %}
   {% include 'map_markers.html' %}
   {% include 'icons.html' %}
 </body>

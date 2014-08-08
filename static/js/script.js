@@ -2132,6 +2132,7 @@ function createMap(tripPlanData) {
   return map;
 }
 
+// TODO: See if this is unused
 function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
   var me = this;
   $scope.ready = false;

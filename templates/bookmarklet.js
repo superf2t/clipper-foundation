@@ -315,20 +315,31 @@
     iframe.attr('src', absUrl('/clipper_iframe?url=' + encodeURIComponent(window.location.href)));
     $('head').append(style);
     $(document.body).append(wrapper);
-    wrapper.draggable({axis: 'x', iframeFix: true, containment: 'window'});
+    wrapper.draggable({axis: 'x', iframeFix: true, containment: 'window'})
+      .on('dragstart', function() {
+        trackEvent({name: 'clipper-dragged', location: 'clipper-wrapper'});
+      });
 
     var mapIframe = mapWrapper.find('iframe');
     mapIframe.attr('src', absUrl('/clipper_map_iframe'));
     $(document.body).append(mapWrapper);
-    mapWrapper.draggable({iframeFix: true, containment: 'window'});
-    mapWrapper.resizable({handles: 'all', containment: 'document'});
+    mapWrapper.draggable({iframeFix: true, containment: 'window'})
+      .on('dragstart', function() {
+        trackEvent({name: 'clipper-map-dragged', location: 'clipper-map-wrapper'});
+      });
+    mapWrapper.resizable({handles: 'all', containment: 'document'})
+      .on('resizestart', function() {
+        trackEvent({name: 'clipper-map-resized', location: 'clipper-map-wrapper'});
+      });
 
     $('#__tc-x-button').on('click', function(event) {
+      trackEvent({name: 'clipper-closed', location: 'clipper-wrapper'});
       clearElements();
     });
 
     $('#__tc-map-close-button').on('click', function(event) {
       sendMessageToClipper({message: 'tc-parent-to-clipper-close-map'});
+      trackEvent({name: 'clipper-map-closed', location: 'clipper-map-wrapper'});
     });
 
     var dropTarget = null;
@@ -345,6 +356,7 @@
       var imgUrl = findImgUrl(target);
       event.originalEvent.dataTransfer.setData('tc-drag-image-url', imgUrl || '');
       createDropTarget();
+      trackEvent({name: 'photo-drag-started', location: 'clipping-page', value: imgUrl});
     };
 
     $(document.body).on('dragstart', handleImgDrag);
@@ -512,6 +524,12 @@
         }
       }
       return null;
+    }
+
+    function trackEvent(data) {
+      var url = absUrl('/event') + '?' + $.param(data);
+      var pixel = $('<img>').attr('src', url);
+      $(document.body).append(pixel);
     }
   }
 

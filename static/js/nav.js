@@ -4,9 +4,6 @@
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -Add call to action to add a cover image.
 
-// Tracking TODOs:
-// -Track the clipper.
-
 // For release:
 // -Create new db tables
 // -Remove index on frontend_request for efficiency: 

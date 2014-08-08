@@ -40,21 +40,29 @@
         </div>
         <div class="map-link">
           <a ng-click="openMap()" class="color-link"
-            ng-show="!clipperStateModel.mapOpen" href="javascript:void(0)">
+            ng-show="!clipperStateModel.mapOpen"
+            tc-track-click="{name: 'open-map', location: 'clipper-main'}"
+            href="javascript:void(0)">
             <span tc-icon="map"></span> Open map
           </a>
           <a ng-click="closeMap()" class="color-link"
-            ng-show="clipperStateModel.mapOpen" href="javascript:void(0)">
+            ng-show="clipperStateModel.mapOpen"
+            tc-track-click="{name: 'close-map', location: 'clipper-main'}"
+            href="javascript:void(0)">
             <span tc-icon="map"></span> Close map
           </a>
         </div>
 
         <div class="entity-results">
           <div ng-show="entities.length > 1" class="select-info">
-            <a ng-click="selectAll()" class="black-link" href="javascript:void(0)">
+            <a ng-click="selectAll()" class="black-link"
+              tc-track-click="{name: 'select-all-entities-for-saving', location: 'clipper-main'}"
+              href="javascript:void(0)">
               <span class="glyphicon glyphicon-plus-sign"></span>
             </a>
-            <a ng-click="deselectAll()" class="black-link" href="javascript:void(0)">
+            <a ng-click="deselectAll()" class="black-link"
+              tc-track-click="{name: 'deselect-all-entities-for-saving', location: 'clipper-main'}"
+              href="javascript:void(0)">
               <span class="glyphicon glyphicon-minus-sign"></span>
             </a>
             <span class="info-text">
@@ -65,7 +73,8 @@
           </div>
         </div>
         <div class="add-other-link">
-          <a ng-click="openAddOther()" href="javascript:void(0)" class="cta-link">
+          <a ng-click="openAddOther()" href="javascript:void(0)" class="cta-link"
+            tc-track-click="{name: 'open-add-another-place', location: 'clipper-main'}">
             Add another place
           </a>
         </div>
@@ -76,6 +85,7 @@
           Search for a place
           <div class="back-link" ng-show="entities.length >= 1">
             <a ng-click="clipperState.status = ClipperState.SUMMARY"
+              tc-track-click="{name: 'back-to-summary', location: 'clipper-search'}"
               href="javascript:void(0)" class="cta-link">
               &laquo; back
             </a>
@@ -111,7 +121,8 @@
               <div class="no-results-text">No results found</div>
             </div>
             <div class="enter-manually-link">
-              <a ng-click="startManualEntry()" href="javascript:void(0)" class="cta-link">
+              <a ng-click="startManualEntry()" href="javascript:void(0)" class="cta-link"
+                tc-track-click="{name: 'start-manual-entry', location: 'clipper-search'}">
                 Still can't find it?  Enter a place manually
               </a>
             </div>
@@ -138,7 +149,8 @@
           </span>
         </div>
         <div class="trip-plan-name">
-          <a href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank">
+          <a href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank"
+            tc-track-click="{name: 'go-to-trip-plan-after-clipping', location: 'clipper-confirmation', value: tripPlanState.tripPlan['trip_plan_id']}">
             [[tripPlanState.tripPlan['name'] ]]
           </a>
         </div>
@@ -159,7 +171,8 @@
         </div>
         <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
           <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
-            target="_blank" class="cta-link">
+            target="_blank" class="cta-link"
+            tc-track-click="{name: 'view-active-trip', location: 'clipper-save-panel', value: tripPlanState.tripPlan['trip_plan_id']}">
             View trip
             <span class="glyphicon glyphicon-new-window"></span>
           </a>
@@ -172,7 +185,8 @@
 
       <div class="save-button-panel">
         <button class="btn btn-cta save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
-          ng-click="saveEntities()">
+          ng-click="saveEntities()"
+          tc-track-click="{name: 'clipper-save-entities', location: 'clipper-save-panel', value: selectedEntities().length}">
           <span ng-if="selectedEntities().length != 1">
             Save [[selectedEntities().length]] places to trip
           </span>
@@ -194,11 +208,14 @@
         'multiple-results': entities.length > 1}"
       ng-click="selectResult()"
       ng-mouseenter="highlightResult()"
-      ng-mouseleave="unhighlightResult()">
+      ng-mouseleave="unhighlightResult()"
+      tc-track-click="{name: 'entity-selected-for-map', location: 'clipper-main'}">
       <div class="summary">
         <span class="select-handle" ng-show="entities.length > 1">
           <a ng-click="toggleSelectResultForSaving(); $event.stopPropagation()"
-            class="black-link" href="javascript:void(0)">
+            class="black-link"
+            tc-track-click="{name: 'toggle-entity-for-saving', location: 'clipper-main', value: ed.selected ? 'deselected' : 'selected'}"
+            href="javascript:void(0)">
             <span class="glyphicon glyphicon-plus-sign" ng-show="!ed.selected"></span>
             <span class="glyphicon glyphicon-minus-sign" ng-show="ed.selected"></span>
           </a>
@@ -222,23 +239,28 @@
           </div>
         </span>
         <span class="edit-link" ng-show="!isEditing()">
-          <a ng-click="closeAllEditors(); openEditor(); $event.stopPropagation()" href="javascript:void(0)"
+          <a ng-click="closeAllEditors(); openEditor(); $event.stopPropagation()"
+            tc-track-click="{name: 'open-entity-edit', location: 'clipper-main'}"
+            href="javascript:void(0)"
             class="cta-link">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
         </span>
         <span class="close-edit-link" ng-show="isEditing()">
-          <a ng-click="closeEditor(); $event.stopPropagation()" href="javascript:void(0)"
+          <a ng-click="closeEditor(); $event.stopPropagation()"
+            tc-track-click="{name: 'close-entity-edit', location: 'clipper-main'}"
+            href="javascript:void(0)"
             class="cta-link">
             <span class="glyphicon glyphicon-chevron-up"></span> Done
           </a>
         </span>
       </div>
-      <div class="editor" ng-if="isEditing()">
+      <div class="editor" ng-if="isEditing()" ng-click="$event.stopPropagation()">
         <div class="editor-tabs">
           <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.LOCATION}">
             <a class="black-link"
               ng-click="selectEditorTab(EditorTab.LOCATION); stopEditingPhotos()"
+              tc-track-click="{name: 'editor-tab-changed', location: 'clipper-editor', value: 'name-and-address'}"
               href="javascript:void(0)">
               Name and Address
             </a>
@@ -246,6 +268,7 @@
           <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.DESCRIPTION}">
             <a class="black-link"
               ng-click="selectEditorTab(EditorTab.DESCRIPTION); stopEditingPhotos()"
+              tc-track-click="{name: 'editor-tab-changed', location: 'clipper-editor', value: 'description'}"
               href="javascript:void(0)">
               Description
             </a>
@@ -253,6 +276,7 @@
           <span class="editor-tab" ng-class="{'selected': editorTab == EditorTab.PHOTOS}">
             <a class="black-link"
               ng-click="selectEditorTab(EditorTab.PHOTOS); startEditingPhotos()"
+              tc-track-click="{name: 'editor-tab-changed', location: 'clipper-editor', value: 'photos'}"
               href="javascript:void(0)">
               Photos
             </a>
@@ -268,7 +292,8 @@
           <div class="tip-text">
             Tip: drag the marker on the
             <a ng-show="!clipperStateModel.mapOpen" class="color-link"
-            ng-click="openMap()" href="javascript:void(0)">
+              tc-track-click="{name: 'open-map-from-hint', location: 'clipper-editor'}"
+              ng-click="openMap()" href="javascript:void(0)">
               map
             </a>
             <span ng-show="clipperStateModel.mapOpen">
@@ -289,23 +314,30 @@
 
         <div ng-controller="ClipperEntityPhotoCtrl" class="photo-editor" ng-show="editorTab == EditorTab.PHOTOS">
           <div ng-if="hasImgs()" class="photo-carousel">
-            <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left" href="javascript:void(0)">
+            <a ng-click="prevImg()" ng-show="hasPrevImg()" class="img-carousel-control left"
+              tc-track-click="{name: 'img-carousel-change', location: 'clipper-editor'}"
+              href="javascript:void(0)">
               <span class="glyphicon glyphicon-chevron-left"></span>
             </a>
             <span class="carousel-img-container">
               <div class="img-overlay-control top">
-                <a ng-click="setAsPrimary()" href="javascript:void(0)">
+                <a ng-click="setAsPrimary()" href="javascript:void(0)"
+                  tc-track-click="{name: 'primary-photo-changed', location: 'clipper-editor'}">
                   <span class="glyphicon glyphicon-picture"></span> Set as primary
                 </a>
               </div>
-              <img ng-src="[[selectedImg()]]" ng-click="nextImg()"/>
+              <img ng-src="[[selectedImg()]]" ng-click="nextImg()"
+                tc-track-click="{name: 'img-carousel-change', location: 'clipper-editor'}"/>
               <div class="img-overlay-control bottom">
-                <a ng-click="deletePhoto()" href="javascript:void(0)">
+                <a ng-click="deletePhoto()" href="javascript:void(0)"
+                  tc-track-click="{name: 'photo-removed', location: 'clipper-editor'}">
                   <span class="glyphicon glyphicon-trash"></span> Delete photo
                 </a>
               </div>
             </span>
-            <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right" href="javascript:void(0)">
+            <a ng-click="nextImg()" ng-show="hasNextImg()" class="img-carousel-control right"
+              tc-track-click="{name: 'img-carousel-change', location: 'clipper-editor'}"
+              href="javascript:void(0)">
               <span class="glyphicon glyphicon-chevron-right"></span>
             </a>
           </div>
