@@ -273,6 +273,7 @@ def adminpage():
     return render_template('admin.html', trip_plans=trip_plans,
         source_host=lambda url: urlparse.urlparse(url).netloc.split('.')[-2])
 
+@app.route('/xadmin/editor/<int:trip_plan_id>')
 @app.route('/admin/editor/<int:trip_plan_id>')
 def admin_editor(trip_plan_id):
     if not g.session_info.is_admin():
@@ -287,6 +288,7 @@ def admin_editor(trip_plan_id):
         all_datatype_values=values.ALL_VALUES,
         account_info=g.account_info)
 
+@app.route('/xadmin/editor/photos/<int:trip_plan_id>')
 @app.route('/admin/editor/photos/<int:trip_plan_id>')
 def admin_photo_editor(trip_plan_id):
     if not g.session_info.is_admin():
@@ -309,7 +311,7 @@ def admin_scrape():
 
 @app.before_request
 def process_cookies():
-    if request.path.startswith('/static/'):
+    if request.path.startswith('/static/') or request.path == '/user/sign-out':
         return
     try:
         old_sessionid = int(request.cookies.get('sessionid'))
