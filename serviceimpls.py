@@ -1051,9 +1051,10 @@ class TripPlanService(service.Service):
 
     def findtripplans(self, request):
         trip_plans = []
-        city_config = guide_config.find_nearby_city_config(request.location_latlng)
-        if city_config:
-            guides = data.load_trip_plans_by_ids(city_config.trip_plan_ids)
+        city_configs = guide_config.find_nearby_city_configs(request.location_latlng)
+        if city_configs:
+            trip_plan_ids = utils.flatten([config.trip_plan_ids for config in city_configs])
+            guides = data.load_trip_plans_by_ids(trip_plan_ids)
             trip_plans.extend([guide for guide in guides if guide])
 
         self.migrate_creators(trip_plans)

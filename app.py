@@ -138,7 +138,7 @@ def trip_plan_by_id(trip_plan_id):
         # We have them but we won't use them since there's no shopping cart.
         pass
 
-    has_guides = bool(guide_config.find_nearby_city_config(current_trip_plan.location_latlng))
+    has_guides = bool(guide_config.find_nearby_city_configs(current_trip_plan.location_latlng))
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
 
     response = render_template('trip_plan.html',

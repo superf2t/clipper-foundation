@@ -17,14 +17,15 @@ class GuideConfig(serializable.Serializable):
     def city_name_url_token(self):
         return self.city_name.lower().replace(' ', '-')
 
-def find_nearby_city_config(latlng):
+def find_nearby_city_configs(latlng):
+    city_configs = []
     for city_config in GUIDES_BY_CITY.itervalues():
         distance = geometry.earth_distance_meters(
             city_config.latlng['lat'], city_config.latlng['lng'],
             latlng.lat, latlng.lng)
         if distance < 40000:
-            return city_config
-    return None
+            city_configs.append(city_config)
+    return city_configs
 
 def load_guide_configs():
     configs = []
