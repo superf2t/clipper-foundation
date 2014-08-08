@@ -380,7 +380,11 @@ def inject_extended_template_builtins():
     return {
         'url_quote_plus': urllib.quote_plus,
         'to_json_str': serializable.to_json_str,
+        'is_internal': is_internal(request),
     }
+
+def is_internal(req):
+    return req.remote_addr in constants.INTERNAL_IPS
 
 def register():
     flask_user.signals.user_registered.connect(after_registration, app)

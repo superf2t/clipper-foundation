@@ -6,12 +6,9 @@
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -Don't allow tags and categories to be clickable in guides/results.
 // -Add call to action to add a cover image.
-// -Add an internal IP check and filter out analytics requests.
 
 // Tracking TODOs:
-// -Add Mixpanel mappings for tracking events.
 // -Track the clipper.
-// -Track home page searches.
 // -Track interactions on city and profile pages.
 
 // For release:
@@ -274,8 +271,14 @@ function EventTracker() {
     if (!_.isEmpty(data)) {
       // Use jquery and not angular here so we don't incur the cost
       // of an unnecessary digest on the reply.
-      $.get('/event', data);          
-    }    
+      $.get('/event', data);
+      if (mixpanel) {
+        var mixpanelData = angular.copy(data);
+        var eventName = mixpanelData['name'];
+        delete mixpanelData['name'];
+        mixpanel.track(eventName, mixpanelData);
+      }
+    }
   };
 }
 
