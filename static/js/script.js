@@ -562,7 +562,8 @@ function tcTrackEntityDragState($entityDragStateModel, $entityOrderingService) {
   };
 }
 
-function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService, $entityDragStateModel) {
+function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
+    $entityDragStateModel, $eventTracker) {
   return {
     restrict: 'A',
     link: function(scope, element, attrs) {
@@ -575,6 +576,7 @@ function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService, 
           // to also go invisible.
           $entityDragStateModel.setDraggedEntity(ed, element);
         });
+        $eventTracker.track({name: 'entity-dragged', location: 'summary-panel', value: ed['entity_id']});
       }).on('dragend', function() {
         $entityOrderingService.dragEnded();
         scope.$apply();
@@ -1850,7 +1852,8 @@ function tcFilterBar() {
   return {
     restrict: 'AE',
     scope: {
-      filterModel: '='
+      filterModel: '=',
+      trackingLocation: '@'
     },
     templateUrl: 'filter-bar-template'
   };

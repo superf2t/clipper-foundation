@@ -36,7 +36,7 @@
       scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor"
       tc-track-entity-drag-state>
 
-      <tc-filter-bar filter-model="filterModel">
+      <tc-filter-bar filter-model="filterModel" tracking-location="summary-panel">
       </tc-filter-bar>
 
       <div ng-repeat="entity in planModel.entities()">
@@ -195,7 +195,8 @@
            <span class="tag-filter-text">[[filterModel.activeCategory['display_name'] ]]</span>
         </span>
       </span>
-      <a ng-click="filterModel.clearAttributeFilters()" class="close-link black-link" href="javascript:void(0)">
+      <a ng-click="filterModel.clearAttributeFilters()" class="close-link black-link" href="javascript:void(0)"
+        tc-track-click="{name: 'cancel-filters', location: 'filter-bar-' + trackingLocation}">
         <span class="glyphicon glyphicon-remove"></span>
       </a>
     </div>
@@ -547,6 +548,7 @@
         <div class="details">
           <span ng-show="em.hasCategory()" ng-class="'text-' + ed['category']['name']">
             <a ng-click="filterToCategory($event)" class="category-filter-link"
+              tc-track-click="{name: 'category-filter', location: 'entity-summary', value: ed['category']['name']}"
               href="javascript:void(0)">
               [[em.categoryDisplayText()]]
             </a>
@@ -561,46 +563,54 @@
       <span class="controls" ng-show="controlState.open" ng-click="$event.stopPropagation()">
         <span ng-show="!controlState.showSecondaryControls">
           <a class="black-link" ng-click="openInlineEdit(InlineEditMode.TAGS)" href="javascript:void(0)"
-            tooltip="Add Tags" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Add Tags" tooltip-placement="bottom" tooltip-append-to-body="true"
+            tc-track-click="{name: 'controls-open-tags-editor', location: 'entity-summary'}">
             <span class="glyphicon glyphicon-tag"></span>
           </a>
           <a class="black-link" ng-click="openInlineEdit(InlineEditMode.DIRECTIONS); closeControls()"
             href="javascript:void(0)"
-            tooltip="Get directions" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Get directions" tooltip-placement="bottom" tooltip-append-to-body="true"
+             tc-track-click="{name: 'controls-open-directions', location: 'entity-summary'}">
             <span tc-icon="compass"></span>
           </a>
           <a class="black-link" ng-click="openInlineEdit(InlineEditMode.COMMENTS); closeControls()"
             href="javascript:void(0)"
-            tooltip="Comment" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Comment" tooltip-placement="bottom" tooltip-append-to-body="true"
+             tc-track-click="{name: 'controls-open-new-comment', location: 'entity-summary'}">
             <span tc-icon="comment"></span>
           </a>
         </span>
         <span ng-show="controlState.showSecondaryControls">
           <a class="black-link" ng-click="saveStarState(true)"
             ng-show="!ed['starred']" href="javascript:void(0)"
-            tooltip="Favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Favorite" tooltip-placement="bottom" tooltip-append-to-body="true"
+            tc-track-click="{name: 'controls-favorite-entity', location: 'entity-summary'}">
             <span class="glyphicon glyphicon-star-empty"></span>
           </a>
           <a class="black-link" ng-click="saveStarState(false)"
             ng-show="ed['starred']" href="javascript:void(0)"
-            tooltip="Un-favorite" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Un-favorite" tooltip-placement="bottom" tooltip-append-to-body="true"
+            tc-track-click="{name: 'controls-unfavorite-entity', location: 'entity-summary'}">
             <span class="glyphicon glyphicon-star favorite-star"></span>
           </a>
           <a class="black-link" ng-click="openEditPlaceModal(); closeControls()"
             href="javascript:void(0)"
-            tooltip="Edit" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Edit" tooltip-placement="bottom" tooltip-append-to-body="true"
+            tc-track-click="{name: 'controls-open-entity-editor', location: 'entity-summary'}">
             <span class="glyphicon glyphicon-pencil"></span>
           </a>
           <a class="black-link" ng-click="deleteEntity()"
             href="javascript:void(0)"
-            tooltip="Delete" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="Delete" tooltip-placement="bottom" tooltip-append-to-body="true"
+            tc-track-click="{name: 'controls-delete-entity', location: 'entity-summary'}">
             <span class="glyphicon glyphicon-trash"></span>
           </a>
         </span>
         <span class="control-toggle">
           <a class="black-link" ng-click="controlState.showSecondaryControls = !controlState.showSecondaryControls"
             href="javascript:void(0)"
-            tooltip="More controls" tooltip-placement="bottom" tooltip-append-to-body="true">
+            tooltip="More controls" tooltip-placement="bottom" tooltip-append-to-body="true"
+            tc-track-click="{name: 'entity-extend-controls-toggle', location: 'entity-summary', value: controlState.showSecondaryControls ? 'showing-primary' : 'showing-extended'}">
             &hellip;
           </a>
         </span>
@@ -608,11 +618,14 @@
       {% if allow_editing %}
       <div class="control-cog-section" ng-click="$event.stopPropagation()">
         <span class="control-cog">
-          <a class="black-link" ng-click="openControls()" href="javascript:void(0)" ng-show="!controlState.open">
+          <a class="black-link" ng-click="openControls()" ng-show="!controlState.open"
+            tc-track-click="{name: 'open-entity-controls', location: 'entity-summary'}"
+            href="javascript:void(0)">
             <span class="glyphicon glyphicon-cog"></span>
           </a>
-          <a ng-click="closeControls()" href="javascript:void(0)" class="white-link"
-            ng-show="controlState.open">
+          <a ng-click="closeControls()" class="white-link" ng-show="controlState.open"
+            tc-track-click="{name: 'close-entity-controls', location: 'entity-summary'}"
+            href="javascript:void(0)" >
             <span class="glyphicon glyphicon-remove"></span>
           </a>
         </span>
@@ -625,7 +638,7 @@
     <div class="details-panel one-info-panel"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
-      <tc-filter-bar filter-model="filterModel">
+      <tc-filter-bar filter-model="filterModel" tracking-location="details-panel">
       </tc-filter-bar>
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
         num-entities="planModel.numEntities()" full-bleed="true" hidden-mode="!planModel.hasEntities()"
@@ -676,11 +689,13 @@
       <span class="minimize-link">
         <a class="black-link" ng-click="pageStateModel.summaryPanelExpanded = false"
           ng-show="pageStateModel.summaryPanelExpanded"
+          tc-track-click="{name: 'summary-panel-collapse', location: 'summary-panel-header'}"
           href="javascript:void(0)">
           <span class="glyphicon glyphicon-minus"></span>
         </a>
         <a class="black-link" ng-click="pageStateModel.summaryPanelExpanded = true"
           ng-show="!pageStateModel.summaryPanelExpanded"
+          tc-track-click="{name: 'summary-panel-expand', location: 'summary-panel-header'}"
           href="javascript:void(0)">
           <span class="glyphicon glyphicon-plus"></span>
         </a>
@@ -715,11 +730,13 @@
           <span class="star-section">
             <span ng-if="isEditable">
               <a class="white-link" ng-click="saveStarState(true)"
-                ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="left">
+                ng-show="!ed['starred']" href="javascript:void(0)" tooltip="Favorite" tooltip-placement="left"
+                tc-track-click="{name: 'controls-favorite-entity', location: trackingLocation}">
                 <span class="glyphicon glyphicon-star-empty"></span>
               </a>
               <a ng-click="saveStarState(false)"
-                ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="left">
+                ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite" tooltip-placement="left"
+                tc-track-click="{name: 'controls-unfavorite-entity', location: trackingLocation}">
                 <span class="glyphicon glyphicon-star favorite-star"></span>
               </a>
             </span>
