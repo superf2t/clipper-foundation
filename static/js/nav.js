@@ -4,11 +4,18 @@
 // -Implement rendering for entity details listings that have no photos.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
-// -ANALYTICS
 // -Don't allow tags and categories to be clickable in guides/results.
 // -Add flashed messages to the homepage.
 // -Add call to action to add a cover image.
 // -Add an internal IP check and filter out analytics requests.
+
+// Tracking TODOs:
+// -Add Mixpanel mappings for tracking events.
+// -Track the editor modal.
+// -Track nav bar events.
+// -Track the main map and infowindows.
+// -Track home page searches.
+// -Track interactions on city and profile pages.
 
 // For release:
 // -Create new db tables

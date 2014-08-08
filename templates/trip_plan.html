@@ -241,10 +241,12 @@
             {% if allow_editing %}
             <span="star-section">
               <a ng-click="saveStarState(true)" ng-show="!ed['starred']" class="white-link"
-                href="javascript:void(0)" tooltip="Favorite">
+                href="javascript:void(0)" tooltip="Favorite"
+                tc-track-click="{name: 'controls-favorite-entity', location: 'entity-infowindow'}">
                 <span class="glyphicon glyphicon-star-empty"></span>
               </a>
-              <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite">
+              <a ng-click="saveStarState(false)" ng-show="ed['starred']" href="javascript:void(0)" tooltip="Un-favorite"
+              tc-track-click="{name: 'controls-unfavorite-entity', location: 'entity-infowindow'}">
                 <span class="glyphicon glyphicon-star favorite-star"></span>
               </a>
             </span>
@@ -280,10 +282,12 @@
                 placeholder="e.g. greek food, day 1, recommended by Bob"
                 tc-focus-on="inlineEditMode"/>
             </form>
-            <a ng-click="saveTags()" href="javascript:void(0)" class="cta-link">
+            <a ng-click="saveTags()" href="javascript:void(0)" class="cta-link"
+              tc-track-click="{name: 'inline-tags-save', location: 'entity-infowindow'}">
               Save
             </a>
-            <a ng-click="closeTagsEditor()" href="javascript:void(0)" class="black-link">
+            <a ng-click="closeTagsEditor()" href="javascript:void(0)" class="black-link"
+              tc-track-click="{name: 'inline-tags-cancel', location: 'entity-infowindow'}">
               Cancel
             </a>
           </div>
@@ -297,13 +301,20 @@
               ng-model="newComment['text']">
             </textarea>
             <div>
-              <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link">Save</a>
-              <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link">Cancel</a>
+              <a ng-click="saveNewComment()" href="javascript:void(0)" class="cta-link"
+                tc-track-click="{name: 'save-new-comment', location: 'entity-infowindow'}">
+                Save
+              </a>
+              <a ng-click="closeNewComment()" href="javascript:void(0)" class="cancel-link"
+                tc-track-click="{name: 'cancel-new-comment', location: 'entity-infowindow'}">
+                Cancel
+              </a>
             </div>
           </div>
           <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="directions-planner">
             <span class="inline-editor-prompt">Get directions </span>
-            <a ng-click="directionsHelper.toggleDirection()" href="javascript:void(0)">
+            <a ng-click="directionsHelper.toggleDirection()" href="javascript:void(0)"
+              tc-track-click="{name: 'directions-toggle', location: 'entity-infowindow', value: directionsHelper.direction == 'to' ? 'from' : 'to'}">
               [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
             </a>
             <select class="form-control"
@@ -313,7 +324,8 @@
             </select>
             <button class="btn btn-cta go-button"
               ng-click="directionsHelper.getDirections(ed)"
-              ng-disabled="!directionsHelper.destination">
+              ng-disabled="!directionsHelper.destination"
+              tc-track-click="{name: 'directions-go', location: 'entity-infowindow', value: directionsHelper.direction}">
               Go
             </button>
           </div>
@@ -331,37 +343,44 @@
       <span ng-show="showPrimaryControls" class="primary-controls">
         <a ng-click="toggleTagsEdit()" href="javascript:void(0)"
           class="black-link"
-          tooltip="Add Tags" tooltip-placement="bottom">
+          tooltip="Add Tags" tooltip-placement="bottom"
+          tc-track-click="{name: 'controls-open-tags-editor', location: 'entity-infowindow'}">
           <span class="glyphicon glyphicon-tag"></span>
         </a>
         <a ng-click="toggleDirectionsEdit()" href="javascript:void(0)" class="black-link"
-          tooltip="Get directions" tooltip-placement="bottom">
+          tooltip="Get directions" tooltip-placement="bottom"
+          tc-track-click="{name: 'controls-open-directions', location: 'entity-infowindow'}">
           <span tc-icon="compass"></span>
         </a>
         <a ng-click="toggleCommentsEdit()" href="javascript:void(0)" class="black-link"
-          tooltip="Comment" tooltip-placement="bottom">
+          tooltip="Comment" tooltip-placement="bottom"
+          tc-track-click="{name: 'controls-open-new-comment', location: 'entity-infowindow'}">
           <span tc-icon="comment"></span>
         </a>
       </span>
       <span ng-show="showSecondaryControls" class="secondary-controls">
         <a ng-click="openEditPlaceModal()" href="javascript:void(0)" class="black-link"
-          tooltip="Edit" tooltip-placement="bottom">
+          tooltip="Edit" tooltip-placement="bottom"
+          tc-track-click="{name: 'controls-open-entity-editor', location: 'entity-infowindow'}">
           <span class="glyphicon glyphicon-pencil"></span>
         </a>
         <a ng-click="deleteEntity()" href="javascript:void(0)" class="black-link"
-          tooltip="Delete" tooltip-placement="bottom">
+          tooltip="Delete" tooltip-placement="bottom"
+          tc-track-click="{name: 'controls-delete-entity', location: 'entity-infowindow'}">
           <span class="glyphicon glyphicon-trash"></span>
         </a>
       </span>
       <span class="control-toggle">
         <a ng-click="toggleControls()" href="javascript:void(0)" class="black-link"
-          tooltip="More controls" tooltip-placement="bottom">
+          tooltip="More controls" tooltip-placement="bottom"
+           tc-track-click="{name: 'entity-extended-controls-toggle', location: 'entity-infowindow', value: showSecondaryControls ? 'showing-primary' : 'showing-extended'}">
           &hellip;
         </a>
       </span>
       {% else %}
       <a ng-show="!isAlreadySaved()" ng-click="clipEntity()"
-        class="add-to-trip-link" href="javascript:void(0)">
+        class="add-to-trip-link" href="javascript:void(0)"
+        tc-track-click="{name: 'add-to-trip', location: 'entity-infowindow'}">
         Add to My Trip
       </a>
       <span ng-show="isAlreadySaved()" class="already-saved">
@@ -382,11 +401,12 @@
         </div>
         <div class="marker-tools">
           <a ng-click="clipEntity()" href="javascript:void(0)"
-            class="add-to-trip-link" ng-show="!resultAlreadySaved()">
+            class="add-to-trip-link" ng-show="!resultAlreadySaved()"
+            tc-track-click="{name: 'add-to-trip', location: 'results-infowindow'}">
             Add to My Trip
           </a>
           <div class="save-confirmation" ng-show="resultAlreadySaved()">
-            saved
+            Saved
           </div>
         </div>
       </div>
@@ -610,7 +630,7 @@
           <a class="black-link" ng-click="controlState.showSecondaryControls = !controlState.showSecondaryControls"
             href="javascript:void(0)"
             tooltip="More controls" tooltip-placement="bottom" tooltip-append-to-body="true"
-            tc-track-click="{name: 'entity-extend-controls-toggle', location: 'entity-summary', value: controlState.showSecondaryControls ? 'showing-primary' : 'showing-extended'}">
+            tc-track-click="{name: 'entity-extended-controls-toggle', location: 'entity-summary', value: controlState.showSecondaryControls ? 'showing-primary' : 'showing-extended'}">
             &hellip;
           </a>
         </span>
@@ -912,7 +932,7 @@
             <div ng-if="inlineEditMode == InlineEditMode.DIRECTIONS" class="inline-editor">
               <span class="inline-editor-prompt">Get directions </span>
               <a ng-click="directionsHelper.toggleDirection()"
-                tc-track-click="{name: 'directions-toggle', location: trackingLocation, value: directionsHelper.direction}"
+                tc-track-click="{name: 'directions-toggle', location: trackingLocation, value: directionsHelper.direction == 'to' ? 'from' : 'to'}"
                 href="javascript:void(0)" class="cta-link">
                 [[directionsHelper.direction == 'to' ? 'to' : 'from' ]]
               </a>
@@ -1044,7 +1064,8 @@
         starred="ed['starred']" has-comments="em.hasComments()"
         emphasized="markerState.emphasized" deemphasized="markerState.deemphasized" 
         for-results="forResults" result-letter="resultLetter()"
-        on-click="markerClicked($event)">
+        on-click="markerClicked($event);
+          et.track({name: 'map-marker-clicked', location: trackingLocation})">
       </tc-entity-marker>
     </div>
   </script>
