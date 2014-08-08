@@ -185,7 +185,7 @@
 
     .search-results {
       background-color: #FFFFFF;
-      max-height: 300px;
+      max-height: 175px;
       overflow-y: scroll;
     }
 
@@ -300,24 +300,29 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
   <script>
-    function IndexCtrl($scope, $flashedMessages, $http, $window) {
+    function IndexCtrl($scope, $flashedMessages, $eventTracker, $http, $window) {
       var me = this;
       $scope.flashedMessages = $flashedMessages;
       $scope.searchState = {
-        rawInput: null
+        rawInput: null,
+        // Prevent double-submits
+        searchInProgress: false
       };
 
       {# TODO: Much of this functionality is copied from StartNewTripInputCtrl,
         figure out how to share this instead. #}
 
       $scope.placeChanged = function($place) {
-        if (!$place) {
+        if (!$place || $scope.searchState.searchInProgress) {
           return;
         }
+        $scope.searchState.searchInProgress = true;
         if (!$place['geometry']) {
           return me.searchForPlace($place['name']);
         }
         $scope.selectResult($place);
+        $eventTracker.track({name: 'new-trip-location-autocomplete',
+          location: 'homepage', value: $place['name']});
       };
 
       $scope.searchButtonClicked = function() {
@@ -331,8 +336,11 @@
         me.saveNewTripPlan(tripPlanDetails)
           .success(function(response) {
             var tripPlanId = response['trip_plans'][0]['trip_plan_id'];
+            $scope.searchState.searchInProgress = false;
             $window.location.href = '/trip_plan/' + tripPlanId;
           });
+        $eventTracker.track({name: 'new-trip-location-result-selected',
+          location: 'homepage', value: place['name']});
       };
 
       this.searchForPlace = function(query) {
@@ -358,8 +366,11 @@
               }
             });
             $scope.searchResults = results;
+          $scope.searchState.searchInProgress = false;
           });
         });
+        $eventTracker.track({name: 'new-trip-location-search',
+          location: 'homepage', value: query});
       };
 
       this.placeToTripPlanDetails = function(place) {
