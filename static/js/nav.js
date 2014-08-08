@@ -1,10 +1,8 @@
 // TODO:
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
-// -Verify that favicons work for all guide sources (esp Nomadic Matt which was down).
 // -Implement rendering for entity details listings that have no photos.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
-// -Don't allow tags and categories to be clickable in guides/results.
 // -Add call to action to add a cover image.
 
 // Tracking TODOs:

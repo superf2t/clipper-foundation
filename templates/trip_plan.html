@@ -856,24 +856,39 @@
             </div>
             <div ng-show="em.hasCategory()"
               ng-class="'text-' + ed['category']['name']">
-              <a ng-click="filterToCategory()" class="category-filter-link"
-                tc-track-click="{name: 'category-filter', location: trackingLocation, value: ed['category']['name']}"
-                href="javascript:void(0)">
+              <span ng-if="forResults">
                 [[ed['category']['display_name'] ]]
                 <span ng-show="em.hasSubCategory()">
                   &gt; [[ed['sub_category']['display_name'] ]]
                 </span>
-              </a>
+              </span>
+              <span ng-if="!forResults">
+                <a ng-click="filterToCategory()" class="category-filter-link"
+                  tc-track-click="{name: 'category-filter', location: trackingLocation, value: ed['category']['name']}"
+                  href="javascript:void(0)">
+                  [[ed['category']['display_name'] ]]
+                  <span ng-show="em.hasSubCategory()">
+                    &gt; [[ed['sub_category']['display_name'] ]]
+                  </span>
+                </a>
+              </span>
             </div>
             <div class="tags" ng-show="showTags()">
               Tags:
-              <a ng-repeat="tag in ed['tags']" ng-click="makeTagActive(tag)"
-                tc-track-click="{name: 'tag-filter', location: trackingLocation, value: tag['text']}"
-                href="javascript:void(0)">
-                <span class="one-tag">
+              <span ng-if="forResults">
+               <span ng-repeat="tag in ed['tags']" class="one-tag">
                   [[tag['text'] ]]
                 </span>
-              </a>
+              </span>
+              <span ng-if="!forResults">
+                <a ng-repeat="tag in ed['tags']" ng-click="makeTagActive(tag)"
+                  tc-track-click="{name: 'tag-filter', location: trackingLocation, value: tag['text']}"
+                  href="javascript:void(0)">
+                  <span class="one-tag">
+                    [[tag['text'] ]]
+                  </span>
+                </a>
+              </span>
               <a ng-show="!em.hasTags()" ng-click="openTagsEditor()"
                 tc-track-click="{name: 'add-tags-prompt', location: trackingLocation}"
                 class="cta-link" href="javascript:void(0)">
