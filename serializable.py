@@ -122,9 +122,12 @@ def to_json_obj(obj):
     else:
         raise SerializationError('Object is not JSON-serializable: %s' % obj)
 
-def to_json_str(obj):
+def to_json_str(obj, pretty_print=False):
     if obj:
-        return json.dumps(to_json_obj(obj))
+        if pretty_print:
+            return json.dumps(to_json_obj(obj), sort_keys=True, indent=4, separators=(',', ': '))
+        else:
+            return json.dumps(to_json_obj(obj))
     return json.dumps(obj)
 
 class Field(object):

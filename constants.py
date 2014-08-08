@@ -20,6 +20,7 @@ MAIL_PASSWORD = None  # Set this securely in an override
 
 INTERNAL_IPS = ('70.36.237.242', '50.152.196.239', '127.0.0.1')
 
+FEATURED_CITIES_CONFIG_FILE = os.path.join(PROJECTPATH, 'data/guide_configs.csv')
 FEATURED_PROFILES_CONFIG_FILE = os.path.join(PROJECTPATH, 'data/guides.csv')
 
 SOURCE_HOST_TO_ICON_URL = {
