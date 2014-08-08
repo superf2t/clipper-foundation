@@ -41,7 +41,9 @@ FEATURED_GUIDE_CONFIGS = [guide_config.GUIDES_BY_CITY[name] for name in FEATURED
 
 @app.route('/')
 def index():
-    return render_template('index.html', featured_guide_configs=FEATURED_GUIDE_CONFIGS);
+    return render_template('index.html',
+        featured_guide_configs=FEATURED_GUIDE_CONFIGS,
+        flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]);
 
 @app.route('/get_clipper')
 def get_clipper():

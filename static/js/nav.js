@@ -5,7 +5,6 @@
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -Don't allow tags and categories to be clickable in guides/results.
-// -Add flashed messages to the homepage.
 // -Add call to action to add a cover image.
 // -Add an internal IP check and filter out analytics requests.
 

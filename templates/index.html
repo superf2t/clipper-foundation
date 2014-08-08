@@ -6,6 +6,8 @@
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
@@ -298,8 +300,9 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
 
   <script>
-    function IndexCtrl($scope, $http, $window) {
+    function IndexCtrl($scope, $flashedMessages, $http, $window) {
       var me = this;
+      $scope.flashedMessages = $flashedMessages;
       $scope.searchState = {
         rawInput: null
       };
@@ -399,22 +402,24 @@
       };
     }
 
-    angular.module('indexAppModule', [], interpolator)
-      .controller('IndexCtrl', IndexCtrl)
-      .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
-      .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader);
+    window['initIndexApp'] = function(flashedMessages) {
+      angular.module('indexAppModule', ['navModule'], interpolator)
+        .controller('IndexCtrl', IndexCtrl)
+        .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
+        .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
+        .value('$flashedMessages', flashedMessages);
 
-    angular.element(document).ready(function() {
-      angular.bootstrap(document, ['indexAppModule']);
-      angular.element('#main-input').focus();
-    });
+      angular.element(document).ready(function() {
+        angular.bootstrap(document, ['indexAppModule']);
+      });      
+    }
 
     $(document).ready(function() {
       $window = $(window);
 
       $('div[data-type="background"]').each(function() {
         var backgroundObject = $(this);
-        var currentbackgroundPosition = $(this).css('backgroundPosition').split(" ");
+        var currentbackgroundPosition = backgroundObject.css('backgroundPosition').split(" ");
         var currentXPos = currentbackgroundPosition[0];
         var currentYPos = currentbackgroundPosition[1];
         currentYPos = parseInt(currentYPos, 10);
@@ -429,6 +434,9 @@
   </script>
 </head>
 <body ng-controller="IndexCtrl">
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
+
   <div class="splash-section" data-type="background" data-speed="20">
     <div class="site-header">
       <div class="logo">
@@ -555,6 +563,12 @@
         [[result['formatted_address'] ]]
       </div>
     </div>
+  </script>
+
+  {% include 'nav.html' %}
+
+  <script>
+    initIndexApp({{to_json_str(flashed_messages) | safe}});
   </script>
 </body>
 </html>
