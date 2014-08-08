@@ -6,7 +6,6 @@
 
 // Tracking TODOs:
 // -Track the clipper.
-// -Track interactions on city and profile pages.
 
 // For release:
 // -Create new db tables
