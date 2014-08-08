@@ -12,28 +12,34 @@
           <li>
             <ul class="nav nav-pills">
               <li ng-if="shoppingCartMode && activeTripPlan" class="trip-plan-name">
-                <a class="black-link" ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank">
+                <a class="black-link" ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank"
+                  tc-track-click="{name: 'open-active-trip', location: 'nav-shopping-cart', value: activeTripPlan['trip_plan_id']}">
                   <span>[[activeTripPlan['name'] ]]</span>
-                  <span id="place-count" class="place-count" tc-animate-on-change-to="numEntities" class-to-add="place-count-changed" remove-when-complete="true">
+                  <span id="place-count" class="place-count" tc-animate-on-change-to="numEntities"
+                    class-to-add="place-count-changed" remove-when-complete="true">
                   [[numEntities]]
                   </span>
                 </a>
               </li>
               <li ng-if="shoppingCartMode && activeTripPlan" class="new-trip-item dropdown">
-                <a href="javascript:void(0)" class="dropdown-toggle">
+                <a href="javascript:void(0)" class="dropdown-toggle"
+                  tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'nav-shopping-cart'}">
                   <span tc-icon="trip-plan" class="trip-menu-icon"></span>
                 </a>
                 <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
               </li>
               <li ng-if="!activeTripPlan" class="new-trip-item">
                 <a ng-click="openNewTripModal()"
+                  tc-track-click="{name: 'open-new-trip-modal', location: 'nav-shopping-cart-no-trip'}"
                   href="javascript:void(0)">
                   <span tc-icon="trip-plan" class="trip-menu-icon"></span>
                   <span class="new-trip-text">New Trip</span>
                 </a>
               </li>
               <li ng-if="!shoppingCartMode && activeTripPlan" class="dropdown">
-                <a class="black-link dropdown-toggle" href="javascript:void(0)" >
+                <a class="black-link dropdown-toggle"
+                  tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'main-nav'}"
+                  href="javascript:void(0)">
                   My Trips
                   <span class="caret"></span>
                 </a>
@@ -41,7 +47,8 @@
               </li>
               {% if session_info.logged_in() %}
               <li class="dropdown">
-                <a class="black-link dropdown-toggle" href="javascript:void(0)">
+                <a class="black-link dropdown-toggle" href="javascript:void(0)"
+                  tc-track-click="{name: 'account-dropdown-toggle', location: 'main-nav'}">
                   [[accountInfo['user']['display_name'] ]]
                   <span class="caret"></span>
                 </a>
@@ -50,6 +57,7 @@
               {% else %}
               <li>
                 <a class="black-link" ng-click="openLoginModal('{{register_iframe_url}}', 'login-modal-window')"
+                  tc-track-click="{name: 'open-register-modal', location: 'main-nav'}"
                   href="javascript:void(0)">
                   Join
                 </a>
@@ -57,6 +65,7 @@
               <li class="nav-pill-separator">|</li>
               <li>
                 <a class="black-link" ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+                  tc-track-click="{name: 'open-login-modal', location: 'main-nav'}"
                   href="javascript:void(0)">
                   Log in
                 </a>
@@ -78,7 +87,9 @@
         ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
         <div class="flash-msg" ng-class="textClass">
           <div class="dismiss-link">
-            <a class="black-link" ng-click="dismiss($index)" href="javascript:void(0)">
+            <a class="black-link" ng-click="dismiss($index)"
+              tc-track-click="{name: 'flashed-message-dismissed', location: 'flashed-messages-popover'}"
+              href="javascript:void(0)">
               <span class="glyphicon glyphicon-remove"></span>
             </a>
           </div>
@@ -135,7 +146,9 @@
       <li ng-repeat="tripPlan in allTripPlans">
         <span ng-if="!isActiveTrip(tripPlan)">
           <a ng-show="shoppingCartMode" class="trip-link"
-            ng-click="makeTripPlanActive(tripPlan)" href="javascript:void(0)">
+            ng-click="makeTripPlanActive(tripPlan)"
+            tc-track-click="{name: 'trip-plan-selected', location: 'nav-shopping-cart', value: tripPlan['trip_plan_id']}"
+            href="javascript:void(0)">
             [[tripPlan['name'] ]]
           </a>
           <a ng-show="!shoppingCartMode" class="trip-link"
@@ -152,7 +165,9 @@
       </li>
     </span>
     <li class="create-new-trip-link">
-      <a ng-click="openNewTripModal()" href="javascript:void(0)">
+      <a ng-click="openNewTripModal()"
+        tc-track-click="{name: 'open-new-trip-modal', location: 'nav-trip-plan-dropdown'}"
+        href="javascript:void(0)">
         Create New Trip
       </a>
     </li>
@@ -169,7 +184,9 @@
         Create a New Trip
       </span>
       <div class="close-link">
-        <a ng-click="$close(); onClose && onClose()" href="javascript:void(0)">
+        <a ng-click="$close(); onClose && onClose()"
+          tc-track-click="{name: 'new-trip-modal-dismiss', location: 'new-trip-modal'}"
+          href="javascript:void(0)">
           <span class="glyphicon glyphicon-remove"></span>
         </a>
       </div>
@@ -197,7 +214,8 @@
       <div class="create-trip-button">
         <button class="btn btn-primary"
           ng-click="saveNewTripPlan()"
-          ng-disabled="!newTripPlan['location_latlng'] || !newTripPlan['name'] || saving">
+          ng-disabled="!newTripPlan['location_latlng'] || !newTripPlan['name'] || saving"
+          tc-track-click="{name: 'new-trip-save', location: 'new-trip-modal'}">
           Create New Trip
         </button>
         <div class="save-spinner" ng-show="saving">
@@ -208,6 +226,7 @@
       <div class="login-prompt" ng-show="!hideLoginPrompt">
         Already have a trip you're planning?
         <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+          tc-track-click="{name: 'open-login-modal', location: 'new-trip-modal'}"
           href="javascript:void(0)">
           Log in
         </a>

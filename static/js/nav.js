@@ -12,7 +12,6 @@
 // Tracking TODOs:
 // -Add Mixpanel mappings for tracking events.
 // -Track the clipper.
-// -Track nav bar events.
 // -Track home page searches.
 // -Track interactions on city and profile pages.
 
@@ -88,7 +87,7 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   };
 }
 
-function NewTripCtrl($scope, $tripPlanService, $timeout) {
+function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
   $scope.newTripPlan = {};
   $scope.results = null;
   $scope.saving = false;
@@ -99,9 +98,14 @@ function NewTripCtrl($scope, $tripPlanService, $timeout) {
 
   $scope.placeChanged = function(place) {
     if (!place['geometry']) {
-      return $scope.searchForPlace(place['name']);
+      $scope.searchForPlace(place['name']);
+      $eventTracker.track({name: 'new-trip-location-search',
+        location: 'new-trip-modal', value: place['name']});
+      return;
     }
     $scope.selectResult(place);
+    $eventTracker.track({name: 'new-trip-location-autocomplete',
+      location: 'new-trip-modal', value: place['name']});
   };
 
   $scope.selectResult = function(place) {
@@ -111,6 +115,9 @@ function NewTripCtrl($scope, $tripPlanService, $timeout) {
       $scope.newTripPlan['name'] = oldTripName;
     }
     $scope.results = [];
+
+    $eventTracker.track({name: 'new-trip-location-result-selected',
+      location: 'new-trip-modal', value: place['name']});
   };
 
   $scope.searchForPlace = function(query) {
@@ -175,6 +182,13 @@ function NewTripCtrl($scope, $tripPlanService, $timeout) {
         $scope.onCreate(response['trip_plans'][0]);
       });
   };
+
+  $scope.$watch("newTripPlan['name']", function(newName, oldName) {
+    if (newName && oldName) {
+      $eventTracker.track({name: 'new-trip-plan-name-changed',
+        location: 'new-trip-modal', value: newName});
+    }
+  });
 }
 
 function TripPlanCreator($rootScope) {
