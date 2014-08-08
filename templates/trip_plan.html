@@ -746,6 +746,8 @@
             class="carousel-content">
           </div>
         </div>
+        <div ng-if="!ed['photo_urls'] || !ed['photo_urls'].length" class="default-img">
+        </div>
         <div class="name-section">
           <span class="entity-icon">
             <tc-entity-icon precise="ed['address_precision'] == 'Precise'"
