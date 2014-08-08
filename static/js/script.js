@@ -2378,7 +2378,8 @@ var ResultType = {
 };
 
 function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
-    $filterModel, $entityService, $mapManager, $browserInfo, $window, $timeout) {
+    $filterModel, $entityService, $mapManager, $browserInfo,
+    $eventTracker, $window, $timeout) {
 
   $scope.tab = AddYourOwnTab.SEARCH;
   $scope.AddYourOwnTab = AddYourOwnTab;
@@ -2405,10 +2406,14 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
     if (place['reference']) {
       $entityService.googleplacetoentity(place['reference'])
         .success($scope.processSearchResponse);
+      $eventTracker.track({name: 'add-your-own-autocomplete',
+        location: 'add-your-own-panel', value: place['name']});
     } else {
       $entityService.googletextsearchtoentities(place['name'],
         $tripPlanModel.tripPlanData['location_latlng'])
           .success($scope.processSearchResponse);
+      $eventTracker.track({name: 'add-your-own-text-search',
+        location: 'add-your-own-panel', value: place['name']});
     }
   };
 
@@ -2465,6 +2470,9 @@ function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
       $scope.linkState.formattedUrl = null;
       $entityService.urltoentities($scope.linkState.rawInput)
         .success($scope.processLinkClipResponse);
+
+      $eventTracker.track({name: 'clip-link-pasted',
+        location: 'add-your-own-paste-link-panel', value: $scope.linkState.rawInput})
     });
   };
 
@@ -2683,7 +2691,7 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
 }
 
 function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
-    $timeout, $window, $document) {
+    $eventTracker, $timeout, $window, $document) {
   $scope.tpd = angular.copy($tripPlanModel.tripPlanData);
   $scope.editingImage = !$scope.tpd['cover_image_url'];
   $scope.coverImgDragActive = false;
@@ -2717,6 +2725,8 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
     $event.preventDefault();
     $scope.coverImgDragActive = false;
     $scope.editingImage = false;
+    $eventTracker.track({name: 'cover-image-dropped',
+      location: 'settings-panel', value: imgUrl});
   };
 
   var pasteActive = false;
@@ -2728,6 +2738,8 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
       $scope.coverImgUrlInput.text = '';
       pasteActive = false;
       $scope.editingImage = false;
+      $eventTracker.track({name: 'cover-image-pasted',
+        location: 'settings-panel', value: $scope.tpd['cover_image_url']});
     });
   };
 
@@ -2838,7 +2850,8 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
 }
 
 function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
-    $entityService, $tripPlanModel, $searchResultState, $mapManager) {
+    $entityService, $tripPlanModel, $searchResultState, $mapManager,
+    $eventTracker) {
   var me = this;
   $scope.url = '';
   $scope.importing = false;
@@ -2874,6 +2887,7 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
             $scope.importing = false;
           }
         });
+        $eventTracker.track({name: 'gmaps-url-pasted', location: 'import-panel', value: $scope.url});
       });
   };
 

@@ -271,8 +271,20 @@ function tcTrackClick($parse, $eventTracker) {
   };
 }
 
+function tcTrackMousedown($parse, $eventTracker) {
+  return {
+    link: function(scope, element, attrs) {
+      element.on('mousedown', function() {
+        var data = $parse(attrs.tcTrackMousedown)(scope);
+        $eventTracker.track(data);
+      });
+    }
+  };
+}
+
 angular.module('eventTrackingModule', [])
   .service('$eventTracker', EventTracker)
-  .directive('tcTrackClick', tcTrackClick);
+  .directive('tcTrackClick', tcTrackClick)
+  .directive('tcTrackMousedown', tcTrackMousedown);
 
 // End event code
