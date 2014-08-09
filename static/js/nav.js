@@ -4,7 +4,6 @@
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -Add call to action to add a cover image.
 // -Add a diagnostic for distance from entities to center of trip.
-// -Add related guides and city link to standalone trip plan page.
 
 // For release:
 // -Create new db tables

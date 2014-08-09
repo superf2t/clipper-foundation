@@ -425,6 +425,9 @@ class TripPlan(serializable.Serializable):
         else:
             return self.creator
 
+    def is_guide(self):
+        return self.trip_plan_type == TripPlanType.GUIDE.name
+
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
 

@@ -141,7 +141,9 @@ def trip_plan_by_id(trip_plan_id):
         # We have them but we won't use them since there's no shopping cart.
         pass
 
-    has_guides = bool(guide_config.find_nearby_city_configs(current_trip_plan.location_latlng))
+    guide_config_for_destination = guide_config.find_most_prominent_nearby_city_config(
+        current_trip_plan.location_latlng)
+    has_guides = bool(guide_config_for_destination)
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
 
     response = render_template('trip_plan.html',
@@ -156,6 +158,7 @@ def trip_plan_by_id(trip_plan_id):
         all_datatype_values=values.ALL_VALUES,
         sample_sites_json=serializable.to_json_str(sample_sites.SAMPLE_SITES),
         has_guides=has_guides,
+        guide_config_for_destination=guide_config_for_destination,
         flashed_messages=flashed_messages)
     return response
 
@@ -199,6 +202,7 @@ def guides(location):
     return render_template('guides.html',
         guides=guides,
         all_trip_plans=sorted_user_trip_plans,
+        all_guide_configs=guide_config.GUIDES,
         location_name=config.city_name if config else '',
         flashed_messages=flashed_messages)
 

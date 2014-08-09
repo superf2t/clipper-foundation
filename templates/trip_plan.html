@@ -665,7 +665,7 @@
   </script>
 
   <script type="text/ng-template" id="details-panel-template">
-    <div class="details-panel one-info-panel"
+    <div class="details-panel one-info-panel" ng-controller="DetailsPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-filter-bar filter-model="filterModel" tracking-location="details-panel">
@@ -678,6 +678,27 @@
         entity="entity" is-editable="{{allow_editing | jsbool}}" for-results="false"
         for-guide="planModel.isGuide()" trip-plan-id="planModel.tripPlanId()">
       </tc-entity-details>
+
+      <div ng-if="relatedGuides && relatedGuides.length">
+        <div class="related-guides-header">Related Guides</div>
+        <div ng-repeat="guide in relatedGuides">
+          <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
+            <tc-trip-plan-details-header trip-plan="guide"
+              num-entities="guide['num_entities']" include-creator="true"
+              show-border="true">
+            </tc-trip-plan-details-header>
+          </a>
+        </div>
+      </div>
+
+      {% if plan.is_guide() and guide_config_for_destination %}
+      <div class="more-guides-for-destination">
+        <a href="/guides/{{guide_config_for_destination.city_name_url_token}}">
+          More guides for {{guide_config_for_destination.city_name}}
+        </a>
+      </div>
+      {% endif %}
+
       <div class="back-to-top" ng-show="planModel.hasEntities()">
         <a tc-scroll-on-click scroll-parent=".details-panel" scroll-target=".details-panel"
           tc-track-click="{name: 'back-to-top', location: 'details-panel'}"
