@@ -2188,6 +2188,18 @@ function SizeHelper($window) {
   };
 }
 
+function DetailsPanelCtrl($scope, $tripPlanModel, $tripPlanService) {
+  $scope.relatedGuides = null;
+
+  if ($tripPlanModel.isGuide()) {
+    $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
+      .success(function(response) {
+        var guides = response['trip_plans'];
+        $scope.relatedGuides = generateRelatedGuides(guides, $tripPlanModel.tripPlanData);
+      });      
+  }
+}
+
 
 function SearchResultState() {
   this.selectedIndex = null;
@@ -2269,7 +2281,7 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
     $scope.selectedGuide = guide;
     $mapManager.fitBoundsToEntities(guide['entities']);
     $filterModel.searchResultsEmphasized = true;
-    $scope.relatedGuides = $scope.generateRelatedGuides(guide);
+    $scope.relatedGuides = generateRelatedGuides($scope.guides, guide);
   };
 
   $scope.backToListings = function() {
@@ -2277,17 +2289,17 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
     $filterModel.searchResultsEmphasized = false;
     $searchResultState.clear();
   };
-
-  var MAX_NUM_RELATED_GUIDES = 3;
-
-  $scope.generateRelatedGuides = function(selectedGuide) {
-    return _.chain($scope.guides)
-      .sample(MAX_NUM_RELATED_GUIDES + 1)
-      .without(selectedGuide)
-      .value()
-      .slice(0, MAX_NUM_RELATED_GUIDES);
-  };
 }
+
+var MAX_NUM_RELATED_GUIDES = 3;
+
+function generateRelatedGuides(guides, selectedGuide) {
+  return _.chain(guides)
+    .sample(MAX_NUM_RELATED_GUIDES + 1)
+    .without(selectedGuide)
+    .value()
+    .slice(0, MAX_NUM_RELATED_GUIDES);
+};
 
 var AddYourOwnTab = {
   SEARCH: 1,
@@ -4096,8 +4108,9 @@ window['initApp'] = function(tripPlan, entities,
     .controller('EntitySummaryCtrl', EntitySummaryCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
-    .controller('SearchPanelCtrl', SearchPanelCtrl)
+    .controller('DetailsPanelCtrl', DetailsPanelCtrl)
     .controller('GuidesPanelCtrl', GuidesPanelCtrl)
+    .controller('SearchPanelCtrl', SearchPanelCtrl)
     .controller('AddYourOwnPanelCtrl', AddYourOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
