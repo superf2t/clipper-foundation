@@ -202,6 +202,7 @@ def guides(location):
     return render_template('guides.html',
         guides=guides,
         all_trip_plans=sorted_user_trip_plans,
+        all_guide_configs=guide_config.GUIDES,
         location_name=config.city_name if config else '',
         flashed_messages=flashed_messages)
 

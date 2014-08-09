@@ -61,6 +61,55 @@
     .no-guides .no-guide-img {
       margin-top: 20px;
     }
+
+    .more-cities-section {
+      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0px repeat fixed;
+      width: 100%;
+      max-width: 1920px;
+      min-height: 300px;
+      height: 500px;
+      background-size: cover;
+      position: relative;
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .more-cities-section .section-header {
+      text-align: center;
+      font-size: 14pt;
+      padding: 15px 0;
+    }
+
+    a.city-link {
+      color: #FFFFFF;
+      font-size: 1.2em;
+    }
+
+    a.city-link:hover {
+      color: #FFFFFF;
+      font-weight: 500;
+    }
+
+    .footer-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      text-align: center;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      height: 200px;
+      background-color: #FFFFFF;
+      text-align: center;
+    }
+
+    .copyright {
+      position: relative;
+      height: 16px;
+      top: calc(50% - 8px);
+      color: #777;
+      font-size: 1.1em;
+    }
   </style>
 
   <script>
@@ -144,6 +193,29 @@
         </div>
       </div>
     {% endif %}
+
+    <div class="more-cities-section">
+      <div class="section-header">
+        <span class="lg-text">MORE DESTINATIONS</span>
+      </div>
+      <div class="more-cities-container container">
+        <div class="more-cities row">
+          {% for config in all_guide_configs %}
+          <a class="city-link" href="/guides/{{config.city_name_url_token}}">
+            <div class="col-md-3">
+              {{config.city_name}}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>    
+    </div>
+    <div class="footer-section">
+      <div class="copyright">
+        © Unicycle Labs Inc. All rights reserved.
+      </div>
+    </div>
+
   </div>
 
   {% include 'nav.html' %}

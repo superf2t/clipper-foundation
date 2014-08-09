@@ -2195,7 +2195,10 @@ function DetailsPanelCtrl($scope, $tripPlanModel, $tripPlanService) {
     $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
       .success(function(response) {
         var guides = response['trip_plans'];
-        $scope.relatedGuides = generateRelatedGuides(guides, $tripPlanModel.tripPlanData);
+        var currentGuide = _.find(guides, function(guide) {
+          return guide['trip_plan_id'] == $tripPlanModel.tripPlanid();
+        });
+        $scope.relatedGuides = generateRelatedGuides(guides, currentGuide);
       });      
   }
 }
