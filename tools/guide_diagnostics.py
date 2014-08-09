@@ -6,6 +6,7 @@ import urlparse
 import constants
 import data
 from database import user
+import geometry
 
 GUIDE_USER = 'travel@unicyclelabs.com'
 
@@ -31,6 +32,7 @@ def main():
         'num_missing_name',
         'num_missing_photos',
         'num_missing_location',
+        'num_weird_location',
         'num_missing_category',
         'num_missing_description',
         ])
@@ -44,6 +46,7 @@ def main():
         num_missing_name = 0
         num_missing_photos = 0
         num_missing_location = 0
+        num_weird_location = 0
         num_missing_category = 0
         num_missing_description = 0
         for e in trip_plan.entities:
@@ -53,6 +56,12 @@ def main():
                 num_missing_photos += 1
             if not e.latlng:
                 num_missing_location += 1
+            elif trip_plan.location_latlng:
+                distance_from_guide_center = geometry.earth_distance_meters(
+                    trip_plan.location_latlng.lat, trip_plan.location_latlng.lng,
+                    e.latlng.lat, e.latlng.lng)
+                if distance_from_guide_center > 10000:
+                    num_weird_location += 1
             if not e.category or not e.category.category_id:
                 num_missing_category += 1
             if not e.description:
@@ -72,6 +81,7 @@ def main():
             num_missing_name,
             num_missing_photos,
             num_missing_location,
+            num_weird_location,
             num_missing_category,
             num_missing_description,
             ])
