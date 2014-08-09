@@ -37,13 +37,15 @@ app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
 FEATURED_CITY_NAMES = ('Bangkok', 'London', 'Paris', 'Barcelona',
     'Rome', 'San Francisco', 'New York', 'Las Vegas', 'Hong Kong')
 FEATURED_GUIDE_CONFIGS = [guide_config.GUIDES_BY_CITY[name] for name in FEATURED_CITY_NAMES]
-
+FEATURED_PROFILE_NAMES = ('thenewyorktimes', 'thrillist', 'fodors', 'zagat', 'bonappetit', 'lonelyplanet')
+FEATURED_PROFILE_CONFIGS = [featured_profiles.PROFILE_CONFIGS_BY_NAME_TOKEN[name] for name in FEATURED_PROFILE_NAMES]
 
 @app.route('/')
 def index():
     return render_template('index.html',
         all_guide_configs=guide_config.GUIDES,
         featured_guide_configs=FEATURED_GUIDE_CONFIGS,
+        featured_profile_configs=FEATURED_PROFILE_CONFIGS,
         flashed_messages=[data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]);
 
 @app.route('/get_clipper')
@@ -202,10 +204,10 @@ def guides(location):
 
 @app.route('/profile/<profile_name>')
 def profile(profile_name):
-    featured_trip_plan_ids = featured_profiles.PROFILE_NAME_TO_TRIP_PLAN_IDS.get(profile_name)
-    is_featured = bool(featured_trip_plan_ids)
+    featured_profile_config = featured_profiles.PROFILE_CONFIGS_BY_NAME_TOKEN.get(profile_name)
+    is_featured = bool(featured_profile_config)
     if is_featured:
-        req = serviceimpls.TripPlanGetRequest(trip_plan_ids=featured_trip_plan_ids)
+        req = serviceimpls.TripPlanGetRequest(trip_plan_ids=featured_profile_config.trip_plan_ids)
         display_user = data.DisplayUser()
     else:
         try:

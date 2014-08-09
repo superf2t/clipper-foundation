@@ -533,14 +533,14 @@
     </div>
     <div class="sources-container container">
       <div class="top-sources row">
-        {% for config in featured_guide_configs %}
-        <a href="/guides/{{config.city_name_url_token}}">
+        {% for config in featured_profile_configs %}
+        <a href="/profile/{{config.profile_name_token}}">
           <div class="featured-source col-md-4">
             <div class="source"
-              style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
+              style="background-image: url(&quot;{{config.icon_url}}&quot;);">
               <div class="source-metadata">
                 <span class="source-name">
-                  {{config.city_name}}
+                  {{config.display_name}}
                 </span>
                 <span class="source-guides-number">
                   {{config.trip_plan_ids | length}} Guides
