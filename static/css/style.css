@@ -573,6 +573,11 @@ a.category-filter-link:hover {
   display: inline-block;
 }
 
+.details-panel .more-guides-for-destination {
+  font-size: 13pt;
+  padding: 10px 0; 
+}
+
 .one-entity-details {
   border: 1px solid #dce0e0;
   margin-bottom: 10px;

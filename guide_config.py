@@ -18,6 +18,10 @@ class GuideConfig(serializable.Serializable):
     def city_name_url_token(self):
         return self.city_name.lower().replace(' ', '-')
 
+    @property
+    def num_guides(self):
+        return len(self.trip_plan_ids)
+
 def find_nearby_city_configs(latlng):
     city_configs = []
     for city_config in GUIDES_BY_CITY.itervalues():
@@ -27,6 +31,14 @@ def find_nearby_city_configs(latlng):
         if distance < 40000:
             city_configs.append(city_config)
     return city_configs
+
+def find_most_prominent_nearby_city_config(latlng):
+    city_configs = find_nearby_city_configs(latlng)
+    best_config = None
+    for config in city_configs:
+        if not best_config or config.num_guides > best_config.num_guides:
+            best_config = config
+    return best_config
 
 def load_guide_configs():
     configs = []
