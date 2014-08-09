@@ -560,7 +560,7 @@
     </div>
     <div class="more-cities-container container">
       <div class="more-cities row">
-        {% for config in featured_guide_configs %}
+        {% for config in all_guide_configs %}
         <a class="city-link" href="/guides/{{config.city_name_url_token}}">
           <div class="col-md-3">
             {{config.city_name}}

@@ -1,4 +1,5 @@
 import json
+import operator
 
 import constants
 import geometry
@@ -31,7 +32,7 @@ def load_guide_configs():
     configs = []
     for obj in json.load(open(constants.FEATURED_CITIES_CONFIG_FILE)):
         configs.append(GuideConfig.from_json_obj(obj))
-    return configs
+    return sorted(configs, key=operator.attrgetter('city_name'))
 
 GUIDES = load_guide_configs()
 GUIDES_BY_CITY = dict((config.city_name, config) for config in GUIDES)
