@@ -2132,87 +2132,6 @@ function createMap(tripPlanData) {
   return map;
 }
 
-// TODO: See if this is unused
-function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
-  var me = this;
-  $scope.ready = false;
-  $scope.locationText = '';
-  $scope.searchResults = null;
-  $scope.searching = false;
-  // Very strange, something is stealing the focus from the
-  // input when setting the ready state either immediately or after
-  // a 0-second timeout.
-  $timeout(function() {
-    $scope.ready = true;
-  }, 500);
-
-  $scope.placeChanged = function(place) {
-    if (!place) {
-      return;
-    }
-    if (!place['geometry']) {
-      return me.searchForPlace(place['name']);
-    }
-    $scope.selectResult(place);
-  };
-
-  this.searchForPlace = function(query) {
-    $scope.searchResults = null;
-    $scope.searching = true;
-    var request = {
-      query: query
-    };
-    var dummyMap = new google.maps.Map($('<div>')[0], {
-      center: new google.maps.LatLng(0, 0)
-    });
-    var searchService = new google.maps.places.PlacesService(dummyMap);
-    searchService.textSearch(request, function(results, status) {
-      $scope.$apply(function() {
-        $scope.searching = false;
-        if (status != google.maps.places.PlacesServiceStatus.OK) {
-          alert('Search failed, please try again.');
-          return;
-        }
-        $scope.searchResults = results;
-      });
-    });
-  };
-
-  $scope.selectResult = function(place) {
-    var tripPlanDetails = me.placeToTripPlanDetails(place);
-    $scope.onSelectPlace({$tripPlanDetails: tripPlanDetails});
-  };
-
-  this.placeToTripPlanDetails = function(place) {
-    var geometry = place['geometry'];
-    var location = geometry && geometry['location'];
-    var viewport = geometry && geometry['viewport'];
-    var tripPlanDetails = {
-      'name': place['name'],
-      'location_name': place['formatted_address']
-    };
-    if (location) {
-      tripPlanDetails['location_latlng'] = {
-        'lat': location.lat(),
-        'lng': location.lng()
-      };
-    }
-    if (viewport) {
-      tripPlanDetails['location_bounds'] = {
-        'southwest': {
-          'lat': viewport.getSouthWest().lat(),
-          'lng': viewport.getSouthWest().lng()
-        },
-        'northeast': {
-          'lat': viewport.getNorthEast().lat(),
-          'lng': viewport.getNorthEast().lng()
-        }
-      }
-    }
-    return tripPlanDetails;
-  };
-}
-
 function CarouselCtrl($scope) {
   var urls = $scope.entityModel.data['photo_urls'];
   var currentIndex = 0;
@@ -3285,19 +3204,6 @@ function tcFocusOn() {
   };
 }
 
-function tcStartNewTripInput() {
-  return {
-    retrict: 'AE',
-    templateUrl: 'start-new-trip-input-template',
-    controller: StartNewTripInputCtrl,
-    scope: {
-      onSelectPlace: '&',
-      hidePrompt: '=',
-      placeholder: '='
-    }
-  };
-}
-
 function tcLockAfterScroll($timeout) {
   return {
     restrict: 'A',
@@ -3335,82 +3241,6 @@ function tcLockAfterScroll($timeout) {
           spacer.remove();
         }
       });
-    }
-  };
-}
-
-function tcScrollSignal() {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var elem = $(element);
-      var scrollParent = $(attrs.scrollParentSelector);
-      var referenceElem = attrs.referenceElemSelector
-        ? $(attrs.referenceElemSelector) : scrollParent;
-
-      function computeSpread() {
-        var spread = 0;
-        if (attrs.signalCondition == 'bottom-to-bottom') {
-          spread = elem.offset().top + elem.height() 
-            - (referenceElem.offset().top + referenceElem.height());
-        }
-        return spread;        
-      }
-
-      var spread = computeSpread();
-
-      scrollParent.on('scroll', function() {
-        if (scrollParent.scrollTop() >= spread) {
-          attrs.signalClass && elem.addClass(attrs.signalClass);
-          attrs.parentSignalClass && scrollParent.addClass(attrs.parentSignalClass);
-          attrs.referenceSignalClass && referenceElem.addClass(attrs.referenceSignalClass);
-        } else {
-          attrs.signalClass && elem.removeClass(attrs.signalClass);
-          attrs.parentSignalClass && scrollParent.removeClass(attrs.parentSignalClass);
-          attrs.referenceSignalClass && referenceElem.removeClass(attrs.referenceSignalClass);
-        }
-      });
-
-      if (attrs.recomputeSpreadOn) {
-        scope.$watch(attrs.recomputeSpreadOn, function() {
-          spread = computeSpread();
-        });
-      }
-    }
-  };
-}
-
-function tcCoverScroll() {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var elem = $(element);
-      var inverseElem = $(attrs.animateInverseOn);
-      var scrollParent = $(attrs.scrollParentSelector);
-      var height = elem.height();
-      var startThreshold = height * parseFloat(attrs.startThreshold);
-      var easingExponent = parseFloat(attrs.easingExponent);
-      scrollParent.on('scroll', function() {
-        var scrollTop = scrollParent.scrollTop();
-        if (scrollTop < startThreshold) {
-          elem.css('opacity', 1);
-          inverseElem.css('opacity', 0);
-        } else if ((scrollTop + 44) >= height) {
-          elem.css('opacity', 0);
-          inverseElem.css('opacity', 1);
-        } else {
-          var opacity = 1 - Math.pow( ((scrollTop - startThreshold) / (height - startThreshold - 44)), easingExponent);
-          elem.css('opacity', opacity);
-          inverseElem.css('opacity', 1 - opacity);
-        }
-      });
-
-      if (attrs.recomputeThresholdOn) {
-        scope.$watch(attrs.recomputeThresholdOn, function() {
-          height = elem.height();
-          startThreshold = height * parseFloat(attrs.startThreshold);
-        });
-      }
     }
   };
 }
@@ -4210,7 +4040,6 @@ angular.module('directivesModule', [])
   .directive('tcScrollToSelector', tcScrollToSelector)
   .directive('tcResetScrollTopOn', tcResetScrollTopOn)
   .directive('tcScrollOnClick', tcScrollOnClick)
-  .directive('tcScrollSignal', tcScrollSignal)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
@@ -4274,8 +4103,6 @@ window['initApp'] = function(tripPlan, entities,
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
-    .directive('tcStartNewTripInput', tcStartNewTripInput)
-    .directive('tcCoverScroll', tcCoverScroll)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
