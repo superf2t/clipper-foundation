@@ -1773,6 +1773,10 @@ var InfoPanelMode = {
   SETTINGS: 6
 };
 
+var EXTENDED_INFO_PANEL_MODES = [
+  InfoPanelMode.EXPORT, InfoPanelMode.SHARING, InfoPanelMode.SETTINGS
+];
+
 function PageStateModel() {
   this.summaryPanelExpanded = true;
   this.infoPanelExpanded = true;
@@ -1995,6 +1999,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
 
   $scope.goToInfoPanel = function(infoPanelMode) {
     $pageStateModel.infoPanelMode = infoPanelMode;
+    $pageStateModel.infoPanelShowExtendedNavItems = 
+      _.contains(EXTENDED_INFO_PANEL_MODES, infoPanelMode);
     $scope.openInfoPanel();
     $searchResultState.clear();
     $filterModel.clear();
@@ -3965,6 +3971,26 @@ function tcDraggable() {
   };
 }
 
+function tcSetNanoScrollbars($timeout) {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      var scrollElem = element.find('.nano-content')[0];
+      $timeout(function() {
+        element.nanoScroller();
+      });
+      scope.$watch(function () {
+        return scrollElem.scrollHeight;
+      }, function(newHeight, oldHeight) {
+        element.nanoScroller();
+      });
+      scope.$on("$destroy", function () {
+        element.nanoScroller({ destroy: true });
+      });
+    }
+  };
+}
+
 var BrowserPlatform = {
   WINDOWS: 1,
   MAC: 2
@@ -4130,6 +4156,7 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcTrackEntityDragState', tcTrackEntityDragState)
     .directive('tcDraggableEntitySummary', tcDraggableEntitySummary)
     .directive('tcFilterBar', tcFilterBar)
+    .directive('tcSetNanoScrollbars', tcSetNanoScrollbars)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)

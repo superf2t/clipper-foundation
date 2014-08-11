@@ -2,8 +2,6 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
-// -Add call to action to add a cover image.
-// -Add a diagnostic for distance from entities to center of trip.
 
 // For release:
 // -Create new db tables

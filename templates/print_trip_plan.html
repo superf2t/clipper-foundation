@@ -6,14 +6,29 @@
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-  <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe.png">
   {% include 'analytics.html' %}
+
+  {% macro star_rating(value, max) -%}
+    <span class="star-rating-container">
+    {% for star in range(1, max + 1) %}
+      {% set img_name = 'full' if value >= star else ('empty' if (star - value >= 1) else 'half') %}
+      <span class="rating-star">
+        <img src="/static/img/star-{{img_name}}.png"/>
+      </span>
+    {% endfor %}
+    </span>
+  {%- endmacro %}
+
   <style>
     @media print {
       body {
         margin: auto;
         width: 6.5in;
+      }
+
+      a:link:after, a:visited:after {
+        content: '';
       }
 
       .entity {
@@ -28,8 +43,9 @@
       }
     }
 
-    body {
+    html, body {
       color: #000;
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
     }
 
     .summary {
@@ -48,9 +64,24 @@
       font-size: 14pt;
     }
 
-    .summary .description {
+    .summary .description,
+    .entity .description {
       white-space: pre-line;
       text-align: justify;
+    }
+
+    .summary .tags {
+      margin-top: 10px;
+    }
+
+    .tags .tag-text {
+      font-style: italic;
+      font-weight: bold;
+    }
+
+    .star-rating-container {
+      position: relative;
+      top: -2px;
     }
 
     .entity {
@@ -73,8 +104,17 @@
       right: 0;
     }
 
-    .entity .category-and-day {
+    .entity .category {
       font-style: italic;
+      margin-right: 20px;
+    }
+
+    .entity .phone {
+      margin-right: 20px;
+    }
+
+    .entity .source {
+      font-size: 10pt;
     }
 
     .entity .main-photo {
@@ -129,8 +169,12 @@
       </div>
     </div>
     {% if trip_plan.description %}
-    <div class="description">
-      {{trip_plan.description}}
+    <div class="description">{{trip_plan.description}}</div>
+    {% endif %}
+    {% if trip_plan.tags %}
+    <div class="tags">
+      Tags:
+      <span class="tag-text">{{trip_plan.tags | join(', ', attribute='text')}}</span>
     </div>
     {% endif %}
   </div>
@@ -145,8 +189,7 @@
       </div>
       {% endif %}
     </div>
-    {% if (entity.category and entity.category.category_id) or entity.day %}
-    <div class="category-and-day">
+    <div>
       {% if entity.category and entity.category.category_id %}
       <span class="category">
         {{entity.category.display_name}}
@@ -155,30 +198,62 @@
         {% endif %}
       </span>
       {% endif %}
-      {% if entity.category and entity.category.category_id and entity.day %}
-      |
-      {% endif %}
-      {% if entity.day %}
-      <span class="day">
-        Day {{entity.day}}
+      {% if entity.tags %}
+      <span class="tags">
+        Tags:
+        <span class="tag-text">{{entity.tags | join(', ', attribute='text')}}</span>
       </span>
       {% endif %}
     </div>
-    {% endif %}
-    {% if entity.address %}
-    <div class="address">
-      {{entity.address}}
+
+    {% if entity.address or entity.phone_number or entity.website or entity.opening_hours %}
+    <div class="place-info">
+      {% if entity.address %}
+      <div class="address">
+        {{entity.address}}
+      </div>
+      {% endif %}
+      {% if entity.phone_number or entity.website %}
+      <div class="extended-metadata">
+        {% if entity.phone_number %}
+        <span class="phone">{{entity.phone_number}}</span>
+        {% endif %}
+        {% if entity.website %}
+        <span class="website"><a href="{{entity.website}}">{{entity.website}}</a></span>
+        {% endif %}
+      </div>
+      {% endif %}
+      {% if entity.opening_hours and entity.opening_hours.as_string %}
+      <div class="opening-hours">Hours: {{entity.opening_hours.as_string}}</div>
+      {% endif %}
     </div>
     {% endif %}
+
+    {% if entity.source_is_trusted_for_reputation and (entity.rating or entity.review_count) %}
+    <div class="reputation">
+      {% if entity.rating %}
+      <span class="rating">{{star_rating(entity.rating, entity.rating_max)}}</span>
+      {% endif %}
+      {% if entity.review_count %}
+      <span class="review-count">({{entity.review_count}} reviews)</span>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if entity.source_url %}
+    <div class="source">
+      (Place info from <a href="{{entity.source_url}}">{{entity.source_display_name}}</a>)
+    </div>
+    {% endif %}
+
+
     {% if entity.photo_urls %}
     <div class="main-photo">
       <img src="{{entity.photo_urls[0]}}"/>
     </div>
     {% endif %}
     {% if entity.description %}
-    <div class="description">
-      {{entity.description}}
-    </div>
+    <div class="description">{{entity.description}}</div>
     {% endif %}
     {% if entity.comments %}
     <div class="comments">
