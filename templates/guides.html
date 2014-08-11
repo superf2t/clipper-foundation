@@ -41,6 +41,12 @@
 
     .one-trip-plan {
       margin-bottom: 10px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .one-trip-plan.col-md-4 {
+      float: none;
     }
 
     .one-trip-plan .trip-plan-details-header:hover .trip-plan-img-overlay{
@@ -168,7 +174,7 @@
 
     <div class="trip-plan-container container">
       <div class="row">
-        <span ng-repeat="guide in guides" class="one-trip-plan col-md-6">
+        <span ng-repeat="guide in guides" class="one-trip-plan col-md-4">
           <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
             <tc-trip-plan-details-header trip-plan="guide" show-border="true"
               num-entities="guide['num_entities']" include-creator="true">

@@ -1188,18 +1188,23 @@ a.category-filter-link:hover {
   min-height: 74px;
 }
 
-.trip-plan-details-header .trip-plan-metadata .source-icon {
+.trip-plan-details-header .trip-plan-metadata {
   position: relative;
-  bottom: 36px;
+}
+
+.trip-plan-details-header .trip-plan-metadata .source-icon {
+  position: absolute;
+  top: -50px;
+  right: -10px;
   float: right;
   width: 50px;
   height: 50px;
   border-radius: 25px;
-  border: 1px solid #444;
-  background-color: #FFFFFF;
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.15);  
+/*  border: 1px solid #444;
+*/  background-color: #FFFFFF;
+  -webkit-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.5);  
 }
 
 .trip-plan-details-header .trip-plan-name {
@@ -1217,7 +1222,7 @@ a.category-filter-link:hover {
 }
 
 .trip-plan-details-header .trip-plan-info .trip-plan-metadata {
-  font-size: 1.15em;
+  font-size: 1.05em;
   color: #333333;
 }
 
