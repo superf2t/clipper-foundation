@@ -24,7 +24,7 @@
     @media print {
       body {
         margin: auto;
-        width: 6.5in;
+        width: 7.0in;
       }
 
       a:link:after, a:visited:after {
@@ -124,7 +124,7 @@
 
     .entity .main-photo img {
       max-width: 100%;
-      max-height: 1in;
+      max-height: 2.5in;
     }
 
     .entity .description {
@@ -189,6 +189,11 @@
       </div>
       {% endif %}
     </div>
+    {% if entity.photo_urls %}
+    <div class="main-photo">
+      <img src="{{entity.photo_urls[0]}}"/>
+    </div>
+    {% endif %}
     <div>
       {% if entity.category and entity.category.category_id %}
       <span class="category">
@@ -231,7 +236,7 @@
 
     {% if entity.source_is_trusted_for_reputation and (entity.rating or entity.review_count) %}
     <div class="reputation">
-      {% if entity.rating %}
+      {% if entity.rating and entity.rating_max %}
       <span class="rating">{{star_rating(entity.rating, entity.rating_max)}}</span>
       {% endif %}
       {% if entity.review_count %}
@@ -246,12 +251,6 @@
     </div>
     {% endif %}
 
-
-    {% if entity.photo_urls %}
-    <div class="main-photo">
-      <img src="{{entity.photo_urls[0]}}"/>
-    </div>
-    {% endif %}
     {% if entity.description %}
     <div class="description">{{entity.description}}</div>
     {% endif %}
