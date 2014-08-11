@@ -6,7 +6,6 @@
 // -Remove settings and feedback links if they're not functional.
 
 // UI cleanup:
-// -Firefox: browser scrollbar is showing up, and extra right margin on scrollable areas.
 // -Firefox/Safari: the entity container is full height even when there is no content.
 // -Firefox: Image on editor tab is overflowing its container.
 // -Firefox: turn off link highlighting.

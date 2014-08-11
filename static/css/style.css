@@ -530,7 +530,6 @@ a.category-filter-link:hover {
 }
 
 .one-info-panel.details-panel {
-  width: 100%;
   height: 100%;
   padding: 0px 10px 0px 10px;
   overflow-y: auto;
@@ -873,7 +872,6 @@ a.category-filter-link:hover {
 
 .one-info-panel {
   padding: 10px;
-  width: 100%;
   height: 100%;
   overflow-y: auto;
 }
