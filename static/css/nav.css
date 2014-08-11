@@ -40,9 +40,9 @@ a.black-link:hover .tc-icon svg {
 .main-nav {
   background-color: #FFFFFF;
   border: none;
-  -webkit-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.4);
-  -moz-box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.4);
-  box-shadow: 0px 1px 3px 0px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
 }
 
 .navbar .right-controls {

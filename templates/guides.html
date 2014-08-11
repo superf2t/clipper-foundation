@@ -68,23 +68,29 @@
       margin-top: 20px;
     }
 
+    .trip-plans-container {
+      padding-bottom: 15px;
+    }
+
     .more-cities-section {
-      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0px repeat fixed;
+      background-color: rgb(0,25,55);
       width: 100%;
       max-width: 1920px;
-      min-height: 300px;
-      height: 500px;
-      background-size: cover;
+      height: 600px;
       position: relative;
       color: #FFFFFF;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
+    .lg-text {
+      font-size: 1.8em;
+    }
+
     .more-cities-section .section-header {
+      padding: 30px 0px;
       text-align: center;
-      font-size: 14pt;
-      padding: 15px 0;
+      font-weight: 600;
     }
 
     a.city-link {
@@ -102,8 +108,8 @@
       width: 100%;
       z-index: 3;
       text-align: center;
-      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.7);
-      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      -webkit-box-shadow: 0 0 12px rgba(0,0,0,0.7);
+      box-shadow: 0 0 12px rgba(0,0,0,0.7);
       height: 200px;
       background-color: #FFFFFF;
       text-align: center;
@@ -169,10 +175,10 @@
   <div class="main-content">
     {% if guides %}
     <div class="location-header">
-      Browse guides for <span class="location-name">{{location_name.upper()}}</span>
+      Browse Guides for <span class="location-name">{{location_name.upper()}}</span>
     </div>
 
-    <div class="trip-plan-container container">
+    <div class="trip-plans-container container">
       <div class="row">
         <span ng-repeat="guide in guides" class="one-trip-plan col-md-4">
           <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">

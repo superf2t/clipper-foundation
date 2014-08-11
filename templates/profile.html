@@ -27,10 +27,6 @@
       overflow-y: auto;
     }
 
-    .trip-plans-container {
-      height: 100%;
-    }
-
     .header {
       text-align: center;
       color: #333;
@@ -41,6 +37,10 @@
 
     .header .display-name {
       font-size: 1.8em;
+    }
+
+    .trip-plans-container {
+      padding-bottom: 15px;
     }
 
     .one-trip-plan {
@@ -58,9 +58,21 @@
     }
 
     .map-container {
-      height: 376px;
+      height: 356px;
       float: right;
       margin-bottom: 20px;
+    }
+
+    @media (max-width: 1200px) {
+      .map-container {
+        height: 316px;
+      }
+    }
+
+    @media (min-width: 1441px) {
+      .map-container {
+        height: 376px;
+      }
     }
 
     .map {
@@ -70,7 +82,7 @@
     }
 
     .trip-plan-infowindow {
-      width: 350px;
+      width: 300px;
     }
 
     .trip-plan-infowindow .trip-plan-details-header .trip-plan-img {
@@ -84,6 +96,26 @@
     .no-trip-plans .no-trips-msg {
       font-size: 12pt;
       margin-bottom: 20px;
+    }
+
+    .footer-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      text-align: center;
+      -webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+      box-shadow: 0 0 3px rgba(0,0,0,0.5);
+      height: 200px;
+      background-color: #FFFFFF;
+      text-align: center;
+    }
+
+    .copyright {
+      position: relative;
+      height: 16px;
+      top: calc(50% - 8px);
+      color: #777;
+      font-size: 1.1em;
     }
   </style>
 
@@ -229,7 +261,7 @@
       </div>
       {% if trip_plans %}
       <div class="num-trips">
-        {{trip_plans|length}} trips
+        {{trip_plans|length}} Guides
       </div>
       {% endif %}
     </div>
@@ -268,14 +300,18 @@
       </div>
     </div>
     {% endif %}
-
+    <div class="footer-section">
+      <div class="copyright">
+        © Unicycle Labs Inc. All rights reserved.
+      </div>
+    </div>
   </div>
 
   <script type="text/ng-template" id="profile-infowindow-template">
     <div class="trip-plan-infowindow">
       <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
         <tc-trip-plan-details-header trip-plan="tripPlan"
-          num-entities="tripPlan['num_entities']" include-creator="false">
+          num-entities="tripPlan['num_entities']" show-border="true" include-creator="false">
         </tc-trip-plan-details-header>
       </a>
     </div>
