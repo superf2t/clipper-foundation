@@ -1945,8 +1945,3 @@ a.category-filter-link:hover {
   visibility : visible\9; /* Target only IE7 and IE8 with this hack */
   opacity    : 0.99;
 }
-
-/** Nano Customization **/
-.nano > .nano-content {
-  width: calc(100% + 15px);
-}

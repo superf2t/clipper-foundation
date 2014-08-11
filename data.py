@@ -149,7 +149,7 @@ class OpeningHours(serializable.Serializable):
 
     def to_string(self):
         if not self.opening_periods:
-            return None
+            return self.source_text
         strs = []
         current_str = None
         current_day = None
