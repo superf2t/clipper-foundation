@@ -299,7 +299,6 @@ a.category-filter-link:hover {
 }
 
 #entity-container {
-  overflow-y: auto;
   color: #000;
   z-index: 1;
 
@@ -322,6 +321,10 @@ a.category-filter-link:hover {
 #entity-container,
 .one-entity-summary {
   background-color: #FAFAFA;
+}
+
+#entity-container .scroll-container {
+  height: 100%;
 }
 
 /* Add overrides for the nano scroll pane transition,
@@ -1893,12 +1896,10 @@ a.category-filter-link:hover {
 /** Nano initial setup **/
 .nano {
   position : relative;
-  width    : 100%;
-  height   : 100%;
   overflow : hidden;
 }
 .nano > .nano-content {
-  position      : absolute;
+  position: relative;
   overflow      : scroll;
   overflow-x    : hidden;
   top           : 0;

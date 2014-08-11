@@ -2,6 +2,23 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
+// -Add some kind of footer to the profile page.
+// -Remove settings and feedback links if they're not functional.
+
+// UI cleanup:
+// -Firefox: browser scrollbar is showing up, and extra right margin on scrollable areas.
+// -Firefox/Safari: the entity container is full height even when there is no content.
+// -Firefox: Image on editor tab is overflowing its container.
+// -Firefox: turn off link highlighting.
+// -Firefox: login modals are mis-sized
+// -Firefox: trip plan button has 1px of whitespace beneath it in the nav.
+// -Firefox: drag and drop doesn't work.
+// -Too much vertical whitespace in the trip plan header if there is no description.
+// -Expandable description for entities is collapsing to just 2 lines, may be
+//  measuring line height wrong.
+// -Don't allow saving comments in the details panel without logging in.
+// -Don't allow collaboration if you aren't logged in.
+// -Clear saved result indices when clicking into a related guide.
 
 // For release:
 // -Create new db tables

@@ -3971,6 +3971,29 @@ function tcDraggable() {
   };
 }
 
+function tcLinkHeights($timeout) {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      var heightElem = $(attrs.tcLinkHeights)[0];
+      scope.$watch(function() {
+        return heightElem.scrollHeight;
+      }, function(newHeight, oldHeight) {
+        if (newHeight != undefined) {
+          element.css('height', newHeight);
+        }
+      });
+      if (attrs.heightWatchExpr) {
+        scope.$watch(attrs.heightWatchExpr, function() {
+          $timeout(function() {
+            element.css('height', heightElem.scrollHeight);
+          });
+        }, true);
+      }
+    }
+  };
+}
+
 function tcSetNanoScrollbars($timeout) {
   return {
     restrict: 'AC',
@@ -3982,7 +4005,9 @@ function tcSetNanoScrollbars($timeout) {
       scope.$watch(function () {
         return scrollElem.scrollHeight;
       }, function(newHeight, oldHeight) {
-        element.nanoScroller();
+        $timeout(function() {
+          element.nanoScroller();
+        });
       });
       scope.$on("$destroy", function () {
         element.nanoScroller({ destroy: true });
@@ -4157,6 +4182,7 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcDraggableEntitySummary', tcDraggableEntitySummary)
     .directive('tcFilterBar', tcFilterBar)
     .directive('tcSetNanoScrollbars', tcSetNanoScrollbars)
+    .directive('tcLinkHeights', tcLinkHeights)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)
