@@ -3965,6 +3965,26 @@ function tcDraggable() {
   };
 }
 
+function tcSetNanoScrollbars($timeout) {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      var scrollElem = element.find('.nano-content')[0];
+      $timeout(function() {
+        element.nanoScroller();
+      });
+      scope.$watch(function () {
+        return scrollElem.scrollHeight;
+      }, function(newHeight, oldHeight) {
+        element.nanoScroller();
+      });
+      scope.$on("$destroy", function () {
+        element.nanoScroller({ destroy: true });
+      });
+    }
+  };
+}
+
 var BrowserPlatform = {
   WINDOWS: 1,
   MAC: 2
@@ -4130,6 +4150,7 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcTrackEntityDragState', tcTrackEntityDragState)
     .directive('tcDraggableEntitySummary', tcDraggableEntitySummary)
     .directive('tcFilterBar', tcFilterBar)
+    .directive('tcSetNanoScrollbars', tcSetNanoScrollbars)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)

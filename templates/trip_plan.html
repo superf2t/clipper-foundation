@@ -9,6 +9,7 @@
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-animate.min.js"></script>
   <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/jquery.nanoscroller.min.js"></script>
   <script src="/static/js/services.js"></script>
   <script src="/static/js/script.js"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300">
@@ -29,28 +30,30 @@
     <div ng-include="'trip-plan-header-template'">
     </div>
 
-    <div id="entity-container"
-      ng-class="{'expanded': pageStateModel.summaryPanelExpanded}"
-      tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
-      skip-scroll-when-in-view="true"
-      scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor"
-      tc-track-entity-drag-state>
+    <div id="entity-container" class="nano" tc-set-nano-scrollbars
+      ng-class="{'expanded': pageStateModel.summaryPanelExpanded}">
+      <div class="nano-content"
+        tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
+        skip-scroll-when-in-view="true"
+        scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor"
+        tc-track-entity-drag-state>
 
-      <tc-filter-bar filter-model="filterModel" tracking-location="summary-panel">
-      </tc-filter-bar>
+        <tc-filter-bar filter-model="filterModel" tracking-location="summary-panel">
+        </tc-filter-bar>
 
-      <div ng-repeat="entity in planModel.entities()">
-        <div ng-include="'one-entity-summary-template'">
+        <div ng-repeat="entity in planModel.entities()">
+          <div ng-include="'one-entity-summary-template'">
+          </div>
         </div>
-      </div>
 
-      <div ng-if="!planModel.hasEntities()" class="no-entities-message">
-        <p> 
-          After you add places, a summary of your trip will show up here. 
-        <p/>
-        <p>
-          Drag and drop places to re-order them.
-        </p>
+        <div ng-if="!planModel.hasEntities()" class="no-entities-message">
+          <p> 
+            After you add places, a summary of your trip will show up here. 
+          <p/>
+          <p>
+            Drag and drop places to re-order them.
+          </p>
+        </div>
       </div>
     </div>
   </div>
@@ -63,32 +66,32 @@
     {% endif %}
     <div class="info-panel-content {% if allow_editing %}with-nav{% endif %}">
       <div ng-include="'details-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-show="pageStateModel.infoPanelMode == InfoPanelMode.DETAILS">
       </div>
       {% if allow_editing %}
       <div ng-include="'guides-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.GUIDES">
       </div>
       <div ng-include="'add-your-own-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN">
       </div>
       <div ng-include="'export-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
       </div>
       <div ng-include="'sharing-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
       </div>
       <div ng-include="'import-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.IMPORT">
       </div>
       <div ng-include="'settings-panel-template'"
-        class="full-width full-height"
+        class="nano" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
       </div>
       {% endif %}
@@ -665,7 +668,7 @@
   </script>
 
   <script type="text/ng-template" id="details-panel-template">
-    <div class="details-panel one-info-panel" ng-controller="DetailsPanelCtrl"
+    <div class="details-panel one-info-panel nano-content" ng-controller="DetailsPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-filter-bar filter-model="filterModel" tracking-location="details-panel">
@@ -1120,7 +1123,8 @@
 
   {% if allow_editing %}
   <script type="text/ng-template" id="guides-panel-template">
-    <div class="guides-panel one-info-panel" ng-controller="GuidesPanelCtrl"
+    <div class="guides-panel one-info-panel nano-content"
+      ng-controller="GuidesPanelCtrl"
       tc-scroll-to-selector scroll-on-changes-to="searchResultState.selectedIndex"
       scroll-dest-selector=".one-entity-details[tc-entity-result-id='[[searchResultState.selectedIndex]]']"
       tc-reset-scroll-top-on="selectedGuide">
@@ -1188,7 +1192,8 @@
   </script>
 
   <script type="text/ng-template" id="add-your-own-panel-template">
-    <div class="add-your-own-panel one-info-panel" ng-controller="AddYourOwnPanelCtrl">
+    <div class="add-your-own-panel one-info-panel nano-content"
+      ng-controller="AddYourOwnPanelCtrl">
       <div class="sub-nav btn-group">
         <button type="button" class="btn btn-default"
           ng-class="{'active': tab == AddYourOwnTab.SEARCH}"
@@ -1428,7 +1433,7 @@
   </script>
 
   <script type="text/ng-template" id="export-panel-template">
-    <div class="export-panel one-info-panel">
+    <div class="export-panel one-info-panel nano-content">
       <div class="header">
         Take your trip plan with you on the road
       </div>
@@ -1455,7 +1460,8 @@
   </script>
 
   <script type="text/ng-template" id="sharing-panel-template">
-    <div class="sharing-panel one-info-panel" ng-controller="SharingSettingsCtrl">
+    <div class="sharing-panel one-info-panel nano-content"
+      ng-controller="SharingSettingsCtrl">
       <div class="header">
         Share your trip with collaborators and viewers
       </div>
@@ -1524,7 +1530,8 @@
   </script>
 
   <script type="text/ng-template" id="import-panel-template">
-    <div class="import-panel one-info-panel" ng-controller="GmapsImporterCtrl">
+    <div class="import-panel one-info-panel nano-content"
+      ng-controller="GmapsImporterCtrl">
       <div class="header">
         Import a Google custom map
       </div>
@@ -1570,7 +1577,8 @@
   </script>
 
   <script type="text/ng-template" id="settings-panel-template">
-    <div class="settings-panel one-info-panel" ng-controller="TripPlanSettingsEditorCtrl">
+    <div class="settings-panel one-info-panel nano-content"
+      ng-controller="TripPlanSettingsEditorCtrl">
       <div class="header">
         Settings
       </div>
