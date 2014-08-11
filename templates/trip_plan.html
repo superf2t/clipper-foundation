@@ -673,6 +673,15 @@
       scroll-dest-selector=".one-entity-details[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]']">
       <tc-filter-bar filter-model="filterModel" tracking-location="details-panel">
       </tc-filter-bar>
+
+      {% if allow_editing %}
+      <div class="add-cover-image-cta" ng-if="!planModel.hasCoverImage()">
+        <a ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)" href="javascript:void(0)" class="white-link">
+          <span class="cta-inner">Add a cover photo</a>
+        </a>
+      </div>
+      {% endif %}
+
       <tc-trip-plan-details-header trip-plan="planModel.tripPlanData"
         num-entities="planModel.numEntities()" full-bleed="true" hidden-mode="!planModel.hasEntities()"
         include-details="true" include-creator="true">

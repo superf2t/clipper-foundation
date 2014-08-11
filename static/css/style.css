@@ -549,6 +549,33 @@ a.category-filter-link:hover {
   z-index: 1;
 }
 
+.details-panel .add-cover-image-cta {
+  position: absolute;
+  width: 100%;
+  top: 60px;
+  left: 0;
+  text-align: center;
+  color: #fff;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.details-panel:hover .add-cover-image-cta {
+  opacity: 0.9;
+}
+
+.details-panel .add-cover-image-cta .cta-inner {
+  padding: 5px 15px;
+  border: 1px dashed #fff;
+  border-radius: 4px;
+}
+
+.details-panel .add-cover-image-cta .cta-inner:hover {
+  color: #428bca;
+  border-color: #428bca;
+}
+
 .details-panel .source-link {
   margin-bottom: 15px;
 }

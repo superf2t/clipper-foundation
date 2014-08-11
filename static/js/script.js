@@ -1773,6 +1773,10 @@ var InfoPanelMode = {
   SETTINGS: 6
 };
 
+var EXTENDED_INFO_PANEL_MODES = [
+  InfoPanelMode.EXPORT, InfoPanelMode.SHARING, InfoPanelMode.SETTINGS
+];
+
 function PageStateModel() {
   this.summaryPanelExpanded = true;
   this.infoPanelExpanded = true;
@@ -1995,6 +1999,8 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
 
   $scope.goToInfoPanel = function(infoPanelMode) {
     $pageStateModel.infoPanelMode = infoPanelMode;
+    $pageStateModel.infoPanelShowExtendedNavItems = 
+      _.contains(EXTENDED_INFO_PANEL_MODES, infoPanelMode);
     $scope.openInfoPanel();
     $searchResultState.clear();
     $filterModel.clear();
