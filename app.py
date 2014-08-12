@@ -240,6 +240,18 @@ def profile(profile_name):
         all_user_trip_plans=sorted_user_trip_plans,
         flashed_messages=flashed_messages)
 
+@app.route('/destinations')
+def destinations():
+    trip_plan_service = serviceimpls.TripPlanService(g.session_info)
+    all_trip_plans = trip_plan_service.get(serviceimpls.TripPlanGetRequest()).trip_plans
+    sorted_user_trip_plans = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))
+    return render_template('destinations.html',
+        all_guide_configs=guide_config.GUIDES,
+        featured_guide_configs=FEATURED_GUIDE_CONFIGS,
+        all_trip_plans=sorted_user_trip_plans,
+        flashed_messages=[data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]);
+
+
 @app.route('/bookmarklet.js')
 def bookmarklet_js():
     response = make_response(render_template('bookmarklet.js', host=constants.HOST))
