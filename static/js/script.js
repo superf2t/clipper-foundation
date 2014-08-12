@@ -614,13 +614,15 @@ function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
         var newIndex = newOrdering[ed['entity_id']];
         var shiftHeight = $entityDragStateModel.shiftHeight();
         if (newIndex > oldIndex) {
-          if (element.css('top') == 'auto') {
+          var top = element.css('top');
+          if (top == 'auto' || top == '0px') {
             element.css('top', shiftHeight);
           } else {
             element.css('top', '');
           }
         } else if (newIndex < oldIndex) {
-          if (element.css('top') == 'auto') {
+          var top = element.css('top');
+          if (top == 'auto' || top == '0px') {
             element.css('top', -shiftHeight);
           } else {
             element.css('top', '');

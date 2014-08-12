@@ -4,9 +4,6 @@
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -Remove settings and feedback links if they're not functional.
 
-// UI cleanup:
-// -Firefox: drag and drop doesn't work.
-
 // For release:
 // -Create new db tables
 // -Remove index on frontend_request for efficiency: 
