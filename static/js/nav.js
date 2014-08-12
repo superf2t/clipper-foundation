@@ -15,8 +15,6 @@
 // -Too much vertical whitespace in the trip plan header if there is no description.
 // -Expandable description for entities is collapsing to just 2 lines, may be
 //  measuring line height wrong.
-// -Don't allow saving comments in the details panel without logging in.
-// -Don't allow collaboration if you aren't logged in.
 // -Clear saved result indices when clicking into a related guide.
 
 // For release:

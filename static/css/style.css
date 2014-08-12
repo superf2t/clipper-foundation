@@ -1581,6 +1581,11 @@ a.category-filter-link:hover {
   display: inline;
 }
 
+.sharing-panel .not-logged-in-msg {
+  text-align: center;
+  margin-top: 10px;
+}
+
 .sharing-panel .share-url {
   margin-top: 5px;
   cursor: text;

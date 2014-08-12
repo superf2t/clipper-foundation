@@ -1528,10 +1528,14 @@
           <div class="form-group full-width">
             <input type="text" class="form-control email-input"
               placeholder="Enter an email address"
-              ng-model="formState.email"/>
+              ng-model="formState.email"
+              ng-disabled="!accountInfo['logged_in']"/>
             <button class="btn btn-cta add-btn">
               Add
             </button>
+          </div>
+          <div ng-if="!accountInfo['logged_in']" class="not-logged-in-msg text-danger">
+            Please log in before adding collaborators.
           </div>
         </form>
       </div>

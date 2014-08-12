@@ -742,6 +742,10 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
   };
 
   $scope.openNewComment = function() {
+    if (!$accountInfo['logged_in']) {
+      $window.alert('Please log in before making comments.');
+      return;
+    }
     $scope.newComment = {
       'entity_id': $scope.ed['entity_id'],
       'text': null
