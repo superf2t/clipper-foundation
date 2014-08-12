@@ -9,9 +9,14 @@ a {
   color: #2D73A0;
 }
 
-a:hover {
+a:hover, a:focus {
   text-decoration: none;
   color: #428bca;
+}
+
+/* Remove annoying dotted outlines in Firefox. */
+a, a:hover, a:active, a:focus {
+  outline: 0;
 }
 
 a.black-link {
