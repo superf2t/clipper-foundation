@@ -3,7 +3,6 @@
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
 // -Remove settings and feedback links if they're not functional.
-// -Check Yelp scraper.
 
 // UI cleanup:
 // -Firefox: drag and drop doesn't work.
