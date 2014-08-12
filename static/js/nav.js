@@ -8,7 +8,6 @@
 // UI cleanup:
 // -Firefox: Image on editor tab is overflowing its container.
 // -Firefox: login modals are mis-sized
-// -Firefox: trip plan button has 1px of whitespace beneath it in the nav.
 // -Firefox: drag and drop doesn't work.
 
 // For release:

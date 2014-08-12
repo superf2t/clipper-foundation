@@ -2206,7 +2206,7 @@ function DetailsPanelCtrl($scope, $tripPlanModel, $tripPlanService) {
       .success(function(response) {
         var guides = response['trip_plans'];
         var currentGuide = _.find(guides, function(guide) {
-          return guide['trip_plan_id'] == $tripPlanModel.tripPlanid();
+          return guide['trip_plan_id'] == $tripPlanModel.tripPlanId();
         });
         $scope.relatedGuides = generateRelatedGuides(guides, currentGuide);
       });      
