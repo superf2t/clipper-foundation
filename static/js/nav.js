@@ -2,7 +2,6 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
-// -Remove settings and feedback links if they're not functional.
 
 // For release:
 // -Create new db tables
