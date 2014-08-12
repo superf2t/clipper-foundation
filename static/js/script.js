@@ -1778,7 +1778,7 @@ var InfoPanelMode = {
 };
 
 var EXTENDED_INFO_PANEL_MODES = [
-  InfoPanelMode.EXPORT, InfoPanelMode.SHARING, InfoPanelMode.SETTINGS
+  InfoPanelMode.SHARING, InfoPanelMode.IMPORT, InfoPanelMode.SETTINGS
 ];
 
 function PageStateModel() {
