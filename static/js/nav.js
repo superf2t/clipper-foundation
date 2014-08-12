@@ -6,7 +6,6 @@
 // -Check Yelp scraper.
 
 // UI cleanup:
-// -Firefox: Image on editor tab is overflowing its container.
 // -Firefox: login modals are mis-sized
 // -Firefox: drag and drop doesn't work.
 
