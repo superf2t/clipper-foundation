@@ -41,6 +41,10 @@ a.black-link:hover .tc-icon svg {
   box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.4);
 }
 
+.navbar .left-controls a:hover {
+  border-radius: 0;
+}
+
 .navbar .right-controls {
   padding-right: 10px;
 }
