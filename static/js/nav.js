@@ -2,14 +2,6 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
-// -Remove settings and feedback links if they're not functional.
-// -Check Yelp scraper.
-
-// UI cleanup:
-// -Firefox: Image on editor tab is overflowing its container.
-// -Firefox: login modals are mis-sized
-// -Firefox: trip plan button has 1px of whitespace beneath it in the nav.
-// -Firefox: drag and drop doesn't work.
 
 // For release:
 // -Create new db tables

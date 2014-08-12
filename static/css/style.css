@@ -1831,6 +1831,8 @@ a.category-filter-link:hover {
   max-height: 300px;
   text-align: center;
   position: relative;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .edit-place .editable-carousel .photo-top-control,

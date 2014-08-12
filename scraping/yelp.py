@@ -1,3 +1,4 @@
+import json
 import urlparse
 
 import data
@@ -14,7 +15,9 @@ class YelpScraper(scraped_page.ScrapedPage):
     HANDLEABLE_URL_PATTERNS = scraped_page.urlpatterns(
         '^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/biz/.*$',
         ('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/search\?.*$',
-            scraped_page.result_page_expander('.//div[@class="results-wrapper"]//h3[@class="search-result-title"]//a[@class="biz-name"]'),
+            scraped_page.result_page_expander('.//div[@class="results-wrapper"]'
+                + '//div[contains(@class, "search-result") and not(contains(@class, "yla"))]'
+                + '//h3[@class="search-result-title"]//a[@class="biz-name"]'),
             False, REQUIRES_CLIENT_PAGE_SOURCE),
         ('^http(s)?://www\.yelp\.(com|[a-z]{2})(\.[a-z]{2})?/user_details.*$',
             scraped_page.result_page_expander('.//div[@id="user-details"]//div[@class="biz_info"]//h4//a'),
@@ -86,6 +89,16 @@ class YelpScraper(scraped_page.ScrapedPage):
             texts.append('%s\t%s' % (day, times))
         source_text = '\n'.join(texts)
         return data.OpeningHours(source_text=source_text)
+
+    @fail_returns_none
+    def parse_latlng(self):
+        map_data_elem = self.root.xpath('.//div[@class="mapbox"]//div[contains(@class, "lightbox-map")]')[0]
+        map_data = json.loads(map_data_elem.get('data-map-state'))
+        location = map_data['markers']['starred_business']['location']
+        return {
+            'lat': location['latitude'],
+            'lng': location['longitude'],
+        }
 
     @fail_returns_none
     def get_site_specific_entity_id(self):

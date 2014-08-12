@@ -40,13 +40,14 @@ a:hover {
 }
 
 #first-name-input {
-  float: left;
   width: 49%;
+  display: inline-block;
 }
 
 #last-name-input {
   float: right;
   width: 49%;
+  display: inline-block;
 }
 
 .btn-wrapper {

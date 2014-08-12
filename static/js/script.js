@@ -576,6 +576,9 @@ function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
           // to also go invisible.
           $entityDragStateModel.setDraggedEntity(ed, element);
         });
+        // Set data transfer so that Firefox considers this a valid drag event,
+        // even though we won't use the data.
+        event.originalEvent.dataTransfer.setData('unused', 'unused');
         $eventTracker.track({name: 'entity-dragged', location: 'summary-panel', value: ed['entity_id']});
       }).on('dragend', function() {
         $entityOrderingService.dragEnded();
@@ -611,13 +614,15 @@ function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
         var newIndex = newOrdering[ed['entity_id']];
         var shiftHeight = $entityDragStateModel.shiftHeight();
         if (newIndex > oldIndex) {
-          if (element.css('top') == 'auto') {
+          var top = element.css('top');
+          if (top == 'auto' || top == '0px') {
             element.css('top', shiftHeight);
           } else {
             element.css('top', '');
           }
         } else if (newIndex < oldIndex) {
-          if (element.css('top') == 'auto') {
+          var top = element.css('top');
+          if (top == 'auto' || top == '0px') {
             element.css('top', -shiftHeight);
           } else {
             element.css('top', '');
@@ -2206,7 +2211,7 @@ function DetailsPanelCtrl($scope, $tripPlanModel, $tripPlanService) {
       .success(function(response) {
         var guides = response['trip_plans'];
         var currentGuide = _.find(guides, function(guide) {
-          return guide['trip_plan_id'] == $tripPlanModel.tripPlanid();
+          return guide['trip_plan_id'] == $tripPlanModel.tripPlanId();
         });
         $scope.relatedGuides = generateRelatedGuides(guides, currentGuide);
       });      
