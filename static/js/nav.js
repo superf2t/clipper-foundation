@@ -2,6 +2,18 @@
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
 // -Get an email sender account on the new domain.
 // -Get icon screenshots for Windows browsers for clipper help text.
+// -Add some kind of footer to the profile page.
+// -Remove settings and feedback links if they're not functional.
+
+// UI cleanup:
+// -Firefox/Safari: the entity container is full height even when there is no content.
+// -Firefox: Image on editor tab is overflowing its container.
+// -Firefox: turn off link highlighting.
+// -Firefox: login modals are mis-sized
+// -Firefox: trip plan button has 1px of whitespace beneath it in the nav.
+// -Firefox: drag and drop doesn't work.
+// -Expandable description for entities is collapsing to just 2 lines, may be
+//  measuring line height wrong.
 
 // For release:
 // -Create new db tables

@@ -31,28 +31,31 @@
     </div>
 
     <div id="entity-container" class="nano" tc-set-nano-scrollbars
+      tc-link-heights="#entity-size-elem" height-watch-expr="planModel.entities()"
       ng-class="{'expanded': pageStateModel.summaryPanelExpanded}">
-      <div class="nano-content"
+      <div class="nano-content scroll-container"
         tc-scroll-to-selector scroll-on-changes-to="pageStateModel.selectedEntity"
         skip-scroll-when-in-view="true"
         scroll-dest-selector=".one-entity-summary[tc-entity-id='[[pageStateModel.selectedEntity['entity_id'] ]]'] .scroll-anchor"
         tc-track-entity-drag-state>
 
-        <tc-filter-bar filter-model="filterModel" tracking-location="summary-panel">
-        </tc-filter-bar>
+        <div id="entity-size-elem">
+          <tc-filter-bar filter-model="filterModel" tracking-location="summary-panel">
+          </tc-filter-bar>
 
-        <div ng-repeat="entity in planModel.entities()">
-          <div ng-include="'one-entity-summary-template'">
+          <div ng-repeat="entity in planModel.entities()">
+            <div ng-include="'one-entity-summary-template'">
+            </div>
           </div>
-        </div>
 
-        <div ng-if="!planModel.hasEntities()" class="no-entities-message">
-          <p> 
-            After you add places, a summary of your trip will show up here. 
-          <p/>
-          <p>
-            Drag and drop places to re-order.
-          </p>
+          <div ng-if="!planModel.hasEntities()" class="no-entities-message">
+            <p> 
+              After you add places, a summary of your trip will show up here. 
+            <p/>
+            <p>
+              Drag and drop places to re-order.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -66,32 +69,32 @@
     {% endif %}
     <div class="info-panel-content {% if allow_editing %}with-nav{% endif %}">
       <div ng-include="'details-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-show="pageStateModel.infoPanelMode == InfoPanelMode.DETAILS">
       </div>
       {% if allow_editing %}
       <div ng-include="'guides-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.GUIDES">
       </div>
       <div ng-include="'add-your-own-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN">
       </div>
       <div ng-include="'export-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
       </div>
       <div ng-include="'sharing-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
       </div>
       <div ng-include="'import-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.IMPORT">
       </div>
       <div ng-include="'settings-panel-template'"
-        class="nano" tc-set-nano-scrollbars
+        class="nano full-height" tc-set-nano-scrollbars
         ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
       </div>
       {% endif %}
@@ -1525,10 +1528,14 @@
           <div class="form-group full-width">
             <input type="text" class="form-control email-input"
               placeholder="Enter an email address"
-              ng-model="formState.email"/>
+              ng-model="formState.email"
+              ng-disabled="!accountInfo['logged_in']"/>
             <button class="btn btn-cta add-btn">
               Add
             </button>
+          </div>
+          <div ng-if="!accountInfo['logged_in']" class="not-logged-in-msg text-danger">
+            Please log in before adding collaborators.
           </div>
         </form>
       </div>

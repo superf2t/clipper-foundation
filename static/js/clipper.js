@@ -611,7 +611,6 @@ window['initClipper'] = function(allTripPlans, datatypeValues) {
     .controller('ClipperResultEntityCtrl', ClipperResultEntityCtrl)
     .controller('ClipperEntityPhotoCtrl', ClipperEntityPhotoCtrl)
     .service('$mapProxy', MapProxy)
-    .directive('tcStartNewTripInput', tcStartNewTripInput)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .directive('tcTripPlanSelector', tcTripPlanSelector)
     .directive('tcEntityIcon', tcEntityIcon);
