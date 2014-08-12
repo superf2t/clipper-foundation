@@ -15,7 +15,6 @@
 // -Too much vertical whitespace in the trip plan header if there is no description.
 // -Expandable description for entities is collapsing to just 2 lines, may be
 //  measuring line height wrong.
-// -Clear saved result indices when clicking into a related guide.
 
 // For release:
 // -Create new db tables

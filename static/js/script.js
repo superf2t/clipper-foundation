@@ -2294,6 +2294,7 @@ function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
     $scope.selectedGuide = guide;
     $mapManager.fitBoundsToEntities(guide['entities']);
     $filterModel.searchResultsEmphasized = true;
+    $searchResultState.clear();
     $scope.relatedGuides = generateRelatedGuides($scope.guides, guide);
   };
 
