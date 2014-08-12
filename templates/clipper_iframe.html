@@ -36,7 +36,7 @@
         tc-watch-for-overflow class-when-overflowing="has-overflow"
       watch-expr="displayState.dirtyCounter">
         <div class="intro-text">
-          Places on this page:
+          Places found on this page:
         </div>
         <div class="map-link">
           <a ng-click="openMap()" class="color-link"
@@ -66,14 +66,14 @@
               <span class="glyphicon glyphicon-minus-sign"></span>
             </a>
             <span class="info-text">
-              Click <span class="glyphicon glyphicon-plus-sign"></span> to select results to save 
+              Click <span class="glyphicon glyphicon-plus-sign"></span> to select places to save to your trip 
             </span>
           </div>
           <div ng-repeat="entity in entities" ng-include="'one-entity-result-template'">
           </div>
         </div>
         <div class="add-other-link">
-          <a ng-click="openAddOther()" href="javascript:void(0)" class="cta-link"
+          <a ng-click="openAddOther()" href="javascript:void(0)" class="add-to-trip-link"
             tc-track-click="{name: 'open-add-another-place', location: 'clipper-main'}">
             Add another place
           </a>
@@ -158,7 +158,7 @@
 
       <div ng-if="clipperState.status == ClipperState.WAITING_FOR_SCRAPE_FROM_PAGE_SOURCE"
         class="loading-panel full-spinner">
-        <div class="intro-text">Looking for places on this page...</div>
+        <div class="intro-text">TravelClipper is looking for places on this page that you can add to your trip...</div>
       </div>
     </div>
   </script>
@@ -167,7 +167,7 @@
     <div class="trip-plan-panel full-width full-height">
       <div class="current-trip-header">
         <div class="header-text">
-          Trip to save places:
+          Save selected places to trip:
         </div>
         <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
           <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
@@ -184,7 +184,7 @@
       </tc-trip-plan-selector>
 
       <div class="save-button-panel">
-        <button class="btn btn-cta save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
+        <button class="btn btn-primary save-to-trip-btn" ng-disabled="!saveButtonEnabled()"
           ng-click="saveEntities()"
           tc-track-click="{name: 'clipper-save-entities', location: 'clipper-save-panel', value: selectedEntities().length}">
           <span ng-if="selectedEntities().length != 1">
@@ -342,7 +342,7 @@
             </a>
           </div>
           <div class="imgs-prompt">
-            <textarea class="form-control" disabled="1">Drag and drop images anywhere in the clipper to add them</textarea>
+            <textarea class="form-control" disabled="1">Drag and drop images to add iamges</textarea>
           </div>
         </div>
       </div>

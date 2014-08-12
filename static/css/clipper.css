@@ -23,9 +23,8 @@
   bottom: 0;
   left: 0;
   overflow-y: auto;
-  box-shadow: 0px -1px 2px #aaaaaa;
-  background-color: #4A4A4A;
-  color: #fff;
+  border-top: 2px solid #dce0e0;
+  background-color: #FFFFFF;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -133,7 +132,7 @@
 .clip-success {
   margin: 20px;
   text-align: center;
-  font-size: 14pt;
+  font-size: 12pt;
 }
 
 .clip-success a {
@@ -229,19 +228,15 @@
 }
 
 .one-entity-result:hover {
-  background-color: #ccc;
+  background-color: #EEE;
 }
 
 .one-entity-result.editing {
   background-color: #fff !important;
 }
 
-.one-entity-result.selected {
-  background-color: #aaa;
-}
-
 .one-entity-result.selected-for-saving {
-  background-color: lightblue;
+  background-color: #DDD;
 }
 
 .one-entity-result .select-handle {
@@ -259,7 +254,8 @@
 }
 
 .one-entity-result .result-letter-icon.selected .map-marker.for-results .marker-shape svg {
-  stroke: #fff;
+  stroke: #263452;
+  stroke-width: 8px;
 }
 
 .one-entity-result .entity-info {
@@ -329,7 +325,6 @@
 
 .one-entity-result .description-editor .tip-text {
   color: #777;
-  text-align: center;
   margin-top: 10px;
 }
 
@@ -415,7 +410,6 @@
 
 .one-entity-result .location-editor .tip-text {
   color: #777;
-  text-align: center;
 }
 
 .one-entity-listing {
