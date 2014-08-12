@@ -576,6 +576,9 @@ function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
           // to also go invisible.
           $entityDragStateModel.setDraggedEntity(ed, element);
         });
+        // Set data transfer so that Firefox considers this a valid drag event,
+        // even though we won't use the data.
+        event.originalEvent.dataTransfer.setData('unused', 'unused');
         $eventTracker.track({name: 'entity-dragged', location: 'summary-panel', value: ed['entity_id']});
       }).on('dragend', function() {
         $entityOrderingService.dragEnded();
