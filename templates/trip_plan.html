@@ -53,7 +53,7 @@
               After you add places, a summary of your trip will show up here. 
             <p/>
             <p>
-              Drag and drop places to re-order them.
+              Drag and drop places to re-order.
             </p>
           </div>
         </div>
@@ -678,7 +678,7 @@
       </tc-filter-bar>
 
       {% if allow_editing %}
-      <div class="add-cover-image-cta" ng-if="!planModel.hasCoverImage()">
+      <div class="add-cover-image-cta" ng-if="!planModel.hasCoverImage() && planModel.hasEntities()">
         <a ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)" href="javascript:void(0)" class="white-link">
           <span class="cta-inner">Add a cover photo</a>
         </a>
@@ -726,18 +726,26 @@
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
           Welcome! Get started on building your trip plan for [[planModel.tripPlanData['location_name'] ]].
           <div class="sample-links">
+            {% if has_guides %}
             <span class="sample-link">
-              <span class="glyphicon glyphicon-book"></span>
-              Browse Guides
+              <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)"
+              tc-track-click="{name: 'getting-started-button-click', location: 'details-panel-no-entities', value: 'guides'}">
+                <span class="glyphicon glyphicon-book"></span>
+                Browse Guides
+              </a>
             </span>
             or
+            {% endif %}
             <span class="sample-link">
-              <span class="glyphicon glyphicon-plus"></span>
-              Add Your Own
+              <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)" href="javascript:void(0)"
+              tc-track-click="{name: 'getting-started-button-click', location: 'details-panel-no-entities', value: 'add-your-own'}">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add Your Own
+              </a>
             </span>
             </div>
           <br/>
-          to find places to add to your trip plan. After you're done planning, share it with friends to collaborate or export it to take with you on your trip.
+          to find places to add to your trip plan. Then, share your trip plan with friends to collaborate or export it to take with you while you travel.
         </p>
       </div>
       {% endif %}
@@ -1553,7 +1561,7 @@
           Paste a Google Maps Engine or My Maps URL to import to TravelClipper. The sharing settings for the Google map must be set to "Public" or "Anyone with the link".
         </div>
         <div class="paste-input">
-          <input type="text" class="form-control" placeholder="Paste a url"
+          <input type="text" class="form-control" placeholder="Paste a URL"
             ng-model="url" ng-paste="urlPasted()" ng-disabled="importing"
             tc-focus-on="ready"/>
           <div ng-show="importing" class="search-spinner">
@@ -1612,10 +1620,10 @@
         </div>
 
         <div class="input-section">
-          <label>Cover Image</label>
+          <label>Cover Phoro</label>
           <div ng-if="editingImage">
             <textarea class="cover-img-drop-target"
-              placeholder="Drag and drop an image or paste an image url"
+              placeholder="Drag and drop an image from your browser or paste an image URL"
               ng-model="coverImgUrlInput.text" ng-change="coverImgUrlChanged()" ng-paste="coverImgUrlPasted()"
               tc-dragenter="coverImgDragenter()" tc-dragover="$event.preventDefault()" tc-drop="coverImgUrlDropped($event)"
               ng-class="{'dragactive': coverImgDragActive}">
