@@ -12,6 +12,10 @@
     height: 100%;
     overflow-y: scroll;
   }
+  {# HACK: Firefox puts extra bottom space below this row #}
+  .name-input-row {
+    height: 40px;
+  }
 </style>
 
 <script>
@@ -49,12 +53,14 @@
       {{ render_field(form.next, value=request.args.get('next', '')) }}
       {{ render_field(form.iframe, value=request.args.get('iframe', '')) }}
     </div>
-    <span id="first-name-input">
-      {{ render_field(form.first_name, label_visible=False, placeholder='First name', autofocus=true, tabindex=220) }}
-    </span>
-    <span id="last-name-input">
-      {{ render_field(form.last_name, label_visible=False, placeholder='Last name', tabindex=221) }}
-    </span>
+    <div class="name-input-row">
+      <span id="first-name-input">
+        {{ render_field(form.first_name, label_visible=False, placeholder='First name', autofocus=true, tabindex=220) }}
+      </span>
+      <span id="last-name-input">
+        {{ render_field(form.last_name, label_visible=False, placeholder='Last name', tabindex=221) }}
+      </span>
+    </div>
     {# Can change to form.username to switch to username login #}
     {% set field = form.email %}
     <div class="form-group {% if field.errors %}has-error{% endif %}">

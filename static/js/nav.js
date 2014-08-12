@@ -6,7 +6,6 @@
 // -Check Yelp scraper.
 
 // UI cleanup:
-// -Firefox: login modals are mis-sized
 // -Firefox: drag and drop doesn't work.
 
 // For release:

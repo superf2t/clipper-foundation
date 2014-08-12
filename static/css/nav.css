@@ -158,6 +158,11 @@ a.black-link:hover .tc-icon svg {
   padding: 0;
 }
 
+.login-modal-window .modal-content {
+  width: 100%;
+  height: 100%;
+}
+
 .login-modal {
   width: 100%;
   height: 100%;
