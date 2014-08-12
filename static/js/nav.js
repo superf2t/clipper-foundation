@@ -12,7 +12,6 @@
 // -Firefox: login modals are mis-sized
 // -Firefox: trip plan button has 1px of whitespace beneath it in the nav.
 // -Firefox: drag and drop doesn't work.
-// -Too much vertical whitespace in the trip plan header if there is no description.
 // -Expandable description for entities is collapsing to just 2 lines, may be
 //  measuring line height wrong.
 
