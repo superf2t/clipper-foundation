@@ -1,1 +1,1 @@
-TravelClipper - {% block subject %}{% endblock %}
+WhereFare - {% block subject %}{% endblock %}
