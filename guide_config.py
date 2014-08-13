@@ -23,6 +23,8 @@ class GuideConfig(serializable.Serializable):
         return len(self.trip_plan_ids)
 
 def find_nearby_city_configs(latlng):
+    if not latlng:
+        return []
     city_configs = []
     for city_config in GUIDES_BY_CITY.itervalues():
         distance = geometry.earth_distance_meters(
