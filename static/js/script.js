@@ -853,11 +853,12 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     }
     if ($scope.forResults) {
       $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
-       $scope.markerState.deemphasized = $filterModel.searchResultsEmphasized;
+      $scope.markerState.deemphasized = false;
     } else {
       $scope.markerState.emphasized = $filterModel.entityIsHighlighted($scope.ed['entity_id']);
-      $scope.markerState.deemphasized = $filterModel.attributeFilteringActive()
-        && !$filterModel.hasActiveAttributeFilter($scope.ed);
+      $scope.markerState.deemphasized = $filterModel.searchResultsEmphasized ||
+        ($filterModel.attributeFilteringActive()
+          && !$filterModel.hasActiveAttributeFilter($scope.ed));
     }
   };
 
