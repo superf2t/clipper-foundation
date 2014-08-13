@@ -4059,7 +4059,8 @@ BrowserInfo.parse = function(userAgent) {
     app = BrowserApp.FIREFOX;
   } else if (userAgent.indexOf('Safari') != -1) {
     app = BrowserApp.SAFARI;
-  } else if (userAgent.indexOf('MSIE') != -1) {
+  } else if (userAgent.indexOf('MSIE') != -1
+    || (userAgent.indexOf('Windows NT') != -1 && userAgent.indexOf('.NET') != -1)) {
     app = BrowserApp.IE;
   }
 

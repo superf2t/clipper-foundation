@@ -6,7 +6,7 @@
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
   <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300,400">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-  <link rel="shortcut icon" href="/static/img/globe.png">
+  <link rel="shortcut icon" href="/static/img/globe-bw.png">
   {% include 'analytics.html' %}
 
   {% macro star_rating(value, max) -%}
@@ -164,9 +164,11 @@
       <div class="trip-title">
         {{trip_plan.name}}
       </div>
+      {% if trip_plan.user.display_name %}
       <div class="creator">
         {{trip_plan.user.display_name}}
       </div>
+      {% endif %}
     </div>
     {% if trip_plan.description %}
     <div class="description">{{trip_plan.description}}</div>
