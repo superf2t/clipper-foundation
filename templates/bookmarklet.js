@@ -87,7 +87,7 @@
 
       .__tc-header {
         width: 100%;
-        height: 30px;
+        height: 32px;
         margin: 0;
         padding: 0;
         position: relative;
@@ -96,12 +96,12 @@
       }
 
       .__tc-logo {
-        padding: 5px;
+        padding: 2px;
       }
 
       .__tc-iframe-container {
         width: 100%;
-        height: calc(100% - 30px);
+        height: calc(100% - 32px);
         padding: 0;
         margin: 0;
         background-color: #EAEAEA;
@@ -274,7 +274,7 @@
     var wrapper = $('{% strip %}
       <div class="__tc-clipper">
         <div class="__tc-header">
-          <img src="https://{{host}}/static/img/tc-logo.png" class="__tc-logo"/>
+          <img src="https://{{host}}/static/img/wf-logo.png" class="__tc-logo"/>
           <button class="__tc-button" id="__tc-x-button">
             X
           </button>
