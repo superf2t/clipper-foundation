@@ -164,9 +164,11 @@
       <div class="trip-title">
         {{trip_plan.name}}
       </div>
+      {% if trip_plan.user.display_name %}
       <div class="creator">
         {{trip_plan.user.display_name}}
       </div>
+      {% endif %}
     </div>
     {% if trip_plan.description %}
     <div class="description">{{trip_plan.description}}</div>
