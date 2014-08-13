@@ -1,4 +1,5 @@
 function hostnameFromUrl(url) {
+  url = urlWithProtocol(url);
   var fullHost = $('<a>').attr('href', url)[0].hostname;
   if (fullHost.substring(0, 4) == 'www.') {
     return fullHost.substring(4);
@@ -9,6 +10,16 @@ function hostnameFromUrl(url) {
 function hostNoSuffix(url) {
   var host = hostnameFromUrl(url);
   return host.split('.')[0];
+}
+
+function urlWithProtocol(url) {
+  if (url.indexOf('//') == 0) {
+    url = 'http:' + url;
+  }
+  if (url.indexOf('http') != 0) {
+    url = 'http://' + url;
+  }; 
+  return url;
 }
 
 function emailPrefix(email) {
@@ -45,6 +56,8 @@ function removeElemByValue(arr, value) {
 function isWhitespace(str) {
   return /^\s+$/.test(str);
 }
+
+var SUMMARY_PANEL_WIDTH_PERCENT = 0.15;
 
 var HOST_TO_ICON = {
   'foursquare.com': 'https://foursquare.com/img/touch-icon-ipad-retina.png'
@@ -88,72 +101,124 @@ function EntityModel(entityData, editable) {
     return !!this.data['latlng'];
   };
 
+  this.hasCategory = function() {
+    return !_.isEmpty(this.data['category'])
+      && this.data['category']['category_id'] != 0;
+  }
+
+  this.hasSubCategory = function() {
+    return !_.isEmpty(this.data['sub_category'])
+      && this.data['sub_category']['sub_category_id'] != 0;
+  };
+
+  this.categoryDisplayText = function() {
+    if (this.data['sub_category'] && this.data['sub_category']['name'] != 'none') {
+      return this.data['sub_category']['display_name'];
+    } else if (this.data['category'] && this.data['category']['name'] != 'none') {
+      return this.data['category']['display_name'];
+    }
+    return '';
+  };
+
+  this.hasOpeningHours = function() {
+    return this.data['opening_hours']
+    && (this.data['opening_hours']['as_string']
+      || this.data['opening_hours']['source_text']);
+  };
+
+  this.openingHoursStr = function() {
+    if (!this.data['opening_hours']) {
+      return null;
+    }
+    return this.data['opening_hours']['as_string']
+    || this.data['opening_hours']['source_text'];
+  };
+
+  this.hasComments = function() {
+    return this.data['comments'] && this.data['comments'].length;
+  };
+
+  this.numComments = function() {
+    if (this.data['comments']) {
+      return this.data['comments'].length;
+    }
+    return 0;
+  };
+
+  this.hasTags = function() {
+    return !_.isEmpty(this.data['tags']);
+  };
+
+  this.hasReputationInfo = function() {
+    return this.data['rating'] || this.data['review_count']
+  };
+
+  this.hasPhotos = function() {
+    return this.data['photo_urls'] && this.data['photo_urls'].length;
+  };
+
   this.gmapsLatLng = function() {
     if (!this.data['latlng']) {
       return null;
     }
     return new google.maps.LatLng(this.data['latlng']['lat'], this.data['latlng']['lng']);
   };
+
+  this.latlngString = function() {
+    return [this.data['latlng']['lat'], this.data['latlng']['lng']].join(',')
+  };
+
+  this.staticMiniMapUrl = function(opt_referenceLatlng) {
+    var parts = ['//maps.googleapis.com/maps/api/staticmap?sensor=false&size=100x100',
+      '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ',
+      '&center=', this.latlngString(),
+      '&markers=color:red%7C', this.latlngString()];
+    if (opt_referenceLatlng) {
+      var referenceLatlngString = [opt_referenceLatlng['lat'],
+        opt_referenceLatlng['lng']].join(',');
+      parts.push('&markers=size:small%7Ccolor:blue%7C' + referenceLatlngString);
+    }
+    return parts.join('');
+  };
+
+  this.getBackgroundImageUrl = function(opt_referenceLatlng) {
+    if (this.hasPhotos()) {
+      return this.data['photo_urls'][0];
+    } else if (this.hasLocation()) {
+      return this.staticMiniMapUrl(opt_referenceLatlng);
+    } else {
+      return '';
+    }
+  };
+
+  this.iconTemplateName = function() {
+    if (this.hasSubCategory()) {
+      return this.data['sub_category']['name'] + '-icon-template';
+    }
+    if (this.hasCategory()) {
+      return this.data['category']['name'] + '-icon-template';
+    }
+    return null;
+  };
 }
 
-function TripPlanModel(tripPlanData, entityDatas, notes) {
+function TripPlanModel(tripPlanData, entityDatas) {
   var me = this;
 
   this.resetEntities = function(entities) {
     this.entitiesById = dictByAttr(entities, 'entity_id');
     this.entityDatas = entities || [];
-    if (this.dayPlannerModel) {
-      this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
-    }
   };
 
   this.tripPlanData = tripPlanData;
-  this.notes = notes || [];
   this.resetEntities(entityDatas);
-
-  this.allItems = function() {
-    return _.map(this.entityDatas.concat(this.notes), function(data) {
-      return new ItemModel(data);
-    });
-  };
-
-  this.entityItems = function() {
-    return _.map(this.entityDatas, function(data) {
-      return new ItemModel(data);
-    });
-  };
-
-  this.entityItemCopies = function() {
-    return _.map(this.entityDatas, function(data) {
-      return new ItemModel(angular.copy(data));
-    });
-  };
 
   this.entities = function() {
     return this.entityDatas;
   };
 
-  this.noteItems = function() {
-    return _.map(this.notes, function(note) {
-      return new ItemModel(note);
-    });
-  };
-
-  this.noteItemCopies = function() {
-    return _.map(this.notes, function(note) {
-      return new ItemModel(angular.copy(note));
-    });
-  };
-
-  // TODO: Remove
-  this.entitiesForCategory = function(category) {
-    var entities = [];
-    $.each(this.entityDatas, function(i, entity) {
-      if (entity['category'] && entity['category']['category_id'] == category['category_id']) {
-        entities.push(entity);
-      }
-    });
-    return entities;
+  this.hasEntities = function() {
+    return this.entityDatas && this.entityDatas.length;
   };
 
   this.isEmpty = function() {
@@ -192,8 +257,16 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     return this.tripPlanData['description'];
   };
 
+  this.hasTags = function() {
+    return !_.isEmpty(this.tripPlanData['tags']);
+  };
+
   this.hasSource = function() {
     return !!this.tripPlanData['source_url'];
+  };
+
+  this.isGuide = function() {
+    return this.tripPlanData['trip_plan_type'] == 'GUIDE';
   };
 
   this.locationLatlng = function() {
@@ -226,14 +299,12 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
         me.entitiesById[updatedEntity['entity_id']] = updatedEntity;
       }
     });
-    this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
   };
 
   this.addNewEntities = function(entityDatas) {
     this.entityDatas.push.apply(this.entityDatas, entityDatas);
     $.each(entityDatas, function(i, entityData) {
       me.entitiesById[entityData['entity_id']] = entityData;
-      me.dayPlannerModel.insertNewItem(new ItemModel(entityData));
     });
   };
 
@@ -246,7 +317,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
         }
       }
       delete me.entitiesById[entityData['entity_id']];
-      me.dayPlannerModel.removeItem(new ItemModel(entityData));
     });
   };
 
@@ -283,26 +353,6 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     });
   };
 
-  this.updateNotes = function(noteDatas) {
-    var newNotesById = dictByAttr(noteDatas, 'note_id');
-    for (var i = this.notes.length - 1; i >= 0; i--) {
-      var noteId = this.notes[i]['note_id'];
-      var updatedNote = newNotesById[noteId];
-      if (updatedNote) {
-        if (updatedNote['status'] == 'DELETED') {
-          this.notes.splice(i, 1);
-        } else {
-          this.notes[i] = updatedNote;
-        }
-        delete newNotesById[noteId];
-      };
-    }
-    // Any leftover values are new notes, so we should append them.
-    this.notes.push.apply(this.notes, _.values(newNotesById));
-
-    this.dayPlannerModel.reset(this.entityItemCopies(), this.noteItemCopies());
-  };
-
   this.updateCollaborators = function(tripPlanCollaborators) {
     this.tripPlanData['editors'] = tripPlanCollaborators['editors'];
     this.tripPlanData['invitee_emails'] = tripPlanCollaborators['invitee_emails'];
@@ -330,8 +380,17 @@ function TripPlanModel(tripPlanData, entityDatas, notes) {
     }
     return null;
   };
+}
 
-  this.dayPlannerModel = new DayPlannerModel(this.entityItemCopies(), this.noteItemCopies());
+function ActiveTripPlanStateModel(tripPlan, numEntities) {
+  this.tripPlan = tripPlan;
+  this.numEntities = numEntities || 0;
+  this.lastClippedEntity = null;
+  this.savedEntityIds = {};
+
+  this.isSaved = function(entity) {
+    return !!this.savedEntityIds[entity['entity_id']];
+  };
 }
 
 function TaxonomyTree(categories, subCategories) {
@@ -360,41 +419,29 @@ function TaxonomyTree(categories, subCategories) {
   };
 }
 
-function ItemGroupCtrl($scope, $tripPlanModel, $map, $filterModel) {
-  $scope.show = function() {
-    if ($scope.itemGroupModel.grouping == Grouping.CATEGORY) {
-      return $filterModel.isCategoryNameSelected($scope.itemGroupModel.groupKey);
-    } else if ($scope.itemGroupModel.grouping == Grouping.DAY) {
-      return $filterModel.isDaySelected($scope.itemGroupModel.groupKey);
-    }
-    return true;
-  };
+var InlineEditMode = {
+  COMMENTS: 1,
+  DESCRIPTION: 2,
+  DIRECTIONS: 3,
+  TAGS: 4
+};
 
-  $scope.centerMapOnGroup = function() {
-    $scope.$emit('asktocloseallinfowindows');
-    var bounds = new google.maps.LatLngBounds()
-    $.each($scope.itemGroupModel.getEntityItems(), function(i, item) {
-      if (item.hasLocation()) {
-        bounds.extend(gmapsLatLngFromJson(item.data['latlng']));
-      }
-    });
-    if (!bounds.isEmpty()) {
-      $map.fitBounds(bounds);
-    }
-  };
-}
-
-function EntityCtrl($scope, $entityService, $modal,
-    $pagePositionManager, $tripPlanModel, $pageStateModel, $filterModel,
-    $timeout, $map, $templateToStringRenderer, $window) {
+function EntitySummaryCtrl($scope, $tripPlanModel, $entityEditingService,
+    $entityClippingService, $entityCtrlProxy, $entityDragStateModel,
+    $filterModel, $timeout) {
   var me = this;
-  $scope.ed = $scope.item.data;
-  var entityModel = new EntityModel($scope.item.data);
+  $scope.ed = $scope.entity;
+  $scope.em = new EntityModel($scope.ed);
   $scope.InlineEditMode = InlineEditMode;
+  $scope.isDraggable = true;
 
   $scope.controlState = {
     open: false,
     showSecondaryControls: false
+  };
+
+  $scope.selectEntity = function() {
+    $entityCtrlProxy.selectEntity($scope.ed);
   };
 
   $scope.openControls = function() {
@@ -412,480 +459,594 @@ function EntityCtrl($scope, $entityService, $modal,
     $scope.closeControls();
   });
 
-  this.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
-  };
-
-  $scope.map = $map;
-  $scope.position = entityModel.gmapsLatLng();
-  $scope.markerState = {
-    marker: null,
-    iconTemplateName: this.iconTemplateName(),
-    emphasized: false,
-    deemphasized: false
-  };
-
-  $scope.openEditPlaceModal = function(windowClass) {
-    var scope = $scope.$new(true);
-    scope.ed = angular.copy($scope.ed);
-    $modal.open({
-      templateUrl: 'edit-place-modal-template',
-      windowClass: windowClass,
-      scope: scope
-    });
-  };
-
-  $scope.reclipEntity = function() {
-    var scope = $scope.$new(true);
-    scope.entityModel = new EntityModel(angular.copy($scope.item.data));
-    scope.ed = scope.entityModel.data;
-    scope.ed['entity_id'] = null;
-    $modal.open({
-      templateUrl: 'reclip-confirmation-template',
-      scope: scope
-    });
+  $scope.openEditPlaceModal = function() {
+    $entityEditingService.openEditPlaceModal($scope.ed);
   };
 
   $scope.deleteEntity = function() {
-    var ok = $window.confirm('Are you sure you want to delete this place?');
-    if (!ok) {
-      return;
-    }
-    $entityService.deleteEntity($scope.item.data, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.removeEntities(response['entities']);
-          $scope.$emit('redrawgroupings');
-        } else {
-          alert('Failed to delete entity');
-        }
-      }).error(function() {
-        alert('Failed to delete entity')
-      });
+    $entityEditingService.deleteEntity($scope.ed);
   };
 
   $scope.saveStarState = function(starred) {
-    $scope.ed['starred'] = starred;
-    $entityService.editEntity({
-      'entity_id': $scope.ed['entity_id'],
-      'starred': starred
-    }, $tripPlanModel.tripPlanId())
-    .success(function(response) {
-      $tripPlanModel.updateLastModified(response['last_modified']);
-    });
+    $entityEditingService.saveStarState($scope.ed, starred);
   };
 
   $scope.openInlineEdit = function(inlineEditMode) {
-    $pageStateModel.midPanelExpanded = true;
-    $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
-    $scope.selectEntity($scope.ed);
-    $scope.$emit('asktoopeninlineedit', $scope.ed['entity_id'], inlineEditMode);
+    $entityCtrlProxy.openInlineEdit($scope.ed, inlineEditMode);
   };
 
-  // Map and Marker Controls
-
-  var infowindow = null;
-  $scope.infowindowOpen = false;
-
-  this.createInfowindow = function() {
-    var scope = $scope.$new();
-    var contentDiv = $templateToStringRenderer.render('infowindow-template', scope);
-    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv);
-    scope.onSizeChange = function() {
-      overlay.draw();
-    };
-    return overlay;
+  $scope.isBeingDragged = function() {
+    return $entityDragStateModel.isBeingDragged($scope.ed);
   };
 
-  this.destroyInfowindow = function() {
-    if (infowindow) {
-      infowindow.setMap(null);
-      infowindow = null;
-    }
+  $scope.isActive = function() {
+    return !$filterModel.attributeFilteringActive()
+      || $filterModel.hasActiveAttributeFilter($scope.ed);
   };
 
-  $scope.$on('$destroy', function() {
-    me.destroyInfowindow();
+  $scope.$watch(function() {
+    return $filterModel.attributeFilteringActive();
+  }, function(filteringActive) {
+    $scope.isDraggable = !filteringActive;
   });
 
-  this.setMarkerState = function() {
-    if (!$scope.markerState.marker) {
-      return;
-    }
-    var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
-    var selected = categorySelected && daySelected;
-    $scope.markerState.marker.setMap(selected ? $map : null);
-    if ($filterModel.emphasisActive()) {
-      var dayEmphasized = $scope.ed['day'] && ($scope.ed['day'] == $filterModel.emphasizedDayNumber);
-      $scope.markerState.emphasized = dayEmphasized;
-      $scope.markerState.deemphasized = !dayEmphasized;
-    } else {
-      $scope.markerState.emphasized = false;
-      $scope.markerState.deemphasized = false;
-    }
-    if (!selected) {
-      me.destroyInfowindow();
-      if ($pageStateModel.entityIsSelected($scope.ed['entity_id'])) {
-        $pageStateModel.selectedEntity = null;
-        $scope.infowindowOpen = false;
-      }
-    }
-  };
-
- $scope.$watch(_.constant($filterModel), this.setMarkerState, true);
- $timeout(this.setMarkerState);
-
-  $scope.markerClicked = function($event) {
-    $scope.selectEntity($scope.ed);  // parent scope method
-    $scope.openInfowindow();
+  $scope.filterToCategory = function($event) {
+    $filterModel.setActiveCategory($scope.ed['category']);
     $event.stopPropagation();
   };
-
-  $scope.openInfowindow = function() {
-    $scope.$emit('asktocloseallinfowindows');
-    if (entityModel.hasLocation()) {
-      infowindow = me.createInfowindow();
-      $scope.infowindowOpen = true;
-    }
-  };
-
-  $scope.$on('closeallinfowindows', function() {
-    $scope.infowindowOpen = false;
-    me.destroyInfowindow();
-  });
-
-  $scope.$on('emphasizemarkers', function() {
-    $scope.markerState.emphasized = true;
-  });
 }
 
-var InlineEditMode = {
-  COMMENTS: 1,
-  DAY_PLANNER: 2,
-  DIRECTIONS: 3
+function EntityOrderingService($entityDragStateModel, $tripPlanModel, $entityService) {
+  this.onDrop = function() {
+    if (!$entityDragStateModel.orderingChanged()) {
+      return;
+    }
+
+    var oldIndex = $entityDragStateModel.originalOrderingMap[
+      $entityDragStateModel.draggedEntity['entity_id']];
+    var newIndex = $entityDragStateModel.orderingMap[
+      $entityDragStateModel.draggedEntity['entity_id']];
+    var entity = $tripPlanModel.entityDatas.splice(oldIndex, 1)[0];
+    $tripPlanModel.entityDatas.splice(newIndex, 0, entity);
+
+    $entityService.orderentities($tripPlanModel.tripPlanId(), $entityDragStateModel.orderedEntityIds)
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $entityDragStateModel.createOrdering(response['entities']);
+        }
+      });
+  };
+
+  this.dragEnded = function() {
+    $entityDragStateModel.dragEnded();
+  };
+}
+
+function tcTrackEntityDragState($entityDragStateModel, $entityOrderingService) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(function() {
+        return $entityDragStateModel.orderingMap;
+      }, function(newOrdering, oldOrdering) {
+        if ($entityDragStateModel.shiftHeight()
+            && !_.isEmpty(newOrdering) && !_.isEmpty(oldOrdering)) {
+          scope.$broadcast('entity-ordering-changed', newOrdering, oldOrdering);
+        }
+      });
+
+      scope.$watch(function() {
+        return $entityDragStateModel.draggedEntity;
+      }, function(draggedEntity) {
+        if (!draggedEntity) {
+          scope.$broadcast('entity-dragging-ended');
+        }
+      });
+
+
+      element.on('dragover', function(event) {
+        if ($entityDragStateModel.draggingActive()) {
+          event.preventDefault();
+        }
+      });
+
+      element.on('drop', function(event) {
+        if ($entityDragStateModel.draggingActive()) {
+          $entityOrderingService.onDrop();
+          event.preventDefault();
+          scope.$apply();
+        }
+      });
+    }
+  };
+}
+
+function tcDraggableEntitySummary($timeout, $rootScope, $entityOrderingService,
+    $entityDragStateModel, $eventTracker) {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var ed = scope.ed;
+      var cachedHalfHeight = null;
+      element.on('dragstart', function(event) {
+        $timeout(function() {
+          // Do this in a timeout so that settings visiblity:hidden
+          // on the dragged element doesn't cause the drag ghost image
+          // to also go invisible.
+          $entityDragStateModel.setDraggedEntity(ed, element);
+        });
+        // Set data transfer so that Firefox considers this a valid drag event,
+        // even though we won't use the data.
+        event.originalEvent.dataTransfer.setData('unused', 'unused');
+        $eventTracker.track({name: 'entity-dragged', location: 'summary-panel', value: ed['entity_id']});
+      }).on('dragend', function() {
+        $entityOrderingService.dragEnded();
+        scope.$apply();
+      }).on('dragover', function(event) {
+        if (!cachedHalfHeight) {
+          cachedHalfHeight = element.height() / 2;
+        }
+        var mouseY = event.originalEvent.clientY;
+        var midY = element.offset().top + cachedHalfHeight;
+        if ((mouseY > midY
+            && $entityDragStateModel.isOrderedAfterDraggedEntity(ed))
+          || (mouseY < midY
+            && $entityDragStateModel.isOrderedBeforeDraggedEntity(ed))) {
+          $entityDragStateModel.swapPositions(ed);
+          scope.$apply();
+        }
+      }).on('dragleave', function() {
+        $entityDragStateModel.activeComparisonEntity = null;
+        scope.$apply();
+      });
+
+      scope.$on('entity-dragging-ended', function() {
+        element.css('top', '');
+        cachedHalfHeight = null;
+      });
+
+      scope.$on('entity-ordering-changed', function(event, newOrdering, oldOrdering) {
+        if ($entityDragStateModel.isBeingDragged(ed)) {
+          return;
+        }
+        var oldIndex = oldOrdering[ed['entity_id']];
+        var newIndex = newOrdering[ed['entity_id']];
+        var shiftHeight = $entityDragStateModel.shiftHeight();
+        if (newIndex > oldIndex) {
+          var top = element.css('top');
+          if (top == 'auto' || top == '0px') {
+            element.css('top', shiftHeight);
+          } else {
+            element.css('top', '');
+          }
+        } else if (newIndex < oldIndex) {
+          var top = element.css('top');
+          if (top == 'auto' || top == '0px') {
+            element.css('top', -shiftHeight);
+          } else {
+            element.css('top', '');
+          }
+        }
+      });
+    }
+  };
+}
+
+var InfoTab = {
+  ABOUT: 1,
+  DETAILS: 2,
+  COMMENTS: 3
 };
 
-function GuideviewEntityCtrl($scope, $entityService, $tripPlanModel,
-    $filterModel, $accountInfo, $modal, $window) {
-  $scope.ed = $scope.item.data;
-  $scope.show = true;
+function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
+    $pageStateModel, $filterModel, $searchResultState, $accountInfo, $map,
+    $entityEditingService, $entityClippingService,
+    $templateToStringRenderer, $sizeHelper, $eventTracker,
+    $window, $timeout) {
+  $scope.ed = $scope.entity;
+  $scope.em = new EntityModel($scope.ed);
+  $scope.accountInfo = $accountInfo;
+
+  $scope.et = $eventTracker;
+  this.getTrackingLocation = function() {
+    var location = $scope.forResults ? 'entity-details/result' : 'entity-details';
+    if ($scope.forGuide) {
+      location = location + '/guide';
+    }
+    return location;
+  };
+  $scope.trackingLocation = this.getTrackingLocation();
+
+  $scope.showAboutTab = function() {
+    return $scope.isEditable || (
+      $scope.ed['origin_trip_plan_name'] || $scope.ed['description']
+      || !_.isEmpty($scope.ed['tags']));
+  };
+
+  $scope.infoTab = $scope.showAboutTab() ? InfoTab.ABOUT : InfoTab.DETAILS;
+  $scope.InfoTab = InfoTab;
+
   $scope.inlineEditMode = null;
   $scope.InlineEditMode = InlineEditMode;
 
-  $scope.showSecondaryControls = false;
+  $scope.directionsHelper = new DirectionsHelper($tripPlanModel.entities(), $window);
 
-  $scope.allEntities = $tripPlanModel.entities();
-  $scope.directionsState = {
-    direction: 'from',
-    destination: null
+  $scope.newComment = {};
+  $scope.editingComment = null;
+
+  $scope.tagState = {rawInput: null};
+  $scope.descriptionState = {rawInput: null};
+
+  $scope.markerState = {
+    map: $map,
+    marker: null,
+    position: $scope.em.gmapsLatLng(),
+    infowindow: null,
+    emphasized: null,
+    deemphasized: null
   };
 
-  $scope.toggleDirectionsDirection = function() {
-    $scope.directionsState.direction = 
-      $scope.directionsState.direction == 'to' ? 'from' : 'to';
+  $scope.selectInfoTab = function(infoTab) {
+    $scope.infoTab = infoTab;
+    $scope.inlineEditMode = null;
+    $scope.directionsHelper.reset();
   };
 
-  $scope.getDirections = function() {
-    if (!$scope.directionsState.destination) {
-      return;
+  $scope.resultLetter = function() {
+    return String.fromCharCode(65 + $scope.resultIndex);
+
+  };
+
+  $scope.showCommentsTab = function() {
+    return $scope.isEditable || $scope.em.hasComments();
+  };
+
+  $scope.showTags = function() {
+    return ($scope.em.hasTags() || $scope.isEditable)
+      && $scope.inlineEditMode != InlineEditMode.TAGS;
+  };
+
+  $scope.showAddDescriptionPrompt = function() {
+    return !$scope.ed['description'] && $scope.isEditable
+      && $scope.inlineEditMode != InlineEditMode.DESCRIPTION;
+  };
+
+  $scope.isAlreadySaved = function() {
+    if ($scope.forResults) {
+      return $searchResultState.savedResultIndices[$scope.resultIndex];
+    } else {
+      return $activeTripPlanState.savedEntityIds[$scope.ed['entity_id']];
     }
-    var origin = $scope.directionsState.direction == 'to'
-      ? $scope.ed : $scope.directionsState.destination;
-    var destination = $scope.directionsState.direction == 'to'
-      ? $scope.directionsState.destination : $scope.ed;
-    var url = 'https://www.google.com/maps/dir/' + 
-      new ItemModel(origin).latlngString() + '/' +
-      new ItemModel(destination).latlngString();
-    $window.open(url, '_blank');
+  };
+
+  $scope.clipEntity = function() {
+    $entityClippingService.clipEntity($scope.ed, $scope.tripPlanId, $scope.resultIndex);
   };
 
   $scope.saveStarState = function(starred) {
-    $scope.ed['starred'] = starred;
-    $entityService.editEntity({
-      'entity_id': $scope.ed['entity_id'],
-      'starred': starred
-    }, $tripPlanModel.tripPlanId())
-    .success(function(response) {
-      $tripPlanModel.updateLastModified(response['last_modified']);
-    });
-  };
-
-  $scope.reclipEntity = function() {
-    var scope = $scope.$new(true);
-    scope.entityModel = new EntityModel(angular.copy($scope.ed));
-    scope.ed = scope.entityModel.data;
-    scope.ed['entity_id'] = null;
-    $modal.open({
-      templateUrl: 'reclip-confirmation-template',
-      scope: scope
-    });
+    $entityEditingService.saveStarState($scope.ed, starred);
   };
 
   $scope.deleteEntity = function() {
-    var ok = $window.confirm('Are you sure you want to delete this place?');
-    if (!ok) {
+    $entityEditingService.deleteEntity($scope.ed);
+  };
+
+  $scope.openEditPlaceModal = function() {
+    $entityEditingService.openEditPlaceModal($scope.ed);
+  };
+
+  $scope.openDirections = function() {
+    $scope.infoTab = InfoTab.DETAILS;
+    $scope.inlineEditMode = InlineEditMode.DIRECTIONS;
+  };
+
+  $scope.closeDirections = function() {
+    $scope.inlineEditMode = null;
+    $scope.directionsHelper.reset();
+  };
+
+  $scope.openNewComment = function() {
+    if (!$accountInfo['logged_in']) {
+      $window.alert('Please log in before making comments.');
       return;
     }
-    $entityService.deleteEntity($scope.ed, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.removeEntities(response['entities']);
-          $scope.$emit('redrawgroupings');
-        } else {
-          alert('Failed to delete entity');
-        }
-      }).error(function() {
-        alert('Failed to delete entity')
-      });
+    $scope.newComment = {
+      'entity_id': $scope.ed['entity_id'],
+      'text': null
+    };
+    $scope.infoTab = InfoTab.COMMENTS;
+    $scope.inlineEditMode = InlineEditMode.COMMENTS;
   };
-
-  $scope.openEditPlaceModal = function(windowClass) {
-    var scope = $scope.$new(true);
-    scope.ed = angular.copy($scope.ed);
-    $modal.open({
-      templateUrl: 'edit-place-modal-template',
-      windowClass: windowClass,
-      scope: scope
-    });   
-  };
-
-  $scope.toggleInlineEdit = function(inlineEditMode) {
-    if ($scope.inlineEditMode == inlineEditMode) {
-      $scope.inlineEditMode = null;
-    } else {
-      if (!$accountInfo['logged_in']
-        && inlineEditMode == InlineEditMode.COMMENTS) {
-        $window.alert('Please log in before making comments.');
-        return;
-      }
-
-      $scope.inlineEditMode = inlineEditMode;
-      if (inlineEditMode == InlineEditMode.COMMENTS) {
-        $scope.closeCommentEdit();
-        $scope.newComment = {
-          'entity_id': $scope.ed['entity_id'],
-          'text': ''
-        };
-      }
-    }
-  };
-
-  $scope.closeInlineEditor = function() {
-    $scope.inlineEditMode = null;
-  };
-
-  $scope.$on('openinlineedit', function($event, entityId, inlineEditMode) {
-    if ($scope.ed['entity_id'] != entityId) {
-      return;
-    }
-    $scope.inlineEditMode = null;
-    $scope.toggleInlineEdit(inlineEditMode);
-  });
-
-  $scope.$on('closeallcontrols', function() {
-    $scope.inlineEditMode = null;
-    $scope.closeCommentEdit();
-  });
 
   $scope.saveNewComment = function() {
-    if (!$scope.newComment['text']) {
-      return;
-    }
-    $entityService.addComment($scope.newComment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.addNewComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeInlineEditor();
-        }
-      });
+    $entityEditingService.saveNewComment($scope.newComment, function() {
+      $scope.closeNewComment();
+    });
   };
 
-  $scope.saveCommentEdit = function() {
-    if (!$scope.editingComment || !$scope.editingComment['text']) {
-      return;
-    }
-    $entityService.editComment($scope.editingComment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeCommentEdit();
-        }
-      });
-  };
-
-  $scope.deleteComment = function(comment) {
-    if (!$window.confirm('Are you sure you want to delete this comment?')) {
-      return;
-    }
-    $entityService.deleteComment(comment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.removeComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeCommentEdit();
-        }
-      });
+  $scope.closeNewComment = function() {
+    $scope.newComment = {};
+    $scope.inlineEditMode = null;
   };
 
   $scope.openCommentEdit = function(comment) {
     $scope.editingComment = angular.copy(comment);
-    $scope.closeInlineEditor();
+    $scope.inlineEditMode = null;
   };
 
   $scope.closeCommentEdit = function() {
     $scope.editingComment = null;
   };
 
-  $scope.show = function() {
-    var categorySelected = !$scope.ed['category'] || $filterModel.isCategorySelected($scope.ed['category']);
-    var daySelected = !$scope.ed['day'] || $filterModel.isDaySelected($scope.ed['day']);
-    return categorySelected && daySelected;
-  };
-
-  $scope.toggleControls = function() {
-    $scope.showSecondaryControls = !$scope.showSecondaryControls;
-  };
-}
-
-function NoteCtrl($scope, $noteService, $tripPlanModel) {
-  $scope.nd = $scope.item.data;
-  $scope.editing = false;
-
-  $scope.openEditNote = function() {
-    $scope.editing = true;
-  };
-
-  $scope.saveNote = function() {
-    $noteService.editNote($scope.item.data, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        $tripPlanModel.updateLastModified(response['last_modified']);
-      });
-    $scope.editing = false;
-  };
-}
-
-function DaySelectDropdownCtrl($scope, $tripPlanModel, $entityService,
-    $dataRefreshManager, $pageStateModel, $pagePositionManager, $timeout) {
-  $scope.selectedDayState = {dayModel: null};
-  if ($scope.ed['day']) {
-    $scope.selectedDayState.dayModel =
-      $tripPlanModel.dayPlannerModel.dayModelForDay($scope.ed['day']);
-  }
-
-  $scope.getDaySelectOptions = function() {
-    var daySelectOptions = $tripPlanModel.dayPlannerModel.dayModels.slice(0);
-    daySelectOptions.push({createNew: true});
-    return daySelectOptions;
-  };
-
-  $scope.organizeIntoDay = function(opt_callback) {
-    var dayPlannerModel = $tripPlanModel.dayPlannerModel;
-    var item = dayPlannerModel.findItemByEntityId($scope.ed['entity_id']);
-    var dayModel = $scope.selectedDayState.dayModel =
-      $scope.selectedDayState.dayModel.createNew
-      ? dayPlannerModel.addNewDay() : $scope.selectedDayState.dayModel;
-    var affectedItems = dayPlannerModel.organizeItem(
-      item, dayModel.dayNumber, dayModel.getItems().length);
-    var modifiedEntities = _.map(affectedItems, function(item) {
-      return {
-        'entity_id': item.data['entity_id'],
-        'day': item.day(),
-        'day_position': item.position()
-      }
+  $scope.saveCommentEdit = function() {
+    $entityEditingService.saveCommentEdit($scope.editingComment, function() {
+      $scope.closeCommentEdit();
     });
-    $dataRefreshManager.freeze();
-    $entityService.editEntities(modifiedEntities, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.updateEntities(response['entities']);
-          // This is kind of hacky.  Need to make it so that updateEntities()
-          // somehow updates the data in this scope.
-          $scope.ed['day'] = dayModel.dayNumber;
-          if ($pageStateModel.isGroupByDay()) {
-            $dataRefreshManager.redrawGroupings(function() {
-              $timeout(function() {
-                $pagePositionManager.scrollToEntity($scope.ed['entity_id']);
-              });
-            });
-          }
-        }
-        $dataRefreshManager.unfreeze();
-        $scope.onSelect && $scope.onSelect();
-      }).error(function() {
-        $dataRefreshManager.unfreeze();
+  };
+
+  $scope.deleteComment = function(comment) {
+    $entityEditingService.deleteComment(comment);
+  };
+
+  $scope.openTagsEditor = function() {
+    $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
+    $scope.inlineEditMode = InlineEditMode.TAGS;
+    $scope.infoTab = InfoTab.ABOUT;
+  };
+
+  $scope.closeTagsEditor = function() {
+    $scope.tagState.rawInput = null;
+    $scope.inlineEditMode = null;
+  };
+
+  $scope.saveTags = function() {
+    $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
+      $scope.closeTagsEditor();
+    });
+  };
+
+  $scope.openDescriptionEditor = function() {
+    $scope.descriptionState.rawInput = $scope.ed['description'];
+    $scope.inlineEditMode = InlineEditMode.DESCRIPTION;
+    $scope.infoTab = InfoTab.ABOUT;
+  };
+
+  $scope.saveDescription = function() {
+    $entityEditingService.saveDescription(
+      $scope.ed, $scope.descriptionState.rawInput, function() {
+        $scope.closeDescriptionEditor();
       });
   };
+
+  $scope.closeDescriptionEditor = function() {
+    $scope.descriptionState.rawInput = null;
+    $scope.inlineEditMode = null;
+  };
+
+  $scope.isActive = function() {
+    return $scope.forResults
+      || !$filterModel.attributeFilteringActive()
+      || $filterModel.hasActiveAttributeFilter($scope.ed);
+  };
+
+  $scope.makeTagActive = function(tag) {
+    $filterModel.setActiveTag(tag);
+  };
+
+  $scope.filterToCategory = function() {
+    $filterModel.setActiveCategory($scope.ed['category']);
+  };
+
+  $scope.markerClicked = function($event) {
+    if ($scope.forResults) {
+      $scope.selectResult();
+    } else {
+      $scope.selectEntity();
+    }
+    $event.stopPropagation();
+  };
+
+  $scope.setMarkerState = function() {
+    if (!$scope.markerState.marker) {
+      return;
+    }
+    if ($scope.forResults) {
+      $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
+       $scope.markerState.deemphasized = $filterModel.searchResultsEmphasized;
+    } else {
+      $scope.markerState.emphasized = $filterModel.entityIsHighlighted($scope.ed['entity_id']);
+      $scope.markerState.deemphasized = $filterModel.attributeFilteringActive()
+        && !$filterModel.hasActiveAttributeFilter($scope.ed);
+    }
+  };
+
+  $scope.highlightMarker = function() {
+    if ($scope.forResults) {
+      $searchResultState.highlightedIndex = $scope.resultIndex;
+    } else {
+      $filterModel.highlightedEntity = $scope.ed;
+    }
+  };
+
+  $scope.selectEntity = function() {
+    $pageStateModel.selectedEntity = $scope.ed;
+    $searchResultState.selectedIndex = null;
+    if (!$scope.markerState.infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
+      if ($scope.em.hasLocation()) {
+        $scope.createEntityInfowindow();
+      }      
+    }
+  };
+
+  $scope.selectResult = function() {
+    $searchResultState.selectedIndex = $scope.resultIndex;
+    $searchResultState.highlightedIndex = null;
+    $pageStateModel.selectedEntity = null;
+    if (!$scope.markerState.infowindow) {
+      $scope.$emit('asktocloseallinfowindows');
+      $scope.createResultsInfowindow();
+    }
+  };
+
+  $scope.entityIsSelected = function() {
+    if ($scope.forResults) {
+      return $searchResultState.selectedIndex == $scope.resultIndex;
+    } else {
+      return $pageStateModel.entityIsSelected($scope.ed['entity_id']);
+    }
+  };
+
+  $scope.resultAlreadySaved = function() {
+    return $searchResultState.savedResultIndices[$scope.resultIndex];
+  };
+
+  $scope.createEntityInfowindow = function() {
+    var scope = $scope.$new();
+    var contentDiv = $templateToStringRenderer.render('infowindow-template', scope);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    var overlay = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
+    scope.onSizeChange = function() {
+      overlay.draw();
+    };
+    $scope.markerState.infowindow = overlay;
+  };
+
+  $scope.createResultsInfowindow = function() {
+    var scope = $scope.$new();
+    var contentDiv = $templateToStringRenderer.render(
+      'results-infowindow-template', scope);
+    var extraPadding = $pageStateModel.summaryPanelExpanded
+      ? $sizeHelper.widthPercentToPixels(SUMMARY_PANEL_WIDTH_PERCENT)
+      : 0;
+    $scope.markerState.infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv, {
+      'extraPaddingX': extraPadding
+    });
+  };
+
+  $scope.destroyInfowindow = function() {
+    $scope.markerState.infowindow && $scope.markerState.infowindow.setMap(null);
+    $scope.markerState.infowindow = null;
+  };
+
+  $scope.$on('closeallinfowindows', function() {
+    $scope.destroyInfowindow();
+  });
+
+  $scope.$on('$destroy', function() {
+    $scope.destroyInfowindow();
+  });
+
+  $scope.$on('entity-selected', function(event, entity) {
+    if ($scope.ed['entity_id'] && entity['entity_id'] == $scope.ed['entity_id']) {
+      $scope.selectEntity();
+    }
+  });
+
+  $scope.$on('open-inline-edit', function(event, entity, inlineEditMode) {
+    if ($scope.ed['entity_id'] && entity['entity_id'] == $scope.ed['entity_id']) {
+      $scope.selectEntity();
+      $pageStateModel.infoPanelExpanded = true;
+      $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
+      if (inlineEditMode == InlineEditMode.COMMENTS) {
+        $scope.openNewComment();
+      } else if (inlineEditMode == InlineEditMode.DIRECTIONS) {
+        $scope.openDirections();
+      } else if (inlineEditMode == InlineEditMode.TAGS) {
+        $scope.openTagsEditor(); 
+      }
+    }
+  });
+
+  $scope.$watch(_.constant($filterModel), $scope.setMarkerState, true);
+  $scope.$watch(_.constant($searchResultState), $scope.setMarkerState, true);
+  $timeout($scope.setMarkerState);
 }
 
-function tcDaySelectDropdown() {
+function tcEntityDetails() {
   return {
     restrict: 'AE',
+    templateUrl: 'one-entity-details-template',
+    controller: EntityDetailsCtrl,
     scope: {
-      'ed': '=entityData',
-      'onSelect': '&'
-    },
-    templateUrl: 'day-select-dropdown-template',
-    controller: DaySelectDropdownCtrl
+      entity: '=',
+      tripPlanId: '=',
+      isEditable: '=',
+      forResults: '=',
+      forGuide: '=',
+      resultIndex: '='
+    }
   };
 }
 
-function InfowindowCtrl($scope, $tripPlanModel, $entityService,
+function tcTripPlanDetailsHeader() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'trip-plan-details-header-template',
+    scope: {
+      tripPlan: '=',
+      numEntities: '=',
+      fullBleed: '=',
+      clickable: '=',
+      showBorder: '=',
+      hiddenMode: '=',
+      includeDetails: '=',
+      includeCreator: '=',
+      onClick: '&'
+    }
+  };
+}
+
+function InfowindowCtrl($scope, $tripPlanModel, $activeTripPlanState,
+    $entityEditingService, $entityClippingService,
     $accountInfo, $window, $timeout) {
   $scope.inlineEditMode = null;
   $scope.InlineEditMode = InlineEditMode;
 
-  $scope.allEntities = $tripPlanModel.entities();
-  $scope.directionsState = {
-    direction: 'from',
-    destination: null
-  };
-
   $scope.showPrimaryControls = true;
   $scope.showSecondaryControls = false;
 
-  $scope.toggleDirectionsDirection = function() {
-    $scope.directionsState.direction = 
-      $scope.directionsState.direction == 'to' ? 'from' : 'to';
+  $scope.tagState = {rawInput: null};
+  $scope.newComment = {};
+
+  $scope.openTagsEditor = function() {
+    $scope.tagState.rawInput = _.pluck($scope.ed['tags'], 'text').join(', ');
+    $scope.openInlineEditorInternal(InlineEditMode.TAGS);
   };
 
-  $scope.getDirections = function() {
-    if (!$scope.directionsState.destination) {
-      return;
-    }
-    var origin = $scope.directionsState.direction == 'to'
-      ? $scope.ed : $scope.directionsState.destination;
-    var destination = $scope.directionsState.direction == 'to'
-      ? $scope.directionsState.destination : $scope.ed;
-    var url = 'https://www.google.com/maps/dir/' + 
-      new ItemModel(origin).latlngString() + '/' +
-      new ItemModel(destination).latlngString();
-    $window.open(url, '_blank');
+  $scope.closeTagsEditor = function() {
+    $scope.tagState.rawInput = null;
+    $scope.closeInlineEditorInternal();
+  };
+
+  $scope.saveTags = function() {
+    $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, function() {
+      $scope.closeTagsEditor();
+    });
+  };
+
+  $scope.openNewComment = function() {
+    $scope.newComment = {
+      'entity_id': $scope.ed['entity_id'],
+      'text': null
+    };
+    $scope.openInlineEditorInternal(InlineEditMode.COMMENTS);
+  };
+
+  $scope.closeNewComment = function() {
+    $scope.newComment = {};
+    $scope.closeInlineEditorInternal();
   };
 
   $scope.saveNewComment = function() {
-    if (!$scope.newComment['text']) {
-      return;
-    }
-    $entityService.addComment($scope.newComment, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.addNewComments(response['comments']);
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $scope.closeInlineEditor();
-        }
-      });
+    $entityEditingService.saveNewComment($scope.newComment, function() {
+      $scope.closeNewComment();
+    });
   };
 
   $scope.showInfoSection = function() {
@@ -896,28 +1057,40 @@ function InfowindowCtrl($scope, $tripPlanModel, $entityService,
     return !!$scope.inlineEditMode;
   };
 
-  $scope.toggleInlineEdit = function(inlineEditMode) {
-    if ($scope.inlineEditMode == inlineEditMode) {
-      $scope.inlineEditMode = null;
+  $scope.toggleTagsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.TAGS) {
+      $scope.closeTagsEditor();
     } else {
-      if (!$accountInfo['logged_in']
-        && inlineEditMode == InlineEditMode.COMMENTS) {
+      $scope.openTagsEditor();
+    }
+  };
+
+  $scope.toggleCommentsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.COMMENTS) {
+      $scope.closeNewComment();
+    } else {
+      if (!$accountInfo['logged_in']) {
         $window.alert('Please log in before making comments.');
         return;
       }
-
-      $scope.inlineEditMode = inlineEditMode;
-      if (inlineEditMode == InlineEditMode.COMMENTS) {
-        $scope.newComment = {
-          'entity_id': $scope.ed['entity_id'],
-          'text': ''
-        };
-      }
+      $scope.openNewComment();
     }
+  };
+
+  $scope.toggleDirectionsEdit = function() {
+    if ($scope.inlineEditMode == InlineEditMode.DIRECTIONS) {
+      $scope.closeInlineEditorInternal();
+    } else {
+      $scope.openInlineEditorInternal(InlineEditMode.DIRECTIONS);
+    }
+  };
+
+  $scope.openInlineEditorInternal = function(inlineEditMode) {
+    $scope.inlineEditMode = inlineEditMode;
     $timeout($scope.onSizeChange);
   };
 
-  $scope.closeInlineEditor = function() {
+  $scope.closeInlineEditorInternal = function() {
     $scope.inlineEditMode = null;
     $timeout($scope.onSizeChange);
   };
@@ -925,6 +1098,14 @@ function InfowindowCtrl($scope, $tripPlanModel, $entityService,
   $scope.toggleControls = function() {
     $scope.showPrimaryControls = !$scope.showPrimaryControls;
     $scope.showSecondaryControls = !$scope.showSecondaryControls;
+  };
+
+  $scope.clipEntity = function() {
+    $entityClippingService.clipEntity($scope.ed, $tripPlanModel.tripPlanId());
+  };
+
+  $scope.isAlreadySaved = function() {
+    return $activeTripPlanState.isSaved($scope.ed);
   };
 }
 
@@ -1226,6 +1407,8 @@ function tcEntityMarker() {
       hasComments: '=',
       emphasized: '=',
       deemphasized: '=',
+      forResults: '=',
+      resultLetter: '=',
       draggable: '=',
       onDragEnd: '&',
       selected: '&',
@@ -1246,6 +1429,9 @@ function tcEntityMarker() {
         }
         if ($scope.deemphasized) {
           classes.push('deemphasized');
+        }
+        if ($scope.forResults) {
+          classes.push('for-results');
         }
         return classes;
       };
@@ -1279,13 +1465,18 @@ function tcEntityIcon() {
     scope: {
       precise: '=',
       categoryName: '=',
-      iconTemplateName: '='
+      iconTemplateName: '=',
+      forResults: '=',
+      resultLetter: '=',
     },
     controller: function($scope) {
       $scope.getClasses = function() {
         var classes = [];
         if ($scope.categoryName) {
           classes.push($scope.categoryName);
+        }
+        if ($scope.forResults) {
+          classes.push('for-results');
         }
         return classes;
       };
@@ -1406,7 +1597,7 @@ function tcSvgHack($timeout) {
 
 HtmlInfowindow.prototype = new google.maps.OverlayView();
 
-function HtmlInfowindow(marker, contentDiv) {
+function HtmlInfowindow(marker, contentDiv, opt_options) {
   this.marker = marker;
   this.contentDiv = contentDiv;
   this.innerDiv = $('<div>').css({
@@ -1425,6 +1616,13 @@ function HtmlInfowindow(marker, contentDiv) {
   });
 
   marker.map && this.setMap(marker.map);
+
+  var opts = opt_options || {};
+  this.options = {
+    extraPaddingX: opts['extraPaddingX'] || 0,
+    extraPaddingY: opts['extraPaddingY'] || 0
+
+  };
 }
 // Override
 HtmlInfowindow.prototype.onAdd = function() {
@@ -1472,8 +1670,8 @@ HtmlInfowindow.prototype.panMap = function() {
     + this.innerDiv.position().top + this.contentDiv.position().top;
 
   // Padding on the infowindow
-  var padX = 40;
-  var padY = 40;
+  var padX = 40 + this.options.extraPaddingX;
+  var padY = 40 + this.options.extraPaddingY;
 
   // The bounds of the map
   var mapWestLng = bounds.getSouthWest().lng();
@@ -1510,68 +1708,37 @@ HtmlInfowindow.prototype.panMap = function() {
   map.panTo(new google.maps.LatLng(centerY, centerX));
 };
 
-function GuideviewItemGroupCtrl($scope) {
-}
-
-function TripPlanSelectDropdownCtrl($scope, $tripPlanService, $allTripPlans) {
-  $scope.tripPlanSelectOptions = $allTripPlans.slice(0);
-  $scope.tripPlanSelectOptions.push({
-    'name': 'Create a new trip',
-    'trip_plan_id': 0,
-    createNew: true
-  });
-  if (!$scope.selectedTripPlan) {
-    $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
-  }
-  $scope.newTripPlanRawLocation = ''
-  $scope.showCreateTripPlanForm = false;
-  $scope.$watch('selectedTripPlan', function(newValue) {
-    if (newValue.createNew) {
-      $scope.showCreateTripPlanForm = true;
-    } else {
-      $scope.showCreateTripPlanForm = false;
-    }
-  });
-
-  $scope.saveNewTripPlan = function(tripPlanDetails) {
-    var newTripPlan = {'name': $scope.newTripPlanName};
-    $tripPlanService.saveNewTripPlan(tripPlanDetails)
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.showCreateTripPlanForm = false;
-          $scope.newTripPlanName = '';
-          var newTripPlan = response['trip_plans'][0];
-          $scope.tripPlanSelectOptions.splice(0, 0, newTripPlan);
-          $scope.selectedTripPlan = newTripPlan;
+function tcTripPlanSelector() {
+  return {
+    restrict: 'AE',
+    templateUrl: 'trip-plan-selector-template',
+    scope: {
+      tripPlans: '=',
+      selectedTripPlan: '=selectTripPlanTo',
+      showCreateNew: '=',
+      onCreateNewSelected: '&'
+    },
+    controller: function($scope) {
+      $scope.$watch('tripPlans', function(tripPlans) {
+        if (!tripPlans) return;
+        $scope.tripPlanSelectOptions = tripPlans.slice(0);
+        if ($scope.showCreateNew) {
+          $scope.tripPlanSelectOptions.push({
+            'name': 'Create a new trip',
+            'trip_plan_id': 0,
+            createNew: true
+          });    
+        }
+        if (!$scope.selectedTripPlan) {
+          $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
+        }
+      }, true);
+      $scope.$watch('selectedTripPlan', function(newValue) {
+        if (newValue && newValue.createNew) {
+          $scope.onCreateNewSelected();
         }
       });
-  };
-}
-
-function ReclipConfirmationCtrl($scope, $timeout, $entityService) {
-  $scope.selectionState = {
-    selectedTripPlan: null
-  };
-
-  $scope.reclipEntity = function() {
-    var tripPlanId = $scope.selectionState.selectedTripPlan['trip_plan_id'];
-    var entityToSave = angular.copy($scope.entityModel.data);
-    delete entityToSave['day'];
-    delete entityToSave['day_position'];
-    $entityService.saveNewEntity(entityToSave, tripPlanId)
-      .success(function(response) {
-        $scope.reclipSucceeded = true;
-        $timeout($scope.$close, 3000);
-      });
-  };
-
-  $scope.dismissReclipConfirmation = function() {
-    $scope.$close();
-  };
-
-  $scope.showSaveButtons = function() {
-    return !$scope.selectionState.selectedTripPlan
-      || $scope.selectionState.selectedTripPlan['trip_plan_id'] > 0;
+    }
   };
 }
 
@@ -1602,234 +1769,213 @@ var Grouping = {
   DAY: 2
 };
 
-var MidPanelMode = {
-  GUIDE: 1,
-  SEARCH_PLACES: 2,
-  WEB_SEARCH_PLACES: 3,
-  TRAVEL_GUIDES: 4,
-  CLIP_MY_OWN: 5
+var InfoPanelMode = {
+  DETAILS: 1,
+  GUIDES: 2,
+  ADD_YOUR_OWN: 3,
+  EXPORT: 4,
+  SHARING: 5,
+  SETTINGS: 6
 };
 
-function PageStateModel(grouping, needsTutorial) {
-  this.omniboxOpen = false;
-  this.midPanelExpanded = false;
-  this.midPanelMode = MidPanelMode.GUIDE;
-  this.midPanelModeName = null;
-  this.inNewTripPlanModal = false;
-  this.grouping = grouping;
+var EXTENDED_INFO_PANEL_MODES = [
+  InfoPanelMode.SHARING, InfoPanelMode.IMPORT, InfoPanelMode.SETTINGS
+];
+
+function PageStateModel() {
+  this.summaryPanelExpanded = true;
+  this.infoPanelExpanded = true;
+  this.infoPanelMode = InfoPanelMode.DETAILS;
+  this.infoPanelShowExtendedNavItems = false;
   this.selectedEntity = null;
-  this.needsTutorial = needsTutorial;
-
-  this.isMapFullScreen = function() {
-    return this.inNewTripPlanModal;
-  };
-
-  this.inAddPlacePanel = function() {
-    return this.midPanelMode != MidPanelMode.GUIDE;
-  };
-
-  this.isGroupByCategory = function() {
-    return this.grouping == Grouping.CATEGORY;
-  };
-
-  this.isGroupByDay = function() {
-    return this.grouping == Grouping.DAY;
-  };
-
-  this.groupByCategory = function() {
-    this.grouping = Grouping.CATEGORY;
-  };
-
-  this.groupByDay = function() {
-    this.grouping = Grouping.DAY;
-  };
+  this.showAfterNewTripPlanPanel = false;
 
   this.entityIsSelected = function(entityId) {
     return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
   };
 }
 
-PageStateModel.fromInitialState = function(initialState) {
-  var grouping = initialState['sort'] == 'day' ? Grouping.DAY : Grouping.CATEGORY;
-  var needsTutorial = initialState['needs_tutorial'];
-  return new PageStateModel(grouping, needsTutorial);
-}
-
-function ItemGroupModel(grouping, groupKey, groupRank, itemRankFn) {
-  this.grouping = grouping;
-  this.groupKey = groupKey;
-  this.groupRank = groupRank;
-  this.sortedItems = [];
-
-  this.addItem = function(item) {
-    var insertionIndex = itemRankFn ? _.sortedIndex(this.sortedItems, item, itemRankFn)
-      : this.sortedItems.length;
-    this.sortedItems.splice(insertionIndex, 0, item);
-  };
-
-  this.getItems = function() {
-    return this.sortedItems;
-  };
-
-  this.hasContent = function() {
-    return this.sortedItems && this.sortedItems.length
-      && (this.getEntityItems().length || this.getNonemptyNoteItems().length);
-  };
-
-  this.getEntityItems = function() {
-    return _.filter(this.sortedItems, function(item) {
-      return item.isEntity();
-    });
-  };
-
-  this.getNoteItems = function() {
-    return _.filter(this.sortedItems, function(item) {
-      return item.isNote();
-    });
-  };
-
-  this.getNonemptyNoteItems = function() {
-    return _.filter(this.getNoteItems(), function(noteItem) {
-      return !!noteItem.data['text'];
-    });
-  };
-
-  this.isDayGrouping = function() {
-    return this.grouping == Grouping.DAY;
-  };
-
-  this.isCategoryGrouping = function() {
-    return this.grouping == Grouping.CATEGORY;
-  };
-}
-
-function createDayItemGroupModel(dayNumber) {
-  return new ItemGroupModel(Grouping.DAY, dayNumber, dayNumber, function(item) {
-    return item.position();
-  });
-}
-
-var CATEGORY_NAME_TO_SORTING_RANK = {
-  'lodging': 1,
-  'food_and_drink': 2,
-  'attractions': 3,
-  'entertainment': 4,
-  'activities': 5,
-  'shopping': 6
-};
-
-function createCategoryItemGroupModel(categoryName) {
-  var groupRank = CATEGORY_NAME_TO_SORTING_RANK[categoryName];
-  return new ItemGroupModel(Grouping.CATEGORY, categoryName, groupRank, null);
-}
-
-function processIntoGroups(grouping, items) {
-  var groupsByKey = {};
-  var groupKeyFn = null;
-  var groupCreateFn = null
-  if (grouping == Grouping.CATEGORY) {
-    groupKeyFn = function(item) {
-      return item.data['category'] && item.data['category']['name'];
-    };
-    groupCreateFn = createCategoryItemGroupModel;
-  } else if (grouping == Grouping.DAY) {
-    groupKeyFn = function(item) {
-      return item.day();
-    };
-    groupCreateFn = createDayItemGroupModel;
-  }
-
-  $.each(items, function(i, item) {
-    var groupKey = groupKeyFn(item);
-    var groupModel = groupsByKey[groupKey];
-    if (!groupModel) {
-      groupModel = groupsByKey[groupKey] = groupCreateFn(groupKey);
-    }
-    groupModel.addItem(item);
-  });
-  return _.sortBy(_.values(groupsByKey), 'groupRank');
-}
-
 function FilterModel() {
-  this.selectedCategoryNames = {};
-  this.selectedDayNumbers = {};
-  this.emphasizedDayNumber = null;
   this.searchResultsEmphasized = false;
+  this.highlightedEntity = null;
 
-  this.isCategorySelected = function(category) {
-    return this.selectedCategoryNames[category['name']] != false;
-  };
+  this.activeTagText = null;
+  this.activeCategory = null;
 
-  this.isCategoryNameSelected = function(name) {
-    return this.selectedCategoryNames[name] != false;
-  };
-
-  this.isDaySelected = function(dayNumber) {
-    return this.selectedDayNumbers[dayNumber] != false;
-  };
-
-  this.toggleCategory = function(category) {
-    if (this.selectedCategoryNames[category['name']] == false) {
-      this.selectedCategoryNames[category['name']] = true;
-    } else {
-      this.selectedCategoryNames[category['name']] = false;
-    }
-  };
-
-  this.toggleDay = function(dayNumber) {
-    if (this.selectedDayNumbers[dayNumber] == false) {
-      this.selectedDayNumbers[dayNumber] = true;
-    } else {
-      this.selectedDayNumbers[dayNumber] = false;
-    }
+  this.entityIsHighlighted = function(entityId) {
+    return this.highlightedEntity && this.highlightedEntity['entity_id'] == entityId;
   };
 
   this.emphasisActive = function() {
     return this.emphasizedDayNumber != null || this.searchResultsEmphasized;
   };
+
+  this.clear = function() {
+    this.searchResultsEmphasized = false;
+    this.highlightedEntity = null;
+    this.activeTagText = null;
+  };
+
+  this.attributeFilteringActive = function() {
+    return this.activeTagText || this.activeCategory;
+  };
+
+  this.setActiveTag = function(tag) {
+    this.clearAttributeFilters();
+    this.activeTagText = tag['text'].toLowerCase().trim();
+  };
+
+  this.hasActiveTag = function(tags) {
+    if (!this.activeTagText || _.isEmpty(tags)) {
+      return false;
+    }
+    for (var i = 0, I = tags.length; i < I; i++) {
+      if (tags[i]['text'].toLowerCase().trim() == this.activeTagText) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  this.clearAttributeFilters = function() {
+    this.activeTagText = null;
+    this.activeCategory = null;
+  };
+
+  this.setActiveCategory = function(category) {
+    this.clearAttributeFilters();
+    this.activeCategory = category && category['category_id'] ? category : null;
+  };
+
+  this.hasActiveCategory = function(category) {
+    return this.activeCategory && category
+      && this.activeCategory['category_id'] == category['category_id'];
+  };
+
+  this.hasActiveAttributeFilter = function(entity) {
+    return this.hasActiveTag(entity['tags']) || this.hasActiveCategory(entity['category']);
+  };
 }
 
-function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanModel, $tripPlan, 
-    $map, $pageStateModel, $filterModel, $searchResultState, $entityService, $allowEditing, $accountInfo) {
+function tcFilterBar() {
+  return {
+    restrict: 'AE',
+    scope: {
+      filterModel: '=',
+      trackingLocation: '@'
+    },
+    templateUrl: 'filter-bar-template'
+  };
+}
+
+function EntityDragStateModel(tripPlanModel) {
+  this.draggedEntity = null;
+  this.draggedElement = null;
+  this.draggedElementHeight = null;
+  this.activeComparisonEntity = null;
+
+  this.orderedEntityIds = [];
+  this.orderingMap = {};
+  this.originalOrderedEntityIds = [];
+  this.originalOrderingMap = {};
+
+  this.setDraggedEntity = function(entity, element) {
+    this.draggedEntity = entity;
+    this.draggedElement = element;
+    this.draggedElementHeight = element.height();
+  };
+
+  this.dragEnded = function() {
+    this.draggedEntity = null;
+    this.draggedElement = null
+    this.draggedElementHeight = null;
+    this.activeComparisonEntity = null;
+    this.orderedEntityIds = angular.copy(this.originalOrderedEntityIds);
+  };
+
+  this.createOrdering = function(entities) {
+    var me = this;
+    $.each(entities, function(i, entity) {
+      var entityId = entity['entity_id'];
+      me.orderedEntityIds[i] = entityId;
+      me.orderingMap[entityId] = i;
+      me.originalOrderedEntityIds[i] = entityId;
+      me.originalOrderingMap[entityId] = i;
+    });
+  };
+  this.createOrdering(tripPlanModel.entities());
+
+  this.draggingActive = function() {
+    return !!this.draggedEntity;
+  };
+
+  this.isBeingDragged = function(entity) {
+    return this.draggedEntity && this.draggedEntity['entity_id'] == entity['entity_id'];
+  };
+
+  this.isOrderedBeforeDraggedEntity = function(entity) {
+    return this.orderingMap[entity['entity_id']]
+      < this.originalOrderingMap[this.draggedEntity['entity_id']];
+  };
+
+  this.isOrderedAfterDraggedEntity = function(entity) {
+    return this.orderingMap[entity['entity_id']]
+      > this.originalOrderingMap[this.draggedEntity['entity_id']];
+  };
+
+  this.swapPositions = function(entity) {
+    if (this.activeComparisonEntity === entity) {
+      return;
+    }
+    this.activeComparisonEntity = entity;
+    var targetIndex = this.orderingMap[entity['entity_id']];
+    var currentIndex = this.orderingMap[this.draggedEntity['entity_id']];
+    this.orderedEntityIds.splice(currentIndex, 1);
+    this.orderedEntityIds.splice(targetIndex, 0, this.draggedEntity['entity_id']);
+    var newOrderingMap = {};
+    $.each(this.orderedEntityIds, function(i, entityId) {
+      newOrderingMap[entityId] = i;
+    });
+    this.orderingMap = newOrderingMap;
+  };
+
+  this.orderingChanged = function() {
+    return this.orderedEntityIds != this.originalOrderedEntityIds;
+  };
+
+  this.shiftHeight = function() {
+    return this.draggedElementHeight;
+  };
+}
+
+function DataCache() {
+  this.guides = null;
+
+  this.clear = function() {
+    this.guides = null;
+  };
+}
+
+function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
+    $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
+    $searchResultState, $entityDragStateModel, $entityService,
+    $allowEditing, $accountInfo, $allTripPlans, $activeTripPlanState,
+    $hasGuides, $flashedMessages, $eventTracker) {
   var me = this;
+  $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
   $scope.searchResultState = $searchResultState;
-  $scope.MidPanelMode = MidPanelMode;
+  $scope.InfoPanelMode = InfoPanelMode;
   $scope.planModel = $tripPlanModel;
   $scope.filterModel = $filterModel;
   $scope.allowEditing = $allowEditing;
+  $scope.allTripPlans = $allTripPlans;
+  $scope.activeTripPlanState = $activeTripPlanState;
+  $scope.hasGuides = $hasGuides;
+  $scope.flashedMessages = $flashedMessages;
+  $scope.et = $eventTracker;
   $scope.refreshState = {
     paused: false
-  };
-  $scope.clipState = {
-    url: null,
-    clipping: false,
-    statusCode: null
-  };
-  this.processItemsIntoGroups = function() {
-    $scope.itemGroups = processIntoGroups($scope.pageStateModel.grouping, $scope.planModel.allItems());
-  };
-  this.processItemsIntoGroups();
-
-  $scope.scrollState = {
-    entityId: null
-  };
-
-  $scope.$on('scrolltoentity', function($event, entityId) {
-    $scope.scrollState.entityId = entityId;
-  });
-
-  $scope.$on('redrawgroupings', function($event, opt_callback) {
-    me.processItemsIntoGroups();
-    opt_callback && opt_callback();
-  });
-
-  $scope.emphasizeDay = function(dayNumber) {
-    $filterModel.emphasizedDayNumber = dayNumber;
-  };
-
-  $scope.deemphasizeDay = function() {
-    $filterModel.emphasizedDayNumber = null;
   };
 
   $scope.resetMapState = function() {
@@ -1838,25 +1984,31 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $filterModel.emphasizedDayNumber = null;
   };
 
-  $scope.openMidPanel = function() {
-    $pageStateModel.midPanelExpanded = true;
+  $scope.openInfoPanel = function() {
+    $pageStateModel.infoPanelExpanded = true;
   };
 
-  $scope.closeMidPanel = function() {
-    $pageStateModel.midPanelExpanded = false;
-    $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
+  $scope.closeInfoPanel = function() {
+    $pageStateModel.infoPanelExpanded = false;
+    $pageStateModel.infoPanelMode = InfoPanelMode.DETAILS;
     $scope.$broadcast('closeallinfowindows');
     $pageStateModel.selectedEntity = null;
-    $scope.$broadcast('midpanelclosing');
+    $searchResultState.clear();
+    $filterModel.searchResultsEmphasized = false;
+    $scope.$broadcast('infopanelclosing');
   };
 
-  $scope.openGuide = function() {
-    $pageStateModel.midPanelMode = MidPanelMode.GUIDE;
-    $scope.openMidPanel();
+  $scope.openDetailsPanel = function() {
+    $scope.goToInfoPanel(InfoPanelMode.DETAILS);
   };
 
-  $scope.inTutorial = function() {
-    return $pageStateModel.needsTutorial && $tripPlanModel.isEmpty();
+  $scope.goToInfoPanel = function(infoPanelMode) {
+    $pageStateModel.infoPanelMode = infoPanelMode;
+    $pageStateModel.infoPanelShowExtendedNavItems = 
+      _.contains(EXTENDED_INFO_PANEL_MODES, infoPanelMode);
+    $scope.openInfoPanel();
+    $searchResultState.clear();
+    $filterModel.clear();
   };
 
   $scope.updateMap = function() {
@@ -1872,135 +2024,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$apply();
   });
 
-  $scope.groupByCategory = function() {
-    if (!$scope.pageStateModel.isGroupByCategory()) {
-      $scope.pageStateModel.groupByCategory();
-      me.processItemsIntoGroups();
-    }
-  };
-
-  $scope.groupByDay = function() {
-    if (!$scope.pageStateModel.isGroupByDay()) {
-      $scope.pageStateModel.groupByDay();
-      me.processItemsIntoGroups();
-    }
-  };
-
-  $scope.closeAddPlacePanel = function() {
-    $scope.$broadcast('closeaddplacepanel');
-  };
-
-  $scope.$watch('searchResultState.savedResultIndices', function() {
-    if (_.some($scope.searchResultState.savedResultIndices)
-      && $scope.searchResultState.results
-      && $scope.searchResultState.results.length == 1) {
-      $timeout($scope.closeAddPlacePanel, 1000);
-    }
-  }, true);
-
-  $scope.coverImageClicked = function() {
-    $scope.pageStateModel.selectedEntity = null;
-  };
-
-  $scope.selectEntity = function(entityData) {
-    $scope.pageStateModel.selectedEntity = entityData;
-    $searchResultState.selectedIndex = null;
-  };
-
-  $scope.saveTripPlanSettings = function() {
-    // Prevent double-submits
-    if (me.alreadySaving) {
-      return;
-    }
-    me.alreadySaving = true;
-    if ($scope.editableTripPlanSettings.name == $tripPlan['name']) {
-      $scope.editingTripPlanSettings = false;
-      me.alreadySaving = false;
-      return;
-    }
-    var editedTripPlan = {
-      'trip_plan_id': $tripPlan['trip_plan_id'],
-      'name': $scope.editableTripPlanSettings.name
-    };
-    $tripPlanService.editTripPlan(editedTripPlan)
-      .success(function(response) {
-        var newName = $scope.editableTripPlanSettings.name;
-        document.title = newName;
-        $tripPlanModel.tripPlanData['name'] = newName;
-        $tripPlanModel.updateLastModified(response['trip_plans'][0]['last_modified']);
-        // TODO: This might be redundant now.
-        $tripPlan['name'] = newName;
-        me.alreadySaving = false;
-      })
-      .error(function() {
-        alert('Failed to save edits');
-        me.alreadySaving = false;
-      });
-    $scope.editingTripPlanSettings = false;
-  };
-
-  $scope.cloneCurrentTripPlan = function() {
-    $tripPlanService.cloneTripPlan($tripPlan['trip_plan_id'])
-      .success(function(response) {
-        var newTripPlanId = response['trip_plan']['trip_plan_id'];
-        location.href = '/trip_plan/' + newTripPlanId;
-      });
-  };
-
-  $scope.openBulkClipModal = function(windowClass) {
-    $modal.open({
-      templateUrl: 'bulk-clip-modal-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
-
-  $scope.deleteCurrentTripPlan = function() {
-    var ok = confirm('Are you sure you want to delete this trip plan?');
-    if (!ok) {
-      return;
-    }
-    $tripPlanService.deleteTripPlanById($tripPlan['trip_plan_id'])
-      .success(function(response) {
-        location.href = '/trip_plan';
-      });
-  };
-
-  $scope.startGmapsImport = function() {
-    $modal.open({
-      templateUrl: 'gmaps-importer-template',
-      scope: $scope.$new(true)
-    });
-  };
-
-  $scope.openDayPlanner = function(windowClass) {
-    $modal.open({
-      templateUrl: 'day-planner-template',
-      scope: $scope,
-      backdrop: 'static',
-      windowClass: windowClass
-    });
-  };
-
-  $scope.openTripPlanEditor = function(windowClass) {
-    $modal.open({
-      templateUrl: 'trip-plan-settings-editor-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
-
-  $scope.openSharingSettings = function(windowClass) {
-    if (!$accountInfo['logged_in']) {
-      alert('Please log in before sharing trip plans');
-      return;
-    }
-    $modal.open({
-      templateUrl: 'sharing-settings-editor-template',
-      scope: $scope.$new(true),
-      windowClass: windowClass
-    });
-  };
+  var initialBounds = $tripPlanModel.getMapBounds();
+  if (initialBounds) {
+    $map.fitBounds(initialBounds);
+  }
 
   $scope.$on('asktocloseallinfowindows', function() {
     $scope.$broadcast('closeallinfowindows');
@@ -2010,47 +2037,15 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.$broadcast('closeallcontrols');
   });
 
-  $scope.$on('asktoopeninlineedit', function($event, entityId, inlineEditMode) {
-    $scope.$broadcast('openinlineedit', entityId, inlineEditMode);
-  });
-
-  var startTripPlanModal = null;
-
-  this.selectTripLocation = function(tripPlanDetails) {
-    tripPlanDetails['trip_plan_id'] = $tripPlanModel.tripPlanId();
-    $tripPlanService.editTripPlan(tripPlanDetails)
-      .success(function(response) {
-        $map.setCenter(gmapsLatLngFromJson(tripPlanDetails['location_latlng']));
-        if (tripPlanDetails['location_bounds']) {
-          $map.fitBounds(gmapsBoundsFromJson(tripPlanDetails['location_bounds']));
-        }
-        $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
-        document.title = response['trip_plans'][0]['name'];
-        startTripPlanModal && startTripPlanModal.close();
-      });
-  };
-
-  if ($allowEditing && !$tripPlanModel.hasLocation() && $tripPlanModel.isEmpty()) {
-    $pageStateModel.inNewTripPlanModal = true;
-    startTripPlanModal = $modal.open({
-      templateUrl: 'start-new-trip-modal-template',
-      scope: $.extend($scope.$new(true), {selectTripLocation: this.selectTripLocation}),
-      backdrop: 'static',
-      windowClass: 'start-new-trip-modal-window',
-      keyboard: false
-    });
-    startTripPlanModal.result.finally(function() {
-      $pageStateModel.inNewTripPlanModal = false;
-    });
-  }
-
-  var initialBounds = $tripPlanModel.getMapBounds();
-  if (initialBounds) {
-    $map.fitBounds(initialBounds);
-  }
+  $scope.$watch(function() {
+    return $tripPlanModel.entities();
+  }, function(entities) {
+    if (entities) {
+      $entityDragStateModel.createOrdering(entities);
+    }
+  }, true);
 
   this.refresh = function(opt_force, opt_callback) {
-    // TODO: Don't even register the refresh loop if editing is not allowed.
     if (!opt_force && ($scope.refreshState.paused || !$allowEditing)) {
       return;
     }
@@ -2064,22 +2059,10 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
           || response['response_summary'] == 'NO_CHANGES_SINCE_LAST_MODIFIED') {
           return;
         }
-        var planModel = $scope.planModel;
-        var newEntities = response['entities'];
-        $tripPlan['last_modified'] = response['last_modified'];
-        // Angular's dirty-checking does not seem to pick up that the
-        // model has changed if we just assign to the new model...
-        // TODO: This is probably a non-issue now.  Dirty-checking should
-        // work if you update a model in-place instead of replacing it.
-        // So the timeout can probably be removed now.
-        $scope.planModel = null;
-        $timeout(function() {
-          planModel.resetEntities(newEntities);
-          $scope.planModel = planModel;
-          me.processItemsIntoGroups();
-          $map.fitBounds($tripPlanModel.getMapBounds());
-          opt_callback && opt_callback;
-        });
+        $tripPlanModel.updateLastModified(response['last_modified']);
+        $tripPlanModel.resetEntities(response['entities']);
+        $map.fitBounds($tripPlanModel.getMapBounds());
+        opt_callback && opt_callback;
       });
   };
 
@@ -2093,12 +2076,14 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService, $tripPlanMo
     $scope.refreshState.paused = false;
   });
 
-  var refreshInterval = 5000;
-  function refreshPoll() {
-    me.refresh();
+  if ($allowEditing) {
+    var refreshInterval = 5000;
+    function refreshPoll() {
+      me.refresh();
+      $timeout(refreshPoll, refreshInterval);
+    }
     $timeout(refreshPoll, refreshInterval);
   }
-  $timeout(refreshPoll, refreshInterval);
 }
 
 function gmapsLatLngFromJson(latlngJson) {
@@ -2144,10 +2129,11 @@ function createMap(tripPlanData) {
     streetViewControl: false,
     mapTypeControlOptions: {
       mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
-      position: google.maps.ControlPosition.RIGHT_BOTTOM
+      position: google.maps.ControlPosition.BOTTOM_LEFT
     },
     zoomControlOptions: {
-      position: google.maps.ControlPosition.RIGHT_TOP
+      style: google.maps.ZoomControlStyle.SMALL,
+      position: google.maps.ControlPosition.LEFT_BOTTOM
     }
   };
   var map = new google.maps.Map($('#map')[0], mapOptions);
@@ -2155,177 +2141,6 @@ function createMap(tripPlanData) {
     map.fitBounds(gmapsBoundsFromJson(tripPlanData['location_bounds']));
   }
   return map;
-}
-
-function StartNewTripInputCtrl($scope, $timeout, $tripPlanService) {
-  var me = this;
-  $scope.ready = false;
-  $scope.locationText = '';
-  $scope.searchResults = null;
-  $scope.searching = false;
-  // Very strange, something is stealing the focus from the
-  // input when setting the ready state either immediately or after
-  // a 0-second timeout.
-  $timeout(function() {
-    $scope.ready = true;
-  }, 500);
-
-  $scope.placeChanged = function(place) {
-    if (!place) {
-      return;
-    }
-    if (!place['geometry']) {
-      return me.searchForPlace(place['name']);
-    }
-    $scope.selectResult(place);
-  };
-
-  this.searchForPlace = function(query) {
-    $scope.searchResults = null;
-    $scope.searching = true;
-    var request = {
-      query: query
-    };
-    var dummyMap = new google.maps.Map($('<div>')[0], {
-      center: new google.maps.LatLng(0, 0)
-    });
-    var searchService = new google.maps.places.PlacesService(dummyMap);
-    searchService.textSearch(request, function(results, status) {
-      $scope.$apply(function() {
-        $scope.searching = false;
-        if (status != google.maps.places.PlacesServiceStatus.OK) {
-          alert('Search failed, please try again.');
-          return;
-        }
-        $scope.searchResults = results;
-      });
-    });
-  };
-
-  $scope.selectResult = function(place) {
-    var tripPlanDetails = me.placeToTripPlanDetails(place);
-    $scope.onSelectPlace({$tripPlanDetails: tripPlanDetails});
-  };
-
-  this.placeToTripPlanDetails = function(place) {
-    var geometry = place['geometry'];
-    var location = geometry && geometry['location'];
-    var viewport = geometry && geometry['viewport'];
-    var tripPlanDetails = {
-      'name': place['name'],
-      'location_name': place['formatted_address']
-    };
-    if (location) {
-      tripPlanDetails['location_latlng'] = {
-        'lat': location.lat(),
-        'lng': location.lng()
-      };
-    }
-    if (viewport) {
-      tripPlanDetails['location_bounds'] = {
-        'southwest': {
-          'lat': viewport.getSouthWest().lat(),
-          'lng': viewport.getSouthWest().lng()
-        },
-        'northeast': {
-          'lat': viewport.getNorthEast().lat(),
-          'lng': viewport.getNorthEast().lng()
-        }
-      }
-    }
-    return tripPlanDetails;
-  };
-}
-
-function OrganizeMenuCtrl($scope, $tripPlanModel, $taxonomy) {
-  $scope.typesExpanded = false;
-  $scope.daysExpanded = false;
-
-  $scope.categories = $taxonomy.allCategories();
-  $scope.dayNumbers = _.range(1, $tripPlanModel.dayPlannerModel.numDays() + 1);
-
-  $scope.suppress = function($event) {
-    $event.stopPropagation();
-    $event.preventDefault();
-  };
-}
-
-function BulkClipCtrl($scope, $tripPlanModel, $allTripPlans, $entityService) {
-  $scope.allEntities = angular.copy($tripPlanModel.entities());
-  $scope.selectionState = {
-    selectedTripPlan: $allTripPlans.length ? $allTripPlans[0] : null
-  };
-
-  $scope.selectAll = function() {
-    $.each($scope.allEntities, function(i, entity) {
-      entity.selected = true;
-    });
-  };
-
-  $scope.selectNone = function() {
-    $.each($scope.allEntities, function(i, entity) {
-      entity.selected = false;
-    });
-  };
-
-  $scope.selectedEntities = function() {
-    return _.filter($scope.allEntities, function(entity) {
-      return entity.selected;
-    });
-  };
-
-  $scope.save = function() {
-    var entities = $scope.selectedEntities();
-    $.each(entities, function(i, entity) {
-      entity['day'] = null;
-      entity['day_position'] = null;
-      entity['entity_id'] = null;
-    });
-    $scope.saving = true;
-    $entityService.saveNewEntities(entities,
-      $scope.selectionState.selectedTripPlan['trip_plan_id'])
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $scope.saving = false;
-          $scope.saved = true;
-        }
-      });
-  };
-}
-
-function AccountDropdownCtrl($scope, $tripPlanService, $accountInfo,
-    $tripPlan, $allTripPlans, $modal, $window) {
-  $scope.accountInfo = $accountInfo;
-  $scope.currentTripPlan = $tripPlan;
-  $scope.allTripPlans = $allTripPlans;
-
-  $scope.openLoginModal = function(windowClass) {
-    var modal = $modal.open({
-      templateUrl: 'login-modal-template',
-      windowClass: windowClass,
-      scope: $scope.$new(true)
-    });
-    $window['closeLoginModal'] = function() {
-      modal.close();
-      $window['closeLoginModal'] = null;
-    };
-  };
-
-  $scope.loadTripPlan = function(tripPlanId) {
-    location.href = '/trip_plan/' + tripPlanId;
-  };
-
-  $scope.createNewTripPlan = function() {
-    if (!$scope.accountInfo['logged_in']) {
-      alert('Please log in before creating additional trip plans');
-      return;
-    }
-    $tripPlanService.saveNewTripPlan({'name': 'My Next Trip'})
-      .success(function(response) {
-        var newTripPlanId = response['trip_plans'][0]['trip_plan_id'];
-        $scope.loadTripPlan(newTripPlanId)
-      });
-  };
 }
 
 function CarouselCtrl($scope) {
@@ -2374,10 +2189,29 @@ function DataRefreshManager($rootScope) {
   };
 }
 
-function PagePositionManager($rootScope) {
-  this.scrollToEntity = function(entityId) {
-    $rootScope.$broadcast('scrolltoentity', entityId);
+function SizeHelper($window) {
+  this.widthPercentToPixels = function(percentAsDecimal) {
+    return parseInt($window.innerWidth * percentAsDecimal);
   };
+
+  this.heightPercentToPixels = function(percentAsDecimal) {
+    return parseInt($window.innerHeight * percentAsDecimal);
+  };
+}
+
+function DetailsPanelCtrl($scope, $tripPlanModel, $tripPlanService) {
+  $scope.relatedGuides = null;
+
+  if ($tripPlanModel.isGuide()) {
+    $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
+      .success(function(response) {
+        var guides = response['trip_plans'];
+        var currentGuide = _.find(guides, function(guide) {
+          return guide['trip_plan_id'] == $tripPlanModel.tripPlanId();
+        });
+        $scope.relatedGuides = generateRelatedGuides(guides, currentGuide);
+      });      
+  }
 }
 
 
@@ -2392,13 +2226,6 @@ function SearchResultState() {
     this.savedResultIndices = [];
     this.results = [];
   };
-}
-
-function AddPlacePanelCtrl($scope, $searchResultState, $filterModel) {
-  $scope.$on('midpanelclosing', function() {
-    $searchResultState.clear();
-    $filterModel.searchResultsEmphasized = false;
-  });
 }
 
 function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
@@ -2430,7 +2257,7 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
     } else {
       $scope.searchResults = response['entities'] || [];
     }
-    $scope.searchResultState.results = $scope.searchResults;
+    $searchResultState.results = $scope.searchResults;
     $scope.loadingData = false;
     $scope.searchComplete = true;
     $mapManager.fitBoundsToEntities($scope.searchResults);
@@ -2439,122 +2266,180 @@ function SearchPanelCtrl($scope, $tripPlanModel, $entityService,
   };
 }
 
-function AddPlaceOptionsCtrl($scope, $pageStateModel,
-    $searchResultState, $filterModel) {
-  $scope.options = [
-    {name: 'Search', mode: MidPanelMode.SEARCH_PLACES},
-    {name: 'Browse the Web', mode: MidPanelMode.WEB_SEARCH_PLACES},
-    {name: 'Browse Guides', mode: MidPanelMode.TRAVEL_GUIDES},
-    {name: 'Clip My Own', mode: MidPanelMode.CLIP_MY_OWN}
-  ];
-
-  $scope.setOption = function(option) {
-    if ($pageStateModel.midPanelMode != option.mode) {
-      $scope.$emit('asktocloseallinfowindows');
-      $pageStateModel.midPanelMode = option.mode;
-      $pageStateModel.midPanelModeName = option.name;
-      $pageStateModel.midPanelExpanded = true;
-      $pageStateModel.selectedEntity = null;
-      $searchResultState.clear();
-      $filterModel.searchResultsEmphasized = false;
-    }
-  };
-}
-
-function WebSearchPanelCtrl($scope, $sampleSites, $tripPlanModel,
-    $entityService, $searchResultState, $filterModel, $mapManager, $timeout) {
-  var me = this;
-  $scope.sampleSites = $sampleSites;
-  $scope.selectedSite = $sampleSites[0];
-  $scope.queryDropdownState = {isopen: false};
-  $scope.customQueryState = {
-    active: false,
-    input: null,
-    focus: 0
-  };
-  $scope.searching = false;
-  $scope.searchComplete = false;
-  $scope.searchResults = null;
-
-  this.selectDefaultQuery = function() {
-    var site = $scope.selectedSite;
-    if (!_.isEmpty(site['sample_queries'])) {
-      return site['sample_queries'][0];
-    } else if (site['pseudo_query']) {
-      return site['pseudo_query'];
-    }
-    return null;
-  };
-
-  $scope.selectedQuery = this.selectDefaultQuery();
-
-  $scope.selectSite = function(site) {
-    $scope.selectedSite = site;
-    $scope.selectedQuery = me.selectDefaultQuery();
-  }
-
-  $scope.selectQuery = function(query) {
-    $scope.selectedQuery = query;
-  }
-
-  $scope.openCustomQuery = function() {
-    $scope.customQueryState.active = true;
-    $scope.customQueryState.input = null;
-    $timeout(function() {
-      $scope.customQueryState.focus++;
-    });
-  };
-
-  $scope.selectCustomQuery = function() {
-    $scope.selectedQuery = $scope.customQueryState.input;
-    $scope.customQueryState.active = false;
-    $scope.customQueryState.input = null;
-    $scope.queryDropdownState.isopen = false;
-  };
-
-  $scope.querySelectEnabled = function() {
-    var site = $scope.selectedSite;
-    return site['custom_queries_allowed'] || site['sample_queries'];
-  };
-
-  $scope.submitSearch = function() {
-    $scope.searching = true;
-    $scope.searchComplete = false;
-    $searchResultState.clear();
-    $entityService.sitesearchtoentities($scope.selectedSite['host'],
-      $tripPlanModel.tripPlanData, $scope.selectedQuery)
-      .success(function(response) {
-        $scope.searching = false;
-        $scope.searchComplete = true;
-        $filterModel.searchResultsEmphasized = true;
-        $filterModel.emphasizedDayNumber = null;
-        $scope.searchResults = response['entities'];
-        $mapManager.fitBoundsToEntities($scope.searchResults);
-      });
-  };
-}
-
-function TravelGuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
-    $mapManager, $filterModel) {
+function GuidesPanelCtrl($scope, $tripPlanModel, $tripPlanService,
+    $mapManager, $filterModel, $searchResultState, $dataCache, $eventTracker) {
   $scope.locationName = $tripPlanModel.tripPlanData['location_name'];
-  $scope.loading = true;
-  $scope.tripPlans = null;
-  $scope.selectedTripPlan = null;
+  $scope.loading = false;
+  $scope.guides = null;
+  $scope.selectedGuide = null;
+  $scope.relatedGuides = null;
 
-  $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
-    .success(function(response) {
-      $scope.loading = false;
-      $scope.tripPlans = response['trip_plans'];
-    });
+  if ($dataCache.guides) {
+    $scope.guides = $dataCache.guides;
+  } else {
+    $scope.loading = true;
+    $tripPlanService.findTripPlans($tripPlanModel.tripPlanData['location_latlng'])
+      .success(function(response) {
+        $scope.loading = false;
+        $scope.guides = response['trip_plans'];
+        $dataCache.guides = $scope.guides;
+        if (_.isEmpty($scope.guides)) {
+          $eventTracker.track({name: 'guides-panel-load-no-guides', value: $tripPlanModel.tripPlanData['location_name']});
+        } else {
+          $eventTracker.track({name: 'guides-panel-load-has-guides', value: $tripPlanModel.tripPlanData['location_name']});
+        }
+      });    
+  }
 
-  $scope.selectTripPlan = function(tripPlan) {
-    $scope.selectedTripPlan = tripPlan;
-    $mapManager.fitBoundsToEntities(tripPlan['entities']);
+  $scope.selectGuide = function(guide) {
+    $scope.selectedGuide = guide;
+    $mapManager.fitBoundsToEntities(guide['entities']);
     $filterModel.searchResultsEmphasized = true;
+    $searchResultState.clear();
+    $scope.relatedGuides = generateRelatedGuides($scope.guides, guide);
   };
 
   $scope.backToListings = function() {
-    $scope.selectedTripPlan = null;
+    $scope.selectedGuide = null;
+    $filterModel.searchResultsEmphasized = false;
+    $searchResultState.clear();
+  };
+}
+
+var MAX_NUM_RELATED_GUIDES = 3;
+
+function generateRelatedGuides(guides, selectedGuide) {
+  return _.chain(guides)
+    .sample(MAX_NUM_RELATED_GUIDES + 1)
+    .without(selectedGuide)
+    .value()
+    .slice(0, MAX_NUM_RELATED_GUIDES);
+};
+
+var AddYourOwnTab = {
+  SEARCH: 1,
+  CLIPPER: 2,
+  PASTE_LINK: 3
+};
+
+var ResultType = {
+  SEARCH: 1,
+  ENTITY_LOOKUP: 2
+};
+
+function AddYourOwnPanelCtrl($scope, $tripPlanModel, $searchResultState,
+    $filterModel, $entityService, $mapManager, $browserInfo,
+    $eventTracker, $window, $timeout) {
+
+  $scope.tab = AddYourOwnTab.SEARCH;
+  $scope.AddYourOwnTab = AddYourOwnTab;
+
+  $scope.selectTab = function(tab) {
+    $scope.tab = tab;
+  };
+
+  $scope.searchState = {
+    rawInput: null,
+    searching: false,
+    searchComplete: false,
+    results: null,
+    resultType: null
+  };
+  $scope.ResultType = ResultType;
+
+  $scope.googlePlaceSelected = function(place) {
+    $scope.searchState.searching = true;
+    $scope.searchState.searchComplete = false;
+    $scope.searchState.results = null;
+    $scope.searchState.resultType = null;
+    $searchResultState.clear();
+    if (place['reference']) {
+      $entityService.googleplacetoentity(place['reference'])
+        .success($scope.processSearchResponse);
+      $eventTracker.track({name: 'add-your-own-autocomplete',
+        location: 'add-your-own-panel', value: place['name']});
+    } else {
+      $entityService.googletextsearchtoentities(place['name'],
+        $tripPlanModel.tripPlanData['location_latlng'])
+          .success($scope.processSearchResponse);
+      $eventTracker.track({name: 'add-your-own-text-search',
+        location: 'add-your-own-panel', value: place['name']});
+    }
+  };
+
+  $scope.processSearchResponse = function(response) {
+    if (response['entity']) {
+      $scope.searchState.results = [response['entity']]
+      $scope.searchState.resultType = ResultType.ENTITY_LOOKUP;
+    } else {
+      $scope.searchState.results = response['entities'] || [];
+      $scope.searchState.resultType = ResultType.SEARCH;
+    }
+    $scope.searchResultState.results = $scope.searchState.results;
+    $scope.searchState.searching = false;
+    $scope.searchState.searchComplete = true;
+    $mapManager.fitBoundsToEntities($scope.searchState.results);
+    $filterModel.searchResultsEmphasized = true;
+  };
+
+  $scope.hasNoSearchResults = function() {
+    return !$scope.searchState.searching && $scope.searchState.searchComplete
+      && _.isEmpty($scope.searchState.results);
+  };
+
+  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
+  $scope.browserInfo = $browserInfo;
+  $scope.BrowserPlatform = BrowserPlatform;
+  $scope.BrowserApp = BrowserApp;
+
+  $scope.showClipperHelp = false;
+
+  $scope.toggleHelp = function() {
+    $scope.showClipperHelp = !$scope.showClipperHelp;
+  };
+
+  $scope.linkState = {
+    rawInput: null,
+    loading: false,
+    loadingComplete: false,
+    results: null,
+    invalidUrl: false,
+    siteDomain: null,
+    formattedUrl: null
+  };
+
+  $scope.linkPasted = function() {
+    // Ugly hack to wrap this in a timeout; without it, the paste event
+    // fires before the input has been populated with the pasted data.
+    $timeout(function() {
+      $scope.linkState.loading = true;
+      $scope.linkState.loadingComplete = false;
+      $scope.linkState.results = null;
+      $scope.linkState.invalidUrl = false;
+      $scope.linkState.siteDomain = null;
+      $scope.linkState.formattedUrl = null;
+      $entityService.urltoentities($scope.linkState.rawInput)
+        .success($scope.processLinkClipResponse);
+
+      $eventTracker.track({name: 'clip-link-pasted',
+        location: 'add-your-own-paste-link-panel', value: $scope.linkState.rawInput})
+    });
+  };
+
+  $scope.processLinkClipResponse = function(response) {
+    $scope.linkState.results = response['entities'];
+    $scope.linkState.loading = false;
+    $scope.linkState.loadingComplete = true;
+    $scope.linkState.siteDomain = hostnameFromUrl($scope.linkState.rawInput);
+    $scope.linkState.formattedUrl = urlWithProtocol($scope.linkState.rawInput);
+    $mapManager.fitBoundsToEntities($scope.linkState.results);
+    $filterModel.searchResultsEmphasized = true;
+    $searchResultState.clear();
+  };
+
+  $scope.noLinkResults = function() {
+    return !$scope.linkState.loading && $scope.linkState.loadingComplete
+      && _.isEmpty($scope.linkState.results);
   };
 }
 
@@ -2579,200 +2464,42 @@ var SAMPLE_SUPPORTED_SITES = _.map([
   };
 });
 
-function ClipMyOwnPanelCtrl($scope, $entityService, $mapManager,
-    $filterModel, $document, $timeout) {
-  var me = this;
-  $scope.state = {rawInput: null};
-  $scope.loadingData = false;
-  $scope.results = null;
-  $scope.clipComplete = false;
-  $scope.invalidUrl = false;
-  $scope.learnMoreState = {expanded: false};
-
-  $scope.sampleSupportedSites = SAMPLE_SUPPORTED_SITES;
-  $scope.sampleSiteState = {
-    hoverShow: false,
-    clickShow: false,
-
-    show: function() {
-      return this.hoverShow || this.clickShow;
-    }
-  };
-
-  $scope.openSampleSites = function() {
-    $scope.sampleSiteState.clickShow = true;
-    $timeout(function() {
-      $document.on('click', closeSampleSites);
-    });
-  };
-
-  var closeSampleSites = function() {
-    $scope.sampleSiteState.clickShow = false;
-    $document.off('click', null, closeSampleSites);
-    $scope.$apply();
-  };
-
-  $scope.textPasted = function() {
-    // Ugly hack to wrap this in a timeout; without it, the paste event
-    // fires before the input has been populated with the pasted data.
-    $timeout(function() {
-      var input = $scope.state.rawInput;
-      $scope.loadingData = true;
-      $scope.clipComplete = false;
-      $scope.results = null;
-      $scope.invalidUrl = false;
-      $scope.siteDomain = null;
-      $entityService.urltoentities(input)
-        .success(me.processResponse);
-    });
-  };
-
-  this.processResponse = function(response) {
-    $scope.results = response['entities'];
-    $scope.loadingData = false;
-    $scope.clipComplete = true;
-    $scope.siteDomain = hostnameFromUrl($scope.state.rawInput);
-    $mapManager.fitBoundsToEntities($scope.results);
-    $filterModel.searchResultsEmphasized = true;
-    $filterModel.emphasizedDayNumber = null;
-  };
-
-  $scope.urlToVisit = function() {
-    var url = $scope.state.rawInput || '';
-    if (url.indexOf('//') == 0) {
-      url = 'http:' + url;
-    }
-    if (url.indexOf('http') != 0) {
-      url = 'http://' + url;
-    }
-    return url;
-  };
-}
-
-function EntitySearchResultCtrl($scope, $map, $templateToStringRenderer,
-    $tripPlanModel, $pageStateModel, $entityService, $dataRefreshManager) {
-  var me = this;
-  $scope.ed = $scope.entityData;
-  $scope.em = new EntityModel($scope.ed);
-  $scope.im = new ItemModel($scope.ed);
-
-  $scope.map = $map;
-  $scope.position = $scope.em.gmapsLatLng();
-  $scope.markerState = {
-    marker: null
-  };
-  var infowindow = null;
-
-  this.createInfowindow = function() {
-    var scope = $scope.$new();
-    var contentDiv = $templateToStringRenderer.render(
-      'results-infowindow-template', scope);
-    infowindow = new HtmlInfowindow($scope.markerState.marker, contentDiv);
-  };
-
-  this.destroyInfowindow = function() {
-    infowindow && infowindow.setMap(null);
-    infowindow = null;
-  };
-
-  $scope.$on('closeallinfowindows', function() {
-    me.destroyInfowindow();
-  });
-
-  $scope.$on('$destroy', function() {
-    me.destroyInfowindow();
-  });
-
-  $scope.markerClicked = function($event) {
-    $scope.selectResult();
-    $event.stopPropagation();
-  };
-
-  $scope.isSelected = function() {
-    return $scope.searchResultState.selectedIndex == $scope.index ||
-      $scope.searchResultState.highlightedIndex == $scope.index;
-  };
-
-  $scope.selectResult = function() {
-    $scope.searchResultState.selectedIndex = $scope.index;
-    $scope.searchResultState.highlightedIndex = null;
-    $pageStateModel.selectedEntity = null;
-    if (!infowindow) {
-      $scope.$emit('asktocloseallinfowindows');
-      me.createInfowindow();
-    }
-  };
-
-  $scope.highlightResult = function() {
-    $scope.searchResultState.highlightedIndex = $scope.index;
-  };
-
-  $scope.saveResult = function() {
-    $entityService.saveNewEntity($scope.ed, $tripPlanModel.tripPlanId())
-      .success(function(response) {
-        if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateLastModified(response['last_modified']);
-          $tripPlanModel.addNewEntities(response['entities']);
-          $pageStateModel.selectedEntity = response['entities'][0];
-          $scope.searchResultState.savedResultIndices[$scope.index] = true;
-          me.destroyInfowindow();
-          $scope.$emit('redrawgroupings');
-        }
-      });
-  };
-
-  $scope.resultLetter = function() {
-    return String.fromCharCode(65 + $scope.index);
-  };
-}
-
-function EntityListingCtrl($scope) {
-  $scope.ed = $scope.entityData;
-  $scope.im = new ItemModel($scope.ed);
-}
-
-function tcEntitySearchResult() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      searchResultState: '=',
-      index: '='
-    },
-    templateUrl: 'one-entity-search-result-template'
-  };
-}
-
-function tcEntityListing() {
-  return {
-    restrict: 'AE',
-    scope: {
-      entityData: '=',
-      isSelected: '&',
-      onSelect: '&',
-      onMouseenter: '&',
-      onMouseleave: '&',
-      shouldShowDay: '@'
-    },
-    templateUrl: 'one-entity-listing-template',
-    controller: EntityListingCtrl
-  };
-}
-
+var EditorTab = {
+  NAME_AND_DESCRIPTION: 1,
+  DETAILS: 2,
+  ADDRESS_AND_LOCATION: 3,
+  PHOTOS: 4
+};
 
 function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
-    $entityService, $dataRefreshManager) {
+    $entityService, $entityEditingService, $eventTracker, $timeout) {
   var me = this;
-  $scope.allEntities = $tripPlanModel.entities();
-  $scope.selectedEntity = $scope.ed;
+  $scope.ed = angular.copy($scope.originalEntity);
+  $scope.em = new EntityModel($scope.ed);
+  $scope.editorTab = EditorTab.NAME_AND_DESCRIPTION;
+  $scope.EditorTab = EditorTab;
   $scope.locationBounds = $tripPlanModel.tripPlanData['location_bounds'];
   $scope.selectedPhoto = {index: null};
+  $scope.photoEditState = {
+    rawInput: null,
+    dragActive: false
+  };
+  $scope.tagState = {
+    rawInput: _.pluck($scope.ed['tags'], 'text').join(', ')
+  };
   $scope.mapState = {map: null};
+
+  $scope.et = $eventTracker;
+  $scope.trackingLocation = 'entity-editor';
 
   $scope.categories = $taxonomy.allCategories();
   $scope.getSubCategories = function(categoryId) {
     return $taxonomy.getSubCategoriesForCategory(categoryId);
   };
+
+  $scope.selectTab = function(editorTab) {
+    $scope.editorTab = editorTab;
+  }
 
   $scope.markerDragged = function($position) {
     var entityData = $scope.ed;
@@ -2782,16 +2509,8 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     entityData['latlng']['lat'] = $position.lat();
     entityData['latlng']['lng'] = $position.lng();
     entityData['address_precision'] = 'Precise';
-  };
-
-  $scope.iconTemplateName = function() {
-    if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-      return $scope.ed['sub_category']['name'] + '-icon-template';
-    }
-    if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-      return $scope.ed['category']['name'] + '-icon-template';
-    }
-    return null;
+    $eventTracker.track({name: 'marker-dragged',
+      location: $scope.trackingLocation, value: $scope.ed['entity_id']});
   };
 
   this.findMapCenter = function() {
@@ -2812,11 +2531,12 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
   };
   $scope.markerState = {
     marker: null,
-    position: mapCenter  
+    position: mapCenter
   };
 
   $scope.setupMap = function($map) {
     $scope.markerState.marker.setMap($map);
+    $map.setCenter(me.findMapCenter());
   };
 
   $scope.addressChanged = function(place) {
@@ -2839,7 +2559,20 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
         $scope.map.fitBounds(place['geometry']['viewport']);
       }
     }
+    $eventTracker.track({name: 'address-changed',
+      location: $scope.trackingLocation, value: $scope.ed['address']});
   }
+
+  $scope.tagsChanged = function() {
+    var tags = [];
+    $.each($scope.tagState.rawInput.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    $scope.ed['tags'] = tags;
+  };
 
   $scope.categoryChanged = function() {
     $scope.ed['sub_category'] = $taxonomy.getSubCategoriesForCategory(
@@ -2861,116 +2594,71 @@ function EditPlaceCtrl($scope, $tripPlanModel, $taxonomy,
     }
   };
 
-  $scope.selectedEntityChanged = function() {
-    $scope.ed = angular.copy($scope.selectedEntity);
-    var mapCenter = me.findMapCenter();
-    $scope.map.setCenter(mapCenter);
-    marker && marker.setMap(null);
-    marker = me.createMarker(mapCenter, $scope.map);
-    $scope.selectedPhotoIndex = null;
-  };
-
   $scope.saveEntity = function() {
     $entityService.editEntity($scope.ed, $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $dataRefreshManager.forceRefresh();
-          $scope.$close();
+          var doneSaving = function() {
+            $tripPlanModel.updateEntities(response['entities']);
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            $scope.$close();
+          }
+          if (_.isEmpty($scope.ed['tags']) && !_.isEmpty($scope.originalEntity['tags'])) {
+            $entityEditingService.saveTags($scope.ed, $scope.tagState.rawInput, doneSaving);
+          } else {
+            doneSaving();
+          }
         }
       })
       .error(function() {
         alert('Failed to save, please try again.');
       });
   };
-}
 
-function EditImagesCtrl($scope, $timeout) {
-  var me = this;
-  $scope.imgDragActive = false;
-  var pasteActive = false;
-  $scope.photoUrlInputText = ''
-  var urls = $scope.entityModel.data['photo_urls'];
-  if (!urls) {
-    urls = $scope.entityModel.data['photo_urls'] = [];
-  }
-  var currentIndex = 0;
-  $scope.currentImgUrl = urls.length ? urls[currentIndex] : '';
-
-  $scope.$on('image-dropped', function(event, data) {
-    var url = data['tc-drag-image-url'];
-    if (url) {
-      me.addImgUrl(url);
-    }
-  });
-
-  $scope.photoUrlDragEnter = function($event) {
-    $scope.imgDragActive = true;
+  $scope.photoDropTargetDragenter = function($event) {
+    $scope.photoEditState.dragActive = true;
+    $event.preventDefault();
   };
 
-  $scope.photoUrlDropped = function($event) {
+  $scope.photoDropTargetDragleave = function() {
+    $scope.photoEditState.dragActive = false;
+  };
+
+  $scope.photoDropped = function($event) {
     var imgUrl = $event.originalEvent.dataTransfer.getData('text/uri-list');
-    me.addImgUrl(imgUrl);
+    if (imgUrl) {
+      $scope.ed['photo_urls'].push(imgUrl);
+      $scope.selectedPhoto.index = $scope.ed['photo_urls'].length - 1;
+    }
+    $scope.photoEditState.dragActive = false;
     $event.stopPropagation();
     $event.preventDefault();
-    $scope.imgDragActive = false;
+    $eventTracker.track({name: 'photo-dropped', location: $scope.trackingLocation, value: imgUrl});
   };
 
   $scope.photoUrlPasted = function() {
-    pasteActive = true;
     $timeout(function() {
-      me.addImgUrl($scope.photoUrlInputText);
-      $scope.photoUrlInputText = '';
-      pasteActive = false;
+      var url = $scope.photoEditState.rawInput;
+      if (url) {
+        $scope.ed['photo_urls'].push(url);
+        $scope.selectedPhoto.index = $scope.ed['photo_urls'].length - 1;        
+        $scope.photoEditState.rawInput = '';
+      }
+      $eventTracker.track({name: 'photo-url-pasted', location: $scope.trackingLocation, value: url});
     });
-  };
-
-  $scope.photoUrlChanged = function() {
-    if (!pasteActive) {
-      $scope.photoUrlInputText = '';
-    }
-  };
-
-  this.addImgUrl = function(url) {
-    if (url) {
-      urls.splice(urls.length, 0, url);
-      currentIndex = urls.length - 1;
-      $scope.currentImgUrl = urls[currentIndex];
-    }
-  };
-
-  $scope.removeActiveImg = function() {
-    urls.splice(currentIndex, 1);
-    if (currentIndex >= urls.length) {
-      currentIndex = Math.max(urls.length - 1, 0);
-    }
-    $scope.currentImgUrl = urls[currentIndex];
-  };
-
-  $scope.hasPrevImg = function() {
-    return currentIndex > 0;
-  };
-
-  $scope.hasNextImg = function() {
-    return currentIndex < (urls.length - 1);
-  };
-
-  $scope.nextImg = function() {
-    currentIndex += 1;
-    $scope.currentImgUrl = urls[currentIndex];
-  };
-
-  $scope.prevImg = function() {
-    currentIndex -= 1;
-    $scope.currentImgUrl = urls[currentIndex];
   };
 }
 
 function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
-    $timeout, $document) {
+    $eventTracker, $timeout, $window, $document) {
   $scope.tpd = angular.copy($tripPlanModel.tripPlanData);
   $scope.editingImage = !$scope.tpd['cover_image_url'];
   $scope.coverImgDragActive = false;
-  $scope.coverImgUrlInput = {text:''};
+  $scope.coverImgUrlInput = {text: ''};
+  $scope.saveComplete = false;
+  $scope.tagState = {
+    rawInput: _.pluck($scope.tpd['tags'], 'text').join(', ')
+  };
 
   $scope.changeImage = function() {
     $scope.editingImage = true;
@@ -2990,12 +2678,14 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
     if (imgUrl) {
       $scope.tpd['cover_image_url'] = imgUrl;
     } else {
-      alert("Couldn't recognize this image.")
+      $window.alert("Couldn't recognize this image.")
     }
     $event.stopPropagation();
     $event.preventDefault();
     $scope.coverImgDragActive = false;
     $scope.editingImage = false;
+    $eventTracker.track({name: 'cover-image-dropped',
+      location: 'settings-panel', value: imgUrl});
   };
 
   var pasteActive = false;
@@ -3007,6 +2697,8 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
       $scope.coverImgUrlInput.text = '';
       pasteActive = false;
       $scope.editingImage = false;
+      $eventTracker.track({name: 'cover-image-pasted',
+        location: 'settings-panel', value: $scope.tpd['cover_image_url']});
     });
   };
 
@@ -3017,17 +2709,54 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
   };
 
   $scope.saveSettings = function() {
+    $scope.saveComplete = false;
     $tripPlanService.editTripPlan($scope.tpd)
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
-          $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
-          $document[0].title = response['trip_plans'][0]['name'];
-          $scope.$close();
+          if (_.isEmpty($scope.tpd['tags'])
+            && !_.isEmpty($tripPlanModel.tripPlanData['tags'])) {
+            // We can't delete all tags in a normal EDIT request, since
+            // an empty list of tags is ignored.  So we have to send
+            // a followup request to clear the tags.
+            $tripPlanService.deleteTags($tripPlanModel.tripPlanId())
+              .success($scope.handleSaveResponse);
+          } else {
+            $scope.handleSaveResponse(response);
+          }
         }
       })
       .error(function() {
-        alert('Error saving trip plan, please try again.');
+        $window.alert('Error saving trip plan, please try again.');
       });
+  };
+
+  $scope.handleSaveResponse = function(response) {
+    $tripPlanModel.updateTripPlan(response['trip_plans'][0]);
+    $document[0].title = response['trip_plans'][0]['name'];
+    $scope.saveComplete = true;
+  };
+
+  $scope.deleteTripPlan = function() {
+    var ok = $window.confirm('Are you sure you want to delete this trip plan?');
+    if (!ok) {
+      return;
+    }
+    $tripPlanService.deleteTripPlanById($tripPlanModel.tripPlanId())
+      .success(function(response) {
+        $window.location.href = '/trip_plan';
+      });
+  };
+
+  $scope.tagsChanged = function() {
+    var tags = [];
+    var tagsString = $scope.tagState.rawInput;
+    $.each(tagsString.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    $scope.tpd['tags'] = tags;
   };
 }
 
@@ -3035,8 +2764,11 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
   $scope.formState = {email: null};
   $scope.accountInfo = $accountInfo;
   $scope.creator = $tripPlanModel.tripPlanData['user'];
-  $scope.isCreator = $accountInfo['user']['public_id'] == $scope.creator['public_id'];
   $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
+
+  $scope.isCurrentUser = function(user) {
+    return user['public_id'] == $accountInfo['user']['public_id']
+  };
 
   $scope.editors = function() {
     return $tripPlanModel.tripPlanData['editors'] || [];
@@ -3044,10 +2776,6 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
 
   $scope.inviteeEmails = function() {
     return $tripPlanModel.tripPlanData['invitee_emails'] || [];
-  };
-
-  $scope.hasCollaborators = function() {
-    return $scope.editors().length || $scope.inviteeEmails().length;
   };
 
   $scope.addCollaborator = function() {
@@ -3080,592 +2808,15 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
   };
 }
 
-function ItemModel(data) {
-  this.data = data;
-
-  this.day = function() {
-    return data['day'];
-  };
-
-  this.setDay = function(day) {
-    this.data['day'] = day;
-  };
-
-  this.position = function() {
-    return this.data['day_position'];
-  };
-
-  this.setPosition = function(dayPosition) {
-    this.data['day_position'] = dayPosition;
-  };
-
-  this.isEntity = function() {
-    return !!this.data['entity_id'];
-  };
-
-  this.isNote = function() {
-    return !!this.data['note_id'];
-  };
-
-  this.hasPositionInfo = function() {
-    return this.day() > 0 && this.position() >= 0;
-  };
-
-  this.clearPosition = function() {
-    this.setDay(-1);
-    this.setPosition(-1);
-  };
-
-  this.isPreciseLocation = function() {
-    return this.data['address_precision'] == 'Precise';
-  };
-
-  this.hasLocation = function() {
-    return !!this.data['latlng'];
-  };
-
-  this.hasCategory = function() {
-    return !_.isEmpty(this.data['category'])
-      && this.data['category']['category_id'] != 0;
-  }
-
-  this.hasSubCategory = function() {
-    return !_.isEmpty(this.data['sub_category'])
-      && this.data['sub_category']['sub_category_id'] != 0;
-  };
-
-  this.categoryDisplayText = function() {
-    if (this.data['sub_category'] && this.data['sub_category']['name'] != 'none') {
-      return this.data['sub_category']['display_name'];
-    } else if (this.data['category'] && this.data['category']['name'] != 'none') {
-      return this.data['category']['display_name'];
-    }
-    return '';
-  };
-
-  this.hasPhotos = function() {
-    return this.data['photo_urls'] && this.data['photo_urls'].length;
-  };
-
-  this.latlngString = function() {
-    return [this.data['latlng']['lat'], this.data['latlng']['lng']].join(',')
-  };
-
-  this.staticMiniMapUrl = function(opt_referenceLatlng) {
-    var parts = ['//maps.googleapis.com/maps/api/staticmap?sensor=false&size=100x100',
-      '&key=AIzaSyDcdswqGzFBfaTBWyQx-7avmEtdwLvfooQ',
-      '&center=', this.latlngString(),
-      '&markers=color:red%7C', this.latlngString()];
-    if (opt_referenceLatlng) {
-      var referenceLatlngString = [opt_referenceLatlng['lat'],
-        opt_referenceLatlng['lng']].join(',');
-      parts.push('&markers=size:small%7Ccolor:blue%7C' + referenceLatlngString);
-    }
-    return parts.join('');
-  };
-
-  this.getBackgroundImageUrl = function(opt_referenceLatlng) {
-    if (this.hasPhotos()) {
-      return this.data['photo_urls'][0];
-    } else if (this.hasLocation()) {
-      return this.staticMiniMapUrl(opt_referenceLatlng);
-    } else {
-      return '';
-    }
-  };
-}
-
-function DayPlannerDayModel(dayNumber) {
-  this.dayNumber = dayNumber;
-  this.items = [];
-  this.noteItem = new ItemModel({
-    'day': dayNumber,
-    'text': ''
-  });
-
-  this.addItem = function(item, position) {
-    if (!position && !_.isNumber(position)) {
-      position = this.items.length;
-    }
-    item.setDay(this.dayNumber);
-    this.items.splice(position, 0, item);
-    this.recalculatePositions();
-    return this.items.slice(position);
-  };
-
-  this.setNote = function(noteItem) {
-    this.noteItem = noteItem;
-  };
-
-  this.recalculatePositions = function() {
-    $.each(this.items, function(i, item) {
-      item.setPosition(i);
-    });
-  };
-
-  this.removeItem = function(item) {
-    if (item.day() != this.dayNumber) {
-      throw 'Asked to remove an item tagged as day ' + item.day()
-        + ' from day ' + this.dayNumber;
-    }
-    var oldPosition = item.position();
-    this.items.splice(oldPosition, 1);
-    this.recalculatePositions();
-    return this.items.slice(oldPosition);
-  };
-
-  this.reorderItem = function(item, newPosition) {
-    var oldPosition = item.position();
-    this.items.splice(oldPosition, 1);
-    this.addItem(item, newPosition);
-    return this.items.slice(Math.min(oldPosition, newPosition));
-  };
-
-  this.getItems = function() {
-    return this.items;
-  };
-
-  this.hasItems = function() {
-    return !_.isEmpty(this.items);
-  };
-
-  this.setDay = function(newDayNumber) {
-    this.dayNumber = newDayNumber;
-    $.each(this.items, function(i, item) {
-      item.setDay(newDayNumber);
-    });
-    this.noteItem.setDay(newDayNumber);
-  };
-
-  this.clear = function() {
-    $.each(this.items, function(i, item) {
-      item.clearPosition();
-    });
-    var clearedItems = this.items;
-    this.items = [];
-    this.noteItem.data['text'] = '';
-    return clearedItems;
-  };
-
-  this.resetEmpty = function() {
-    this.items.length = 0;
-    this.noteItem = new ItemModel({
-      'day': this.dayNumber,
-      'text': ''
-    });
-  };
-}
-
-function DayPlannerModel(entityItems, noteItems) {
-  var me = this;
-  this.dayModels = [];
-  this.unorderedItems = [];
-  this.noteItemsFromDeletedDays = [];
-
-  this.dayModelForDay = function(dayNumber /* 1-indexed */) {
-    var dayIndex = dayNumber - 1;
-    if (dayIndex < this.dayModels.length && this.dayModels[dayIndex]) {
-      return this.dayModels[dayIndex];
-    } else {
-      var dayModel = new DayPlannerDayModel(dayNumber);
-      this.dayModels[dayIndex] = dayModel;
-      return dayModel;
-    }
-  };
-
-  this.reset = function(entityItems, noteItems) {
-    $.each(this.dayModels, function(i, dayModel) {
-      dayModel.resetEmpty();
-    });
-    this.unorderedItems.length = 0;
-    this.noteItemsFromDeletedDays.length = 0;
-    $.each(entityItems, function(i, item) {
-      if (item.day()) {
-        me.dayModelForDay(item.day()).addItem(item, item.position());
-      } else {
-        me.unorderedItems.push(item);
-      }
-    });
-    $.each(noteItems, function(i, noteItem) {
-      me.dayModelForDay(noteItem.day()).setNote(noteItem);
-    });
-    $.each(this.dayModels, function(i, dayModel) {
-      if (!dayModel) {
-        me.dayModelForDay(i + 1);
-      }
-    });
-    if (_.isEmpty(this.dayModels)) {
-      this.dayModelForDay(1);
-    }
-  };
-
-  this.insertNewItem = function(item) {
-    if (item.day()) {
-      var position = item.position() || this.dayModelForDay(item.day()).getItems().length;
-      this.organizeItem(item);
-    } else {
-      this.unorderedItems.push(item);
-    }
-  };
-
-  // Doesn't work for notes yet.
-  this.removeItem = function(item) {
-    if (item.day()) {
-      this.dayModelForDay(item.day()).removeItem(item);
-    } else {
-      for (var i = 0; i < this.unorderedItems.length; i++) {
-        if (this.unorderedItems[i]['entity_id'] == item.data['entity_id']) {
-          this.unorderedItems.splice(i, 1);
-          break;
-        }
-      }
-    }
-  };
-
-  // Initialization
-  this.reset(entityItems, noteItems);
-
-  this.numDays = function() {
-    return this.dayModels[this.dayModels.length - 1].dayNumber;
-  };
-
-  this.addNewDay = function() {
-    return this.dayModelForDay(this.dayModels.length + 1);
-  };
-
-  this.organizeItem = function(item, dayNumber, position) {
-    if (item.day() == dayNumber && item.position() == position) {
-      return;
-    }
-
-    var affectedItems = [];
-
-    if (item.day() && item.day() > 0) {
-      if (item.day() == dayNumber) {
-        var result = this.dayModelForDay(dayNumber).reorderItem(item, position);
-        affectedItems.push.apply(affectedItems, result);
-      } else {
-        var result1 = this.dayModelForDay(item.day()).removeItem(item);
-        var result2 = this.dayModelForDay(dayNumber).addItem(item, position);
-        affectedItems.push.apply(affectedItems, result1);
-        affectedItems.push.apply(affectedItems, result2);
-      }
-    } else {
-      removeElemByValue(this.unorderedItems, item);
-      var result = this.dayModelForDay(dayNumber).addItem(item, position);
-      affectedItems.push.apply(affectedItems, result);
-    }
-    return affectedItems;
-  };
-
-  this.clearDay = function(dayModel) {
-    var clearedItems = dayModel.clear();
-    this.unorderedItems.push.apply(this.unorderedItems, clearedItems);
-  };
-
-  this.clearItem = function(itemModel) {
-    this.dayModelForDay(itemModel.day()).removeItem(itemModel);
-    itemModel.clearPosition();
-    this.unorderedItems.push(itemModel);
-  };
-
-  this.deleteDay = function(dayModel) {
-    var indexToRemove = dayModel.dayNumber - 1;
-    this.clearDay(dayModel);
-    this.dayModels.splice(indexToRemove, 1);
-    $.each(this.dayModels.slice(indexToRemove), function(i, model) {
-      model.setDay(model.dayNumber - 1);
-    });
-    if (dayModel.noteItem && dayModel.noteItem.data['note_id']) {
-      this.noteItemsFromDeletedDays.push(dayModel.noteItem);
-    }
-  };
-
-  this.allOrderedItems = function() {
-    return _.flatten(_.map(this.dayModels, function(dayModel) {
-      return dayModel.getItems();
-    }));
-  };
-
-  // Items that were previously ordered that the user decided to un-order.
-  this.purposelyUnorderedItems = function() {
-    return _.filter(this.unorderedItems, function(item) {
-      return item.day() < 0 || item.position() < 0;
-    });
-  };
-
-  this.allNoteItems = function() {
-    var noteItems = _.map(this.dayModels, function(dayModel) {
-      return dayModel.noteItem;
-    });
-    return this.noteItemsFromDeletedDays.concat(noteItems);
-  };
-
-  this.findItemByEntityId = function(entityId) {
-    for (var i = 0, I = this.unorderedItems.length; i < I; i++) {
-      if (this.unorderedItems[i].data['entity_id'] == entityId) {
-        return this.unorderedItems[i];
-      }
-    }
-    for (var i = 0, I = this.dayModels.length; i < I; i++ ) {
-      var dayModel = this.dayModels[i];
-      for (var j = 0, J = dayModel.getItems().length; j < J; j++) {
-        if (dayModel.getItems()[j].data['entity_id'] == entityId) {
-          return dayModel.getItems()[j];
-        }
-      }
-    }
-    return null;
-  };
-}
-
-function DayPlannerDropTargetCtrl($scope) {
-  var me = this;
-  $scope.dragover = false;
-  $scope.innerDragover = false
-
-  $scope.isDragActive = function() {
-    return me.isValidDropTarget();
-  };
-
-  $scope.onDragenter = function($event) {
-    if (me.isValidDropTarget()) {
-      $scope.dragover = true;
-      $event.preventDefault();
-    }
-  };
-
-  $scope.onDragleave = function($event) {
-    if (!$scope.innerDragover) {
-      $scope.dragover = false;
-    }
-  };
-
-  $scope.onInnerDragenter = function() {
-    $scope.innerDragover = true;
-  };
-
-  $scope.onInnerDragleave = function() {
-    $scope.innerDragover = false;
-  };
-
-  $scope.onDragover = function($event) {
-    if ($scope.isDragActive()) {
-      $event.preventDefault();
-    }
-  };
-
-  $scope.dropDone = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.dragover = false;
-  };
-
-  this.isValidDropTarget = function() {
-    if (!$scope.dragItem) {
-      return false;
-    }
-    if (!_.isNumber($scope.dragItem.position())
-      || !_.isNumber($scope.dragItem.day())
-      || $scope.dragItem.day() < 0
-      || $scope.dragItem.position() < 0) {
-      return true;
-    }
-    if ($scope.dragItem.day() != $scope.day) {
-      return true;
-    }
-    if ($scope.dragItem.position() == $scope.position || ($scope.dragItem.position() + 1 == $scope.position)) {
-      return false;
-    }
-    return true;
-  };
-}
-
-function DayPlannerOneDayCtrl($scope) {
-  $scope.editingNote = false;
-  $scope.dayDragover = false;
-
-  $scope.openNoteEditor = function() {
-    $scope.editingNote = true;
-  };
-
-  $scope.closeNoteEditor = function() {
-    $scope.editingNote = false;
-  };
-
-  $scope.isValidDayForDrop = function() {
-    return $scope.dragItem && $scope.dragItem.day() != $scope.dayModel.dayNumber;
-  };
-
-  $scope.onDayDragenter = function($event) {
-    $scope.dayDragover = true;
-  };
-
-  $scope.onDayDragover = function($event) {
-    $scope.dayDragover = true;
-    if ($scope.isValidDayForDrop()) {
-      $event.preventDefault();
-    }
-  };
-}
-
-function DayPlannerDraggableEntityCtrl($scope) {
-  $scope.activeItemIsThis = function(itemModel) {
-    return $scope.dragItem && $scope.dragItem === itemModel;
-  };
-}
-
-function DayPlannerCtrl($scope, $entityService, $noteService, $tripPlanModel, $dataRefreshManager) {
-  var me = this;
-  var unorderedItems = [];
-  var orderedItems = [];
-
-  // TODO: Use a method on the TripPlanModel itself to get the day planner model.
-  $scope.dayPlannerModel = new DayPlannerModel($tripPlanModel.entityItemCopies(), $tripPlanModel.noteItemCopies());
-  $scope.dpm = $scope.dayPlannerModel;
-  $scope.unorderedItems = unorderedItems;
-  $scope.dragItem = null;
-  $scope.dragactive = false;
-  $scope.leftPanelDragover = false;
-
-  $scope.addNewDay = function() {
-    $scope.dayPlannerModel.addNewDay();
-  };
-
-  $scope.onDragstart = function($event, item) {
-    $scope.dragactive = true;
-    $scope.dragItem = item;
-    $event.originalEvent.dataTransfer.setData('blah', 'dummy-data-for-ff');
-  };
-
-  $scope.onDragend = function() {
-    $scope.dragactive = false;
-    $scope.dragItem = null;
-  };
-
-  $scope.handleDrop = function(dayNumber, position) {
-    var item = $scope.dragItem;
-    $scope.dragactive = false;
-    $scope.dragItem = null;
-    $scope.dayPlannerModel.organizeItem(item, dayNumber, position || 0);
-  };
-
-  $scope.activeItemIsThis = function(itemModel) {
-    return $scope.dragItem && $scope.dragItem === itemModel;
-  };
-
-  $scope.onLeftPanelDragenter = function($event) {
-    if ($scope.showLeftPanelDragActive()) {
-      $event.preventDefault();
-    }
-  };
-
-  $scope.onLeftPanelDragover = function($event) {
-    $scope.leftPanelDragover = true;
-    if ($scope.showLeftPanelDragover()) {
-      $event.preventDefault();
-    }
-  };
-
-  $scope.showLeftPanelDragActive = function() {
-    return $scope.dragItem && $scope.dragItem.hasPositionInfo();
-  };
-
-  $scope.showLeftPanelDragover = function() {
-    return $scope.leftPanelDragover && $scope.showLeftPanelDragActive();
-  };
-
-  $scope.handleLeftPanelDrop = function($event) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.dayPlannerModel.clearItem($scope.dragItem);
-    $scope.leftPanelDragover = false;
-    $scope.onDragend();
-  };
-
-  $scope.handleDayDrop = function($event, dayModel) {
-    $event.preventDefault();
-    $event.stopPropagation();
-    $scope.handleDrop(dayModel.dayNumber, dayModel.items.length);
-  };
-
-  $scope.clearItem = function(item) {
-    $scope.dayPlannerModel.clearItem(item);
-  };
-
-  $scope.saveOrderings = function() {
-    var allItemsToSave = $scope.dayPlannerModel.allOrderedItems()
-      .concat($scope.dayPlannerModel.purposelyUnorderedItems());
-    var entityItems = _.filter(allItemsToSave, function(item) { return item.isEntity(); });
-    var entitiesWithOnlyOrderingChanges = _.map(entityItems, function(item) {
-      return {
-        'entity_id': item.data['entity_id'],
-        'day': item.day(),
-        'day_position': item.position()
-      };
-    });
-    var operations = _.map(entitiesWithOnlyOrderingChanges, function(entity) {
-      return $entityService.operationFromEntity(
-        entity, $tripPlanModel.tripPlanId(), Operator.EDIT);
-    });
-    if (!operations.length) {
-      return me.saveNotes(me.afterSaving);
-    }
-    var request = {'operations': operations};
-    $entityService.mutate(request)
-      .success(function(response) {
-        var modifiedEntities = response['entities'];
-        $tripPlanModel.updateEntities(modifiedEntities);
-        $tripPlanModel.updateLastModified(response['last_modified']);
-        me.saveNotes(me.afterSaving);
-      });
-  };
-
-  this.saveNotes = function(opt_callback) {
-    var allNotes = _.map($scope.dayPlannerModel.allNoteItems(), function(item) { return item.data; });
-    var operations = [];
-    var tripPlanId = $tripPlanModel.tripPlanId();
-    $.each(allNotes, function(i, note) {
-      if (note['note_id']) {
-        if (!note['text'] || isWhitespace(note['text'])) {
-          operations.push($noteService.operationFromNote(note, tripPlanId, Operator.DELETE));
-        } else {
-          operations.push($noteService.operationFromNote(note, tripPlanId, Operator.EDIT));
-        }
-      } else if (!note['note_id'] && note['text'] && !isWhitespace(note['text'])) {
-        operations.push($noteService.operationFromNote(note, tripPlanId, Operator.ADD));
-      }
-    });
-    if (!operations.length) {
-      opt_callback && opt_callback();
-      return;
-    }
-    var request = {'operations': operations};
-    $noteService.mutate(request)
-      .success(function(response) {
-        var modifiedNotes = response['notes'];
-        $tripPlanModel.updateNotes(modifiedNotes);
-        $tripPlanModel.updateLastModified(response['last_modified']);
-        opt_callback && opt_callback();
-      });
-  };
-
-  this.afterSaving = function() {
-    $dataRefreshManager.forceRefresh();
-    $scope.$close();
-  };
-}
-
 function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
-    $entityService, $dataRefreshManager, $tripPlanModel) {
+    $entityService, $tripPlanModel, $searchResultState, $mapManager,
+    $eventTracker) {
   var me = this;
   $scope.url = '';
   $scope.importing = false;
   $scope.saving = false;
-  $scope.importAction = 'new';
-  $scope.currentTripPlanName = $tripPlanModel.tripPlanData['name'];
-  $scope.pendingTripPlan = null;
-  $scope.newTripPlan = null;
+  $scope.allSaved = false;
+  $scope.importedTripPlan = null;
   $scope.urlInvalid = false;
 
   $scope.ready = false;
@@ -3681,77 +2832,38 @@ function GmapsImporterCtrl($scope, $timeout, $tripPlanService,
         return;
       }
       $scope.importing = true;
+      $scope.importedTripPlan = null;
       $tripPlanService.gmapsimport($scope.url)
         .success(function(response) {
           if (response['response_code'] == ResponseCode.SUCCESS) {
-            $scope.pendingTripPlan = response['trip_plan'];
+            $scope.importedTripPlan = response['trip_plan'];
             $scope.importing = false;
+            $scope.allSaved = false;
+            $searchResultState.savedResultIndices = [];
+            $mapManager.fitBoundsToEntities($scope.importedTripPlan['entities']);
           } else if (extractError(response, TripPlanServiceError.INVALID_GOOGLE_MAPS_URL)) {
             $scope.urlInvalid = true;
             $scope.importing = false;
           }
         });
+        $eventTracker.track({name: 'gmaps-url-pasted', location: 'import-panel', value: $scope.url});
       });
   };
 
-  $scope.save = function() {
-    if ($scope.importAction == 'new') {
-      $scope.savePendingAsNewTripPlan();
-    } else if ($scope.importAction == 'import') {
-      $scope.importPendingToExistingTrip();
-    }
-  };
-
-  $scope.savePendingAsNewTripPlan = function() {
-    var tripPlan = $scope.pendingTripPlan;
-    tripPlan['location_bounds'] = me.computeBoundsFromEntities(tripPlan['entities']);
+  $scope.saveAllPendingPlacesToTrip = function() {
     $scope.saving = true;
-    $tripPlanService.saveNewTripPlan(tripPlan)
-      .success(function(newTripPlanResponse) {
-        var newTripPlan = newTripPlanResponse['trip_plans'][0];
-        $entityService.saveNewEntities(tripPlan['entities'], newTripPlan['trip_plan_id'])
-          .success(function(entityResponse) {
-            var newEntities = entityResponse['entities'];
-            newTripPlan['entities'] = newEntities;
-            $scope.newTripPlan = newTripPlan;
-            $scope.saving = false;
-        });
-    });
-  };
-
-  $scope.importPendingToExistingTrip = function() {
-    var tripPlan = $scope.pendingTripPlan;
-    $scope.saving = true;
-    $entityService.saveNewEntities(tripPlan['entities'], $tripPlanModel.tripPlanId())
+    $entityService.saveNewEntities($scope.importedTripPlan['entities'], $tripPlanModel.tripPlanId())
       .success(function(response) {
         if (response['response_code'] == ResponseCode.SUCCESS) {
           $scope.saving = false;
-          $dataRefreshManager.askToRefresh();
-          $scope.$close();
+          $scope.allSaved = true;
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.addNewEntities(response['entities']);
+          $.each($scope.importedTripPlan['entities'], function(i, entity) {
+            $searchResultState.savedResultIndices[i] = true;
+          });
         }
       });
-  };
-
-  this.computeBoundsFromEntities = function(entities) {
-    var gmapsBounds = new google.maps.LatLngBounds();
-    $.each(entities, function(i, entity) {
-      if (!_.isEmpty(entity['latlng'])) {
-        gmapsBounds.extend(gmapsLatLngFromJson(entity['latlng']));
-      }
-    });
-    return boundsJsonFromGmapsBounds(gmapsBounds);
-  };
-}
-
-function FlashedMessagesCtrl($scope, $flashedMessages) {
-  $scope.messages = $flashedMessages;
-
-  $scope.hasMessages = function() {
-    return !_.isEmpty($scope.messages);
-  };
-
-  $scope.dismiss = function(index) {
-    $scope.messages.splice(index, 1);
   };
 }
 
@@ -3774,6 +2886,248 @@ function MapManager($map) {
     });
     if (!bounds.isEmpty()) {
       $map.fitBounds(bounds);
+    }
+  };
+}
+
+function EntityCtrlProxy($rootScope, $pageStateModel) {
+  this.selectEntity = function(entity) {
+    $rootScope.$broadcast('entity-selected', entity);
+  };
+
+  this.openInlineEdit = function(entity, inlineEditMode) {
+    $rootScope.$broadcast('open-inline-edit', entity, inlineEditMode);
+  };
+}
+
+function EntityEditingService($entityService, $tripPlanModel,
+  $modal, $rootScope, $window) {
+  this.saveStarState = function(entity, starred) {
+    entity['starred'] = starred;
+    $entityService.editEntity({
+      'entity_id': entity['entity_id'],
+      'starred': starred
+    }, $tripPlanModel.tripPlanId())
+    .success(function(response) {
+      $tripPlanModel.updateLastModified(response['last_modified']);
+    });
+  };
+
+  this.deleteEntity = function(entity) {
+    var ok = $window.confirm('Are you sure you want to delete this place?');
+    if (!ok) {
+      return;
+    }
+    $entityService.deleteEntity(entity, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          $tripPlanModel.removeEntities(response['entities']);
+        } else {
+          alert('Error while deleting place');
+        }
+      }).error(function() {
+        alert('Error while deleting place')
+      });
+  };
+
+  this.openEditPlaceModal = function(entity) {
+    var scope = $rootScope.$new(true);
+    scope.originalEntity = angular.copy(entity);
+    $modal.open({
+      templateUrl: 'edit-place-modal-template',
+      windowClass: 'edit-place-modal',
+      scope: scope
+    });
+  };
+
+  this.saveNewComment = function(comment, opt_success) {
+    if (!comment['text']) {
+      return;
+    }
+    $entityService.addComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.addNewComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          opt_success && opt_success();
+        }
+      });
+  };
+
+  this.saveCommentEdit = function(comment, opt_success) {
+    if (!comment['text']) {
+      return;
+    }
+    $entityService.editComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          opt_success && opt_success();
+        }
+      });
+  };
+
+  this.deleteComment = function(comment, opt_success) {
+    if (!$window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+    $entityService.deleteComment(comment, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.removeComments(response['comments']);
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          opt_success && opt_success();
+        }
+      });
+  };
+
+  this.saveTags = function(entity, tagsString, opt_success) {
+    var tags = [];
+    $.each(tagsString.split(','), function(i, str) {
+      var tagText = str.trim();
+      if (tagText) {
+        tags.push({'text': tagText});
+      }
+    });
+    if (_.isEmpty(tags)) {
+      $entityService.deleteTags(entity['entity_id'], $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            entity['tags'] = response['entities'][0]['tags'];
+            opt_success && opt_success();
+          }
+        });
+    } else {
+      var entityToEdit = {
+        'entity_id': entity['entity_id'],
+        'tags': tags
+      };
+      $entityService.editEntity(entityToEdit, $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            entity['tags'] = response['entities'][0]['tags'];
+            opt_success && opt_success();
+          }
+        });
+    }
+  };
+
+  this.saveDescription = function(entity, description, opt_success) {
+     var entityToEdit = {
+      'entity_id': entity['entity_id'],
+      'description': description
+    };
+    $entityService.editEntity(entityToEdit, $tripPlanModel.tripPlanId())
+      .success(function(response) {
+        if (response['response_code'] == ResponseCode.SUCCESS) {
+          $tripPlanModel.updateLastModified(response['last_modified']);
+          entity['description'] = response['entities'][0]['description'];
+          opt_success && opt_success();
+        }
+      });
+  };
+}
+
+function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
+  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing) {
+
+  this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
+    var entityToSave = angular.copy(entity);
+    $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
+      delete entityToSave[prop];
+      if (!entityToSave['origin_trip_plan_id']) {
+        entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+      }
+    });
+
+    if ($allowEditing) {
+      $entityService.saveNewEntity(entityToSave, $tripPlanModel.tripPlanId())
+        .success(function(response) {
+          if (response['response_code'] == ResponseCode.SUCCESS) {
+            $tripPlanModel.updateLastModified(response['last_modified']);
+            $tripPlanModel.addNewEntities(response['entities']);
+            $pageStateModel.selectedEntity = response['entities'][0];
+            $searchResultState.savedResultIndices[resultIndex] = true;
+            opt_success && opt_success();
+          }
+        });
+    } else {
+      var doShoppingCartClip = function() {
+        $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
+          .success(function(response) {
+            $activeTripPlanState.numEntities += 1;
+            $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
+            $activeTripPlanState.lastClippedEntity = response['entities'][0];
+            if ($activeTripPlanState.numEntities == 1) {
+              $pageStateModel.showAfterNewTripPlanPanel = true;            
+            }
+            opt_success && opt_success();
+          });
+      };
+      if (!$activeTripPlanState.tripPlan) {
+        $tripPlanCreator.openNewTripPlanModal(doShoppingCartClip, entityToSave);
+      } else {
+        doShoppingCartClip();
+      }      
+    }
+  };
+}
+
+function DirectionsHelper(entities, $window) {
+  this.entities = entities;
+  this.direction = 'from';
+  this.destination = null;
+
+  this.toggleDirection = function() {
+    this.direction = this.direction == 'to' ? 'from' : 'to';
+  };
+
+  this.getDirections = function(originEntity) {
+    if (!this.destination) {
+      return;
+    }
+    var origin = this.direction == 'to'
+      ? originEntity : this.destination;
+    var destination = this.direction == 'to'
+      ? this.destination : originEntity;
+    var url = 'https://www.google.com/maps/dir/' + 
+      new EntityModel(origin).latlngString() + '/' +
+      new EntityModel(destination).latlngString();
+    $window.open(url, '_blank');
+  };
+
+  this.reset = function() {
+    this.direction = 'from';
+    this.destination = null;
+  };
+}
+
+function tcAfterNewTripPlanPanel($timeout, $window) {
+  return {
+    restrict: 'AE',
+    scope: {
+      onClose: '&'
+    },
+    templateUrl: 'after-new-trip-plan-panel-template',
+    controller: function($scope, $activeTripPlanState, $window) {
+      $scope.activeTripPlanState = $activeTripPlanState;
+      $scope.goToTripPlan = function() {
+        $window.location.href = '/trip_plan/' + $activeTripPlanState.tripPlan['trip_plan_id'];
+      }
+    },
+    link: function(scope, element, attrs) {
+      $timeout(function() {
+        var connector = $("#after-new-trip-plan-panel .connector");
+        var connectorAlignmentElem = $(attrs.alignConnectorTo);
+        connector.css('left', connectorAlignmentElem.offset().left);
+        $($window).on('resize', function() {
+          connector.css('left', connectorAlignmentElem.offset().left);
+        });
+      });
     }
   };
 }
@@ -3805,6 +3159,33 @@ function tcScrollToSelector($interpolate) {
   };
 }
 
+function tcResetScrollTopOn() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcResetScrollTopOn, function(newValue, oldValue) {
+        if (newValue && newValue !== oldValue) {
+          element.scrollTop(0);
+        }
+      });
+    }
+  };
+}
+
+function tcScrollOnClick() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      var scrollParent = $(attrs.scrollParent);
+      var scrollTarget = $(attrs.scrollTarget);
+      element.on('click', function() {
+        var newScrollTop = scrollParent.offset().top - scrollTarget.offset().top;
+        scrollParent.animate({scrollTop: newScrollTop}, 500);
+      });
+    }
+  };
+}
+
 function tcIcon() {
   return {
     restrict: 'AEC',
@@ -3821,9 +3202,16 @@ function tcStarRating() {
   return {
     restrict: 'AEC',
     scope: {
-      value: '=value'
+      value: '=',
+      max: '='
     },
-    templateUrl: 'star-rating-template'
+    templateUrl: 'star-rating-template',
+    controller: function($scope) {
+      $scope.maxRange = new Array($scope.max);
+      for (var i = 0; i < $scope.max; i++) {
+        $scope.maxRange[i] = i;
+      }
+    }
   };
 }
 
@@ -3839,59 +3227,6 @@ function tcFocusOn() {
           element[0].focus();
         }
       });
-    }
-  };
-}
-
-function tcTripPlanSelectDropdown() {
-  return {
-    restrict: 'AE',
-    templateUrl: 'trip-plan-select-dropdown-template',
-    controller: TripPlanSelectDropdownCtrl,
-    scope: {
-      selectedTripPlan: '=selectTripPlanTo'
-    }
-  };
-}
-
-function tcStartNewTripInput() {
-  return {
-    retrict: 'AE',
-    templateUrl: 'start-new-trip-input-template',
-    controller: StartNewTripInputCtrl,
-    scope: {
-      onSelectPlace: '&',
-      hidePrompt: '=',
-      placeholder: '='
-    }
-  };
-}
-
-function tcItemDropTarget() {
-  return {
-    restrict: 'AE',
-    templateUrl: 'day-planner-drop-target-template',
-    controller: DayPlannerDropTargetCtrl,
-    scope: {
-      day: '=',
-      position: '=',
-      dragItem: '=',
-      onDrop: '&'
-    }
-  };
-}
-
-function tcDraggableEntity() {
-  return {
-    restrict: 'AE',
-    templateUrl: 'day-planner-entity-item-template',
-    controller: DayPlannerDraggableEntityCtrl,
-    scope: {
-      item: '=',
-      dragItem: '=',
-      onDragstart: '&',
-      onDragend: '&',
-      onClear: '&'
     }
   };
 }
@@ -3933,82 +3268,6 @@ function tcLockAfterScroll($timeout) {
           spacer.remove();
         }
       });
-    }
-  };
-}
-
-function tcScrollSignal() {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var elem = $(element);
-      var scrollParent = $(attrs.scrollParentSelector);
-      var referenceElem = attrs.referenceElemSelector
-        ? $(attrs.referenceElemSelector) : scrollParent;
-
-      function computeSpread() {
-        var spread = 0;
-        if (attrs.signalCondition == 'bottom-to-bottom') {
-          spread = elem.offset().top + elem.height() 
-            - (referenceElem.offset().top + referenceElem.height());
-        }
-        return spread;        
-      }
-
-      var spread = computeSpread();
-
-      scrollParent.on('scroll', function() {
-        if (scrollParent.scrollTop() >= spread) {
-          attrs.signalClass && elem.addClass(attrs.signalClass);
-          attrs.parentSignalClass && scrollParent.addClass(attrs.parentSignalClass);
-          attrs.referenceSignalClass && referenceElem.addClass(attrs.referenceSignalClass);
-        } else {
-          attrs.signalClass && elem.removeClass(attrs.signalClass);
-          attrs.parentSignalClass && scrollParent.removeClass(attrs.parentSignalClass);
-          attrs.referenceSignalClass && referenceElem.removeClass(attrs.referenceSignalClass);
-        }
-      });
-
-      if (attrs.recomputeSpreadOn) {
-        scope.$watch(attrs.recomputeSpreadOn, function() {
-          spread = computeSpread();
-        });
-      }
-    }
-  };
-}
-
-function tcCoverScroll() {
-  return {
-    restrict: 'A',
-    link: function(scope, element, attrs) {
-      var elem = $(element);
-      var inverseElem = $(attrs.animateInverseOn);
-      var scrollParent = $(attrs.scrollParentSelector);
-      var height = elem.height();
-      var startThreshold = height * parseFloat(attrs.startThreshold);
-      var easingExponent = parseFloat(attrs.easingExponent);
-      scrollParent.on('scroll', function() {
-        var scrollTop = scrollParent.scrollTop();
-        if (scrollTop < startThreshold) {
-          elem.css('opacity', 1);
-          inverseElem.css('opacity', 0);
-        } else if ((scrollTop + 44) >= height) {
-          elem.css('opacity', 0);
-          inverseElem.css('opacity', 1);
-        } else {
-          var opacity = 1 - Math.pow( ((scrollTop - startThreshold) / (height - startThreshold - 44)), easingExponent);
-          elem.css('opacity', opacity);
-          inverseElem.css('opacity', 1 - opacity);
-        }
-      });
-
-      if (attrs.recomputeThresholdOn) {
-        scope.$watch(attrs.recomputeThresholdOn, function() {
-          height = elem.height();
-          startThreshold = height * parseFloat(attrs.startThreshold);
-        });
-      }
     }
   };
 }
@@ -4173,6 +3432,8 @@ function tcImageCarousel() {
     scope: {
       urls: '=',
       onChange: '&',
+      trackChange: '&',
+      fullBleed: '=',
       currentIndex: '='
     },
     controller: function($scope) {
@@ -4209,6 +3470,7 @@ function tcImageCarousel() {
         if ($scope.hasNextImg()) {
           $scope.currentIndex_++;
           me.notifyChange();
+          $scope.trackChange && $scope.trackChange();
         }
       };
 
@@ -4216,6 +3478,7 @@ function tcImageCarousel() {
         if ($scope.hasPrevImg()) {
           $scope.currentIndex_--;
           me.notifyChange();
+          $scope.trackChange && $scope.trackChange();
         }
       };
 
@@ -4634,6 +3897,172 @@ function tcTransitionend($parse) {
   };
 }
 
+function tcAnimateOnChangeTo() {
+  return {
+    restrict: 'A',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcAnimateOnChangeTo, function(newValue, oldValue) {
+        if (newValue != null && newValue != undefined
+          && oldValue != null && newValue != undefined
+          && newValue !== oldValue) {
+          element.addClass(attrs.classToAdd);
+          if (attrs.removeWhenComplete) {
+            element.on('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend',
+              function() {
+                element.removeClass(attrs.classToAdd);
+              });
+          }
+        }
+      });
+    }
+  };
+};
+
+function tcExpandableContent($timeout) {
+  return {
+    restrict: 'AE',
+    templateUrl: 'expandable-content-template',
+    scope: {
+      textContent: '=',
+      expandLinkText: '@',
+      collapseLinkText: '@',
+      maxLines: '=',
+      numBufferLines: '=',
+      trackExpand: '=',
+      trackCollapse: '='
+    },
+    link: function(scope, element, attrs) {
+      var contentElem = element.find('.text-content');
+      $timeout(function() {
+        var fullHeight = contentElem.height();
+        var lineHeight = parseInt(contentElem.css('line-height').replace('px', ''));
+        var maxHeight = scope.maxLines * lineHeight;
+        // Allow the content to be up to 1 line longer than the max
+        // if that's all it takes to render the whole thing, otherwise
+        // we render an expander link for 1 line which looks stupid.
+        var numBufferLines = _.isNumber(scope.numBufferLines)
+          ? scope.numBufferLines : 2;
+        var maxHeightWithBuffer = (scope.maxLines + numBufferLines) * lineHeight;
+        scope.needsExpansion = fullHeight > maxHeightWithBuffer;
+        if (scope.needsExpansion) {
+          contentElem.css('height', maxHeight);
+        }
+        scope.$watch('isExpanded', function(isExpanded, wasExpanded) {
+          if (isExpanded == wasExpanded) {
+            return;
+          }
+          contentElem.css('height', isExpanded ? '' : maxHeight);
+        });
+      });
+    },
+    controller: function($scope) {
+      $scope.isExpanded = false;
+      $scope.needsExpansion = null;
+
+      $scope.toggleExpanded = function() {
+        $scope.isExpanded = !$scope.isExpanded;
+      };
+    }
+  };
+}
+
+function tcDraggable() {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      scope.$watch(attrs.tcDraggable, function(draggable) {
+        element.attr('draggable', draggable);
+      });
+    }
+  };
+}
+
+function tcLinkHeights($timeout) {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      var heightElem = $(attrs.tcLinkHeights)[0];
+      scope.$watch(function() {
+        return heightElem.scrollHeight;
+      }, function(newHeight, oldHeight) {
+        if (newHeight != undefined) {
+          element.css('height', newHeight);
+        }
+      });
+      if (attrs.heightWatchExpr) {
+        scope.$watch(attrs.heightWatchExpr, function() {
+          $timeout(function() {
+            element.css('height', heightElem.scrollHeight);
+          });
+        }, true);
+      }
+    }
+  };
+}
+
+function tcSetNanoScrollbars($timeout) {
+  return {
+    restrict: 'AC',
+    link: function(scope, element, attrs) {
+      var scrollElem = element.find('.nano-content')[0];
+      $timeout(function() {
+        element.nanoScroller();
+      });
+      scope.$watch(function () {
+        return scrollElem.scrollHeight;
+      }, function(newHeight, oldHeight) {
+        $timeout(function() {
+          element.nanoScroller();
+        });
+      });
+      scope.$on("$destroy", function () {
+        element.nanoScroller({ destroy: true });
+      });
+    }
+  };
+}
+
+var BrowserPlatform = {
+  WINDOWS: 1,
+  MAC: 2
+};
+
+var BrowserApp = {
+  CHROME: 1,
+  FIREFOX: 2,
+  SAFARI: 3,
+  IE: 4
+};
+
+function BrowserInfo(platform, app) {
+  this.platform = platform;
+  this.app = app;
+}
+
+BrowserInfo.parse = function(userAgent) {
+  var platform = null;
+  var app = null;
+
+  if (userAgent.indexOf('Win') != -1) {
+    platform = BrowserPlatform.WINDOWS;
+  } else if (userAgent.indexOf('Mac') != -1) {
+    platform = BrowserPlatform.MAC;
+  }
+
+  if (userAgent.indexOf('Chrome') != -1) {
+    app = BrowserApp.CHROME;
+  } else if (userAgent.indexOf('Firefox') != -1) {
+    app = BrowserApp.FIREFOX;
+  } else if (userAgent.indexOf('Safari') != -1) {
+    app = BrowserApp.SAFARI;
+  } else if (userAgent.indexOf('MSIE') != -1
+    || (userAgent.indexOf('Windows NT') != -1 && userAgent.indexOf('.NET') != -1)) {
+    app = BrowserApp.IE;
+  }
+
+  return new BrowserInfo(platform, app);
+};
+
 // Changes an event name like 'dragstart' to 'tcDragstart'
 // Doesn't yet handle dashes and underscores.
 function normalizeEventName(name, opt_prefix) {
@@ -4682,13 +4111,16 @@ angular.module('directivesModule', [])
   .directive('tcImageGallery', tcImageGallery)
   .directive('tcImageCarousel', tcImageCarousel)
   .directive('tcScrollToSelector', tcScrollToSelector)
-  .directive('tcScrollSignal', tcScrollSignal)
+  .directive('tcResetScrollTopOn', tcResetScrollTopOn)
+  .directive('tcScrollOnClick', tcScrollOnClick)
   .directive('tcAnimateOnBool', tcAnimateOnBool)
   .directive('tcTransitionend', tcTransitionend)
   .directive('tcIncludeAndReplace', tcIncludeAndReplace)
   .directive('tcIcon', tcIcon)
   .directive('tcSvgHack', tcSvgHack)
-  .directive('tcTripPlanSelectDropdown', tcTripPlanSelectDropdown);
+  .directive('tcAnimateOnChangeTo', tcAnimateOnChangeTo)
+  .directive('tcExpandableContent', tcExpandableContent)
+  .directive('tcDraggable', tcDraggable);
 
 function makeFilter(fn) {
   return function() {
@@ -4701,70 +4133,71 @@ angular.module('filtersModule', [])
   .filter('hostNoSuffix', makeFilter(hostNoSuffix))
   .filter('hostToIcon', makeFilter(hostToIcon));
 
-window['initApp'] = function(tripPlan, entities, notes, allTripPlans,
-    accountInfo, datatypeValues, allowEditing, sampleSites, initialState, flashedMessages) {
+window['initApp'] = function(tripPlan, entities,
+    allTripPlans, activeTripPlan, activeTripPlanEntityCount,
+    accountInfo, datatypeValues, allowEditing, sampleSites,
+    hasGuides, flashedMessages) {
+
+  var tripPlanModel = new TripPlanModel(tripPlan, entities);
   angular.module('initialDataModule', [])
     .value('$tripPlan', tripPlan)
-    .value('$tripPlanModel', new TripPlanModel(tripPlan, entities, notes))
+    .value('$tripPlanModel', tripPlanModel)
     .value('$allTripPlans', allTripPlans)
-    .value('$pageStateModel', PageStateModel.fromInitialState(initialState))
+    .value('$activeTripPlanState', new ActiveTripPlanStateModel(
+      allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
+    .value('$pageStateModel', new PageStateModel())
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
+    .value('$entityDragStateModel', new EntityDragStateModel(tripPlanModel))
     .value('$taxonomy', new TaxonomyTree(datatypeValues['categories'], datatypeValues['sub_categories']))
     .value('$accountInfo', accountInfo)
     .value('$allowEditing', allowEditing)
     .value('$sampleSites', sampleSites)
-    .value('$flashedMessages', flashedMessages);
+    .value('$hasGuides', hasGuides)
+    .value('$flashedMessages', flashedMessages)
+    .value('$browserInfo', BrowserInfo.parse(navigator.userAgent))
+    .value('$dataCache', new DataCache());
 
   angular.module('mapModule', [])
     .value('$map', createMap(tripPlan));
 
-  angular.module('appModule', ['mapModule', 'initialDataModule', 
+  angular.module('appModule', ['navModule', 'mapModule', 'initialDataModule', 
       'servicesModule', 'directivesModule', 'filtersModule',
       'ui.bootstrap', 'ngSanitize', 'ngAnimate'],
       interpolator)
     .controller('RootCtrl', RootCtrl)
-    .controller('OrganizeMenuCtrl', OrganizeMenuCtrl)
-    .controller('BulkClipCtrl', BulkClipCtrl)
-    .controller('AccountDropdownCtrl', AccountDropdownCtrl)
-    .controller('ItemGroupCtrl', ItemGroupCtrl)
-    .controller('GuideviewItemGroupCtrl', GuideviewItemGroupCtrl)
-    .controller('EntityCtrl', EntityCtrl)
-    .controller('GuideviewEntityCtrl', GuideviewEntityCtrl)
+    .controller('EntitySummaryCtrl', EntitySummaryCtrl)
     .controller('InfowindowCtrl', InfowindowCtrl)
-    .controller('NoteCtrl', NoteCtrl)
-    .controller('ReclipConfirmationCtrl', ReclipConfirmationCtrl)
     .controller('CarouselCtrl', CarouselCtrl)
-    .controller('AddPlaceOptionsCtrl', AddPlaceOptionsCtrl)
-    .controller('AddPlacePanelCtrl', AddPlacePanelCtrl)
+    .controller('DetailsPanelCtrl', DetailsPanelCtrl)
+    .controller('GuidesPanelCtrl', GuidesPanelCtrl)
     .controller('SearchPanelCtrl', SearchPanelCtrl)
-    .controller('WebSearchPanelCtrl', WebSearchPanelCtrl)
-    .controller('TravelGuidesPanelCtrl', TravelGuidesPanelCtrl)
-    .controller('ClipMyOwnPanelCtrl', ClipMyOwnPanelCtrl)
+    .controller('AddYourOwnPanelCtrl', AddYourOwnPanelCtrl)
     .controller('EditPlaceCtrl', EditPlaceCtrl)
-    .controller('EditImagesCtrl', EditImagesCtrl)
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
-    .controller('DayPlannerCtrl', DayPlannerCtrl)
-    .controller('DayPlannerOneDayCtrl', DayPlannerOneDayCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
-    .controller('FlashedMessagesCtrl', FlashedMessagesCtrl)
-    .directive('tcItemDropTarget', tcItemDropTarget)
-    .directive('tcDraggableEntity', tcDraggableEntity)
-    .directive('tcStartNewTripInput', tcStartNewTripInput)
-    .directive('tcCoverScroll', tcCoverScroll)
-    .directive('tcDaySelectDropdown', tcDaySelectDropdown)
-    .directive('tcEntitySearchResult', tcEntitySearchResult)
-    .directive('tcEntityListing', tcEntityListing)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
     .directive('tcSearchResultIcon', tcSearchResultIcon)
     .directive('tcUserIcon', tcUserIcon)
+    .directive('tcAfterNewTripPlanPanel', tcAfterNewTripPlanPanel)
+    .directive('tcEntityDetails', tcEntityDetails)
+    .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
+    .directive('tcTrackEntityDragState', tcTrackEntityDragState)
+    .directive('tcDraggableEntitySummary', tcDraggableEntitySummary)
+    .directive('tcFilterBar', tcFilterBar)
+    .directive('tcSetNanoScrollbars', tcSetNanoScrollbars)
+    .directive('tcLinkHeights', tcLinkHeights)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
-    .service('$pagePositionManager', PagePositionManager)
     .service('$mapManager', MapManager)
+    .service('$sizeHelper', SizeHelper)
+    .service('$entityCtrlProxy', EntityCtrlProxy)
+    .service('$entityClippingService', EntityClippingService)
+    .service('$entityEditingService', EntityEditingService)
+    .service('$entityOrderingService', EntityOrderingService)
     .filter('creatorDisplayName', makeFilter(creatorDisplayName));
 
   angular.element(document).ready(function() {

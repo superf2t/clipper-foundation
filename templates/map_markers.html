@@ -5,9 +5,8 @@
   }
 
   .map-marker .marker-shape {
-    width: 35px;
-    height: 55px;
-    transition: width 0.3s, height 0.3s;
+    width: 36px;
+    height: 54px;
   }
 
   .edit-place .map-marker .marker-shape {
@@ -34,66 +33,74 @@
 
   .map-marker .marker-shape svg {
     fill: #999999;
+    stroke: #999999;
+    stroke-width: 8px;
   }
 
   .map-marker.lodging .marker-shape svg {
     fill: #456BE8;
+    stroke: #456BE8;
+    stroke-width: 8px;
   }
 
   .map-marker.food_and_drink .marker-shape svg {
     fill: #D91848;
+    stroke: #D91848;
+    stroke-width: 8px;
   }
 
   .map-marker.attractions .marker-shape svg {
     fill: #50B0B2;
+    stroke: #50B0B2;
+    stroke-width: 8px;
   }
 
   .map-marker.activities .marker-shape svg {
     fill: #92BBFF;
+    stroke: #92BBFF;
+    stroke-width: 8px;
   }
 
   .map-marker.shopping .marker-shape svg {
     fill: #FEC569;
+    stroke: #FEC569;
+    stroke-width: 8px;
   }
 
   .map-marker.entertainment .marker-shape svg {
-    fill: #A957B2; 
+    fill: #A957B2;
+    stroke: #A957B2;
+    stroke-width: 8px; 
   }
 
   .map-marker.region .marker-shape svg {
     fill: #ADB9DD;
+    stroke: #ADB9DD;
+    stroke-width: 8px;
   }
 
   .map-marker.transportation .marker-shape svg {  
     fill: #86BBFF;
+    stroke: #86BBFF;
+    stroke-width: 8px;
   }
 
   .map-marker .marker-shape.selected,
   .map-marker .marker-shape.emphasized {
-    width: 50px;
-    height: 79px; 
+    width: 54px;
+    height: 81px; 
   }
 
   .map-marker.deemphasized {
-    opacity: 0.5;
+    opacity: 0.7;
   }
 
-  .search-result-marker .result-letter {
-    width: 100%;
-    text-align: center;
-    position: absolute;
-    top: 21%;
-    color: #fff;
-    font-size: 1.2em;
-    transition: font-size 0.3s;
+  .map-marker.for-results .marker-shape svg {
+    stroke: #263452;
+    stroke-width: 8px;
   }
 
-  .search-result-marker .result-letter.selected,
-  .search-result-marker .result-letter.emphasized {
-    font-size: 1.6em;
-  }
-
-  .map-marker.search-result-marker .marker-shape svg {
+  .map-marker.for-results .marker-icon svg {
     fill: #263452;
   }
 
@@ -121,6 +128,28 @@
     border: 1px solid #AAAAAA;
     padding: 1px;
     border-radius: 9px;  
+  }
+
+  .marker-annotations .result-letter {
+    position: absolute;
+    bottom: 15%;
+    left: 33%;
+    width: 12px;
+    text-align: center;
+    font-weight: 500;
+    color: #263452;
+  }
+
+  .map-marker .marker-shape.selected ~ .marker-annotations .result-letter,
+  .map-marker .marker-shape.emphasized ~ .marker-annotations .result-letter {
+    position: absolute;
+    bottom: 15%;
+    left: 33%;
+    width: 18px;
+    text-align: center;
+    font-weight: 500;
+    color: #263452;
+    font-size: 1.5em;
   }
 
   .map-marker .drag-halo {
@@ -156,7 +185,7 @@
       class="marker-shape" ng-class="getClasses()">
     </div>
     <div class="marker-icon">
-      <div ng-include="iconTemplateName" ng-if="iconTemplateName">
+      <div ng-include="iconTemplateName" ng-if="iconTemplateName" class="full-width full-height">
       </div>
     </div>
     <div class="marker-annotations">
@@ -165,6 +194,9 @@
       </div>
       <div ng-if="hasComments" class="comment-annotation">
         <span tc-icon="comment"></span>
+      </div>
+      <div ng-if="resultLetter != undefined && resultLetter != null" class="result-letter">
+        [[resultLetter]]
       </div>
     </div>
   </div>

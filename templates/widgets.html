@@ -1,40 +1,4 @@
 <style type="text/css">
-  .start-new-trip-form {
-    font-family: 'Nunito';
-    color: #000;
-    margin-top: 10px;
-  }
-
-  .start-new-trip-form .prompt {
-    text-align: center;
-    font-size: 1.5em;
-    margin-bottom: 20px;
-  }
-
-  .start-new-trip-form .search-spinner {
-    position: relative;
-    top: -28px;
-    left: 50%;
-  }
-
-  .start-new-trip-form .search-results {
-    margin-top: 20px;
-  }
-
-  .start-new-trip-form .one-result {
-    padding: 15px 5px;
-    cursor: pointer;
-  }
-
-  .start-new-trip-form .one-result:hover {
-    background-color: #ccc;
-  }
-
-  .start-new-trip-form .result-icon {
-    max-width: 25px;
-    max-height: 25px;
-  }
-
   .image-gallery {
     text-align: center;
   }
@@ -63,8 +27,26 @@
     width: 20px;
   }
 
-  .image-carousel {
-    position: relative;
+  .image-carousel .carousel-control {
+    opacity: 0.7;
+  }
+
+  .image-carousel .carousel-control:hover {
+    opacity: 1.0;
+  }
+
+  .image-carousel .icon-next, .image-carousel .icon-prev {
+    font-size: 5.0em;
+    line-height: 0;
+  }
+
+  .image-carousel.full-bleed {
+    width: 100%;
+    height: 100%;
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+    background-size: cover;
+    cursor: pointer;
   }
 
   .image-carousel img {
@@ -79,30 +61,43 @@
     cursor: pointer;
   }
 
-  .login-modal-window {
-    width: 600px;
-    height: 400px;
-    margin: auto;
+  .expandable-content .text-content {
+    white-space: pre-line;
+    text-align: justify;
+    position: relative;
+  }
+
+  .expandable-content .text-content.collapsed {
     overflow: hidden;
   }
 
-  .login-modal-window .modal-dialog {
+  .expandable-content .text-content.collapsed:after {
+    content: "";
     width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
+    height: 1.5em;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+
+    /* http://www.colorzilla.com/gradient-editor/#ffffff+0,ffffff+100&0+0,1+100;Custom */
+    background: -moz-linear-gradient(top,  rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,0)), color-stop(100%,rgba(255,255,255,1))); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  rgba(255,255,255,0) 0%,rgba(255,255,255,1) 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00ffffff', endColorstr='#ffffff',GradientType=0 ); /* IE6-9 */
   }
 
-  .login-modal {
-    width: 100%;
-    height: 100%;
+  .expandable-content .toggle-link .caret {
+    position: relative;
+    top: -1px;
   }
 
-  .login-modal .login-iframe {
-    width: 100%;
-    height: 100%;
-    padding: 20px;
-    border: none;
+  .star-rating-container .rating-star {
+    display: inline-block;
+    position: relative;
+    top: -1px;
   }
 </style>
 
@@ -120,12 +115,17 @@
 </script>
 
 <script type="text/ng-template" id="image-carousel-template">
-  <div class="image-carousel">
-    <a class="left carousel-control" ng-show="hasPrevImg()" ng-click="prevImg()">
+  <div class="image-carousel"
+    ng-class="{'full-bleed': fullBleed}"
+    ng-style="{'background-image': fullBleed && 'url(&quot;' + currentImgUrl() + '&quot;)'}"
+    ng-click="fullBleed && nextImg()">
+    <a class="left carousel-control" ng-show="hasPrevImg()"
+      ng-click="prevImg(); $event.stopPropagation()">
       <span class="icon-prev"></span>
     </a>
-    <img ng-src="[[currentImgUrl()]]" ng-click="nextImg()"/>
-    <a class="right carousel-control" ng-show="hasNextImg()" ng-click="nextImg()">
+    <img ng-if="!fullBleed" ng-src="[[currentImgUrl()]]" ng-click="nextImg()"/>
+    <a class="right carousel-control" ng-show="hasNextImg()"
+      ng-click="nextImg(); $event.stopPropagation()">
       <span class="icon-next"></span>
     </a>
   </div>
@@ -160,55 +160,47 @@
 </script>
 
 <script type="text/ng-template" id="star-rating-template">
-  <div>
-    <span ng-repeat="star in [1, 2, 3, 4, 5]">
+  <div class="star-rating-container">
+    <span ng-repeat="star in maxRange" class="rating-star">
       <img ng-src="/static/img/star-[[ value >= star ? 'full' : ((star - value >= 1) ? 'empty' : 'half') ]].png"/>
     </span>
   </div>
 </script>
 
-<script type="text/ng-template" id="trip-plan-select-dropdown-template">
-  <div>
+<script type="text/ng-template" id="trip-plan-selector-template">
+  <div class="trip-plan-selector">
     <select class="form-control" ng-model="selectedTripPlan"
       ng-options="tp['name'] for tp in tripPlanSelectOptions">
     </select>
-    <div ng-if="showCreateTripPlanForm"
-      class="trip-plan-select-dropdown-new-trip-plan-form">
-      <div tc-start-new-trip-input on-select-place="saveNewTripPlan($tripPlanDetails)">
-      </div>
-    </div>
   </div>
 </script>
 
-<script type="text/ng-template" id="start-new-trip-input-template">
-  <div class="start-new-trip-form">
-    <div class="prompt" ng-show="!hidePrompt">
-      Where are you traveling?
-    </div>
-    <div>
-      <input type="text" class="form-control"
-        placeholder="[[placeholder != undefined ? placeholder : 'e.g. Paris, Thailand, New England']]"
-        ng-model="locationText"
-        tc-google-place-autocomplete
-        location-types="(regions)"
-        on-place-change="placeChanged($newPlace)"
-        tc-focus-on="ready"/>
-    </div>
-    <div ng-show="searching" class="search-spinner">
-      <img src="/static/img/spinner-small.gif"/>
-    </div>
-    <div class="search-results" ng-show="searchResults">
-      <div ng-repeat="result in searchResults" class="one-result" ng-click="selectResult(result)">
-        <img ng-src="[[result['icon'] ]]" class="result-icon"/>
-        [[result['formatted_address'] ]]
-      </div>
-    </div>
-  </div>
+<script type="text/ng-template" id="user-icon-template">
+  <a href="javascript:void(0)" tooltip="[[noTooltip ? null : user['display_name'] ]]"
+    tooltip-append-to-body="true">
+    <span class="user-icon"
+      ng-class="'user-' + userStyleIdentifier()">
+      [[user['display_name'].substring(0, 1) ]]
+    </span>
+  </a>
 </script>
 
-<script type="text/ng-template" id="login-modal-template">
-  <div class="login-modal">
-    <iframe class="login-iframe" ng-src="{{login_iframe_url}}">
-    </iframe>
+<script type="text/ng-template" id="expandable-content-template">
+  <div class="expandable-content">
+    <div class="text-content" ng-class="{'collapsed': needsExpansion && !isExpanded}"><span ng-bind-html="textContent | linky:'_blank'"></span></div>
+    <div class="toggle-link" ng-show="needsExpansion">
+      <a ng-click="toggleExpanded()" class="color-link" ng-show="!isExpanded"
+        tc-track-click="trackExpand"
+        href="javascript:void(0)">
+        [[expandLinkText]]
+        <span class="caret"></span>
+      </a>
+      <a ng-click="toggleExpanded()" class="color-link" ng-show="isExpanded"
+        tc-track-click="trackCollapse"
+        href="javascript:void(0)">
+        [[collapseLinkText]]
+        <span class="caret caret-up"></span>
+      </a>
+    </div>
   </div>
 </script>

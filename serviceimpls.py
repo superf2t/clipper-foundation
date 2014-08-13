@@ -4,13 +4,14 @@ from dateutil import parser as date_parser
 from dateutil import tz
 from flask import url_for
 
+import crypto
 import data
 from database import user
 import clip_logic
 import enums
 import geocode
-import geometry
 import google_places
+import guide_config
 import kml_import
 import mailer
 import sample_sites
@@ -64,7 +65,8 @@ def decorate_with_trip_plans(trip_plan_id_attr_name, ops):
     return trip_plans
 
 
-EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS', 'UNKNOWN_SITE')
+EntityServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'DUPLICATE_POSITIONS',
+    'UNKNOWN_SITE', 'INVALID_ORDERING')
 
 class EntityGetRequest(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
@@ -147,6 +149,33 @@ class EntityMutateCommentResponse(service.ServiceResponse):
         self.comments = comments
         self.last_modified = last_modified
 
+
+class EntityTagOperation(serializable.Serializable):
+    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id', 'entity_id',
+        serializable.objf('tags', data.Tag))
+
+    def __init__(self, operator=None, trip_plan_id=None, entity_id=None, tags=None):
+        self.operator = operator
+        self.trip_plan_id = trip_plan_id
+        self.entity_id = entity_id
+        self.tags = tags
+
+class EntityMutateTagRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(serializable.objlistf('operations', EntityTagOperation))
+
+    def __init__(self, operations=None):
+        self.operations = operations 
+
+class EntityMutateTagResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('entities', data.Entity), 'last_modified'))
+
+    def __init__(self, entities=(), last_modified=None, **kwargs):
+        super(EntityMutateTagResponse, self).__init__(**kwargs)
+        self.entities = entities
+        self.last_modified = last_modified
+
 class GooglePlaceToEntityRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('reference')
 
@@ -205,16 +234,36 @@ class GenericMultiEntityResponse(service.ServiceResponse):
         super(GenericMultiEntityResponse, self).__init__(**kwargs)
         self.entities = entities
 
+class OrderEntitiesRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('trip_plan_id', serializable.listf('ordered_entity_ids'))
+
+    def __init__(self, trip_plan_id=None, ordered_entity_ids=()):
+        self.trip_plan_id = trip_plan_id
+        self.ordered_entity_ids = ordered_entity_ids
+
+class OrderEntitiesResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('entities', data.Entity),
+        'last_modified'))
+
+    def __init__(self, entities=(), last_modified=None, **kwargs):
+        super(OrderEntitiesResponse, self).__init__(**kwargs)
+        self.entities = entities
+        self.last_modified = last_modified
+
 class EntityService(service.Service):
     METHODS = service.servicemethods(
         ('get', EntityGetRequest, EntityGetResponse),
         ('mutate', EntityMutateRequest, EntityMutateResponse),
         ('mutatecomments', EntityMutateCommentRequest, EntityMutateCommentResponse),
+        ('mutatetags', EntityMutateTagRequest, EntityMutateTagResponse),
         ('googleplacetoentity', GooglePlaceToEntityRequest, GenericEntityResponse),
         ('urltoentities', UrlToEntitiesRequest, GenericMultiEntityResponse),
         ('pagesourcetoentities', PageSourceToEntityRequest, GenericMultiEntityResponse),
         ('googletextsearchtoentities', GoogleTextSearchToEntitiesRequest, GenericMultiEntityResponse),
-        ('sitesearchtoentities', SiteSearchToEntitiesRequest, GenericMultiEntityResponse))
+        ('sitesearchtoentities', SiteSearchToEntitiesRequest, GenericMultiEntityResponse),
+        ('orderentities', OrderEntitiesRequest, OrderEntitiesResponse))
 
     def __init__(self, session_info=None):
         self.session_info = session_info
@@ -241,6 +290,8 @@ class EntityService(service.Service):
         comments = utils.flatten(e.comments for e in entities if e.comments)
         self.migrate_comment_authors(comments)
         self.resolve_comment_display_users(comments)
+
+        self.resolve_relational_fields(entities)
 
         return EntityGetResponse(response_code=service.ResponseCode.SUCCESS.name,
             response_summary=response_summary,
@@ -309,6 +360,7 @@ class EntityService(service.Service):
         for op in operations:
             entity = op.operation.entity
             entity.entity_id = data.generate_entity_id()
+            self.sanitize_entity(entity)
             op.trip_plan.entities.append(entity)
             op.result = entity
 
@@ -317,6 +369,7 @@ class EntityService(service.Service):
             entity = op.operation.entity
             for i, e in enumerate(op.trip_plan.entities):
                 if e.entity_id == entity.entity_id:
+                    self.sanitize_entity(entity)
                     op.result = op.trip_plan.entities[i].update(entity)
                     # Negative positions are a signal to clear the value.
                     # You can't send None because that's the same as telling the service
@@ -382,6 +435,35 @@ class EntityService(service.Service):
             # if multiple trip plans are being edited together, since each will be saved
             # at a different time.
             comments=comments, last_modified=trip_plans[0].last_modified)
+
+    def mutatetags(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
+        self.validate_editability(operations)
+        deletes = OperationData.filter_by_operator(operations, Operator.DELETE)
+        for delete_op in deletes:
+            entity = delete_op.trip_plan.entity_by_id(delete_op.operation.entity_id)
+            if entity:
+                entity.tags = []
+                delete_op.result = entity
+        for trip_plan in trip_plans:
+            data.save_trip_plan(trip_plan)
+
+        return EntityMutateTagResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=[op.result for op in operations],
+            last_modified=trip_plans[0].last_modified)
+
+    def sanitize_entity(self, entity):
+        if entity.tags:
+            tag_texts = set()
+            unique_tags = []
+            for tag in entity.tags:
+                if tag.text in tag_texts:
+                    continue
+                tag_texts.add(tag.text)
+                unique_tags.append(tag)
+            entity.tags = unique_tags
 
     def validate_logged_in(self):
         if not self.session_info.logged_in():
@@ -472,13 +554,54 @@ class EntityService(service.Service):
             if comment.user and comment.user.public_id:
                 comment.user.display_name = resolver.resolve(comment.user.public_id)
 
+    def resolve_relational_fields(self, entities):
+        origin_trip_plan_ids = [e.origin_trip_plan_id for e in entities if e.origin_trip_plan_id]
+        loader = data.TripPlanLoader().load(origin_trip_plan_ids)
+        for entity in entities:
+            if entity.origin_trip_plan_id:
+                entity.origin_trip_plan_name = loader.get_field(entity.origin_trip_plan_id, 'name')
+
+    def orderentities(self, request):
+        trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
+        if not trip_plan.editable_by(self.session_info):
+            self.validation_errors.append(service.ServiceError(
+                CommonError.NOT_AUTHORIZED_FOR_OPERATION,
+                'The user is not allowed to edit this trip plan.', 'trip_plan_id'))
+            self.raise_if_errors()
+        if len(request.ordered_entity_ids) != len(trip_plan.entities):
+            self.validation_errors.append(service.ServiceError(
+                EntityServiceError.INVALID_ORDERING.name,
+                'The given ordering has an invalid length', 'ordered_entity_ids'))
+            self.raise_if_errors()
+        incoming_entity_ids = set(request.ordered_entity_ids)
+        existing_entity_ids = set([e.entity_id for e in trip_plan.entities])
+        if incoming_entity_ids != existing_entity_ids:
+            self.validation_errors.append(service.ServiceError(
+                EntityServiceError.INVALID_ORDERING.name,
+                'The given ordering contains invalid entity ids', 'ordered_entity_ids'))
+            self.raise_if_errors()
+        ordering_dict = dict((entity_id, i) for i, entity_id in enumerate(request.ordered_entity_ids))
+        sorted_entities = sorted(trip_plan.entities,
+            cmp=lambda e1, e2: cmp(ordering_dict[e1.entity_id], ordering_dict[e2.entity_id]))
+        assert len(sorted_entities) == len(trip_plan.entities)
+        trip_plan.entities = sorted_entities
+        data.save_trip_plan(trip_plan)
+        return OrderEntitiesResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            entities=sorted_entities,
+            last_modified=trip_plan.last_modified)
+
 TripPlanServiceError = enums.enum('NO_TRIP_PLAN_FOUND', 'INVALID_GOOGLE_MAPS_URL')
 
 class TripPlanGetRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields(serializable.listf('trip_plan_ids'), 'include_entities', 'include_notes')
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.listf('trip_plan_ids'), 'public_user_id',
+        'include_entities', 'include_notes')
 
-    def __init__(self, trip_plan_ids=(), include_entities=False, include_notes=False):
+    def __init__(self, trip_plan_ids=(), public_user_id=None,
+            include_entities=False, include_notes=False):
         self.trip_plan_ids = trip_plan_ids
+        self.public_user_id = public_user_id
         self.include_entities = include_entities
         self.include_notes = include_notes
 
@@ -530,6 +653,33 @@ class TripPlanCloneResponse(service.ServiceResponse):
     def __init__(self, trip_plan=None, **kwargs):
         super(TripPlanCloneResponse, self).__init__(**kwargs)
         self.trip_plan = trip_plan
+
+class TripPlanTagOperation(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id',
+        serializable.objlistf('tags', data.Tag))
+
+    def __init__(self, operator=None, trip_plan_id=None, tags=None):
+        self.operator = operator
+        self.trip_plan_id = trip_plan_id
+        self.tags = tags
+
+class TripPlanMutateTagRequest(service.ServiceRequest):
+    PUBLIC_FIELDS = serializable.fields(
+        serializable.objlistf('operations', TripPlanTagOperation))
+
+    def __init__(self, operations=None):
+        self.operations = operations 
+
+class TripPlanMutateTagResponse(service.ServiceResponse):
+    PUBLIC_FIELDS = serializable.compositefields(
+        service.ServiceResponse.PUBLIC_FIELDS,
+        serializable.fields(serializable.objlistf('trip_plans', data.TripPlan),
+            'last_modified'))
+
+    def __init__(self, trip_plans=(), last_modified=None, **kwargs):
+        super(TripPlanMutateTagResponse, self).__init__(**kwargs)
+        self.trip_plans = trip_plans
+        self.last_modified = last_modified
 
 class GmapsImportRequest(service.ServiceRequest):
     PUBLIC_FIELDS = serializable.fields('gmaps_url')
@@ -604,6 +754,7 @@ class TripPlanService(service.Service):
         ('mutate', TripPlanMutateRequest, TripPlanMutateResponse),
         ('clone', TripPlanCloneRequest, TripPlanCloneResponse),
         ('mutatecollaborators', MutateCollaboratorsRequest, MutateCollaboratorsResponse),
+        ('mutatetags', TripPlanMutateTagRequest, TripPlanMutateTagResponse),
         ('gmapsimport', GmapsImportRequest, GmapsImportResponse),
         ('findtripplans', FindTripPlansRequest, FindTripPlansResponse))
 
@@ -618,8 +769,15 @@ class TripPlanService(service.Service):
     def get(self, request):
         if request.trip_plan_ids:
             trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids)
+        elif request.public_user_id:
+            try:
+                creator_user_id = crypto.decrypt_id(request.public_user_id)
+                trip_plans = data.load_all_trip_plans_for_creator(creator_user_id)
+            except:
+                trip_plans = []
         else:
             trip_plans = data.load_all_trip_plans(self.session_info)
+        trip_plans = [t for t in trip_plans if t]
         if not request.include_entities:
             for trip_plan in trip_plans:
                 trip_plan.entities = ()
@@ -718,6 +876,8 @@ class TripPlanService(service.Service):
                     self.session_info.db_user.display_name)
             else:
                 trip_plan.user = data.DisplayUser(public_visitor_id=self.session_info.public_visitor_id)
+            if self.session_info.referral_source:
+                trip_plan.referral_source = self.session_info.referral_source
             op.result = trip_plan
 
     def process_edits(self, operations):
@@ -762,7 +922,7 @@ class TripPlanService(service.Service):
         operations = OperationData.from_input(request.operations, field_path_prefix='operations')
         self.validate_collaborator_operations(operations)
         trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
-        self.validate_mutate_collaborators_editability(operations)
+        self.validate_trip_plan_editability(operations)
 
         for add_op in OperationData.filter_by_operator(operations, Operator.ADD):
             invitee_email = add_op.operation.invitee_email
@@ -808,7 +968,7 @@ class TripPlanService(service.Service):
                 self.validation_errors.append(add_op.missingfield('invitee_email'))
         self.raise_if_errors()
 
-    def validate_mutate_collaborators_editability(self, operations):
+    def validate_trip_plan_editability(self, operations):
         for op in operations:
             if not op.trip_plan:
                 self.validation_errors.append(op.newerror(TripPlanServiceError.NO_TRIP_PLAN_FOUND, field_name='trip_plan_id'))
@@ -831,6 +991,25 @@ class TripPlanService(service.Service):
         msg = mailer.render_multipart_msg(subject, [recipient], None,
             template_vars, template_prefix + '.txt', template_prefix + '.html')
         mailer.send(msg)
+
+    def mutatetags(self, request):
+        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
+        trip_plans = decorate_with_trip_plans('trip_plan_id', operations)
+        self.validate_trip_plan_editability(operations)
+
+        deletes = OperationData.filter_by_operator(operations, Operator.DELETE)
+        for delete_op in deletes:
+            if delete_op.trip_plan:
+                delete_op.trip_plan.tags = []
+                delete_op.result = delete_op.trip_plan
+
+        for trip_plan in trip_plans:
+            data.save_trip_plan(trip_plan)
+
+        return TripPlanMutateTagResponse(
+            response_code=service.ResponseCode.SUCCESS.name,
+            trip_plans=[op.result for op in operations],
+            last_modified=trip_plans[0].last_modified)
 
     def gmapsimport(self, request):
         kml_url = kml_import.get_kml_url(request.gmaps_url)
@@ -870,24 +1049,13 @@ class TripPlanService(service.Service):
             for editor in trip_plan.editors:
                 editor.display_name = resolver.resolve(editor.public_id)
 
-    FEATURED_TRIP_PLANS_USERS = (
-         'admin@nytimes.com', 'admin@nomadicmatt.com', 'admin@letsgo.com',
-         'admin@tripadvisor.com', 'admin@frommers.com', 'admin@travelclipper.com',
-         'admin@lonelyplanet.com',
-        )
-
     def findtripplans(self, request):
-        featured_trip_plans = []
-        for username in self.FEATURED_TRIP_PLANS_USERS:
-            featured_trip_plans.extend(data.load_all_trip_plans_for_creator(username))
         trip_plans = []
-        for trip_plan in featured_trip_plans:
-            if not trip_plan.location_latlng:
-                continue
-            distance = geometry.earth_distance_meters(trip_plan.location_latlng.lat, trip_plan.location_latlng.lng,
-                request.location_latlng.lat, request.location_latlng.lng)
-            if distance < 40000:
-                trip_plans.append(trip_plan)
+        city_configs = guide_config.find_nearby_city_configs(request.location_latlng)
+        if city_configs:
+            trip_plan_ids = utils.flatten([config.trip_plan_ids for config in city_configs])
+            guides = data.load_trip_plans_by_ids(trip_plan_ids)
+            trip_plans.extend([guide for guide in guides if guide])
 
         self.migrate_creators(trip_plans)
         self.resolve_display_users(trip_plans)
@@ -895,145 +1063,6 @@ class TripPlanService(service.Service):
         return FindTripPlansResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             trip_plans=trip_plans)
-
-NoteServiceError = enums.enum('NO_TRIP_PLAN_FOUND')
-
-class NoteGetRequest(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('trip_plan_id', 'if_modified_after')
-
-    def __init__(self, trip_plan_id=None, if_modified_after=None):
-        self.trip_plan_id = trip_plan_id
-        self.if_modified_after = if_modified_after
-
-    def if_modified_after_as_datetime(self):
-        if not self.if_modified_after:
-            return None
-        return date_parser.parse(self.if_modified_after)
-
-class NoteGetResponse(service.ServiceResponse):
-    PUBLIC_FIELDS = serializable.compositefields(
-        service.ServiceResponse.PUBLIC_FIELDS,
-        serializable.fields(serializable.objlistf('notes', data.Entity),
-        'last_modified'))
-
-    def __init__(self, notes=(), last_modified=None, **kwargs):
-        super(NoteGetResponse, self).__init__(**kwargs)
-        self.notes = notes
-        self.last_modified = last_modified
-
-class NoteOperation(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('operator', 'trip_plan_id', serializable.objf('note', data.Note))
-
-    def __init__(self, operator=None, trip_plan_id=None, note=None):
-        self.operator = operator
-        self.trip_plan_id = trip_plan_id
-        self.note = note
-
-class NoteMutateRequest(service.ServiceRequest):
-    PUBLIC_FIELDS = serializable.fields(serializable.objlistf('operations', NoteOperation))
-
-    def __init__(self, operations=()):
-        self.operations = operations
-
-    def trip_plan_ids(self):
-        return set(operation.trip_plan_id for operation in self.operations)
-
-class NoteMutateResponse(service.ServiceResponse):
-    PUBLIC_FIELDS = serializable.compositefields(
-        service.ServiceResponse.PUBLIC_FIELDS,
-        serializable.fields(serializable.objlistf('notes', data.Note), 'last_modified'))
-
-    def __init__(self, notes=(), last_modified=None, **kwargs):
-        super(NoteMutateResponse, self).__init__(**kwargs)
-        self.notes = notes
-        self.last_modified = last_modified
-
-class NoteService(service.Service):
-    METHODS = service.servicemethods(
-        ('get', NoteGetRequest, NoteGetResponse),
-        ('mutate', NoteMutateRequest, NoteMutateResponse))
-
-    def __init__(self, session_info=None):
-        self.session_info = session_info
-        self.validation_errors = []
-
-    def raise_if_errors(self):
-        if self.validation_errors:
-            raise service.ServiceException.request_error(self.validation_errors)
-
-    def get(self, request):
-        if not request.trip_plan_id:
-            self.validation_errors.append(service.ServiceError.from_enum(
-                CommonError.MISSING_FIELD, 'trip_plan_id'))
-        self.raise_if_errors()
-        trip_plan = data.load_trip_plan_by_id(request.trip_plan_id)
-        if (request.if_modified_after and trip_plan.last_modified
-            and trip_plan.last_modified_datetime() <= request.if_modified_after_as_datetime()):
-            notes = []
-        else:
-            notes = trip_plan.notes if trip_plan else ()
-        return NoteGetResponse(response_code=service.ResponseCode.SUCCESS.name,
-            notes=notes, last_modified=trip_plan.last_modified if trip_plan else None)
-
-    def mutate(self, request):
-        operations = OperationData.from_input(request.operations, field_path_prefix='operations')
-        self.validate_operation_fields(operations)
-        trip_plans = data.load_trip_plans_by_ids(request.trip_plan_ids())
-        trip_plans_by_id = utils.dict_from_attrs(trip_plans, 'trip_plan_id')
-        for op in operations:
-            op.trip_plan = trip_plans_by_id.get(op.operation.trip_plan_id)
-        self.validate_editability(operations)
-        self.validate_ordering(operations)
-        self.process_adds(OperationData.filter_by_operator(operations, Operator.ADD))
-        self.process_edits(OperationData.filter_by_operator(operations, Operator.EDIT))
-        self.process_deletes(OperationData.filter_by_operator(operations, Operator.DELETE))
-        for trip_plan in trip_plans:
-            data.save_trip_plan(trip_plan)
-        notes = [op.result or {} for op in operations]
-        return NoteMutateResponse(
-            response_code=service.ResponseCode.SUCCESS.name,
-            notes=notes, last_modified=trip_plans[0].last_modified)
-
-    def validate_operation_fields(self, operations):
-        for op in operations:
-            if not op.operation.trip_plan_id:
-                self.validation_errors.append(op.missingfield('trip_plan_id'))
-        self.raise_if_errors()
-
-    def validate_editability(self, operations):
-        for op in operations:
-            if not op.trip_plan:
-                self.validation_errors.append(op.newerror(NoteServiceError.NO_TRIP_PLAN_FOUND, field_name='trip_plan_id'))
-            elif not op.trip_plan.editable_by(self.session_info):
-                self.validation_errors.append(op.newerror(CommonError.NOT_AUTHORIZED_FOR_OPERATION,
-                    'The user is not allowed to edit this trip plan.', 'trip_plan_id'))
-        self.raise_if_errors()
-
-    def validate_ordering(self, operations):
-        # TODO: The ordering must take into account both entities and notes
-        pass
-
-    def process_adds(self, operations):
-        for op in operations:
-            note = op.operation.note
-            note.note_id = data.generate_note_id()
-            op.trip_plan.notes.append(note)
-            op.result = note
-
-    def process_edits(self, operations):
-        for op in operations:
-            note = op.operation.note
-            for i, e in enumerate(op.trip_plan.notes):
-                if e.note_id == note.note_id:
-                    op.result = op.trip_plan.notes[i].update(note)
-
-    def process_deletes(self, operations):
-        for op in operations:
-            for i, note in enumerate(op.trip_plan.notes):
-                if note.note_id == op.operation.note.note_id:
-                    op.result = op.trip_plan.notes.pop(i)
-                    op.result.status = data.Note.Status.DELETED.name
-                    break
 
 
 class MigrateRequest(serializable.Serializable):

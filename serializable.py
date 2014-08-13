@@ -42,7 +42,7 @@ class Serializable(object):
     def to_json_obj(self):
         obj = {}
         for name, field in self.PUBLIC_FIELDS.iteritems():
-            raw_value = getattr(self, name)
+            raw_value = getattr(self, name, None)
             if raw_value is not None:
                 obj[name] = field.json_serialize(raw_value)
         return obj
@@ -54,7 +54,7 @@ class Serializable(object):
         if type(self) != type(other):
             raise Exception('Can only update objects of the same class')
         for attr in vars(self).iterkeys():
-            value = getattr(other, attr)
+            value = getattr(other, attr, None)
             if value not in (None, {}, [], ()):
                 setattr(self, attr, value)
         return self
@@ -122,8 +122,13 @@ def to_json_obj(obj):
     else:
         raise SerializationError('Object is not JSON-serializable: %s' % obj)
 
-def to_json_str(obj):
-    return json.dumps(to_json_obj(obj))
+def to_json_str(obj, pretty_print=False):
+    if obj:
+        if pretty_print:
+            return json.dumps(to_json_obj(obj), sort_keys=True, indent=4, separators=(',', ': '))
+        else:
+            return json.dumps(to_json_obj(obj))
+    return json.dumps(obj)
 
 class Field(object):
     def __init__(self, name, cls=None, is_list=False):

@@ -1,0 +1,238 @@
+<link rel="stylesheet" href="/static/css/nav.css"/>
+<script src="/static/js/nav.js"></script>
+
+<script type="text/ng-template" id="nav-template">
+  <nav class="navbar navbar-default navbar-fixed-top main-nav" role="navigation">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="main-logo" href="/">WhereFare</a>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav navbar-left left-controls">
+          <li>
+            <ul class="nav nav-pills">
+              <li>
+                <a class="black-link" href="/destinations" tooltip="Destinations" tooltip-placement="bottom">
+                  <span class="glyphicon glyphicon-map-marker"></span>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>              
+        <ul class="nav navbar-nav navbar-right right-controls">
+          <li>
+            <ul class="nav nav-pills">
+              <li ng-if="shoppingCartMode && activeTripPlan" class="trip-plan-name">
+                <a class="black-link" ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank"
+                  tc-track-click="{name: 'open-active-trip', location: 'nav-shopping-cart', value: activeTripPlan['trip_plan_id']}">
+                  <span>[[activeTripPlan['name'] ]]</span>
+                  <span id="place-count" class="place-count" tc-animate-on-change-to="numEntities"
+                    class-to-add="place-count-changed" remove-when-complete="true">
+                  [[numEntities]]
+                  </span>
+                </a>
+              </li>
+              <li ng-if="shoppingCartMode && activeTripPlan" class="new-trip-item dropdown">
+                <a href="javascript:void(0)" class="dropdown-toggle"
+                  tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'nav-shopping-cart'}">
+                  <span tc-icon="trip-plan" class="trip-menu-icon"></span>
+                </a>
+                <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
+              </li>
+              <li ng-if="!activeTripPlan" class="new-trip-item">
+                <a ng-click="openNewTripModal()"
+                  tc-track-click="{name: 'open-new-trip-modal', location: 'nav-shopping-cart-no-trip'}"
+                  href="javascript:void(0)">
+                  <span tc-icon="trip-plan" class="trip-menu-icon"></span>
+                  <span class="new-trip-text">New Trip</span>
+                </a>
+              </li>
+              <li ng-if="!shoppingCartMode && activeTripPlan" class="dropdown">
+                <a class="black-link dropdown-toggle"
+                  tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'main-nav'}"
+                  href="javascript:void(0)">
+                  My Trips
+                  <span class="caret"></span>
+                </a>
+                <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
+              </li>
+              {% if session_info.logged_in() %}
+              <li class="dropdown">
+                <a class="black-link dropdown-toggle" href="javascript:void(0)"
+                  tc-track-click="{name: 'account-dropdown-toggle', location: 'main-nav'}">
+                  [[accountInfo['user']['display_name'] ]]
+                  <span class="caret"></span>
+                </a>
+                <tc-account-dropdown></tc-account-dropdown>
+              </li>
+              {% else %}
+              <li>
+                <a class="black-link" ng-click="openLoginModal('{{register_iframe_url}}', 'login-modal-window')"
+                  tc-track-click="{name: 'open-register-modal', location: 'main-nav'}"
+                  href="javascript:void(0)">
+                  Join
+                </a>
+              </li>
+              <li class="nav-pill-separator">|</li>
+              <li>
+                <a class="black-link" ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+                  tc-track-click="{name: 'open-login-modal', location: 'main-nav'}"
+                  href="javascript:void(0)">
+                  Log in
+                </a>
+              </li>
+              {% endif %}
+            <ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+</script>
+
+<script type="text/ng-template" id="flashed-messages-template">
+  <div class="ng-cloak">
+    <div class="flashed-msgs" ng-if="hasMessages()"
+      ng-class="{'dismissed': dismissing}">
+      <div ng-repeat="msg in messages"
+        ng-init="textClass = msg['category'] == 'error' ? 'text-danger' : 'text-' + msg['category']">
+        <div class="flash-msg" ng-class="textClass">
+          <div class="dismiss-link">
+            <a class="black-link" ng-click="dismiss($index)"
+              tc-track-click="{name: 'flashed-message-dismissed', location: 'flashed-messages-popover'}"
+              href="javascript:void(0)">
+              <span class="glyphicon glyphicon-remove"></span>
+            </a>
+          </div>
+          [[ msg['message'] ]]
+        </div>
+      </div>
+    </div>
+  </div>
+</script>
+
+<script type="text/ng-template" id="login-modal-template">
+  <div class="login-modal">
+    <iframe class="login-iframe" ng-src="[[iframeUrl]]">
+    </iframe>
+  </div>
+</script>
+
+<script type="text/ng-template" id="account-dropdown-template">
+  <ul class="account-dropdown dropdown-menu">
+    <li>
+      <a ng-href="/profile/[[accountInfo['user']['public_id'] ]]">
+        Profile
+      </a>
+    </li>
+    <li class="logout-item">
+      <a href="{{logout_url}}">
+        Log out
+      </a>
+    </li>
+  </ul>
+</script>
+
+<script type="text/ng-template" id="nav-trip-plan-dropdown-template">
+  <ul class="nav-trip-plan-dropdown dropdown-menu">
+    <span ng-show="allTripPlans && allTripPlans.length">
+      <li class="select-trip-prompt">
+        <span ng-show="shoppingCartMode">
+          Select trip to add places
+        </span>
+        <span ng-show="!shoppingCartMode">
+          Select trip
+        </span>
+      </li>
+      <li ng-repeat="tripPlan in allTripPlans">
+        <span ng-if="!isActiveTrip(tripPlan)">
+          <a ng-show="shoppingCartMode" class="trip-link"
+            ng-click="makeTripPlanActive(tripPlan)"
+            tc-track-click="{name: 'trip-plan-selected', location: 'nav-shopping-cart', value: tripPlan['trip_plan_id']}"
+            href="javascript:void(0)">
+            [[tripPlan['name'] ]]
+          </a>
+          <a ng-show="!shoppingCartMode" class="trip-link"
+            ng-href="[[isActiveTrip(tripPlan) ? 'javascript:void(0)' : '/trip_plan/' + tripPlan['trip_plan_id'] ]]">
+            [[tripPlan['name'] ]]
+          </a>
+        </span>
+        <span ng-if="isActiveTrip(tripPlan)" class="active-trip-item">
+          [[tripPlan['name'] ]]
+        </span>
+      </li>
+      <li class="or-text">
+        Or
+      </li>
+    </span>
+    <li class="create-new-trip-link">
+      <a ng-click="openNewTripModal()"
+        tc-track-click="{name: 'open-new-trip-modal', location: 'nav-trip-plan-dropdown'}"
+        href="javascript:void(0)">
+        Create New Trip
+      </a>
+    </li>
+  </ul>
+</script>
+
+<script type="text/ng-template" id="new-trip-modal-template">
+  <div class="new-trip-modal" ng-controller="NewTripCtrl">
+    <div class="header">
+      <span ng-show="clippingEntity">
+        Create a new trip to add <i>[[clippingEntity['name'] ]]</i>
+      </span>
+      <span ng-show="!clippingEntity">
+        Create a New Trip
+      </span>
+      <div class="close-link">
+        <a ng-click="$close(); onClose && onClose()"
+          tc-track-click="{name: 'new-trip-modal-dismiss', location: 'new-trip-modal'}"
+          href="javascript:void(0)">
+          <span class="glyphicon glyphicon-remove"></span>
+        </a>
+      </div>
+    </div>
+    <div class="new-trip-modal-body">
+      <div>
+        <label for="trip-location-input">Location</label>
+        <input type="text" class="form-control" placeholder="e.g. Paris"
+          ng-model="newTripPlan['location_name']"
+          tc-focus-on="focusReady"
+          tc-google-place-autocomplete location-types="geocode"
+          on-place-change="placeChanged($newPlace)"/>
+      </div>
+      <div class="search-results" ng-show="results && results.length">
+        <div ng-repeat="result in results" class="one-result"
+          ng-click="selectResult(result)">
+          <img ng-src="[[result['icon'] ]]" class="result-icon"/>
+          [[result['formatted_address'] ]]
+        </div>
+      </div>
+      <div ng-show="newTripPlan['location_latlng']" class="trip-name-section">
+        <label for="trip-name-input">Trip Name</label>
+        <input type="text" class="form-control" ng-model="newTripPlan['name']"/>
+      </div>
+      <div class="create-trip-button">
+        <button class="btn btn-primary"
+          ng-click="saveNewTripPlan()"
+          ng-disabled="!newTripPlan['location_latlng'] || !newTripPlan['name'] || saving"
+          tc-track-click="{name: 'new-trip-save', location: 'new-trip-modal'}">
+          Create New Trip
+        </button>
+        <div class="save-spinner" ng-show="saving">
+          <img src="/static/img/spinner-small.gif"/>
+        </div>
+      </div>
+      {% if not account_info.logged_in %}
+      <div class="login-prompt" ng-show="!hideLoginPrompt">
+        Already have a trip you're planning?
+        <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
+          tc-track-click="{name: 'open-login-modal', location: 'new-trip-modal'}"
+          href="javascript:void(0)">
+          Log in
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</script>

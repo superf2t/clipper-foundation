@@ -1,0 +1,80 @@
+html, body {
+  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #2D73A0 !important;
+}
+
+a:hover {
+  text-decoration: none !important;
+  color: #428bca !important;
+}
+
+.alert.alert-success {
+  background-color: rgb(255, 242, 204) !important;
+  border: 1px solid rgb(249, 203, 156) !important;
+  border-radius: 4px !important;
+  color: black;
+}
+
+.modal-logo {
+  font-family: 'Raleway';
+  padding: 6px 10px;
+  font-size: 1.6em;
+  font-weight: 700;
+  text-align: center;
+}
+
+.modal-action-header {
+  font-size: 1.2em;
+  text-align: center;
+}
+
+.form-wrapper {
+  padding: 20px 50px;
+}
+
+.form-control {
+  border-radius: 2px;
+}
+
+#first-name-input {
+  width: 49%;
+  display: inline-block;
+}
+
+#last-name-input {
+  float: right;
+  width: 49%;
+  display: inline-block;
+}
+
+.btn-wrapper {
+  text-align: center;
+  padding: 10px;
+}
+
+.btn-cta {
+  border-radius: 2px !important;
+  border: none !important;
+  background-color: #50B0B2 !important;
+  color: #FFFFFF !important;
+}
+
+.btn-cta:hover {
+  background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
+  background-color: #3B9BB2 !important;
+  color: #FFFFFF !important;
+}
+
+.modal-bottom-cta {
+  margin-top: 10px;
+  text-align: center;
+}
+
+#forgot-password {
+  padding-top: 10px;
+}

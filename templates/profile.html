@@ -1,0 +1,333 @@
+<!doctype html>
+<html>
+<head>
+  <title>{{display_user.display_name}} - WhereFare</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-sanitize.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular-animate.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/services.js"></script>
+  <script src="/static/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe-bw.png">
+  {% include 'analytics.html' %}
+
+  <style>
+    .main-content {
+      position: fixed;
+      top: 41px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 41px);
+      overflow-y: auto;
+    }
+
+    .header {
+      text-align: center;
+      color: #333;
+      padding: 20px 0;
+      font-size: 1.0em;
+      font-weight: 500;
+    }
+
+    .header .display-name {
+      font-size: 1.8em;
+    }
+
+    .trip-plans-container {
+      padding-bottom: 15px;
+    }
+
+    .one-trip-plan {
+      margin-bottom: 10px;
+      display: inline-block;
+      vertical-align: top;
+    }
+
+    .one-trip-plan.col-md-4 {
+      float: none;
+    }
+
+    .one-trip-plan .trip-plan-details-header:hover .trip-plan-img-overlay{
+      background-color: rgba(0, 0, 0, 0.75);
+    }
+
+    .map-container {
+      height: 354px;
+      float: right;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 1200px) {
+      .map-container {
+        height: 314px;
+      }
+    }
+
+    @media (min-width: 1441px) {
+      .map-container {
+        height: 374px;
+      }
+    }
+
+    .map {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #dce0e0;
+    }
+
+    .trip-plan-infowindow {
+      width: 300px;
+    }
+
+    .trip-plan-infowindow .trip-plan-details-header .trip-plan-img {
+      height: 200px;
+    }
+
+    .no-trip-plans {
+      text-align: center;
+    }
+
+    .no-trip-plans .no-trips-msg {
+      font-size: 12pt;
+      margin-bottom: 20px;
+    }
+
+    .footer-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      text-align: center;
+      -webkit-box-shadow: 0 0 3px rgba(0,0,0,0.5);
+      box-shadow: 0 0 3px rgba(0,0,0,0.5);
+      height: 200px;
+      background-color: #FFFFFF;
+      text-align: center;
+    }
+
+    .copyright {
+      position: relative;
+      height: 16px;
+      top: calc(50% - 8px);
+      color: #777;
+      font-size: 1.1em;
+    }
+  </style>
+
+  <script>
+    function ProfileCtrl($scope, $tripPlans, $allTripPlans,
+        $accountInfo, $activeTripPlanState, $tripPlanCreator,
+        $templateToStringRenderer, $flashedMessages, $eventTracker, $window) {
+      // tripPlans refers to the trip plans for the profile user being viewed
+      // allTripPlans refers to those belonging to the currently logged-in user.
+      // This is confusing, rename these.
+      $scope.tripPlans = $tripPlans;
+      $scope.allTripPlans = $allTripPlans;
+      $scope.accountInfo = $accountInfo;
+      $scope.activeTripPlanState = $activeTripPlanState;   
+      $scope.flashedMessages = $flashedMessages;
+
+      $scope.createNewTripAndRedirect = function() {
+        $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
+          $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
+        });
+      };
+
+      $scope.mapState = {
+        map: null,
+        markers: [],
+        infowindows: []
+      };
+      $scope.mapOptions = {
+        center: new google.maps.LatLng(0, 0),
+        zoom: 3,
+        panControl: false,
+        scaleControl: true,
+        scrollwheel: false,
+        streetViewControl: false,
+        mapTypeControlOptions: {
+          mapTypeIds: [google.maps.MapTypeId.ROADMAP, google.maps.MapTypeId.SATELLITE],
+          position: google.maps.ControlPosition.BOTTOM_LEFT
+        },
+        zoomControlOptions: {
+          style: google.maps.ZoomControlStyle.SMALL,
+          position: google.maps.ControlPosition.LEFT_BOTTOM
+        }
+      };
+
+      $scope.setupMap = function($map) {
+        $scope.fitBoundsToTripPlans($map, $tripPlans);
+        $scope.drawMarkers($map, $tripPlans);
+        google.maps.event.addListener($map, 'click', function() {
+          $scope.closeAllInfowindows();
+        });
+      };
+
+      $scope.fitBoundsToTripPlans = function(map, tripPlans) {
+        var bounds = new google.maps.LatLngBounds();
+        $.each(tripPlans, function(i, tripPlan) {
+          if (!_.isEmpty(tripPlan['location_latlng'])) {
+            bounds.extend(gmapsLatLngFromJson(tripPlan['location_latlng']));
+          }
+        });
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds);
+        }
+      };
+
+      $scope.drawMarkers = function(map, tripPlans) {
+        $.each(tripPlans, function(i, tripPlan) {
+          if (tripPlan['location_latlng']) {
+            $scope.drawMarker(map, tripPlan);
+          }
+        });
+      };
+
+      $scope.drawMarker = function(map, tripPlan) {
+        var position = gmapsLatLngFromJson(tripPlan['location_latlng']);
+        var marker = new google.maps.Marker({
+          map: map,
+          position: position
+        });
+        $scope.mapState.markers.push(marker);
+        google.maps.event.addListener(marker, 'click', function() {
+          $scope.openInfowindow(map, marker, tripPlan);
+          $eventTracker.track({name: 'map-marker-clicked', location: 'profile-page-map', value: tripPlan['trip_plan_id']});
+        });
+      };
+
+      $scope.openInfowindow = function(map, marker, tripPlan) {
+        $scope.closeAllInfowindows();
+        var scope = $scope.$new(true);
+        scope.tripPlan = tripPlan;
+        var contentDiv = $templateToStringRenderer.render(
+          'profile-infowindow-template', scope, true);
+        var infowindow = new google.maps.InfoWindow({
+          content: contentDiv[0]
+        });
+        $scope.mapState.infowindows.push(infowindow);
+        infowindow.open(map, marker);
+      };
+
+      $scope.closeAllInfowindows = function() {
+        $.each($scope.mapState.infowindows, function(i, infowindow) {
+          infowindow.close();
+        });
+        $scope.mapState.infowindows = [];
+      };
+    }
+
+    window['initProfileApp'] = function(tripPlans, allTripPlans,
+        accountInfo, flashedMessages) {
+      angular.module('profileInitialDataModule', [])
+        .value('$tripPlans', tripPlans)
+        .value('$allTripPlans', allTripPlans)
+        .value('$accountInfo', accountInfo)
+        .value('$flashedMessages', flashedMessages)
+        .value('$activeTripPlanState', new ActiveTripPlanStateModel(
+          allTripPlans.length ? allTripPlans[0] : null,
+          allTripPlans.length ? allTripPlans[0]['num_entities'] : null));
+
+      angular.module('profileAppModule',
+          ['profileInitialDataModule', 'navModule', 'directivesModule'],
+          interpolator)
+        .controller('ProfileCtrl', ProfileCtrl)
+        .service('$templateToStringRenderer', TemplateToStringRenderer)
+        .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader);
+
+      angular.element(document).ready(function() {
+        angular.bootstrap(document, ['profileAppModule']);
+      });
+    }
+  </script>
+</head>
+<body ng-controller="ProfileCtrl">
+  <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
+    num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
+    shopping-cart-mode="true">
+  </tc-nav>
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
+
+  <div class="main-content">
+    <div class="header">
+      <div class="display-name">
+        {{display_user.display_name}}
+      </div>
+      {% if trip_plans %}
+      <div class="num-trips">
+        {{trip_plans|length}} Guides
+      </div>
+      {% endif %}
+    </div>
+
+    {% if trip_plans %}
+    <div class="trip-plans-container container">
+      <div class="map-container col-md-8 col-sm-12">
+        <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
+          after-creation="setupMap($map)">
+        </div>
+      </div>
+
+      <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan col-md-4">
+        <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
+          <tc-trip-plan-details-header trip-plan="tripPlan" show-border="true"
+            num-entities="tripPlan['num_entities']" include-creator="false">
+          </tc-trip-plan-details-header>
+        </a>
+      </span>
+    </div>
+    {% else %}
+    <div class="no-trip-plans">
+      <div class="no-trips-msg">
+        {% if viewer_is_owner %}
+        You don't have any trips yet.
+        <a class="cta-link" ng-click="createNewTripAndRedirect()" href="javascript:void(0)">
+          Create your first trip.
+        </a>
+        {% else %}
+        This user doesn't have any trips yet.
+        {% endif %}
+      </div>
+
+      <div class="filler-img">
+        <img src="http://www.coolanimalworld.com/wp-content/uploads/2013/05/Cute-cat-in-bule-Santorini-Greece-2-01.jpg"/>
+      </div>
+    </div>
+    {% endif %}
+    <div class="footer-section">
+      <div class="copyright">
+        © Unicycle Labs Inc. All rights reserved.
+      </div>
+    </div>
+  </div>
+
+  <script type="text/ng-template" id="profile-infowindow-template">
+    <div class="trip-plan-infowindow">
+      <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
+        <tc-trip-plan-details-header trip-plan="tripPlan"
+          num-entities="tripPlan['num_entities']" show-border="true" include-creator="false">
+        </tc-trip-plan-details-header>
+      </a>
+    </div>
+  </script>
+
+  {% include 'nav.html' %}
+  {% include 'widgets.html' %}
+  {% include 'icons.html' %}
+  {% include 'trip_plan_common.html' %}
+
+  <script>
+    initProfileApp(
+      {{to_json_str(trip_plans) | safe}},
+      {{to_json_str(all_user_trip_plans) | safe}},
+      {{to_json_str(account_info) | safe}},
+      {{to_json_str(flashed_messages) | safe}});
+  </script>
+</body>
+</html>

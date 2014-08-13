@@ -1,39 +1,62 @@
 <!doctype html>
-<html ng-app="introApp">
+<html>
 <head>
-  <title>TravelClipper</title>
+  <title>WhereFare</title>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
   <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
-  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300|Nunito:300">
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="/static/js/services.js"></script>
+  <script src="/static/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-  <link rel="shortcut icon" href="/static/img/globe.png">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe-bw.png">
   {% include 'analytics.html' %}
+
   <style type="text/css">
+
     html, body {
       width: 100%;
       height: 100%;
-      font-family: 'Nunito';
+      padding: 0;
+      margin: 0;
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
     }
 
     a:hover {
       text-decoration: none;
     }
 
-    .items {
-      width: 100%;
-      height: 100%;
-      overflow-y: scroll;
+    a.white-link {
+      color: #FFFFFF;
     }
 
-    .item {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      background-attachment: fixed;
+    a.white-link:hover {
+      color: #FFFFFF;
+    }
+
+    .section-header {
+      padding: 30px 0px;
+      text-align: center;
+      font-size: 1.0em;
+      font-weight: 600;
+    }
+
+    .lg-text {
+      font-size: 1.8em;
+    }
+
+    .splash-section {
+      background: url('https://lh3.googleusercontent.com/-diOm3evODHI/UspG8vGt9fI/AAAAAAAAmKQ/sb1Cmjy8ZrQ/w1272-h848-no/IMG_5735.jpg') 50% 700px repeat fixed;
       background-size: cover;
-      background-repeat: no-repeat;
-      background-position: 50% 50%;
+      min-height: 60%;
+      height: 60%;
+      margin: 0 auto;
+      width: 100%;
+      max-width: 1920px;
+      position: relative;
     }
 
     .site-header {
@@ -43,55 +66,150 @@
     }
 
     .logo {
-      font: 'Raleway';
+      font-family: 'Raleway';
+      background-color: #000000;
+      padding: 4px 6px;
       color: #FFFFFF;
-      font-size: 1.6em;
+      font-size: 1.2em;
+      line-height: 1.0;
       position: absolute;
-      top: 20px;
-      left: 20px;
-      -webkit-font-smoothing:antialiased;
+      top: 5px;
+      left: 5px;
     }
 
-    .my-trips {
+    .login {
       position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 1.1em;
-      -webkit-font-smoothing:antialiased;
+      top: 5px;
+      right: 10px;
     }
 
-    .my-trips a {
+    .tagline {
+      position: absolute;
+      margin: 0 auto;
+      text-align: center;
+      height: 60px;
+      top: calc(50% - 30px);
+      width: 100%;
       color: #FFFFFF;
+      background-color: rgba(0,0,0,0.75);
+      font-size: 2.0em;
+      line-height: 2.0;
+      font-weight: 500;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+      -webkit-box-shadow: 0 0 10px rgba(255,255,255,0.2);
     }
 
-    .my-trips a:hover {
-      color: #2D73A0;
+    .sub-tagline {
+      position: absolute;
+      margin: 0 auto;
+      text-align: center;
+      height: 30px;
+      bottom: 50px;
+      width: 100%;
+      color: #FFFFFF;
+      background-color: rgba(0,0,0,0.75);
+      font-size: 1.5em;
+      line-height: 1.5;
+      font-weight: 300;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+      -webkit-box-shadow: 0 0 10px rgba(255,255,255,0.2);
     }
 
-    .item-content,
-    .item-backdrop {
-      width: 36%;
-      height: 40%;
-      position: fixed;
-      top: 30%;
-      left: 32%;
-      pointer-events: none;
+    .featured-cities-section {
+      position: relative;
+      margin: 0 auto;
+      width: 100%;
+      background-color: #FFFFFF;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      z-index: 1;
+      padding-bottom: 15px;
     }
 
-    .search {
-      width: 30%;
-      position: fixed;
-      top: 40%;
-      left: 35%;
+    .featured-cities-section .city-metadata {
+      position: relative;
+      top: 220px;
+      height: 40px;
+      margin-bottom: -40px;
+      background-color: rgba(0,0,0,0.5);
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .search-input {
+    .featured-cities-section .city {
+      width: 100%;
+      height: 260px;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: cover !important;
+      -webkit-background-size: cover !important;
+      -moz-background-size: cover !important;
+      margin-bottom: 30px;
+      -webkit-box-shadow: 0 0 3px rgba(0,0,0,0.3);
+      box-shadow: 0 0 3px rgba(0,0,0,0.3);
+      border-radius: 2px;
+    }
+
+    .featured-cities-section .city-name {
+      float: left;
+      font-size: 1.4em;
+      font-weight: 500;
+      padding: 6px 10px;
+    }
+
+    .featured-cities-section .city-guides-number {
+      float: right;
       font-size: 1.1em;
+      font-weight: 500;
+      padding: 10px;    
+    }
+
+    .featured-cities-section .featured-city:hover .city-metadata {
+      background-color: rgba(0,0,0,0.25);
+    }
+
+    .search-section {
+      background: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg') 50% 0px repeat fixed;
+      width: 100%;
+      max-width: 1920px;
+      min-height: 400px;
+      height: 400px;
+      background-size: cover;
+      position: relative;
+    }
+
+    .search-section .section-header {
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .search-input-section {
+      width: 500px;
+      margin: auto;
+      margin-top: 70px;
+    }
+
+    .search-input-section .search-input {
+      height: 46px;
+      font-size: 1.1em;
+    }
+
+    .search-input-section .btn-search {
+      color: #FFFFFF;
+      height: 46px;
+      background-color: #4A90E2;
+      padding: 6px 20px;
     }
 
     .search-results {
-      background-color: #fff;
-      max-height: 300px;
+      background-color: #FFFFFF;
+      max-height: 175px;
       overflow-y: scroll;
     }
 
@@ -108,184 +226,115 @@
       max-width: 24px;
     }
 
-    .btn-search {
-      color: #FFFFFF;
-      background-color: #4A90E2;
-      padding: 6px 20px;
-    }
-
-    .item-backdrop {
-      background-color: #fff;
-      opacity: 0.8;
-      -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
-      -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
-      box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.3);
-    }
-
-    .item-content {
-      margin: auto;
-    }
-
-    .item-content-inner {
+    .featured-sources-section {
       position: relative;
       width: 100%;
-      height: 100%;
-      padding: 20px;
+      background-color: #D9D9D9;
+      text-align: center;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      z-index: 2;
+      padding-bottom: 15px;
     }
 
-    .item-2, .item-3, .item-4 {
-      opacity: 0;
-      display: none;
-    }
-
-    .item-header {
-      position: absolute;
-      width: 80%;
-      margin: auto;
-      left: 10%;
-      top: 15%;
-      color: #FFFFFF;
-      font-size: 1.2em;
-      line-height: 1.6;
-      -webkit-font-smoothing:antialiased;
-    }
-
-    .skip-prompt {
-      position: absolute;
+    .featured-source .source {
       width: 100%;
-      text-align: center;
-      margin: auto;
-      top: 90%;
-      font-size: 1.1em;
-      color: #000000;
-    }
-
-    .skip-prompt a {
-      color: #FFFFFF;
-    }
-
-    .skip-prompt a:hover {
-      text-decoration: underline;
-    }
-
-    .nav-controls {
-      position: fixed;
-      top: calc(50% - 49px);
-      right: 30px;
-    }
-
-    .nav-controls .nav-item {
-      margin: 10px 0;
-    }
-
-    .nav-controls .nav-circle {
-      background-color: #FFFFFF;
-      opacity: 0.8;
-      height: 12px;
-      width: 12px;
-      border-radius: 6px;
-      display: block;
-      box-shadow: 1px 1px 2px 0px #000000;
-    }
-
-    .nav-controls .nav-circle:hover {
-      background-color: #CCCCCC;
-    }
-
-    .nav-controls .nav-circle.selected {
-      background-color: #D0021B !important;
-      transition: all 0.5s;
-    }
-
-    .text-lg {
-      font-size: 1.2em;
-      color: #D0021B;
-    }
-
-    .text-md {
-      font-size: 1.1em;
-      color: #444444;
-    }
-
-    .center {
-      text-align: center;
-    }
-
-    .text-with-icon-row {
-      width: 100%;
-      position: relative;
-    }
-
-    .text-with-icon-row .text-section {
-      width: 75%;
-      padding: 0 10px;
-    }
-
-    .text-with-icon-row .icon-section {
-      width: 25%;
-      text-align: center;
-      position: absolute;
-      top: 0;
-      left: 75%;
-    }
-
-    .text-with-icon-row .icon-section .icon {
-      margin: 0 20px;
-      {# Hack for Firefox #}
-      height: 75px;
-    }
-
-    .text-with-icon-row .icon-section .icon svg {
-      max-width: 100%;
-      max-height: 100%;
-    }
-
-    .row-spacer {
-      height: 10%;
-    }
-
-    .learn-more-cta {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-    }
-
-    .btn-learn-more {
-      background-color: #FFFFFF;
-      color: #D0021B;
+      height: 160px;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: cover !important;
+      -webkit-background-size: cover !important;
+      -moz-background-size: cover !important;
+      margin-bottom: 30px;
       border-radius: 2px;
-      width: 100px;
     }
 
+    .more-cities-section {
+      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0px no-repeat fixed;
+      width: 100%;
+      max-width: 1920px;
+      min-height: 600px;
+      height: 600px;
+      background-size: cover;
+      position: relative;
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a.city-link {
+      color: #FFFFFF;
+      font-size: 1.2em;
+    }
+
+    a.city-link:hover {
+      color: #FFFFFF;
+      font-weight: 500;
+    }
+
+    .footer-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      text-align: center;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      height: 200px;
+      background-color: #FFFFFF;
+      text-align: center;
+    }
+
+    .copyright {
+      position: relative;
+      height: 16px;
+      top: calc(50% - 8px);
+      color: #777;
+      font-size: 1.1em;
+    }
+
+    @media (max-width: 1200px) {
+      .featured-cities-section .city-metadata {
+        top: 160px;
+      }
+
+      .featured-cities-section .city {
+        height: 200px;
+      }
+
+      .featured-source .source {
+        height: 130px;
+      }
+      .search-section {
+        background: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg') 50% 0px repeat fixed;
+        height: 300px;
+      }
+    }
   </style>
+
   <script>
-    function IntroCtrl($scope, $http, $window) {
+    function IndexCtrl($scope, $flashedMessages, $eventTracker, $http, $window) {
       var me = this;
-      $scope.selectionState = {
-        itemNum: 1,
-        needsAutoScroll: 0
-      };
-
+      $scope.flashedMessages = $flashedMessages;
       $scope.searchState = {
-        rawInput: null
-      };
-
-      $scope.goToItem = function(itemNum) {
-        $scope.selectionState.itemNum = itemNum;
-        $scope.selectionState.needsAutoScroll++;
+        rawInput: null,
+        // Prevent double-submits
+        searchInProgress: false
       };
 
       {# TODO: Much of this functionality is copied from StartNewTripInputCtrl,
         figure out how to share this instead. #}
 
       $scope.placeChanged = function($place) {
-        if (!$place) {
+        if (!$place || $scope.searchState.searchInProgress) {
           return;
         }
+        $scope.searchState.searchInProgress = true;
         if (!$place['geometry']) {
           return me.searchForPlace($place['name']);
         }
         $scope.selectResult($place);
+        $eventTracker.track({name: 'new-trip-location-autocomplete',
+          location: 'homepage', value: $place['name']});
       };
 
       $scope.searchButtonClicked = function() {
@@ -299,8 +348,11 @@
         me.saveNewTripPlan(tripPlanDetails)
           .success(function(response) {
             var tripPlanId = response['trip_plans'][0]['trip_plan_id'];
+            $scope.searchState.searchInProgress = false;
             $window.location.href = '/trip_plan/' + tripPlanId;
           });
+        $eventTracker.track({name: 'new-trip-location-result-selected',
+          location: 'homepage', value: place['name']});
       };
 
       this.searchForPlace = function(query) {
@@ -326,8 +378,11 @@
               }
             });
             $scope.searchResults = results;
+          $scope.searchState.searchInProgress = false;
           });
         });
+        $eventTracker.track({name: 'new-trip-location-search',
+          location: 'homepage', value: query});
       };
 
       this.placeToTripPlanDetails = function(place) {
@@ -370,266 +425,153 @@
       };
     }
 
-    function tcScrollToItemOn() {
-      return {
-        restrict: 'A',
-        link: function(scope, element, attrs) {
-          var elem = $(element);
-          scope.$watch(attrs.tcScrollToItemOn, function(value) {
-            if (!value) return;
-            var newScrollTop = elem.height() * (scope.selectionState.itemNum - 1);
-            elem.animate({scrollTop: newScrollTop}, 500);
-          });
-        }
-      };
+    window['initIndexApp'] = function(flashedMessages) {
+      angular.module('indexAppModule', ['navModule'], interpolator)
+        .controller('IndexCtrl', IndexCtrl)
+        .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete)
+        .directive('tcTripPlanDetailsHeader', tcTripPlanDetailsHeader)
+        .value('$flashedMessages', flashedMessages);
+
+      angular.element(document).ready(function() {
+        angular.bootstrap(document, ['indexAppModule']);
+      });      
     }
 
-    function tcWatchItemScrollState() {
-      return {
-        restict: 'A',
-        link: function(scope, element, attrs) {
-          var elem = $(element);
-          elem.on('scroll', function() {
-            var itemNum = Math.round(elem.scrollTop() / elem.height()) + 1;
-            scope.selectionState.itemNum = itemNum;
+    $(document).ready(function() {
+      $window = $(window);
 
-            var div = elem.scrollTop() / elem.height();
-            for (var i = 1; i < 5; i++) {
-              var visState = div - (i - 1);
-              var opacity;
-              if (visState < -0.5 || visState > 0.5) {
-                opacity = 0;
-              } else {
-                opacity = Math.pow(1 - Math.abs(visState / 0.5), 2);
-              }
-              $('.item-' + i).css('opacity', opacity);
-              if (opacity == 0) {
-                $('.item-' + i).hide();
-              } else {
-                $('.item-' + i).show();
-              }
-            }
+      $('div[data-type="background"]').each(function() {
+        var backgroundObject = $(this);
+        var currentbackgroundPosition = backgroundObject.css('backgroundPosition').split(" ");
+        var currentXPos = currentbackgroundPosition[0];
+        var currentYPos = currentbackgroundPosition[1];
+        currentYPos = parseInt(currentYPos, 10);
 
-            scope.$apply();
-          });
-        }
-      };
-    }
-
-    function tcGooglePlaceAutocomplete() {
-      return {
-        restrict: 'A',
-        scope: {
-          onPlaceChange: '&',
-        },
-        link: function(scope, element, attrs) {
-          var gPlace = new google.maps.places.Autocomplete(element[0], {
-            types: ['geocode'],
-            componentRestrictions: {}
-          });
-
-          google.maps.event.addListener(gPlace, 'place_changed', function() {
-            scope.onPlaceChange({$place: gPlace.getPlace()});
-            scope.$apply();
-          });
-        }
-      };
-    }
-
-    function interpolator($interpolateProvider) {
-      $interpolateProvider.startSymbol('[[');
-      $interpolateProvider.endSymbol(']]');
-    }
-
-    angular.module('introApp', [], interpolator)
-      .controller('IntroCtrl', IntroCtrl)
-      .directive('tcScrollToItemOn', tcScrollToItemOn)
-      .directive('tcWatchItemScrollState', tcWatchItemScrollState)
-      .directive('tcGooglePlaceAutocomplete', tcGooglePlaceAutocomplete);
-
-    angular.element(document).ready(function() {
-      angular.element('#main-input').focus();
+        $(window).scroll(function() {
+          var yOffset = -($window.scrollTop() / backgroundObject.data('speed'));
+          var backgroundCoordinates = currentXPos + (yOffset + currentYPos)+'px';
+          backgroundObject.css({ backgroundPosition: backgroundCoordinates});
+        });
+      });
     });
   </script>
 </head>
-<body ng-controller="IntroCtrl">
-  <div class="items" tc-scroll-to-item-on="selectionState.needsAutoScroll"
-    tc-watch-item-scroll-state>
-    <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-OBJkwaugUlQ/U5Y_m73xRLI/AAAAAAAAAEE/k8dZp1R5VVY/s1600/tc-index-bw.jpg')">
-    </div>
-    <div class="item" style="background-image: url('https://lh6.googleusercontent.com/-FnDb4K0OIb4/U5Y_m9miZ9I/AAAAAAAAAD8/MK6Y37-jMn4/s1600/tc-index.jpg')">
-    </div>
-    <div class="item" style="background-image: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg')">
-    </div>
-    <div class="item" style="background-image: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg')">
-    </div>
-  </div>
+<body ng-controller="IndexCtrl">
 
-  <div class="site-header">
-    <div class="logo">
-      TravelClipper
-    </div>
-    <div class="my-trips">
-      <a href="/trip_plan">
-        My Trips
-      </a>
-    </div>
-  </div>
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
 
-  <div class="items-content">
-    <div class="item-1">
-      <div class="item-header">
-        Find awesome things to do on your trip. From tons of sources.<br>
-        Plan it all out - maps, itineraries, photos, everything. Without the pain.<br>
-        Take it all with you on your phone. No Internet required.
+  <div class="splash-section" data-type="background" data-speed="5">
+    <div class="site-header">
+      <div class="logo">
+        WhereFare
       </div>
-      <div class="search">
-        <div class="input-group">
-          <input type="text" class="form-control search-input" id="main-input"
-            ng-model="searchState.rawInput"
-            placeholder="Where do you want to go?"
-            tc-google-place-autocomplete on-place-change="placeChanged($place)">
-          <span class="input-group-btn">
-            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
-              <span class="glyphicon glyphicon-search"></span>
-            </button>
-          </span>
-        </div>
-        <div ng-include="'search-results-template'">
-        </div>
-      </div>
-      <div class="learn-more-cta">
-        <button class="btn btn-learn-more" ng-click="goToItem(2)">
-          Learn More
-        </button>
-      </div>
-    </div>
-    <div class="item-2">
-      <div class="item-backdrop">
-      </div>
-      <div class="item-header">
-        Find awesome things to do on your trip. From tons of sources.
-      </div>
-      <div class="item-content">
-        <div class="item-content-inner">
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                Get inspired
-              </div>
-              <div class="text-md">
-                View and re-mix trips planned by other users and top travel editors from sites like Lonely Planet, the New York Times, and Nomadic Matt.
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'group-icon'" class="icon"></div>
-            </div>
-          </div>
-          <div class="row-spacer"></div>
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                Personalize your trip
-              </div>
-              <div class="text-md">
-                Add attractions from your favorite travel sites and blogs. Easily incorporate recommendations from friends and family.
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'map-icon'" class="icon"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="skip-prompt">
-        <a href="/trip_plan">
-          Want to jump right in?
+      <div class="login">
+        {% if account_info.logged_in %}
+        <a class="white-link" href="/profile/{{account_info.user.public_id}}">
+          My Trips
         </a>
-      </div>
-      <div class="learn-more-cta">
-        <button class="btn btn-learn-more" ng-click="goToItem(3)">
-          Next
-        </button>
-      </div>
-    </div>
-    <div class="item-3">
-      <div class="item-backdrop">
-      </div>
-      <div class="item-header">
-        <br>
-        Plan it all out - maps, itineraries, photos, everything. Without the pain.
-      </div>
-      <div class="item-content">
-        <div class="item-content-inner">
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                Create a map without the&nbsp;effort
-              </div>
-              <div class="text-md">
-                Your mobile travel map builds itself as you collect places. Even when you're doing research on other websites.
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'map-2-icon'" class="icon"></div>
-            </div>
-          </div>
-          <div class="row-spacer"></div>
-          <div class="text-with-icon-row">
-            <div class="text-section">
-              <div class="text-lg">
-                Plan your schedule
-              </div>
-              <div class="text-md">
-                Organize your trip by day or just keep a simple list of places to see.
-              </div>
-            </div>
-            <div class="icon-section">
-              <div ng-include="'calendar-icon'" class="icon"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="skip-prompt">
-        <a href="/trip_plan">
-          Want to jump right in?
+        {% else %}
+        <a class="white-link" href="{{url_for('user.login', next='/trip_plan')}}">
+          Log In
         </a>
-      </div>
-      <div class="learn-more-cta">
-        <button class="btn btn-learn-more" ng-click="goToItem(4)">
-          Next
-        </button>
+        {% endif %}
       </div>
     </div>
-    <div class="item-4">
-      <div class="item-header">
-        <br>
-        <br>
-        Take it all with you on your phone. No Internet required.
-      </div>
-      <div class="search">
-        <div class="input-group">
-          <input type="text" class="form-control search-input"
-            ng-model="searchState.rawInput"
-            placeholder="Where do you want to go?"
-            tc-google-place-autocomplete on-place-change="placeChanged($place)">
-          <span class="input-group-btn">
-            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
-              <span class="glyphicon glyphicon-search"></span>
-            </button>
-          </span>
-        </div>
-        <div ng-include="'search-results-template'">
-        </div>
+    <div class="tagline">
+      Travel guides with interactive maps from reputable sources
+    </div>
+    <div class="sub-tagline">
+      Build your personal guide using places of interest from featured guides and around the web
+    </div>
+  </div>
+
+  <div class="featured-cities-section">
+    <div class="section-header">
+      Browse <span class="lg-text">FEATURED DESTINATIONS</span>
+    </div>
+    <div class="cities-container container">
+      <div class="featured-cities row">
+        {% for config in featured_guide_configs %}
+        <a href="/guides/{{config.city_name_url_token}}">
+          <div class="featured-city col-md-4">
+            <div class="city"
+              style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
+              <div class="city-metadata">
+                <span class="city-name">
+                  {{config.city_name}}
+                </span>
+                <span class="city-guides-number">
+                  {{config.trip_plan_ids | length}} Guides
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
       </div>
     </div>
   </div>
 
-  <div class="nav-controls">
-    <div class="nav-item" ng-repeat="itemNum in [1, 2, 3, 4]">
-      <a ng-click="goToItem(itemNum)" href="javascript:void(0)">
-        <span class="nav-circle" ng-class="{'selected': itemNum == selectionState.itemNum}"></span>
-      </a>
+  <div class="search-section" data-type="background" data-speed="10">
+    <div class="section-header">
+      Build your <span class="lg-text">PERSONAL GUIDE</span>
+    </div>
+    <div class="search-input-section">
+      <div class="input-group">
+        <input type="text" class="form-control search-input" id="main-input"
+          ng-model="searchState.rawInput"
+          placeholder="Where do you want to go?"
+          tc-google-place-autocomplete on-place-change="placeChanged($newPlace)">
+        <span class="input-group-btn">
+          <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
+            New Trip
+          </button>
+        </span>
+      </div>
+      <div ng-include="'search-results-template'">
+      </div>
+    </div>
+  </div>
+
+  <div class="featured-sources-section">
+    <div class="section-header">
+      Browse <span class="lg-text">FEATURED SOURCES</span>
+    </div>
+    <div class="sources-container container">
+      <div class="top-sources row">
+        {% for config in featured_profile_configs %}
+        <a href="/profile/{{config.profile_name_token}}">
+          <div class="featured-source col-md-2">
+            <div class="source"
+              style="background-image: url(&quot;{{config.icon_url}}&quot;);">
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="more-cities-section" data-type="background" data-speed="20">
+    <div class="section-header">
+      <span class="lg-text">MORE DESTINATIONS</span>
+    </div>
+    <div class="more-cities-container container">
+      <div class="more-cities row">
+        {% for config in all_guide_configs %}
+        <a class="city-link" href="/guides/{{config.city_name_url_token}}">
+          <div class="col-md-3">
+            {{config.city_name}}
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>    
+  </div>
+  <div class="footer-section">
+    <div class="copyright">
+      © Unicycle Labs Inc. All rights reserved.
     </div>
   </div>
 
@@ -642,6 +584,10 @@
     </div>
   </script>
 
-  {% include 'index_icons.html' %}
+  {% include 'nav.html' %}
+
+  <script>
+    initIndexApp({{to_json_str(flashed_messages) | safe}});
+  </script>
 </body>
 </html>

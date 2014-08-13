@@ -9,7 +9,12 @@
 {% block content %}
 {% from "flask_user/_macros.html" import render_field, render_submit_field %}
 
-<h1>Registration Complete</h1>
+<div class="modal-logo">
+  WhereFare
+</div>
+<div class="modal-action-header">
+  Please confirm your account by checking your email.
+</div>
 
 {% if request.args.get('iframe') %}
   <script>
@@ -18,12 +23,12 @@
     }
   </script>
 
-  <div>
+  <div class="btn-wrapper">
     <button class="btn btn-default" onclick="closeParentModal()">Close</button>
   </div>
 {% else %}
-  <div>
-    <a href="/trip_plan">Create a trip plan</a>
+  <div class="btn-wrapper">
+    <a href="/">Back to Home</a>
   </div>
 {% endif %}
 

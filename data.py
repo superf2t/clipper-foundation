@@ -1,12 +1,15 @@
 import datetime
 import json
 import os
+import time
+import urlparse
 
 from dateutil import parser as date_parser
 from dateutil import tz
 
 import constants
 import crypto
+import featured_profiles
 import enums
 import serializable
 import struct
@@ -82,24 +85,57 @@ class OpeningPeriod(serializable.Serializable):
         self.minute_close = minute_close
         self.initialize()
 
-    def initialize(self):
-        if not self.day_open:
-            self.as_string = None
-            return
+    def format(self, hour, minute):
+        return time.strftime('%I:%M%p', time.gmtime(3600 * hour + 60 * minute)).lower()
+
+    def day_open_name(self):
+        return self.DAY_NAMES[self.day_open]
+
+    def format_open(self):
+        if self.day_open is None:
+            return None
+        return self.format(self.hour_open, self.minute_open)
+
+    def day_close_name(self):
         if self.day_close is None:
-            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d'
-        elif self.day_open == self.day_close:
-            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d-%(hour_close)02d:%(minute_close)02d'
+            return None
+        return self.DAY_NAMES[self.day_close]
+
+    def format_close(self):
+        if self.day_close is None:
+            return None
+        return self.format(self.hour_close, self.minute_close)
+
+    def long_string(self):
+        if not self.day_open:
+            return None
+        if self.day_close is None:
+            format = '%(day_open)s %(open)s'
+        elif self.day_open == self.day_close or self.day_close == (self.day_open + 1) % 7:
+            format = '%(day_open)s %(open)s - %(close)s'
         else:
-            format = '%(day_open)s %(hour_open)02d:%(minute_open)02d - %(day_close)s %(hour_close)02d:%(minute_close)02d'
-        self.as_string = format % {
-            'day_open': self.DAY_NAMES[self.day_open],
-            'hour_open': self.hour_open,
-            'minute_open': self.minute_open,
-            'day_close': self.DAY_NAMES[self.day_close] if self.day_close is not None else None,
-            'hour_close': self.hour_close,
-            'minute_close': self.minute_close,
+            format = '%(day_open)s %(open)s - %(day_close)s %(close)s'
+        return format % {
+            'day_open': self.day_open_name(),
+            'open': self.format_open(),
+            'day_close': self.day_close_name(),
+            'close': self.format_close(),
         }
+
+    def short_string(self):
+        if not self.day_open:
+            return None
+        if self.day_close is None:
+            format = '%(open)s'
+        else:
+            format = '%(open)s - %(close)s'
+        return format % {
+            'open': self.format_open(),
+            'close': self.format_close(),
+        }
+
+    def initialize(self):
+        self.as_string = self.long_string()
 
 class OpeningHours(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('source_text',
@@ -111,8 +147,26 @@ class OpeningHours(serializable.Serializable):
         self.opening_periods = opening_periods or []
         self.initialize()
 
+    def to_string(self):
+        if not self.opening_periods:
+            return self.source_text
+        strs = []
+        current_str = None
+        current_day = None
+        for period in self.opening_periods:
+            if period.day_open == current_day:
+                current_str = '%s, %s' % (current_str, period.short_string())
+            else:
+                if current_str:
+                    strs.append(current_str)
+                current_day = period.day_open
+                current_str = period.long_string()
+        if current_str:
+            strs.append(current_str)
+        return '\n'.join(strs)
+
     def initialize(self):
-        self.as_string = '\n'.join(p.as_string for p in self.opening_periods if p.as_string)
+        self.as_string = self.to_string()
 
 class Entity(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('entity_id', 'name',
@@ -125,7 +179,10 @@ class Entity(serializable.Serializable):
         'starred', serializable.objlistf('comments', Comment),
         'description', 'primary_photo_url',
         serializable.listf('photo_urls'), serializable.objlistf('tags', Tag),
-        'source_url', 'origin_trip_plan_id', 'google_reference', 'last_access',
+        'source_url', 'source_display_name',
+        'source_is_trusted_for_reputation',
+        'origin_trip_plan_id', 'origin_trip_plan_name',
+        'google_reference', 'last_access',
         'day', 'day_position')
 
     def __init__(self, entity_id=None, name=None, latlng=None,
@@ -135,7 +192,8 @@ class Entity(serializable.Serializable):
             rating=None, rating_max=None, review_count=None, 
             starred=None, comments=(),
             description=None, primary_photo_url=None, photo_urls=(), tags=(),
-            source_url=None, origin_trip_plan_id=None, google_reference=None,
+            source_url=None, origin_trip_plan_id=None, origin_trip_plan_name=None,
+            google_reference=None,
             last_access=None, last_access_datetime=None,
             day=None, day_position=None):
         self.entity_id = entity_id
@@ -163,6 +221,7 @@ class Entity(serializable.Serializable):
 
         self.source_url = source_url
         self.origin_trip_plan_id = origin_trip_plan_id
+        self.origin_trip_plan_name = origin_trip_plan_name  # Display-only
         self.google_reference = google_reference
         self.last_access = last_access
         if last_access_datetime:
@@ -170,6 +229,15 @@ class Entity(serializable.Serializable):
 
         self.day = day  # Deprecated
         self.day_position = day_position  # Deprecated
+
+    def initialize(self):
+        if self.source_url:
+            source_host = urlparse.urlparse(self.source_url).netloc.lower()
+            self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host, source_host)
+            self.source_is_trusted_for_reputation = source_host in constants.TRUSTED_REPUTATION_SOURCES
+        else:
+            self.source_display_name = None
+            self.source_is_trusted_for_reputation = None
 
     def comment_by_id(self, comment_id):
         for comment in self.comments:
@@ -204,18 +272,6 @@ class Entity(serializable.Serializable):
             return cmp(e1.day, e2.day)
         return -cmp(e1.day, e2.day)
 
-class Note(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('note_id', 'text', 'day', 'day_position', 'status')
-
-    Status = enums.enum('ACTIVE', 'DELETED')
-
-    def __init__(self, note_id=None, text=None, day=None, day_position=None, status=None):
-        self.note_id = note_id
-        self.text = text
-        self.day = day
-        self.day_position = day_position
-        self.status = status
-
 TripPlanType = enums.enum('NONE', 'GUIDE')
 
 class TripPlan(serializable.Serializable):
@@ -224,25 +280,29 @@ class TripPlan(serializable.Serializable):
         serializable.objf('location_bounds', LatLngBounds),
         'description', 'cover_image_url', 'source_url',
         serializable.objlistf('entities', Entity),
-        serializable.objlistf('notes', Note),
         'creator', serializable.objf('user', DisplayUser),
         serializable.objlistf('editors', DisplayUser),
         serializable.listf('invitee_emails'),
         'last_modified', 'status',
         'trip_plan_type', serializable.objlistf('tags', Tag),
-        'content_date', 'view_count', 'clip_count')
+        'content_date', 'view_count', 'clip_count',
+        # Display-only fields
+        'content_display_date', 'source_icon', 'source_display_name',
+        'profile_url', 'num_entities',
+        # Internal fields
+        'referral_source')
 
     Status = enums.enum('ACTIVE', 'DELETED')
 
     def __init__(self, trip_plan_id=None, name=None,
             location_name=None, location_latlng=None, location_bounds=None,
             description=None, cover_image_url=None, source_url=None,
-            entities=(), notes=(),
+            entities=(),
             creator=None, user=None, editors=(), invitee_emails=(),
             last_modified=None, status=Status.ACTIVE.name,
             trip_plan_type=None, tags=(),
             content_date=None, content_date_datetime=None,
-            view_count=0, clip_count=0):
+            view_count=0, clip_count=0, referral_source=None):
         self.trip_plan_id = trip_plan_id
         self.name = name
         self.location_name = location_name
@@ -252,7 +312,6 @@ class TripPlan(serializable.Serializable):
         self.cover_image_url = cover_image_url
         self.source_url = source_url
         self.entities = entities or []
-        self.notes = notes or []
         self.last_modified = last_modified
         self.status = status
         self.trip_plan_type = trip_plan_type
@@ -268,6 +327,29 @@ class TripPlan(serializable.Serializable):
         self.creator = creator  # Deprecated in favor of user
         self.editors = editors or []
         self.invitee_emails = invitee_emails or []
+
+        self.referral_source = referral_source
+
+
+    def initialize(self):
+        self.num_entities = len(self.entities)
+        self.profile_url = None
+        if self.trip_plan_type == TripPlanType.GUIDE.name:
+            if self.content_date:
+                self.content_display_date = self.content_date_datetime().strftime('%B %Y')
+            else:
+                self.content_display_date = None
+            if self.source_url:
+                source_host = urlparse.urlparse(self.source_url).netloc.lower()
+                self.source_icon = constants.SOURCE_HOST_TO_ICON_URL.get(source_host)
+                self.source_display_name = constants.SOURCE_HOST_TO_DISPLAY_NAME.get(source_host)
+                self.profile_url = '/profile/' + featured_profiles.profile_name_token(source_host)
+            else:
+                self.source_icon = None
+                self.source_display_name = None
+                self.profile_url = None
+        elif self.user and self.user.public_id:
+            self.profile_url = '/profile/' + self.user.public_id
 
     def entity_by_source_url(self, source_url):
         for entity in self.entities:
@@ -343,6 +425,9 @@ class TripPlan(serializable.Serializable):
         else:
             return self.creator
 
+    def is_guide(self):
+        return self.trip_plan_type == TripPlanType.GUIDE.name
+
     def trip_plan_url(self):
         return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
 
@@ -367,11 +452,13 @@ class TripPlan(serializable.Serializable):
 
     def strip_readonly_fields(self):
         self.entities = ()
-        self.notes = ()
         self.creator = None
         self.last_modified = None
         self.editors = ()
         self.invitee_emails = ()
+        self.content_display_date = None
+        self.source_icon = None
+        self.source_display_name = None
         return self
 
     def strip_child_objects(self):
@@ -390,11 +477,13 @@ class TripPlan(serializable.Serializable):
 
 
 class SessionInfo(object):
-    def __init__(self, email=None, old_email=None, visitor_id=None, db_user=None):
+    def __init__(self, email=None, old_email=None, visitor_id=None,
+            db_user=None, referral_source=None):
         self.email = email
         self.old_email = old_email
         self.visitor_id = visitor_id
         self.db_user = db_user
+        self.referral_source = referral_source
 
     @property
     def public_visitor_id(self):
@@ -420,13 +509,6 @@ class FlashedMessage(serializable.Serializable):
         self.message = message
         self.category = category
 
-class InitialPageState(serializable.Serializable):
-    PUBLIC_FIELDS = serializable.fields('sort', 'needs_tutorial')
-
-    def __init__(self, sort=None, needs_tutorial=None):
-        self.sort = sort
-        self.needs_tutorial = needs_tutorial
-
 class AccountInfo(serializable.Serializable):
     PUBLIC_FIELDS = serializable.fields('email',
         serializable.objf('user', DisplayUser), 'logged_in')
@@ -436,10 +518,30 @@ class AccountInfo(serializable.Serializable):
         self.user = user
         self.logged_in = bool(email)
 
-def generate_entity_id():
-    return generate_id()
+class TripPlanLoader(object):
+    def __init__(self):
+        self.trip_plans_by_id = {}
 
-def generate_note_id():
+    def load(self, trip_plan_ids):
+        ids_to_load = set(trip_plan_ids)
+        ids_to_load = ids_to_load.difference(set(self.trip_plans_by_id.keys()))
+        trip_plans = load_trip_plans_by_ids(ids_to_load)
+        for trip_plan in trip_plans:
+            if trip_plan:
+                self.trip_plans_by_id[trip_plan.trip_plan_id] = trip_plan
+        return self
+
+    def get(self, trip_plan_id):
+        return self.trip_plans_by_id.get(trip_plan_id)
+
+    def get_field(self, trip_plan_id, field_name):
+        trip_plan = self.get(trip_plan_id)
+        if trip_plan:
+            return getattr(trip_plan, field_name)
+        return None
+
+
+def generate_entity_id():
     return generate_id()
 
 def generate_trip_plan_id():

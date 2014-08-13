@@ -30,6 +30,11 @@ class User(db.Model, user.UserMixin):
         return cls.query.filter(User.id.in_(ids))
 
     @classmethod
+    def get_by_public_id(cls, public_id):
+        users = cls.get_by_public_ids([public_id])
+        return users[0] if users else None
+
+    @classmethod
     def get_by_email(cls, email):
         return cls.query.filter(func.lower(cls.email) == func.lower(email)).first()
 
@@ -40,10 +45,16 @@ class TCRegisterForm(forms.RegisterForm):
         [validators.Required('Please enter your first name'), validators.Length(max=50)])
     last_name = wtforms.StringField('Last Name',
         [validators.Required('Please enter your last name'), validators.Length(max=50)])
-    display_name = wtforms.StringField('Display Name - what will be shown on trip plans authored by you',
+    display_name = wtforms.StringField('Display Name',
         [validators.Required('Please enter a display name'), validators.Length(max=50)])
     next = wtforms.StringField()
     iframe = wtforms.StringField()
+
+
+class UserMetadata(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    referral_source = db.Column(db.String(50))
+
 
 class DisplayNameResolver(object):
     def __init__(self):

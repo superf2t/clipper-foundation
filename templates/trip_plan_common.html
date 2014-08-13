@@ -1,0 +1,79 @@
+<script type="text/ng-template" id="trip-plan-details-header-template">
+  <div class="trip-plan-details-header" 
+    ng-class="{
+      'full-bleed': fullBleed, 
+      'clickable': clickable, 
+      'show-border': showBorder, 
+      'hidden-mode': hiddenMode
+    }">
+    <div class="trip-plan-img" 
+    ng-style="{'background-image': tripPlan['cover_image_url'] && 'url(&quot;' + tripPlan['cover_image_url'] + '&quot;)'}" ng-click="clickable && onClick()">
+      <div class="trip-plan-img-overlay">
+        <div class="trip-plan-name">[[tripPlan['name'] ]]</div>
+      </div>
+    </div>
+    <div class="trip-plan-info">
+      <div class="trip-plan-metadata">
+        <span ng-if="includeCreator">
+          <span ng-if="tripPlan['trip_plan_type'] == 'GUIDE'">
+            Inspired by
+            <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url"
+              tc-track-click="{name: 'guide-creator-name-click', location: 'trip-plan-header', value: tripPlan['source_display_name']}">
+              [[tripPlan['source_display_name'] ]]
+            </a>
+          </span>
+          <span ng-if="!tripPlan['trip_plan_type']">
+            <span ng-if="tripPlan['user']['display_name']"
+              tc-track-click="{name: 'creator-name-click', location: 'trip-plan-header', value: tripPlan['user']['public_id']}">
+              Created by
+              <a ng-href="[[tripPlan['profile_url'] ]]" class="source-url">
+                [[tripPlan['user']['display_name'] ]]
+              </a>
+            </span>
+            <span ng-if="!tripPlan['user']['display_name']">
+              Created by New User
+            </span>
+          </span>
+        </span>
+        <span ng-show="includeCreator && tripPlan['trip_plan_type'] == 'GUIDE' && tripPlan['content_display_date']">
+          -
+        </span>
+        <span class="source-publish-date"
+          ng-show="tripPlan['trip_plan_type'] == 'GUIDE' && tripPlan['content_display_date']">
+          [[tripPlan['content_display_date'] ]]
+        </span>              
+        <img ng-if="tripPlan['source_icon']" ng-src="[[tripPlan['source_icon'] ]]" class="source-icon"/>
+        <div class="trip-plan-places">
+          <span ng-show="numEntities > 1" class="trip-plan-places-count">
+            [[numEntities]] places
+          </span>
+          <span ng-show="numEntities == 1" class="trip-plan-places-count">
+            1 place
+          </span>
+        </div>
+      </div>
+    </div>
+    <div class="trip-plan-details" ng-if="includeDetails">
+      <div class="description" ng-if="tripPlan['description']">
+        <tc-expandable-content text-content="tripPlan['description']"
+          expand-link-text="Read more" collapse-link-text="Read less"
+          max-lines="5"
+          track-expand="{name: 'toggle-read-more-text', location: 'trip-plan-header', value: 'open'}"
+          track-collapse="{name: 'toggle-read-more-text', location: 'trip-plan-header', value: 'close'}">
+        </tc-expandable-content>
+      </div>
+      <div class="tags" ng-show="tripPlan['tags'] && tripPlan['tags'].length">
+        Tags: 
+        <span ng-repeat="tag in tripPlan['tags']" class="one-tag">
+          [[tag['text'] ]]
+        </span>
+      </div>
+      <div ng-if="tripPlan['source_url']" class="source-link">
+        <a class="underline-link" ng-href="[[tripPlan['source_url'] ]]" target="_blank"
+          tc-track-click="{name: 'view-guide-source-article', location: 'trip-plan-header', value: tripPlan['source_url']}">
+          View original article at [[tripPlan['source_display_name'] ]]
+        </a>
+      </div>
+    </div>
+  </div>
+</script>

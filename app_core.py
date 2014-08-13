@@ -10,8 +10,7 @@ class MyFlask(Flask):
     jinja_options['extensions'].append('jinja2htmlcompress.SelectiveHTMLCompress')
 
     def get_send_file_max_age(self, name):
-        if name in ('js/script.js', 'js/services.js', 'js/clipper.js', 'js/admin.js', 'js/internal_clipper.js',
-            'css/style.css', 'css/clipper.css', 'css/shared.css', 'css/admin.css', 'css/internal_clipper.css'):
+        if name.startswith('js/') or name.startswith('css/'):
             return 0
         return super(MyFlask, self).get_send_file_max_age(name)
 
@@ -27,7 +26,7 @@ class AppConfig(object):
     MAIL_USE_SSL  = True
     MAIL_USERNAME = constants.MAIL_USERNAME
     MAIL_PASSWORD = constants.MAIL_PASSWORD
-    MAIL_DEFAULT_SENDER = 'TravelClipper <noreply@unicyclelabs.com>'
+    MAIL_DEFAULT_SENDER = 'WhereFare <noreply@unicyclelabs.com>'
 
    # Configure Flask-User
     USER_ENABLE_EMAIL                = True
@@ -36,7 +35,7 @@ class AppConfig(object):
     USER_ENABLE_CHANGE_USERNAME      = False
     USER_ENABLE_CHANGE_PASSWORD      = True
     USER_ENABLE_FORGOT_PASSWORD      = True
-    USER_ENABLE_RETYPE_PASSWORD      = True
+    USER_ENABLE_RETYPE_PASSWORD      = False
     USER_SEND_REGISTERED_EMAIL       = True
     USER_SEND_PASSWORD_CHANGED_EMAIL = True
     USER_SEND_USERNAME_CHANGED_EMAIL = False

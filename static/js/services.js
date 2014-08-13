@@ -150,6 +150,29 @@ function EntityService($http) {
   this.mutatecomments = function(request) {
     return $http.post('/entityservice/mutatecomments', request);
   };
+
+  this.deleteTags = function(entityId, tripPlanId) {
+    var request = {
+      operations: [{
+        'operator': Operator.DELETE,
+        'entity_id': entityId,
+        'trip_plan_id': tripPlanId
+      }]
+    };
+    return this.mutatetags(request);
+  };
+
+  this.mutatetags = function(request) {
+    return $http.post('/entityservice/mutatetags', request);
+  };
+
+  this.orderentities = function(tripPlanId, orderedEntityIds) {
+    var request = {
+      'trip_plan_id': tripPlanId,
+      'ordered_entity_ids': orderedEntityIds
+    };
+    return $http.post('/entityservice/orderentities', request);
+  };
 }
 
 
@@ -243,56 +266,27 @@ function TripPlanService($http) {
   this.mutatecollaborators = function(request) {
     return $http.post('/tripplanservice/mutatecollaborators', request);
   };
+
+  this.deleteTags = function(tripPlanId) {
+    var request = {
+      operations: [{
+        'operator': Operator.DELETE,
+        'trip_plan_id': tripPlanId
+      }]
+    };
+    return this.mutatetags(request);
+  };
+
+  this.mutatetags = function(request) {
+    return $http.post('/tripplanservice/mutatetags', request);
+  };
 }
 
 var TripPlanServiceError = {
   INVALID_GOOGLE_MAPS_URL: 'INVALID_GOOGLE_MAPS_URL'
 };
 
-function NoteService($http) {
-  this.getByTripPlanId = function(tripPlanId, opt_lastModifiedTime) {
-    var request = {
-      'trip_plan_id': tripPlanId,
-      'if_modified_after': opt_lastModifiedTime
-    };
-    return $http.post('/noteservice/get', request);
-  };
-
-  this.saveNewNote = function(note, tripPlanId) {
-    var request = {
-      'operations': [this.operationFromNote(note, tripPlanId, Operator.ADD)]
-    };
-    return this.mutate(request);
-  };
-
-  this.editNote = function(note, tripPlanId) {
-    var request = {
-      'operations': [this.operationFromNote(note, tripPlanId, Operator.EDIT)]
-    };
-    return this.mutate(request);
-  };
-
-  this.deleteNote = function(note, tripPlanId) {
-    var request = {
-      'operations': [this.operationFromNote(note, tripPlanId, Operator.DELETE)]
-    };
-    return this.mutate(request);
-  };
-
-  this.mutate = function(request) {
-    return $http.post('/noteservice/mutate', request);
-  };
-
-  this.operationFromNote = function(note, tripPlanId, operator) {
-    return {
-      'operator': operator,
-      'trip_plan_id': tripPlanId,
-      'note': note
-    };
-  };
-}
 
 angular.module('servicesModule', [])
   .service('$entityService', ['$http', EntityService])
-  .service('$noteService', ['$http', NoteService])
   .service('$tripPlanService', ['$http', TripPlanService]);

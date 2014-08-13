@@ -45,10 +45,13 @@
       };
     }
 
-    function ClipperMapCtrl($scope, $clipperStateModel, $clipperProxy, $window) {
+    function ClipperMapCtrl($scope, $clipperStateModel, $clipperProxy,
+        $eventTracker, $window) {
       var me = this;
+      $scope.et = $eventTracker;
       $scope.tripPlanEntities = null;
       $scope.resultEntities = null;
+      $scope.clipperStateModel = $clipperStateModel;
 
       $scope.mapState = {map: null};
       $scope.mapOptions = {
@@ -78,6 +81,12 @@
           $scope.$apply();
         });
       };
+
+      $scope.$watch('clipperStateModel.mapOpen', function(isOpen, wasOpen) {
+        if (isOpen && !wasOpen) {
+          me.updateMapBounds();
+        }
+      });
 
       this.plotTripPlanEntities = function(data) {
         $scope.tripPlanEntities = data['entities'];
@@ -168,21 +177,12 @@
 
     function MapEntityCtrl($scope, $clipperStateModel, $templateToStringRenderer) {
       $scope.ed = $scope.entity;
-      var entityModel = new EntityModel($scope.ed);
+      $scope.em = new EntityModel($scope.ed);
+
       $scope.markerState = {
         marker: null,
-        position: entityModel.gmapsLatLng(),
+        position: $scope.em.gmapsLatLng(),
         infowindow: null
-      };
-
-      $scope.iconTemplateName = function() {
-        if ($scope.ed['sub_category'] && $scope.ed['sub_category']['sub_category_id']) {
-          return $scope.ed['sub_category']['name'] + '-icon-template';
-        }
-        if ($scope.ed['category'] && $scope.ed['category']['category_id']) {
-          return $scope.ed['category']['name'] + '-icon-template';
-        }
-        return null;
       };
 
       $scope.isSelected = function() {
@@ -218,7 +218,7 @@
       });
 
       $scope.$on('openinfowindow', function(event, entityId) {
-        if (entityId == $scope.ed['entity_id']) {
+        if (entityId == $scope.ed['entity_id'] && $clipperStateModel.mapOpen) {
           $scope.openInfowindow();
         }
       });
@@ -229,12 +229,13 @@
     }
 
     function MapResultEntityCtrl($scope, $clipperStateModel,
-        $templateToStringRenderer, $clipperProxy) {
+        $templateToStringRenderer, $clipperProxy, $eventTracker) {
       $scope.ed = $scope.entity;
-      var entityModel = new EntityModel($scope.ed);
+      $scope.em = new EntityModel($scope.ed);
+
       $scope.markerState = {
         marker: null,
-        position: entityModel.gmapsLatLng(),
+        position: $scope.em.gmapsLatLng(),
         infowindow: null
       };
 
@@ -279,7 +280,7 @@
       });
 
       $scope.$on('openresultsinfowindow', function(event, resultIndex) {
-        if (resultIndex == $scope.$index) {
+        if (resultIndex == $scope.$index && $clipperStateModel.mapOpen) {
           $scope.openInfowindow();
         }
       });
@@ -290,8 +291,8 @@
         }
         $scope.destroyInfowindow();
         _.extend($scope.ed, entity);
-        $scope.markerState.marker.setPosition(entityModel.gmapsLatLng());
-        $scope.mapState.map.setCenter(entityModel.gmapsLatLng())
+        $scope.markerState.marker.setPosition($scope.em.gmapsLatLng());
+        $scope.mapState.map.setCenter($scope.em.gmapsLatLng())
         if (viewport) {
           $scope.mapState.map.fitBounds(gmapsBoundsFromJson(viewport));
         }
@@ -306,6 +307,7 @@
           google.maps.event.addListener($scope.markerState.marker, 'dragstart', function() {
             $scope.destroyInfowindow();
             $scope.$apply();
+            $eventTracker.track({name: 'result-entity-marker-dragged', location: 'clipper-map', value: $scope.ed['entity_id']});
           });
           google.maps.event.addListener($scope.markerState.marker, 'dragend', function() {
             var position = $scope.markerState.marker.getPosition();
@@ -333,7 +335,7 @@
     }
 
     angular.module('clipperMapModule',
-        ['directivesModule', 'filtersModule'],
+        ['directivesModule', 'filtersModule', 'eventTrackingModule'],
         interpolator)
       .controller('ClipperMapCtrl', ClipperMapCtrl)
       .controller('MapEntityCtrl', MapEntityCtrl)
@@ -351,7 +353,7 @@
 </head>
 <body ng-controller="ClipperMapCtrl">
   <div id="map" tc-google-map map="mapState.map" map-options="mapOptions"
-    after-creation="mapReady($map)">
+    after-creation="mapReady($map)" resize-when="clipperStateModel.mapOpen">
   </div>
   <div style="display: none" ng-repeat="entity in tripPlanEntities"
     ng-controller="MapEntityCtrl">
@@ -359,22 +361,30 @@
       map="mapState.map" marker="markerState.marker"
       position="markerState.position"
       category-name="ed['category'] && ed['category']['name']"
-      icon-template-name="iconTemplateName()"
+      icon-template-name="em.iconTemplateName()"
       precise="ed['address_precision'] == 'Precise'"
       selected="isSelected()"
       deemphasized="true"
-      on-click="selectEntity(); $event.stopPropagation()">
+      on-click="selectEntity();
+        et.track({name: 'entity-marker-clicked', location: 'clipper-map'});
+        $event.stopPropagation()">
     </tc-entity-marker>
   </div>
   <div style="display: none" ng-repeat="entity in resultEntities"
     ng-controller="MapResultEntityCtrl">
-    <tc-search-result-marker ng-if="markerState.position"
-        marker="markerState.marker" position="markerState.position" map="mapState.map"
-        precise="ed['address_precision'] == 'Precise'" result-letter="resultLetter()"
-        selected="isSelected()"
-        emphasized="isEmphasized()"
-        on-click="selectResult(); $event.stopPropagation()">
-    </tc-search-result-marker>
+    <tc-entity-marker ng-if="markerState.position"
+      map="mapState.map" marker="markerState.marker"
+      position="markerState.position"
+      category-name="ed['category'] && ed['category']['name']"
+      icon-template-name="em.iconTemplateName()"
+      precise="ed['address_precision'] == 'Precise'"
+      result-letter="resultLetter()"
+      for-results="true"
+      selected="isSelected()"
+      on-click="selectResult();
+        et.track({name: 'result-entity-marker-clicked', location: 'clipper-map'});
+        $event.stopPropagation()">
+    </tc-entity-marker>
   </div>
 
   <script type="text/ng-template" id="clipper-infowindow-template">
@@ -383,6 +393,7 @@
     </div>
   </script>
 
+  {% include 'nav.html' %}
   {% include 'map_markers.html' %}
   {% include 'icons.html' %}
 </body>

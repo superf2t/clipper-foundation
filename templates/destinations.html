@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+<head>
+  <title>Destinations - WhereFare</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <script src="//maps.googleapis.com/maps/api/js?libraries=places&sensor=false"></script>
+  <script src="/static/js/ui-bootstrap-tpls-0.11.0.min.js"></script>
+  <script src="//cdn.jsdelivr.net/underscorejs/1.6.0/underscore-min.js"></script>
+  <script src="/static/js/services.js"></script>
+  <script src="/static/js/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Raleway:300">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="shortcut icon" href="/static/img/globe-bw.png">
+  {% include 'analytics.html' %}
+
+  <style type="text/css">
+    html, body {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      margin: 0;
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    }
+
+    a:hover {
+      text-decoration: none;
+    }
+
+    a.white-link {
+      color: #FFFFFF;
+    }
+
+    a.white-link:hover {
+      color: #FFFFFF;
+    }
+
+    .main-content {
+      position: fixed;
+      top: 41px;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+    }
+
+    .section-header {
+      padding: 30px 0px;
+      text-align: center;
+      font-size: 1.0em;
+      font-weight: 600;
+    }
+
+    .lg-text {
+      font-size: 1.8em;
+    }
+
+    .featured-cities-section {
+      position: relative;
+      margin: 0 auto;
+      width: 100%;
+      background-color: #FFFFFF;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      z-index: 1;
+      padding-bottom: 15px;
+    }
+
+    .featured-cities-section .city-metadata {
+      position: relative;
+      top: 220px;
+      height: 40px;
+      margin-bottom: -40px;
+      background-color: rgba(0,0,0,0.5);
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .featured-cities-section .city {
+      width: 100%;
+      height: 260px;
+      background-repeat: no-repeat;
+      background-position: 50% 50%;
+      background-size: cover !important;
+      -webkit-background-size: cover !important;
+      -moz-background-size: cover !important;
+      margin-bottom: 30px;
+      -webkit-box-shadow: 0 0 3px rgba(0,0,0,0.3);
+      box-shadow: 0 0 3px rgba(0,0,0,0.3);
+      border-radius: 2px;
+    }
+
+    .featured-cities-section .city-name {
+      float: left;
+      font-size: 1.4em;
+      font-weight: 500;
+      padding: 6px 10px;
+    }
+
+    .featured-cities-section .city-guides-number {
+      float: right;
+      font-size: 1.1em;
+      font-weight: 500;
+      padding: 10px;    
+    }
+
+    .featured-cities-section .featured-city:hover .city-metadata {
+      background-color: rgba(0,0,0,0.25);
+    }
+
+    .more-cities-section {
+      background-color: rgb(0,25,55);
+      width: 100%;
+      max-width: 1920px;
+      height: 600px;
+      position: relative;
+      color: #FFFFFF;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    a.city-link {
+      color: #FFFFFF;
+      font-size: 1.2em;
+    }
+
+    a.city-link:hover {
+      color: #FFFFFF;
+      font-weight: 500;
+    }
+
+    .footer-section {
+      position: relative;
+      width: 100%;
+      z-index: 3;
+      text-align: center;
+      -webkit-box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      height: 200px;
+      background-color: #FFFFFF;
+      text-align: center;
+    }
+
+    .copyright {
+      position: relative;
+      height: 16px;
+      top: calc(50% - 8px);
+      color: #777;
+      font-size: 1.1em;
+    }
+
+    @media (max-width: 1200px) {
+      .featured-cities-section .city-metadata {
+        top: 160px;
+      }
+
+      .featured-cities-section .city {
+        height: 200px;
+      }
+    }
+  </style>
+
+  <script>
+    function DestinationsCtrl($scope, $allTripPlans, $activeTripPlanState, $accountInfo, $flashedMessages) {
+      $scope.allTripPlans = $allTripPlans;
+      $scope.activeTripPlanState = $activeTripPlanState;
+      $scope.accountInfo = $accountInfo;
+      $scope.flashedMessages = $flashedMessages;
+    }
+
+    window['initDestinationsApp'] = function(allTripPlans, accountInfo, flashedMessages) {
+      angular.module('destinationsAppModule', ['navModule'], interpolator)
+        .controller('DestinationsCtrl', DestinationsCtrl)
+        .value('$allTripPlans', allTripPlans)
+        .value('$accountInfo', accountInfo)
+        .value('$activeTripPlanState', new ActiveTripPlanStateModel(
+          allTripPlans.length ? allTripPlans[0] : null,
+          allTripPlans.length ? allTripPlans[0]['num_entities'] : null))
+        .value('$flashedMessages', flashedMessages);
+
+      angular.element(document).ready(function() {
+        angular.bootstrap(document, ['destinationsAppModule']);
+      });      
+    }
+  </script>
+</head>
+<body ng-controller="DestinationsCtrl">
+  <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
+    num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
+    shopping-cart-mode="true">
+  </tc-nav>
+
+  <tc-flashed-messages messages="flashedMessages">
+  </tc-flashed-messages>
+
+  <div class="main-content">
+    <div class="featured-cities-section">
+      <div class="section-header">
+        Browse <span class="lg-text">FEATURED DESTINATIONS</span>
+      </div>
+      <div class="cities-container container">
+        <div class="featured-cities row">
+          {% for config in featured_guide_configs %}
+          <a href="/guides/{{config.city_name_url_token}}">
+            <div class="featured-city col-md-4">
+              <div class="city"
+                style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
+                <div class="city-metadata">
+                  <span class="city-name">
+                    {{config.city_name}}
+                  </span>
+                  <span class="city-guides-number">
+                    {{config.trip_plan_ids | length}} Guides
+                  </span>
+                </div>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div class="more-cities-section" data-type="background" data-speed="20">
+      <div class="section-header">
+        <span class="lg-text">MORE DESTINATIONS</span>
+      </div>
+      <div class="more-cities-container container">
+        <div class="more-cities row">
+          {% for config in all_guide_configs %}
+          <a class="city-link" href="/guides/{{config.city_name_url_token}}">
+            <div class="col-md-3">
+              {{config.city_name}}
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>    
+    </div>
+    <div class="footer-section">
+      <div class="copyright">
+        © Unicycle Labs Inc. All rights reserved.
+      </div>
+    </div>
+  </div>
+
+  {% include 'nav.html' %}
+  {% include 'widgets.html' %}
+  {% include 'icons.html' %}
+
+  <script>
+    initDestinationsApp(
+      {{to_json_str(all_trip_plans) | safe}},
+      {{to_json_str(account_info) | safe}},
+      {{to_json_str(flashed_messages) | safe}});
+  </script>
+</body>
+</html>
