@@ -15,7 +15,7 @@ PUBLIC_ID_ENCRYPTION_KEY = None  # Set this securely in an override
 
 SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/travelclipper'
 
-MAIL_USERNAME = 'jamie@unicyclelabs.com'
+MAIL_USERNAME = 'info@wherefare.co'
 MAIL_PASSWORD = None  # Set this securely in an override
 
 INTERNAL_IPS = ('70.36.237.242', '50.152.196.239', '127.0.0.1')

@@ -26,7 +26,7 @@ class AppConfig(object):
     MAIL_USE_SSL  = True
     MAIL_USERNAME = constants.MAIL_USERNAME
     MAIL_PASSWORD = constants.MAIL_PASSWORD
-    MAIL_DEFAULT_SENDER = 'WhereFare <noreply@unicyclelabs.com>'
+    MAIL_DEFAULT_SENDER = 'WhereFare <info@wherefare.co>'
 
    # Configure Flask-User
     USER_ENABLE_EMAIL                = True
