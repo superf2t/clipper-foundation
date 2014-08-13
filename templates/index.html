@@ -83,6 +83,7 @@
       position: absolute;
       top: 5px;
       right: 10px;
+      color: #fff;
     }
 
     .tagline {
@@ -472,6 +473,10 @@
           My Trips
         </a>
         {% else %}
+        <a class="white-link" href="{{url_for('user.register', next='/')}}">
+          Join
+        </a>
+        |
         <a class="white-link" href="{{url_for('user.login', next='/trip_plan')}}">
           Log In
         </a>
