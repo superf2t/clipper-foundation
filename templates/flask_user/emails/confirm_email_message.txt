@@ -1,7 +1,7 @@
 {% extends 'flask_user/emails/base_message.txt' %}
 
 {% block message %}
-Thanks for registering with TravelClipper!
+Thanks for registering with WhereFare!
 
 {% if user_manager.enable_confirm_email -%}
 Visit the link below to complete your registration:
@@ -9,7 +9,7 @@ Visit the link below to complete your registration:
    the request would not even be defined if this were sent outside of a request context #}
 {{ confirm_email_link }}?next={{ url_quote_plus(request.args.get('next', '')) }}
 
-If you didn't sign up for TravelClipper, you may safely ignore this email.
+If you didn't sign up for WhereFare, you may safely ignore this email.
 
 {%- endif %}
 {% endblock %}
