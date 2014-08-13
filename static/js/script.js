@@ -851,13 +851,9 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     if (!$scope.markerState.marker) {
       return;
     }
-    if ($filterModel.searchResultsEmphasized) {
-      $scope.markerState.deemphasized = !$scope.forResults;
-    } else {
-      $scope.markerState.deemphasized = false;
-    }
     if ($scope.forResults) {
       $scope.markerState.emphasized = $searchResultState.highlightedIndex == $scope.resultIndex;
+       $scope.markerState.deemphasized = $filterModel.searchResultsEmphasized;
     } else {
       $scope.markerState.emphasized = $filterModel.entityIsHighlighted($scope.ed['entity_id']);
       $scope.markerState.deemphasized = $filterModel.attributeFilteringActive()
