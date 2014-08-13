@@ -23,7 +23,7 @@
   <div class="quick-info-panel">
     <div>(Logged in as <span class="account-email">{{account_info.email}}</span>)</div>
     <div>
-      <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]" target="_blank">
+      <a ng-href="/guide/[[tripPlan['trip_plan_id'] ]]" target="_blank">
         View trip plan
       </a>
       |
@@ -313,7 +313,7 @@
       <div ng-show="saved">
         <h3>Save successful</h3>
         <div>
-          View the saved <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">trip plan</a>
+          View the saved <a ng-href="/guide/[[tripPlan['trip_plan_id'] ]]">trip plan</a>
         </div>
       </div>
       <div ng-show="notAuthorized">

@@ -134,7 +134,7 @@
 
       $scope.createNewTripAndRedirect = function() {
         $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
-          $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
+          $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
         });
       };
 
@@ -275,7 +275,7 @@
       </div>
 
       <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan col-md-4">
-        <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
+        <a ng-href="/guide/[[tripPlan['trip_plan_id'] ]]">
           <tc-trip-plan-details-header trip-plan="tripPlan" show-border="true"
             num-entities="tripPlan['num_entities']" include-creator="false">
           </tc-trip-plan-details-header>
@@ -309,7 +309,7 @@
 
   <script type="text/ng-template" id="profile-infowindow-template">
     <div class="trip-plan-infowindow">
-      <a ng-href="/trip_plan/[[tripPlan['trip_plan_id'] ]]">
+      <a ng-href="/guide/[[tripPlan['trip_plan_id'] ]]">
         <tc-trip-plan-details-header trip-plan="tripPlan"
           num-entities="tripPlan['num_entities']" show-border="true" include-creator="false">
         </tc-trip-plan-details-header>

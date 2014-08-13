@@ -89,7 +89,7 @@
     {% for trip_plan in trip_plans %}
       <div class="row">
         <div class="col-md-2">
-          <a href="/trip_plan/{{trip_plan.trip_plan_id}}">{{trip_plan.name}}</a>
+          <a href="/guide/{{trip_plan.trip_plan_id}}">{{trip_plan.name}}</a>
         </div>
         <div class="col-md-2">
           {{trip_plan.creator_name()}}

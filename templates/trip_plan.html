@@ -50,7 +50,7 @@
 
           <div ng-if="!planModel.hasEntities()" class="no-entities-message">
             <p> 
-              After you add places, a summary of your trip will show up here. 
+              After you add places, a summary of your guide will show up here. 
             <p/>
             <p>
               Drag and drop places to re-order.
@@ -387,7 +387,7 @@
       <a ng-show="!isAlreadySaved()" ng-click="clipEntity()"
         class="add-to-trip-link" href="javascript:void(0)"
         tc-track-click="{name: 'add-to-trip', location: 'entity-infowindow'}">
-        Add to My Trip
+        Add to My Guide
       </a>
       <span ng-show="isAlreadySaved()" class="already-saved">
         Saved
@@ -409,7 +409,7 @@
           <a ng-click="clipEntity()" href="javascript:void(0)"
             class="add-to-trip-link" ng-show="!resultAlreadySaved()"
             tc-track-click="{name: 'add-to-trip', location: 'results-infowindow'}">
-            Add to My Trip
+            Add to My Guide
           </a>
           <div class="save-confirmation" ng-show="resultAlreadySaved()">
             Saved
@@ -697,7 +697,7 @@
       <div ng-if="relatedGuides && relatedGuides.length">
         <div class="related-guides-header">Related Guides</div>
         <div ng-repeat="guide in relatedGuides">
-          <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
+          <a ng-href="/guide/[[guide['trip_plan_id'] ]]">
             <tc-trip-plan-details-header trip-plan="guide"
               num-entities="guide['num_entities']" include-creator="true"
               show-border="true">
@@ -724,7 +724,7 @@
       </div>
       {% if allow_editing %}
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
-          Welcome! Get started on building your trip plan for [[planModel.tripPlanData['location_name'] ]].
+          Welcome! Get started on building your guide for [[planModel.tripPlanData['location_name'] ]].
           <div class="sample-links">
             {% if has_guides %}
             <span class="sample-link">
@@ -745,7 +745,7 @@
             </span>
             </div>
           <br/>
-          to find places to add to your trip plan. Then, share your trip plan with friends to collaborate or export it to take with you while you travel.
+          to find places to add to your guide. Then, share your guide with friends to collaborate or export it to take with you while you travel.
         </p>
       </div>
       {% endif %}
@@ -854,7 +854,7 @@
             <a ng-click="clipEntity()" ng-show="!isAlreadySaved()" class="add-to-trip-link"
               tc-track-click="{name: 'add-to-trip', location: trackingLocation}"
               href="javascript:void(0)">
-              Add to My Trip
+              Add to My Guide
             </a>
             <span ng-show="isAlreadySaved()" class="saved-status">
               Saved
@@ -865,7 +865,7 @@
           <div ng-show="infoTab == InfoTab.ABOUT">
             <div ng-show="ed['origin_trip_plan_name']" class="origin-trip-name">
               Originally from
-              <a ng-href="/trip_plan/[[ed['origin_trip_plan_id'] ]]" target="_blank"
+              <a ng-href="/guide/[[ed['origin_trip_plan_id'] ]]" target="_blank"
                 tc-track-click="{name: 'view-entity-origin-trip', location: trackingLocation, value: ed['origin_trip_plan_id']}">
                 [[ed['origin_trip_plan_name'] ]]
               </a>
@@ -1151,7 +1151,6 @@
       <div ng-show="!selectedGuide">
         <div class="header">
           Browse popular guides for <i>[[planModel.tripPlanData['location_name'] ]]</i>
-          to add to your trip
         </div>
         <div ng-show="loading">
           Loading... <img ng-src="/static/img/spinner-small.gif"/>
@@ -1274,7 +1273,7 @@
 
       <div ng-if="tab == AddYourOwnTab.CLIPPER" class="clipper-panel">
         <div class="header">
-          Clip places from travel websites to your trip
+          Clip places from travel websites to your guide
         </div>
 
         <div class="bookmarklet-section">
@@ -1295,7 +1294,7 @@
         <div class="info-text">
           After adding the Clipper to your bookmarks bar, try it out on
           these sites by clicking the Clipper whenever you want to add a place
-          to your trip.
+          to your guide.
         </div>
 
         <div class="help-section info-text">
@@ -1454,21 +1453,21 @@
   <script type="text/ng-template" id="export-panel-template">
     <div class="export-panel one-info-panel nano-content">
       <div class="header">
-        Take your trip plan with you on the road
+        Take your guide with you on the road
       </div>
 
       <div class="explanation-text">
-        Export your trip in your preferred format. Offline mobile support for iOS and Android coming soon!
+        Export your guide in your preferred format. Offline mobile support for iOS and Android coming soon!
       </div>
       <div class="export-buttons">
         <a class="export-button" target="_blank"
-            ng-href="/trip_plan/[[planModel.tripPlanId()]]/print"
+            ng-href="/guide/[[planModel.tripPlanId()]]/print"
             tc-track-click="{name: 'export-print', location: 'export-panel', value: planModel.tripPlanId()}">
           <btn class="btn btn-export btn-default">
             Print
           </btn>
         </a>
-        <a class="export-button" ng-href="/trip_plan/[[planModel.tripPlanId()]]/csv"
+        <a class="export-button" ng-href="/guide/[[planModel.tripPlanId()]]/csv"
           tc-track-mousedown="{name: 'export-csv', location: 'export-panel', value: planModel.tripPlanId()}">
           <btn class="btn btn-export btn-default">
             Spreadsheet
@@ -1482,7 +1481,7 @@
     <div class="sharing-panel one-info-panel nano-content"
       ng-controller="SharingSettingsCtrl">
       <div class="header">
-        Share your trip with collaborators and viewers
+        Share your guide with collaborators and viewers
       </div>
 
       <div class="section">
@@ -1490,7 +1489,7 @@
           Collaborators
         </div>
         <div class="info-text">
-          Collaborators can edit and comment on this trip and invite other collaborators.
+          Collaborators can edit and comment on this guide and invite other collaborators.
         </div>
         <p class="collaborator">
           <span tc-user-icon user="creator" no-tooltip="true"></span>
@@ -1544,8 +1543,8 @@
           Viewers
         </div>
         <div>
-          Viewers who are not collaborators cannot edit and comment on the trip or invite collaborators.
-          Anyone with the following link can view your trip.
+          Viewers who are not collaborators cannot edit and comment on the guide or invite collaborators.
+          Anyone with the following link can view your guide.
         </div>
         <input type="text" class="form-control share-url" disabled="true" ng-model="shareUrl"/>
       </div>
@@ -1585,7 +1584,7 @@
           <a ng-click="saveAllPendingPlacesToTrip()" ng-show="!allSaved"
             class="add-to-trip-link" href="javascript:void(0)"
             tc-track-click="{name: 'add-all-from-gmaps', location: 'import-panel', value: url}">
-            Add All To Trip
+            Add All To Guide
           </a>
           <span class="saved-status" ng-show="allSaved">
             Saved
@@ -1612,7 +1611,7 @@
           <a ng-click="deleteTripPlan()" href="javascript:void(0)" class="warning-link"
             tc-track-click="{name: 'trip-deleted', location: 'settings-panel'}">
             <span class="glyphicon glyphicon-trash"></span>
-            Delete Trip
+            Delete Guide
           </a>
         </div>
 
@@ -1700,24 +1699,24 @@
             <span class="glyphicon glyphicon-remove"></span>
           </a>
         </div>
-        <div class="header">Created a new trip!</div>
+        <div class="header">Created a new guide!</div>
         <div>
           <p>
-            <i>[[activeTripPlanState.lastClippedEntity['name'] ]]</i> was added to this trip.
+            <i>[[activeTripPlanState.lastClippedEntity['name'] ]]</i> was added to this guide.
           </p>
           <p ng-show="activeTripPlanState.numEntities == 1">
-            You have 1 place in this trip.
+            You have 1 place in this guide.
           </p>
           <p ng-show="activeTripPlanState.numEntities > 1">
-            You have [[activeTripPlanState.numEntities]] places in this trip.
+            You have [[activeTripPlanState.numEntities]] places in this guide.
           </p>
         </div>
         <div>
-          Go to your trip plan or add more places while browsing guides.
+          Go to your guide or add more places while browsing guides.
         </div>
         <div class="button-panel">
           <button ng-click="goToTripPlan()" class="btn btn-primary">
-            View Trip Plan
+            View Your Guide
           </button>
           <span class="button-separator"></span>
           <button class="btn btn-cta" ng-click="onClose()">

@@ -43,7 +43,7 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
         });
         modal && modal.close();
       } else {
-        $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
+        $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
       }
     };
     scope.clippingEntity = opt_clippingEntity;

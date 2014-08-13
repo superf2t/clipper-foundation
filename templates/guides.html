@@ -136,7 +136,7 @@
 
       $scope.createNewTripAndRedirect = function() {
         $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
-          $window.location.href = '/trip_plan/' + tripPlan['trip_plan_id'];
+          $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
         });
       };
     }
@@ -181,7 +181,7 @@
     <div class="trip-plans-container container">
       <div class="row">
         <span ng-repeat="guide in guides" class="one-trip-plan col-md-4">
-          <a ng-href="/trip_plan/[[guide['trip_plan_id'] ]]">
+          <a ng-href="/guide/[[guide['trip_plan_id'] ]]">
             <tc-trip-plan-details-header trip-plan="guide" show-border="true"
               num-entities="guide['num_entities']" include-creator="true">
             </tc-trip-plan-details-header>

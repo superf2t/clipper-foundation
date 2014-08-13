@@ -23,7 +23,7 @@
           <li>
             <ul class="nav nav-pills">
               <li ng-if="shoppingCartMode && activeTripPlan" class="trip-plan-name">
-                <a class="black-link" ng-href="/trip_plan/[[activeTripPlan['trip_plan_id'] ]]" target="_blank"
+                <a class="black-link" ng-href="/guide/[[activeTripPlan['trip_plan_id'] ]]" target="_blank"
                   tc-track-click="{name: 'open-active-trip', location: 'nav-shopping-cart', value: activeTripPlan['trip_plan_id']}">
                   <span>[[activeTripPlan['name'] ]]</span>
                   <span id="place-count" class="place-count" tc-animate-on-change-to="numEntities"
@@ -153,7 +153,7 @@
             [[tripPlan['name'] ]]
           </a>
           <a ng-show="!shoppingCartMode" class="trip-link"
-            ng-href="[[isActiveTrip(tripPlan) ? 'javascript:void(0)' : '/trip_plan/' + tripPlan['trip_plan_id'] ]]">
+            ng-href="[[isActiveTrip(tripPlan) ? 'javascript:void(0)' : '/guide/' + tripPlan['trip_plan_id'] ]]">
             [[tripPlan['name'] ]]
           </a>
         </span>

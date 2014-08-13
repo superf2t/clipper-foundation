@@ -102,20 +102,20 @@ def internal_clipper_iframe():
 def clipper_map_iframe():
     return render_template('clipper_map_iframe.html')
 
-@app.route('/trip_plan')
-def trip_plan():
+@app.route('/guide')
+def guide():
     all_trip_plans = data.load_all_trip_plans(g.session_info)
     if all_trip_plans:
         trip_plan = sorted(all_trip_plans, cmp=lambda x, y: x.compare(y))[0]
-        redirect_url = '/trip_plan/%s' % trip_plan.trip_plan_id
+        redirect_url = '/guide/%s' % trip_plan.trip_plan_id
     elif g.session_info.logged_in():
         redirect_url = '/profile/' + g.account_info.user.public_id
     else:
         redirect_url = '/'
     return redirect(redirect_url)
 
-@app.route('/trip_plan/<int:trip_plan_id>')
-def trip_plan_by_id(trip_plan_id):
+@app.route('/guide/<int:trip_plan_id>')
+def guide_by_id(trip_plan_id):
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)
 
@@ -162,7 +162,7 @@ def trip_plan_by_id(trip_plan_id):
         flashed_messages=flashed_messages)
     return response
 
-@app.route('/trip_plan/<int:trip_plan_id>/print')
+@app.route('/guide/<int:trip_plan_id>/print')
 def print_trip_plan(trip_plan_id):
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)
@@ -173,7 +173,7 @@ def print_trip_plan(trip_plan_id):
 
     return render_template('print_trip_plan.html', trip_plan=trip_plan, entities=sorted_entities)
 
-@app.route('/trip_plan/<int:trip_plan_id>/csv')
+@app.route('/guide/<int:trip_plan_id>/csv')
 def csv_trip_plan(trip_plan_id):
     trip_plan_service = serviceimpls.TripPlanService(g.session_info)
     entity_service = serviceimpls.EntityService(g.session_info)

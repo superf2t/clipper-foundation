@@ -350,7 +350,7 @@
           .success(function(response) {
             var tripPlanId = response['trip_plans'][0]['trip_plan_id'];
             $scope.searchState.searchInProgress = false;
-            $window.location.href = '/trip_plan/' + tripPlanId;
+            $window.location.href = '/guide/' + tripPlanId;
           });
         $eventTracker.track({name: 'new-trip-location-result-selected',
           location: 'homepage', value: place['name']});
@@ -477,7 +477,7 @@
           Join
         </a>
         |
-        <a class="white-link" href="{{url_for('user.login', next='/trip_plan')}}">
+        <a class="white-link" href="{{url_for('user.login', next='/guide')}}">
           Log In
         </a>
         {% endif %}

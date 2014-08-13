@@ -149,7 +149,7 @@
           </span>
         </div>
         <div class="trip-plan-name">
-          <a href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank"
+          <a href="/guide/[[tripPlanState.tripPlan['trip_plan_id'] ]]" target="_blank"
             tc-track-click="{name: 'go-to-trip-plan-after-clipping', location: 'clipper-confirmation', value: tripPlanState.tripPlan['trip_plan_id']}">
             [[tripPlanState.tripPlan['name'] ]]
           </a>
@@ -170,7 +170,7 @@
           Save selected places to trip:
         </div>
         <div class="trip-plan-in-new-window" ng-show="tripPlanState.tripPlan['trip_plan_id']">
-          <a ng-href="/trip_plan/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
+          <a ng-href="/guide/[[tripPlanState.tripPlan['trip_plan_id'] ]]"
             target="_blank" class="cta-link"
             tc-track-click="{name: 'view-active-trip', location: 'clipper-save-panel', value: tripPlanState.tripPlan['trip_plan_id']}">
             View trip

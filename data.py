@@ -429,7 +429,7 @@ class TripPlan(serializable.Serializable):
         return self.trip_plan_type == TripPlanType.GUIDE.name
 
     def trip_plan_url(self):
-        return '%s/trip_plan/%s' % (constants.BASE_URL, self.trip_plan_id)
+        return '%s/guide/%s' % (constants.BASE_URL, self.trip_plan_id)
 
     def entities_in_chronological_order(self):
         return sorted(self.entities, cmp=Entity.chronological_cmp)

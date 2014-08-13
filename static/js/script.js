@@ -2744,7 +2744,7 @@ function TripPlanSettingsEditorCtrl($scope, $tripPlanModel, $tripPlanService,
     }
     $tripPlanService.deleteTripPlanById($tripPlanModel.tripPlanId())
       .success(function(response) {
-        $window.location.href = '/trip_plan';
+        $window.location.href = '/guide';
       });
   };
 
@@ -2765,7 +2765,7 @@ function SharingSettingsCtrl($scope, $tripPlanModel, $accountInfo, $tripPlanServ
   $scope.formState = {email: null};
   $scope.accountInfo = $accountInfo;
   $scope.creator = $tripPlanModel.tripPlanData['user'];
-  $scope.shareUrl = 'https://' + $location.host()  + '/trip_plan/' + $tripPlanModel.tripPlanId();
+  $scope.shareUrl = 'https://' + $location.host()  + '/guide/' + $tripPlanModel.tripPlanId();
 
   $scope.isCurrentUser = function(user) {
     return user['public_id'] == $accountInfo['user']['public_id']
@@ -3117,7 +3117,7 @@ function tcAfterNewTripPlanPanel($timeout, $window) {
     controller: function($scope, $activeTripPlanState, $window) {
       $scope.activeTripPlanState = $activeTripPlanState;
       $scope.goToTripPlan = function() {
-        $window.location.href = '/trip_plan/' + $activeTripPlanState.tripPlan['trip_plan_id'];
+        $window.location.href = '/guide/' + $activeTripPlanState.tripPlan['trip_plan_id'];
       }
     },
     link: function(scope, element, attrs) {
