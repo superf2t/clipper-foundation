@@ -878,6 +878,8 @@ class TripPlanService(service.Service):
                 trip_plan.user = data.DisplayUser(public_visitor_id=self.session_info.public_visitor_id)
             if self.session_info.referral_source:
                 trip_plan.referral_source = self.session_info.referral_source
+            if self.session_info.referral_source_info:
+                trip_plan.referral_source_info = self.session_info.referral_source_info
             op.result = trip_plan
 
     def process_edits(self, operations):

@@ -54,6 +54,7 @@ class TCRegisterForm(forms.RegisterForm):
 class UserMetadata(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     referral_source = db.Column(db.String(50))
+    referral_source_info = db.Column(db.String(255))
 
 
 class DisplayNameResolver(object):

@@ -360,8 +360,13 @@ def process_cookies():
         @after_this_request
         def set_referral_source(response):
             set_cookie(response, 'rsource', request.args.get('source'))
+    referral_source_info = request.args.get('sinfo') or request.cookies.get('sinfo')
+    if request.args.get('sinfo'):
+        @after_this_request
+        def set_source_info(response):
+            set_cookie(response, 'sinfo', request.args.get('sinfo'))
 
-    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user, referral_source)
+    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user, referral_source, referral_source_info)
     display_user = data.DisplayUser(db_user.public_id if db_user else None, display_name, g.session_info.public_visitor_id)
     g.account_info = data.AccountInfo(email, display_user)
         
@@ -418,7 +423,8 @@ def register():
 def after_registration(sender, user, **kwargs):
     if g.session_info.referral_source:
         user_metadata = user_module.UserMetadata(user_id=user.id,
-            referral_source=g.session_info.referral_source)
+            referral_source=g.session_info.referral_source,
+            referral_source_info=g.session_info.referral_source_info)
         db.session.add(user_metadata)
         db.session.commit()
 
@@ -447,10 +453,10 @@ def confirm_email(token):
         migrate_response = account_service.migrate(serviceimpls.MigrateRequest(user.email))
         if migrate_response.trip_plans:
             if len(migrate_response.trip_plans) > 1:
-                msg = ('The trip plans you created before making an account (%s) '
+                msg = ('The guides you created before making an account (%s) '
                     'are now saved in your new account.') % (', '.join(tp.name for tp in migrate_response.trip_plans))
             else:
-                msg = ('The trip plan "%s" you created before making an '
+                msg = ('The guide "%s" you created before making an '
                  'account is now saved in your new account.') % migrate_response.trip_plans[0].name 
             flash(msg, 'success')
     flask_user.signals.user_confirmed_email.connect(handle_trip_plan_migration, app)
