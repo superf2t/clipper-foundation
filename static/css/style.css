@@ -1525,6 +1525,15 @@ a.category-filter-link:hover {
   text-align: left;
 }
 
+.add-your-own-panel .clipper-panel .help-section .help-screenshot {
+  text-align: center;
+  margin: 10px 0;
+}
+
+.add-your-own-panel .clipper-panel .help-section .help-screenshot img {
+  max-width: 100%;
+}
+
 .add-your-own-panel .sample-sites .sample-site {
   padding-left: 15%;
 }

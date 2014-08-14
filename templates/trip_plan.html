@@ -1397,16 +1397,23 @@
       <div ng-if="browserInfo.platform == BrowserPlatform.WINDOWS">
         <div ng-if="browserInfo.app == BrowserApp.CHROME">
           For Chrome/Windows: First make sure your bookmarks bar is shown, by pressing
-          Control-Shift-B, or click the Settings icon 
-          (<img ng-src="/static/img/chrome-settings.png"/>) -> Bookmarks -> Show Bookmarks Bar.
+          Control-Shift-B. Or click the Settings icon -> Bookmarks -> Show Bookmarks Bar,
+          as in the screenshot.
           Then click and drag the clipper bookmark above into the bookmarks bar
           and release it to create a new bookmark item.
+          <div class="help-screenshot">
+            <img ng-src="/static/img/clipper-help-chrome-windows.png"/>
+          </div>
         </div>
         <div ng-if="browserInfo.app == BrowserApp.FIREFOX">
           For Firefox/Windows: First make sure your bookmarks bar is shown, clicking
-          the Bookmarks icon -> Bookmarks Toolbar -> View Bookmarks Toolbar.
+          the Bookmarks icon -> Bookmarks Toolbar -> View Bookmarks Toolbar, 
+          as in the screenshot.
           Then click and drag the clipper bookmark above into the bookmarks bar
           and release it to create a new bookmark item.
+          <div class="help-screenshot">
+            <img ng-src="/static/img/clipper-help-firefox-windows.png"/>
+          </div>
         </div>
         <div ng-if="browserInfo.app == BrowserApp.SAFARI">
           For Safari/Windows: First make sure your bookmarks bar is shown, by pressing
@@ -1415,9 +1422,12 @@
           and release it to create a new bookmark item.
         </div>
         <div ng-if="browserInfo.app == BrowserApp.IE">
-          For Internet Explorer/Windows: Press Alt-C or click the Star icon to open the Favorites menu, then click the icon for Pin the Favorites Center.
+          For Internet Explorer/Windows: Press Alt-C or click the Star icon to open the Favorites menu. Then click the icon for Pin the Favorites Center.
           Then click and drag the clipper bookmark above into the Favorites section
           and release it to create a new bookmark item.
+          <div class="help-screenshot">
+            <img ng-src="/static/img/clipper-help-ie-windows.png"/>
+          </div>
         </div>
       </div>
       <div ng-if="browserInfo.platform == BrowserPlatform.MAC">

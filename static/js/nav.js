@@ -1,15 +1,5 @@
 // TODO:
 // -Add a prompt to save your work if you aren't logged in but have added multiple places.
-// -Get an email sender account on the new domain.
-// -Get icon screenshots for Windows browsers for clipper help text.
-
-// For release:
-// -Create new db tables
-// -Remove index on frontend_request for efficiency: 
-//  alter table frontend_request drop constraint frontend_request_pkey;
-//  alter table frontend_interaction drop constraint frontend_interaction_pkey;
-// -Create a WSGIDaemonProcess entry in custom.conf for apache to configure
-//  number of application processes.
 
 function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
   $scope.openLoginModal = function(loginUrl, windowClass) {
