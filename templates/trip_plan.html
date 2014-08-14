@@ -782,6 +782,7 @@
       tc-entity-id="[[forResults ? null : ed['entity_id'] ]]"
       tc-entity-result-id="[[forResults ? resultIndex : null]]"
       ng-mouseenter="highlightMarker()"
+      ng-mouseleave="unhighlightMarker()"
       ng-class="{'inactive': !isActive()}">
       <div class="name-and-photos">
         <div ng-if="ed['photo_urls'] && ed['photo_urls'].length" class="photo-carousel">

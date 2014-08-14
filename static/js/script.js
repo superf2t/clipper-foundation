@@ -870,6 +870,14 @@ function EntityDetailsCtrl($scope, $tripPlanModel, $activeTripPlanState,
     }
   };
 
+  $scope.unhighlightMarker = function() {
+    if ($scope.forResults) {
+      $searchResultState.highlightedIndex = null;
+    } else {
+      $filterModel.highlightedEntity = null;
+    }
+  };
+
   $scope.selectEntity = function() {
     $pageStateModel.selectedEntity = $scope.ed;
     $searchResultState.selectedIndex = null;
