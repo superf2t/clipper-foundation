@@ -251,7 +251,8 @@ angular.module('navModule', ['servicesModule', 'directivesModule',
 
 var CONVERSION_EVENTS = {
     'new-guide-created': [
-      '//www.googleadservices.com/pagead/conversion/980458791/?label=zEXKCPG8wRIQp7rC0wM&guid=ON'
+      '//www.googleadservices.com/pagead/conversion/980458791/?label=zEXKCPG8wRIQp7rC0wM&guid=ON',
+      '//flex.msn.com/mstag/tag/6c67fdd7-d46f-4282-a17b-79e55dec06a1/analytics.html?dedup=1&domainId=3198458&type=1&actionid=258749'
     ]
 };
 
