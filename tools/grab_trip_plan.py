@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
 Copies the trip plans with the given ids from the given host to the
 storage on the machine running this script.''')
-    parser.add_option('--host', dest='host', help='Host to pull from, default: travelclipper.unicyclelabs.com',
-        default='travelclipper.unicyclelabs.com')
+    parser.add_option('--host', dest='host', help='Host to pull from, default: www.wherefare.co',
+        default='www.wherefare.co')
     options, args = parser.parse_args()
     main(options.host, map(int, args))
