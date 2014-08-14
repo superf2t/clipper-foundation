@@ -158,6 +158,7 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
       .success(function(response) {
         $scope.saving = false;
         $scope.onCreate(response['trip_plans'][0]);
+        $eventTracker.sendConversion('new-guide-created');
       });
   };
 
@@ -248,6 +249,12 @@ angular.module('navModule', ['servicesModule', 'directivesModule',
 
 // TODO: Move event code to its own file.
 
+var CONVERSION_EVENTS = {
+    'new-guide-created': [
+      '//www.googleadservices.com/pagead/conversion/980458791/?label=zEXKCPG8wRIQp7rC0wM&guid=ON'
+    ]
+};
+
 function EventTracker() {
   this.track = function(data) {
     if (!_.isEmpty(data)) {
@@ -261,6 +268,16 @@ function EventTracker() {
         mixpanel.track(eventName, mixpanelData);
       }
     }
+  };
+
+  this.sendConversion = function(conversionEventName) {
+    var trackingUrls = CONVERSION_EVENTS[conversionEventName];
+    if (_.isEmpty(trackingUrls)) {
+      return;
+    }
+    $.each(trackingUrls, function(i, url) {
+      $('<img width="1" height="1">').attr('src', url);
+    });
   };
 }
 
