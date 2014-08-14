@@ -32,3 +32,24 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
   mixpanel.register({"$ignore":"true"});
 </script>
 {% endif %}
+
+{% if not suppress_uservoice is defined %}
+<script>
+UserVoice=window.UserVoice||[];(function(){var uv=document.createElement('script');uv.type='text/javascript';uv.async=true;uv.src='//widget.uservoice.com/gg63tzOwJLNIE8B7zOq9w.js';var s=document.getElementsByTagName('script')[0];s.parentNode.insertBefore(uv,s)})();
+
+{# UserVoice Javascript SDK developer documentation:
+  https://www.uservoice.com/o/javascript-sdk #}
+
+UserVoice.push(['set', {
+  accent_color: '#808283',
+  trigger_color: 'white',
+  trigger_background_color: 'rgba(46, 49, 51, 0.6)'
+}]);
+
+UserVoice.push(['addTrigger', { mode: 'contact', trigger_position: 'bottom-right' }]);
+// Or, use your own custom trigger:
+//UserVoice.push(['addTrigger', '#id', { mode: 'contact' }]);
+// Autoprompt for Satisfaction and SmartVote (only displayed under certain conditions)
+//UserVoice.push(['autoprompt', {}]);
+</script>
+{% endif %}
