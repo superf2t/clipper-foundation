@@ -51,7 +51,8 @@
     }
 
     .splash-section {
-      background: url('https://lh6.googleusercontent.com/-IcPCHOgibBg/UspG-rRtDsI/AAAAAAAAmKQ/Sp1a_eKdk-8/w1293-h848-no/IMG_5490_88_89.jpg') 50% 700px repeat fixed;
+      background: url('https://lh5.googleusercontent.com/-AHr_0MoxFOU/U-5NhqElmWI/AAAAAAACCoY/rzeL8anIQcg/w1352-h898-no/IMG_5490_88_89.jpg') 50% 80%
+        no-repeat fixed;
       background-size: cover;
       min-height: 60%;
       height: 60%;
@@ -144,13 +145,14 @@
 
     .featured-cities-section .city {
       width: 100%;
+      max-width: 500px;
       height: 260px;
       background-repeat: no-repeat;
       background-position: 50% 50%;
       background-size: cover !important;
       -webkit-background-size: cover !important;
       -moz-background-size: cover !important;
-      margin-bottom: 30px;
+      margin: 0 auto 30px auto;
       -webkit-box-shadow: 0 0 3px rgba(0,0,0,0.3);
       box-shadow: 0 0 3px rgba(0,0,0,0.3);
       border-radius: 2px;
@@ -240,18 +242,19 @@
 
     .featured-source .source {
       width: 100%;
+      max-width: 200px;
       height: 160px;
       background-repeat: no-repeat;
       background-position: 50% 50%;
       background-size: cover !important;
       -webkit-background-size: cover !important;
       -moz-background-size: cover !important;
-      margin-bottom: 30px;
+      margin: 0 auto 30px auto;
       border-radius: 2px;
     }
 
     .more-cities-section {
-      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0px no-repeat fixed;
+      background: url('https://lh4.googleusercontent.com/-4hnsKTgPsTo/UspJ9d5jTvI/AAAAAAAAmKQ/C3LqRLrMLVI/w1274-h848-no/IMG_1405.jpg') 50% 0px repeat fixed;
       width: 100%;
       max-width: 1920px;
       min-height: 600px;
@@ -462,7 +465,7 @@
   <tc-flashed-messages messages="flashedMessages">
   </tc-flashed-messages>
 
-  <div class="splash-section" data-type="background" data-speed="5">
+  <div class="splash-section">
     <div class="site-header">
       <div class="logo">
         WhereFare
@@ -547,7 +550,7 @@
       <div class="top-sources row">
         {% for config in featured_profile_configs %}
         <a href="/profile/{{config.profile_name_token}}">
-          <div class="featured-source col-md-2">
+          <div class="featured-source col-md-2 col-xs-6">
             <div class="source"
               style="background-image: url(&quot;{{config.icon_url}}&quot;);">
             </div>
@@ -566,7 +569,7 @@
       <div class="more-cities row">
         {% for config in all_guide_configs %}
         <a class="city-link" href="/guides/{{config.city_name_url_token}}">
-          <div class="col-md-3">
+          <div class="col-xs-3">
             {{config.city_name}}
           </div>
         </a>
