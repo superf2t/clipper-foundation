@@ -555,6 +555,31 @@ a.category-filter-link:hover {
   z-index: 1;
 }
 
+#info-panel .slide-control {
+  position: absolute;
+  left: 100%;
+  top: calc(50% - 20px);
+  border-radius: 0 3px 3px 0;
+
+  -webkit-box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.4);
+}
+
+#info-panel .slide-control a {
+  display: inline-block;
+  width: 15px;
+  height: 40px;
+  padding-top: 12px;
+  border-radius: 0 3px 3px 0;
+  background-color: #4087F9;
+  color: #fff;
+}
+
+#info-panel .slide-control a:hover {
+  background-color: #4A90E2;
+}
+
 .details-panel .add-cover-image-cta {
   position: absolute;
   width: 100%;
@@ -1094,16 +1119,10 @@ a.category-filter-link:hover {
   left: calc(40% + 10px);
 }
 
-#map-buttons .btn-slide-info-panel {
-  -webkit-box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);
-  -moz-box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);
-  box-shadow: 1px 1px 2px 0px rgba(0, 0, 0, 0.3);  
-}
-
 #map-buttons .recenter-control {
   position: fixed;
   left: 6px;
-  bottom: 73px;
+  top: 85px;
   transition: left 0.3s;
 }
 
@@ -1116,6 +1135,10 @@ a.category-filter-link:hover {
   color: #666;
   padding: 2px 3px 0 3px;
   border-radius: 2px;
+
+  -webkit-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.3);
+  -moz-box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 1px 1px 1px 0px rgba(0, 0, 0, 0.3);
 }
 
 #summary-panel .trip-plan-header {

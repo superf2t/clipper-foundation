@@ -2142,7 +2142,7 @@ function createMap(tripPlanData) {
     },
     zoomControlOptions: {
       style: google.maps.ZoomControlStyle.SMALL,
-      position: google.maps.ControlPosition.LEFT_BOTTOM
+      position: google.maps.ControlPosition.TOP_LEFT
     }
   };
   var map = new google.maps.Map($('#map')[0], mapOptions);

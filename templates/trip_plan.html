@@ -99,6 +99,18 @@
       </div>
       {% endif %}
     </div>
+    <div class="slide-control">
+      <a ng-click="openDetailsPanel()" href="javascript:void(0)"
+        ng-show="!pageStateModel.infoPanelExpanded"
+        tc-track-click="{name:'toggle-info-panel', value: 'open'}">
+        <span class="glyphicon glyphicon-chevron-right"></span>
+      </a>
+      <a ng-click="closeInfoPanel()" href="javascript:void(0)"
+        ng-show="pageStateModel.infoPanelExpanded"
+        tc-track-click="{name:'toggle-info-panel', value: 'close'}">
+        <span class="glyphicon glyphicon-chevron-left"></span>
+      </a>
+    </div>
   </div>
 
   <div id="map-panel" tc-animate-on-bool="!pageStateModel.infoPanelExpanded"
@@ -210,16 +222,6 @@
 
   <script type="text/ng-template" id="control-buttons-template">
     <div id="map-buttons" ng-class="{'info-panel-open': pageStateModel.infoPanelExpanded}">
-      <button class="btn btn-default btn-slide-info-panel" ng-click="openDetailsPanel()"
-        ng-show="!pageStateModel.infoPanelExpanded"
-        tc-track-click="{name:'toggle-info-panel', value: 'open'}">
-        <span class="glyphicon glyphicon-plus"></span>
-      </button>
-      <button class="btn btn-default btn-slide-info-panel" ng-click="closeInfoPanel()"
-        ng-show="pageStateModel.infoPanelExpanded"
-        tc-track-click="{name:'toggle-info-panel', value: 'close'}">
-        <span class="glyphicon glyphicon-minus"></span>
-      </button>
       <div class="recenter-control">
         <button ng-click="resetMapState()" class="btn btn-default recenter-btn"
           tc-track-click="{name: 'reset-map-state', location: 'map-controls'}">
