@@ -440,24 +440,6 @@
         angular.bootstrap(document, ['indexAppModule']);
       });      
     }
-
-    $(document).ready(function() {
-      $window = $(window);
-
-      $('div[data-type="background"]').each(function() {
-        var backgroundObject = $(this);
-        var currentbackgroundPosition = backgroundObject.css('backgroundPosition').split(" ");
-        var currentXPos = currentbackgroundPosition[0];
-        var currentYPos = currentbackgroundPosition[1];
-        currentYPos = parseInt(currentYPos, 10);
-
-        $(window).scroll(function() {
-          var yOffset = -($window.scrollTop() / backgroundObject.data('speed'));
-          var backgroundCoordinates = currentXPos + (yOffset + currentYPos)+'px';
-          backgroundObject.css({ backgroundPosition: backgroundCoordinates});
-        });
-      });
-    });
   </script>
 </head>
 <body ng-controller="IndexCtrl">
@@ -521,7 +503,7 @@
     </div>
   </div>
 
-  <div class="search-section" data-type="background" data-speed="10">
+  <div class="search-section">
     <div class="section-header">
       Build your <span class="lg-text">PERSONAL GUIDE</span>
     </div>
@@ -561,7 +543,7 @@
     </div>
   </div>
 
-  <div class="more-cities-section" data-type="background" data-speed="20">
+  <div class="more-cities-section">
     <div class="section-header">
       <span class="lg-text">MORE DESTINATIONS</span>
     </div>
