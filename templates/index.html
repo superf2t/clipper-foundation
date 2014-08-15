@@ -39,32 +39,6 @@
       color: #FFFFFF;
     }
 
-    .parallax {
-      perspective: 1px;
-      -webkit-perspective: 1px;
-      height: 100vh;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-
-    .parallax__layer {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    }
-
-    .parallax__layer--base {
-      transform: translateZ(0);
-      -webkit-transform: translateZ(0);
-    }
-
-    .parallax__layer--back {
-      transform: translateZ(-2px) scale(3);
-      -webkit-transform: translateZ(-2px) scale(3);
-    }
-
     .section-header {
       padding: 30px 0px;
       text-align: center;
@@ -77,21 +51,15 @@
     }
 
     .splash-section {
-      min-height: 60vh;
-      height: 60vh;
+      background: url('https://lh5.googleusercontent.com/-AHr_0MoxFOU/U-5NhqElmWI/AAAAAAACCoY/rzeL8anIQcg/w1352-h898-no/IMG_5490_88_89.jpg') 50% 80%
+        no-repeat fixed;
+      background-size: cover;
+      min-height: 60%;
+      height: 60%;
       margin: 0 auto;
       width: 100%;
       max-width: 1920px;
       position: relative;
-
-      transform-style: preserve-3d;
-    }
-
-    .splash-background {
-      background: url('https://lh5.googleusercontent.com/-AHr_0MoxFOU/U-5NhqElmWI/AAAAAAACCoY/rzeL8anIQcg/w1352-h898-no/IMG_5490_88_89.jpg');
-      background-position: 50% 80%;
-      background-size: cover;
-      top: -34%;
     }
 
     .site-header {
@@ -472,6 +440,24 @@
         angular.bootstrap(document, ['indexAppModule']);
       });      
     }
+
+    $(document).ready(function() {
+      $window = $(window);
+
+      $('div[data-type="background"]').each(function() {
+        var backgroundObject = $(this);
+        var currentbackgroundPosition = backgroundObject.css('backgroundPosition').split(" ");
+        var currentXPos = currentbackgroundPosition[0];
+        var currentYPos = currentbackgroundPosition[1];
+        currentYPos = parseInt(currentYPos, 10);
+
+        $(window).scroll(function() {
+          var yOffset = -($window.scrollTop() / backgroundObject.data('speed'));
+          var backgroundCoordinates = currentXPos + (yOffset + currentYPos)+'px';
+          backgroundObject.css({ backgroundPosition: backgroundCoordinates});
+        });
+      });
+    });
   </script>
 </head>
 <body ng-controller="IndexCtrl">
@@ -479,130 +465,122 @@
   <tc-flashed-messages messages="flashedMessages">
   </tc-flashed-messages>
 
-  <div class="parallax">
-
-    <div class="splash-section">
-      <div class="splash-background parallax__layer parallax__layer--back">
+  <div class="splash-section">
+    <div class="site-header">
+      <div class="logo">
+        WhereFare
       </div>
-      <div class="parallax__layer parallax__layer--base">
-        <div class="site-header">
-          <div class="logo">
-            WhereFare
-          </div>
-          <div class="login">
-            {% if account_info.logged_in %}
-            <a class="white-link" href="/profile/{{account_info.user.public_id}}">
-              My Trips
-            </a>
-            {% else %}
-            <a class="white-link" href="{{url_for('user.register', next='/')}}">
-              Join
-            </a>
-            |
-            <a class="white-link" href="{{url_for('user.login', next='/guide')}}">
-              Log In
-            </a>
-            {% endif %}
-          </div>
-        </div>
-        <div class="tagline">
-          Know Where to Go
-        </div>
-        <div class="sub-tagline">
-          Browse travel guides with interactive maps, then build your own
-        </div>
+      <div class="login">
+        {% if account_info.logged_in %}
+        <a class="white-link" href="/profile/{{account_info.user.public_id}}">
+          My Trips
+        </a>
+        {% else %}
+        <a class="white-link" href="{{url_for('user.register', next='/')}}">
+          Join
+        </a>
+        |
+        <a class="white-link" href="{{url_for('user.login', next='/guide')}}">
+          Log In
+        </a>
+        {% endif %}
       </div>
     </div>
+    <div class="tagline">
+      Know Where to Go
+    </div>
+    <div class="sub-tagline">
+      Browse travel guides with interactive maps, then build your own
+    </div>
+  </div>
 
-    <div class="featured-cities-section">
-      <div class="section-header">
-        Browse <span class="lg-text">FEATURED DESTINATIONS</span>
-      </div>
-      <div class="cities-container container">
-        <div class="featured-cities row">
-          {% for config in featured_guide_configs %}
-          <a href="/guides/{{config.city_name_url_token}}">
-            <div class="featured-city col-md-4">
-              <div class="city"
-                style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
-                <div class="city-metadata">
-                  <span class="city-name">
-                    {{config.city_name}}
-                  </span>
-                  <span class="city-guides-number">
-                    {{config.trip_plan_ids | length}} Guides
-                  </span>
-                </div>
+  <div class="featured-cities-section">
+    <div class="section-header">
+      Browse <span class="lg-text">FEATURED DESTINATIONS</span>
+    </div>
+    <div class="cities-container container">
+      <div class="featured-cities row">
+        {% for config in featured_guide_configs %}
+        <a href="/guides/{{config.city_name_url_token}}">
+          <div class="featured-city col-md-4">
+            <div class="city"
+              style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
+              <div class="city-metadata">
+                <span class="city-name">
+                  {{config.city_name}}
+                </span>
+                <span class="city-guides-number">
+                  {{config.trip_plan_ids | length}} Guides
+                </span>
               </div>
             </div>
-          </a>
-          {% endfor %}
-        </div>
+          </div>
+        </a>
+        {% endfor %}
       </div>
     </div>
+  </div>
 
-    <div class="search-section" data-type="background" data-speed="10">
-      <div class="section-header">
-        Build your <span class="lg-text">PERSONAL GUIDE</span>
+  <div class="search-section" data-type="background" data-speed="10">
+    <div class="section-header">
+      Build your <span class="lg-text">PERSONAL GUIDE</span>
+    </div>
+    <div class="search-input-section">
+      <div class="input-group">
+        <input type="text" class="form-control search-input" id="main-input"
+          ng-model="searchState.rawInput"
+          placeholder="Where do you want to go?"
+          tc-google-place-autocomplete on-place-change="placeChanged($newPlace)">
+        <span class="input-group-btn">
+          <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
+            New Guide
+          </button>
+        </span>
       </div>
-      <div class="search-input-section">
-        <div class="input-group">
-          <input type="text" class="form-control search-input" id="main-input"
-            ng-model="searchState.rawInput"
-            placeholder="Where do you want to go?"
-            tc-google-place-autocomplete on-place-change="placeChanged($newPlace)">
-          <span class="input-group-btn">
-            <button class="btn btn-search" type="button" ng-click="searchButtonClicked()">
-              New Guide
-            </button>
-          </span>
-        </div>
-        <div ng-include="'search-results-template'">
-        </div>
+      <div ng-include="'search-results-template'">
       </div>
     </div>
+  </div>
 
-    <div class="featured-sources-section">
-      <div class="section-header">
-        Browse <span class="lg-text">FEATURED SOURCES</span>
-      </div>
-      <div class="sources-container container">
-        <div class="top-sources row">
-          {% for config in featured_profile_configs %}
-          <a href="/profile/{{config.profile_name_token}}">
-            <div class="featured-source col-md-2 col-xs-6">
-              <div class="source"
-                style="background-image: url(&quot;{{config.icon_url}}&quot;);">
-              </div>
+  <div class="featured-sources-section">
+    <div class="section-header">
+      Browse <span class="lg-text">FEATURED SOURCES</span>
+    </div>
+    <div class="sources-container container">
+      <div class="top-sources row">
+        {% for config in featured_profile_configs %}
+        <a href="/profile/{{config.profile_name_token}}">
+          <div class="featured-source col-md-2 col-xs-6">
+            <div class="source"
+              style="background-image: url(&quot;{{config.icon_url}}&quot;);">
             </div>
-          </a>
-          {% endfor %}
-        </div>
+          </div>
+        </a>
+        {% endfor %}
       </div>
     </div>
+  </div>
 
-    <div class="more-cities-section" data-type="background" data-speed="20">
-      <div class="section-header">
-        <span class="lg-text">MORE DESTINATIONS</span>
-      </div>
-      <div class="more-cities-container container">
-        <div class="more-cities row">
-          {% for config in all_guide_configs %}
-          <a class="city-link" href="/guides/{{config.city_name_url_token}}">
-            <div class="col-xs-3">
-              {{config.city_name}}
-            </div>
-          </a>
-          {% endfor %}
-        </div>
-      </div>    
+  <div class="more-cities-section" data-type="background" data-speed="20">
+    <div class="section-header">
+      <span class="lg-text">MORE DESTINATIONS</span>
     </div>
-    <div class="footer-section">
-      <div class="copyright">
-        © WhereFare. All rights reserved.
+    <div class="more-cities-container container">
+      <div class="more-cities row">
+        {% for config in all_guide_configs %}
+        <a class="city-link" href="/guides/{{config.city_name_url_token}}">
+          <div class="col-xs-3">
+            {{config.city_name}}
+          </div>
+        </a>
+        {% endfor %}
       </div>
+    </div>    
+  </div>
+  <div class="footer-section">
+    <div class="copyright">
+      © WhereFare. All rights reserved.
     </div>
-
   </div>
 
   <script type="text/ng-template" id="search-results-template">
