@@ -1292,12 +1292,6 @@
           </span>
         </div>
 
-        <div class="info-text">
-          After adding the Clipper to your bookmarks bar, try it out on
-          these sites by clicking the Clipper whenever you want to add a place
-          to your guide.
-        </div>
-
         <div class="help-section info-text">
           <a ng-click="toggleHelp()" href="javascript:void(0)"
             tc-track-click="{name: 'toggle-clipper-help', location: 'add-your-own-clipper-panel', value: showClipperHelp ? 'hiding' : 'showing'}">
@@ -1305,6 +1299,12 @@
           </a>
           <div ng-show="showClipperHelp" ng-include="'clipper-help-template'">
           </div>
+        </div>
+
+        <div class="info-text">
+          After adding the Clipper to your bookmarks bar, try it out on
+          these sites by clicking the Clipper whenever you want to add a place
+          to your guide.
         </div>
 
         <div class="sample-sites container-fluid">
