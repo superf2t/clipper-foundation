@@ -33,6 +33,7 @@ from scraping import trip_plan_creator
 import serializable
 import serviceimpls
 from sessions import session_summary
+from sessions import sessionize
 import values
 
 app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
@@ -341,8 +342,18 @@ def admin_sessions():
     date = request.args.get('date')
     today = datetime.date.today()
     return render_template('admin/sessions.html',
+        date=date,
         day_options=[str(today - relativedelta.relativedelta(days=i)) for i in xrange(7)],
         sessions=session_summary.list_sessions(date))
+
+@app.route('/xadmin/session')
+@app.route('/admin/session')
+def admin_session():
+    if not g.session_info.is_admin():
+        return '', 404
+    events = sessionize.expand_session(
+        request.args.get('visitor_id'), request.args.get('date'))
+    return render_template('admin/session.html', events=events)
 
 @app.before_request
 def process_cookies():

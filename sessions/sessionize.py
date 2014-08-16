@@ -22,6 +22,9 @@ class SessionEvent(object):
         else:
             return self.interaction.timestamp
 
+    def formatted_timestamp(self):
+        return self.timestamp.astimezone(PACIFIC_TIME).strftime('%X')
+
 TRIP_PLAN_ID_RE = re.compile('/guide/(\d+)')
 
 PACIFIC_TIME = tz.gettz('America/Los Angeles')
@@ -62,10 +65,14 @@ def expand_session(visitor_id, date_str=None):
     for record in interaction_records:
         event = SessionEvent(interaction=record)
         session_events.append(event)
-    session_events = sorted(session_events, key=operator.attrgetter('timestamp'))
 
+    return sorted(session_events, key=operator.attrgetter('timestamp'))
+
+
+if __name__ == '__main__':
+    import sys
+    session_events = expand_session(int(sys.argv[1]))
     for event in session_events:
-        timestamp = event.timestamp.astimezone(PACIFIC_TIME).strftime('%X')
         if event.request:
             if event.trip_plan:
                 format = '%(url)s (%(trip_plan_name)s)\t\t\t\t%(time)s'
@@ -73,14 +80,9 @@ def expand_session(visitor_id, date_str=None):
                 format = '%(url)s\t\t\t\t%(time)s'
             print format % {
                 'url': event.request.url,
-                'time': timestamp,
+                'time': event.formatted_timestamp(),
                 'trip_plan_name': event.trip_plan.name if event.trip_plan else None,
                 }
         else:
             print '\t%s, %s, %s\t\t\t\t%s' % (event.interaction.event_name, event.interaction.event_location,
-                event.interaction.event_value, timestamp)
-
-
-if __name__ == '__main__':
-    import sys
-    expand_session(int(sys.argv[1]))
+                event.interaction.event_value, event.formatted_timestamp())
