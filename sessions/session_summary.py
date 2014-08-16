@@ -22,6 +22,7 @@ def list_sessions(date_str=None):
     cls = request_logging.FrontendRequestLogRecord
     rows = db.session.query(cls.visitor_id, cls.remote_addr, db.func.count()) \
         .filter(cls.timestamp >= date).filter(cls.timestamp < next_day) \
+        .filter(cls.visitor_id != None) \
         .filter(~cls.url.like('/static/?%')) \
         .filter(~cls.url.like('/event?%')) \
         .filter(~cls.url.like('/%service/%')) \

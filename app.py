@@ -1,6 +1,8 @@
+import datetime
 import urllib
 import urlparse
 
+from dateutil import relativedelta
 from flask import flash
 from flask import g
 from flask import get_flashed_messages
@@ -30,6 +32,7 @@ import sample_sites
 from scraping import trip_plan_creator
 import serializable
 import serviceimpls
+from sessions import session_summary
 import values
 
 app.jinja_env.filters['jsbool'] = lambda boolval: 'true' if boolval else 'false'
@@ -329,6 +332,17 @@ def admin_scrape():
         return '', 404
     return render_template('admin_scrape.html',
         all_scrapers=[s.__name__ for s in trip_plan_creator.ALL_PARSERS])
+
+@app.route('/xadmin/sessions')
+@app.route('/admin/sessions')
+def admin_sessions():
+    if not g.session_info.is_admin():
+        return '', 404
+    date = request.args.get('date')
+    today = datetime.date.today()
+    return render_template('admin/sessions.html',
+        day_options=[str(today - relativedelta.relativedelta(days=i)) for i in xrange(7)],
+        sessions=session_summary.list_sessions(date))
 
 @app.before_request
 def process_cookies():

@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+  <title>Sessions Summary</title>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="shortcut icon" href="/static/img/globe-bw.png">
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      padding: 10px;
+    }
+
+    .date-select {
+      padding: 10px 0;
+    }
+
+    .header-row {
+      font-weight: bold;
+    }
+  </style>
+  <script>
+  function dateChanged(dateStr) {
+    location.href = '/admin/sessions?date=' + dateStr;
+  }
+  </script>
+</head>
+<body>
+  <h1>Sessions</h1>
+  <div class="date-select">
+    Date:
+    <select onchange="dateChanged(this.value)">
+      {% for day_str in day_options %}
+      <option value="{{day_str}}"
+        {% if day_str == request.args.get('date') %}
+        selected="1"
+        {% endif %}>
+        {{day_str}}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="container-fluid">
+    <div class="row header-row">
+      <div class="col-md-4">
+        Visitor Id
+      </div>
+      <div class="col-md-4">
+        IP
+      </div>
+      <div class="col-md-4">
+        Page views
+      </div>
+    </div>
+    {% for session in sessions %}
+    <div class="row">
+      <div class="col-md-4">
+        <a href="/admin/session?visitor_id={{session.visitor_id}}">
+          {{session.visitor_id}}
+        </a>
+      </div>
+      <div class="col-md-4">
+        {{session.remote_addr}}
+      </div>
+      <div class="col-md-4">
+        {{session.num_requests}}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
