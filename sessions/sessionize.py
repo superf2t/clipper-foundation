@@ -3,6 +3,7 @@ import re
 
 from dateutil import parser as date_parser
 from dateutil import relativedelta
+from dateutil import tz
 
 import data
 import request_logging
@@ -14,6 +15,8 @@ class SessionEvent(object):
         self.trip_plan = trip_plan
 
 TRIP_PLAN_ID_RE = re.compile('/guide/(\d+)')
+
+PACIFIC_TIME = tz.gettz('America/Los Angeles')
 
 def expand_session(visitor_id, date_str=None):
     if date_str:
@@ -49,7 +52,7 @@ def expand_session(visitor_id, date_str=None):
             format = '%(url)s - %(time)s'
         print format % {
             'url': event.request.url,
-            'time': event.request.timestamp.strftime('%X'),
+            'time': event.request.timestamp.astimezone(PACIFIC_TIME).strftime('%X'),
             'trip_plan_name': event.trip_plan.name if event.trip_plan else None,
             }
 
