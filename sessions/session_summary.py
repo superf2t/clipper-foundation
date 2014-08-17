@@ -26,7 +26,7 @@ def list_sessions(date_str=None):
         .filter(~cls.url.like('/static/?%')) \
         .filter(~cls.url.like('/event?%')) \
         .filter(~cls.url.like('/%service/%')) \
-        .filter(~cls.remote_addr.in_(['70.36.237.242', '50.152.196.239'])) \
+        .filter(~cls.remote_addr.in_(['70.36.237.242', '50.152.196.239', '24.5.69.206'])) \
         .filter(~cls.remote_addr.like('173.252.%')) \
         .filter(~cls.user_agent.contains('Google_Analytics_Snippet_Validator')) \
         .filter(~cls.user_agent.contains('Google Keyword Suggestion')) \
