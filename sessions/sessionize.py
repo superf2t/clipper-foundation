@@ -97,8 +97,13 @@ def expand_session(visitor_id, date_str=None):
 
     sorted_events = sorted(request_records + interaction_records, key=operator.attrgetter('timestamp'))
 
-    trip_plan_loader = data.TripPlanLoader().load(
-        [int(TRIP_PLAN_ID_RE.match(record.url).group(1)) for record in request_records if record.url.startswith('/guide/')])
+    trip_plan_ids = set()
+    for record in request_records:
+        if record.url.startswith('/guide/'):
+            match = TRIP_PLAN_ID_RE.match(record.url)
+            if match:
+                trip_plan_ids.add(int(match.group(1)))
+    trip_plan_loader = data.TripPlanLoader().load(trip_plan_ids)
 
     pageviews = []
     current_pageview = None
