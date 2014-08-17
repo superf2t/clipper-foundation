@@ -112,8 +112,9 @@ def expand_session(visitor_id, date_str=None):
             current_pageview = SessionPageview(event)
             pageviews.append(current_pageview)
             if event.url.startswith('/guide/'):
-                trip_plan_id = int(TRIP_PLAN_ID_RE.match(event.url).group(1))
-                current_pageview.trip_plan = trip_plan_loader.get(trip_plan_id)
+                match = TRIP_PLAN_ID_RE.match(event.url)
+                if match:
+                    current_pageview.trip_plan = trip_plan_loader.get(int(match.group(1)))
         elif current_pageview:
             current_pageview.interactions.append(SessionInteraction(event))
 
