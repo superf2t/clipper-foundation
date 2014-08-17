@@ -351,9 +351,9 @@ def admin_sessions():
 def admin_session():
     if not g.session_info.is_admin():
         return '', 404
-    events = sessionize.expand_session(
+    session = sessionize.expand_session(
         request.args.get('visitor_id'), request.args.get('date'))
-    return render_template('admin/session.html', events=events)
+    return render_template('admin/session.html', session=session)
 
 @app.before_request
 def process_cookies():

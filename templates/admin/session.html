@@ -16,83 +16,130 @@
       padding: 10px;
     }
 
-    .date-select {
-      padding: 10px 0;
+    .summary {
+      margin: 10px 0;
+      font-size: 16px;
     }
 
-    .main-container {
-      margin-bottom: 30px;
+    .one-pageview {
+      margin: 5px 0;
+      padding: 5px 0;
+      border-top: 1px solid #ccc;
     }
 
-    .header-row {
-      font-weight: bold;
+    .one-pageview .description {
+      display: inline-block;
+      padding: 0 10px;
+    }
+
+    .one-pageview .visual {
+      display: inline-block;
+      width: 10px;
+      min-height: 20px;
+      background-color: #000;
+      vertical-align: top;
+      border-top: 1px solid #fff;
+    }
+
+    .one-pageview > .visual {
+      margin-top: 20px;
+    }
+
+    .one-interaction {
+      color: #777;
+      font-size: 12px;
+    }
+
+    .one-interaction .event-name,
+    .one-interaction .event-location,
+    .one-interaction .event-value {
+      display: inline-block;
+      width: 200px;
+    }
+
+    .description .url {
+      display: inline-block;
+      width: 500px;
+    }
+
+    .description .timestamp {
+      display: inline-block;
+      width: 100px;
+    }
+
+    .description .duration {
+      display: inline-block;
+      width: 150px;
+    }
+
+    .description .num-interactions {
+      display: inline-block;
+      width: 100px;
     }
   </style>
-  <script>
-  function dateChanged(dateStr) {
-    location.href = '/admin/sessions?date=' + dateStr;
-  }
-  </script>
 </head>
 <body>
   <h1>Session Visualizer</h1>
-  <div class="container-fluid main-container">
-    <div class="row header-row">
-      <div class="col-md-4">
-        Url
-      </div>
-      <div class="col-md-4">
-        Detail
-      </div>
-      <div class="col-md-4">
-        Timestamp
-      </div>
+  <div>
+    <div class="summary">
+      {{session.pageviews[0].first_event_timestamp().strftime('%x')}}
+      {{session.pageviews[0].formatted_timestamp()}} - {{session.pageviews[-1].formatted_timestamp()}},
+      {{session.formatted_duration()}},
+      {{session.pageviews | length }} pageviews,
+      {{session.num_interactions()}} interactions
     </div>
-    <div class="row header-row">
-      <div class="col-md-2">
-      </div>
-      <div class="col-md-2">
-        Event Name
-      </div>
-      <div class="col-md-2">
-        Event Location
-      </div>
-      <div class="col-md-2">
-        Event Value
-      </div>
-      <div class="col-md-4">
-      </div>
-    </div>
-    {% for event in events %}
-    <div class="row">
-      {% if event.request %}
-        <div class="col-md-4">
-          {{event.request.url}}
+    {% set pixels_per_second = 10 %}
+    {% for pageview in session.pageviews %}
+    <div class="one-pageview">
+      <span class="visual"
+        style="height: {{pageview.duration.total_seconds() * pixels_per_second}}px">
+      </span>
+      <span class="description">
+        <div>
+          <span class="url">
+            <a href="{{pageview.request.url}}" target="_blank">{{pageview.request.url}}</a>
+            {% if pageview.trip_plan %}
+            ({{pageview.trip_plan.name}})
+            {% endif %}
+          </span>
+          <span class="timestamp">
+            {{pageview.formatted_timestamp()}}
+          </span>
+          <span class="duration">
+            {{pageview.formatted_duration()}}
+          </span>
+          <span class="num-interactions">
+            {% if pageview.interactions %}
+            {{pageview.interactions | length}} interactions
+            {% endif %}
+          </span>
         </div>
-        <div class="col-md-4">
-          {% if event.trip_plan %}
-            {{event.trip_plan.name}}
-          {% endif %}
+        <div class="interactions">
+          {% for session_interaction in pageview.interactions %}
+          {% set interaction = session_interaction.interaction %}
+          <div class="one-interaction">
+            <span class="visual"
+              style="height: {{session_interaction.duration.total_seconds() * pixels_per_second}}px">
+            </span>
+            <span class="details">
+              <span class="event-name">
+                {{interaction.event_name}}
+              </span>
+              <span class="event-location">
+                {% if interaction.event_location %}
+                {{interaction.event_location}}
+                {% endif %}
+              </span>
+              <span class="event-value">
+                {% if interaction.event_value %}
+                {{interaction.event_value}}
+                {% endif %}
+              </span>
+            </span>
+          </div>
+          {% endfor %}
         </div>
-        <div class="col-md-4">
-          {{event.formatted_timestamp()}}
-        </div>
-      {% else %}
-        <div class="col-md-2">
-        </div>
-        <div class="col-md-2">
-          {{event.interaction.event_name}}
-        </div>
-        <div class="col-md-2">
-          {{event.interaction.event_location}}
-        </div>
-        <div class="col-md-2">
-          {{event.interaction.event_value}}
-        </div>
-        <div class="col-md-4">
-          {{event.formatted_timestamp()}}
-        </div>
-      {% endif %}
+      </span>
     </div>
     {% endfor %}
   </div>
