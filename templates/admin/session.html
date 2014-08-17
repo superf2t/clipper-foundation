@@ -59,7 +59,7 @@
 
     .description .url {
       display: inline-block;
-      width: 500px;
+      width: 700px;
     }
 
     .description .timestamp {
@@ -88,7 +88,7 @@
       {{session.pageviews | length }} pageviews,
       {{session.num_interactions()}} interactions
     </div>
-    {% set pixels_per_second = 10 %}
+    {% set pixels_per_second = 3 %}
     {% for pageview in session.pageviews %}
     <div class="one-pageview">
       <span class="visual"
