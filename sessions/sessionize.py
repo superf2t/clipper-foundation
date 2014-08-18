@@ -24,7 +24,7 @@ class SessionPageview(object):
         return self.request.timestamp
 
     def last_event_timestamp(self):
-        return self.interactions[-1].timestamp if self.interactions else self.request.timestamp
+        return self.interactions[-1].interaction.timestamp if self.interactions else self.request.timestamp
 
     def formatted_timestamp(self):
         return format_timestamp(self.request.timestamp)
