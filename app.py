@@ -298,6 +298,15 @@ def adminpage():
     return render_template('admin.html', trip_plans=trip_plans,
         source_host=lambda url: urlparse.urlparse(url).netloc.split('.')[-2])
 
+@app.route('/xadmin/recentguides')
+@app.route('/admin/recentguides')
+def admin_recentguides():
+    if not g.session_info.is_admin():
+        return '', 404
+    trip_plans = admin.load_recent_trip_plans(max=int(request.args.get('max', 20)))
+    return render_template('admin/recentguides.html', trip_plans=trip_plans,
+        source_host=lambda url: urlparse.urlparse(url).netloc.split('.')[-2])
+
 @app.route('/xadmin/editor/<int:trip_plan_id>')
 @app.route('/admin/editor/<int:trip_plan_id>')
 def admin_editor(trip_plan_id):

@@ -18,7 +18,7 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://localhost/travelclipper'
 MAIL_USERNAME = 'info@wherefare.co'
 MAIL_PASSWORD = None  # Set this securely in an override
 
-INTERNAL_IPS = ('70.36.237.242', '50.152.196.239', '24.5.69.206', '127.0.0.1')
+INTERNAL_IPS = ('70.36.237.242', '50.152.196.239', '24.5.69.206', '73.162.113.196', '127.0.0.1')
 
 FEATURED_CITIES_CONFIG_FILE = os.path.join(PROJECTPATH, 'data/guide_configs.csv')
 FEATURED_PROFILES_CONFIG_FILE = os.path.join(PROJECTPATH, 'data/guides.csv')

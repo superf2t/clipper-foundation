@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <title>Recent Guides</title>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.14/angular.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:400|Raleway:400">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="shortcut icon" href="/static/img/globe-bw.png">
+  <style>
+    html, body {
+      width: 100%;
+    }
+    .container {
+      margin-left: 15px;
+      margin-right: 15px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .header-row {
+      font-weight: bold;
+    }
+    .footer {
+      text-align: center;
+      margin: 20px 0px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Recent Guides</h1>
+  <div class="container">
+    <div class="row header-row">
+      <div class="col-md-2">
+        <a onclick="sort('name')" href="javascript:void(0)">
+          Trip Plan Name
+        </a>
+      </div>
+      <div class="col-md-2">
+        <a onclick="sort('creator')" href="javascript:void(0)">
+          Creator
+        </a>
+      </div>
+      <div class="col-md-1">
+        <a onclick="sort('entity_count')" href="javascript:void(0)">
+          Number of Entities
+        </a>
+      </div>
+      <div class="col-md-2">
+        <a onclick="sort('location_name')" href="javascript:void(0)">
+          Location
+        </a>
+      </div>
+      <div class="col-md-2">
+        <a onclick="sort('source_url')" href="javascript:void(0)">
+          Source
+        </a>
+      </div>
+      <div class="col-md-2">
+        <a onclick="sort('last_modified')" href="javascript:void(0)">
+          Last Modified
+        </a>
+      </div>
+      <div class="col-md-1">
+        <a onclick="sort('status')" href="javascript:void(0)">
+          Status
+        </a>
+      </div>
+    </div>
+
+    {% for trip_plan in trip_plans %}
+      <div class="row">
+        <div class="col-md-2">
+          <a href="/guide/{{trip_plan.trip_plan_id}}">{{trip_plan.name}}</a>
+        </div>
+        <div class="col-md-2">
+          {{trip_plan.creator_name() | string | truncate(20, True) }}
+        </div>
+        <div class="col-md-1">
+          {{trip_plan.entities|length}} entities
+        </div>
+        <div class="col-md-2">
+          {{trip_plan.location_name}}
+        </div>
+        <div class="col-md-2">
+          {% if trip_plan.source_url %}
+          <a href="{{trip_plan.source_url}}">{{source_host(trip_plan.source_url)}}</a>
+          {% endif %}
+        </div>
+        <div class="col-md-2">
+          {{trip_plan.last_modified and trip_plan.last_modified_datetime().strftime('%d %B %Y')}}
+        </div>
+        <div class="col-md-1">
+          {% if trip_plan.status == 'DELETED' %}
+            (deleted)
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <footer class="footer">
+    &copy; 2014 WhereFare
+  </footer>
+</body>
+</html>
