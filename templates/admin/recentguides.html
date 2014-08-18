@@ -52,7 +52,7 @@
           Source
         </a>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-1">
         <a onclick="sort('last_modified')" href="javascript:void(0)">
           Last Modified
         </a>
@@ -62,7 +62,7 @@
           Status
         </a>
       </div>
-      <div class="col-md-1">
+      <div class="col-md-2">
         <a href="javascript:void(0)">
           Referral Source
         </a>
@@ -88,15 +88,15 @@
           <a href="{{trip_plan.source_url}}">{{source_host(trip_plan.source_url)}}</a>
           {% endif %}
         </div>
-        <div class="col-md-2">
-          {{trip_plan.last_modified and trip_plan.last_modified_datetime().strftime('%d %B %Y')}}
+        <div class="col-md-1">
+          {{trip_plan.last_modified and trip_plan.last_modified_datetime().strftime('%x')}}
         </div>
         <div class="col-md-1">
           {% if trip_plan.status == 'DELETED' %}
             (deleted)
           {% endif %}
         </div>
-        <div class="col-md-1">
+        <div class="col-md-2">
           {% if trip_plan.referral_source %}
           {{trip_plan.referral_source}}
           {% endif %}
