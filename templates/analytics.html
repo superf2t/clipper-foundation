@@ -26,12 +26,16 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
 
 </script>
 
-{# Disable some tracking for internal ips #}
-{% if is_internal %}
 <script>
+  mixpanel.track('page viewed', {
+      'page name' : document.title,
+      'url' : window.location.href
+  });
+  {# Disable some tracking for internal ips #}
+  {% if is_internal %}
   mixpanel.register({"$ignore":"true"});
+  {% endif %}
 </script>
-{% endif %}
 
 {% if not suppress_uservoice is defined %}
 <script>
