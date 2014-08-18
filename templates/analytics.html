@@ -35,6 +35,16 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
   {% if is_internal %}
   mixpanel.register({"$ignore":"true"});
   {% endif %}
+
+  __insp.push(['tagSession', {
+    {% if session_info.referral_source -%}
+    source: "{{session_info.referral_source}}",
+    {%- endif %}
+    {% if session_info.referral_source_info -%}
+    sinfo: "{{session_info.referral_source_info}}",
+    {%- endif %}
+    visitor: "{{session_info.public_visitor_id}}"
+  }]);
 </script>
 
 {% if not suppress_uservoice is defined %}
