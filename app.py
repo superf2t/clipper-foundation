@@ -288,14 +288,15 @@ def adminservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
-@app.route('/admin')
-def adminpage():
+@app.route('/xadmin/allguides')
+@app.route('/admin/allguides')
+def admin_allguides():
     if not g.session_info.is_admin():
         return '', 404
     reverse = True if request.values.get('reverse') else False
     trip_plans = admin.fetch_trip_plans(
         sorting=request.values.get('sorting'), reverse=reverse)
-    return render_template('admin.html', trip_plans=trip_plans,
+    return render_template('admin/allguides.html', trip_plans=trip_plans,
         source_host=lambda url: urlparse.urlparse(url).netloc.split('.')[-2])
 
 @app.route('/xadmin/recentguides')
