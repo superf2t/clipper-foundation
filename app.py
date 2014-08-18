@@ -288,6 +288,13 @@ def adminservice(method_name):
     response = service.invoke_with_json(method_name, request.json)
     return json.jsonify(response)
 
+@app.route('/xadmin')
+@app.route('/admin')
+def adminpage():
+    if not g.session_info.is_admin():
+        return '', 404
+    return render_template('admin/admin.html')
+
 @app.route('/xadmin/allguides')
 @app.route('/admin/allguides')
 def admin_allguides():
