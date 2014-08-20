@@ -1,3 +1,4 @@
+import ctypes
 import datetime
 import operator
 import re
@@ -86,6 +87,7 @@ def load_interactions(visitor_id, start_date, end_date):
         .all()
 
 def expand_session(visitor_id, date_str=None):
+    visitor_id = ctypes.c_long(int(visitor_id)).value
     if date_str:
         date = date_parser.parse(date_str)
     else:
