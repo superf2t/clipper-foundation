@@ -75,7 +75,15 @@
           <a href="/guide/{{trip_plan.trip_plan_id}}">{{trip_plan.name}}</a>
         </div>
         <div class="col-md-2">
-          {{trip_plan.creator_name() | string | truncate(20, True) }}
+          {% if trip_plan.user and trip_plan.user.public_id %}
+            {{trip_plan.creator_name()}}
+          {% else %}
+          {% set visitor_id = trip_plan.creator_identifier() %}
+          {% set last_modified_date = trip_plan.last_modified_datetime().strftime('%Y-%m-%d') %}
+          <a href="/admin/session?visitor_id={{visitor_id}}&date={{last_modified_date}}">
+            {{trip_plan.creator_name() | string | truncate(20, True) }}
+          </a>
+          {% endif %}
         </div>
         <div class="col-md-1">
           {{trip_plan.entities|length}} entities
