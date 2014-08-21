@@ -30,12 +30,18 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
   {% if session_info.referral_source_info -%}
   ga('set', 'dimension2', '{{session_info.referral_source_info}}');
   {%- endif %}
+  {% if analytics_page_type is defined -%}
+  ga('set', 'dimension3', '{{analytics_page_type}}');
+  {%- endif %}
 </script>
 
 <script>
   mixpanel.track('page viewed', {
-      'page name' : document.title,
-      'url' : window.location.href
+    {% if analytics_page_type is defined -%}
+    'page type': '{{analytics_page_type}}',
+    {%- endif %}
+    'page name' : document.title,
+    'url' : window.location.href
   });
   {# Disable some tracking for internal ips #}
   {% if is_internal %}

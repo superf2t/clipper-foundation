@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="shortcut icon" href="/static/img/globe-bw.png">
+  {% set analytics_page_type = 'own_guide' if allow_editing else 'guide' %}
   {% include 'analytics.html' %}
 </head>
 <body ng-controller="RootCtrl">
