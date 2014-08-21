@@ -269,6 +269,9 @@ function EventTracker() {
         delete mixpanelData['name'];
         mixpanel.track(eventName, mixpanelData);
       }
+      if (ga) {
+        ga('send', 'event', 'interaction', data['name'], data['location'], data['value']);
+      }
     }
   };
 
