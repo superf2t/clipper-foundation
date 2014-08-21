@@ -37,6 +37,12 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
 
 <script>
   mixpanel.track('page viewed', {
+    {% if session_info.referral_source -%}
+    'referral source': '{{session_info.referral_source}}',
+    {%- endif %}
+    {% if session_info.referral_source_info -%}
+    'referral source info': '{{session_info.referral_source_info}}',
+    {%- endif %}
     {% if analytics_page_type is defined -%}
     'page type': '{{analytics_page_type}}',
     {%- endif %}
