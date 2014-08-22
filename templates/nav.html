@@ -27,7 +27,7 @@
                   tc-track-click="{name: 'open-new-trip-modal', location: 'main-nav-no-trip'}"
                   href="javascript:void(0)">
                   <span tc-icon="trip-plan" class="trip-menu-icon"></span>
-                  <span class="new-trip-text">New Trip</span>
+                  <span class="new-trip-text">New Guide</span>
                 </a>
               </li>
               <li ng-if="hasTripPlans()" class="dropdown">
@@ -140,7 +140,7 @@
       <a ng-click="openNewTripModal()"
         tc-track-click="{name: 'open-new-trip-modal', location: 'nav-trip-plan-dropdown'}"
         href="javascript:void(0)">
-        Create New Trip
+        Create New Guide
       </a>
     </li>
   </ul>
@@ -150,10 +150,10 @@
   <div class="new-trip-modal" ng-controller="NewTripCtrl">
     <div class="header">
       <span ng-show="clippingEntity">
-        Create a new trip to add <i>[[clippingEntity['name'] ]]</i>
+        Create a new guide to save <i>[[clippingEntity['name'] ]]</i>
       </span>
       <span ng-show="!clippingEntity">
-        Create a New Trip
+        Create a New Guide
       </span>
       <div class="close-link">
         <a ng-click="$close(); onClose && onClose()"
@@ -188,7 +188,7 @@
           ng-click="saveNewTripPlan()"
           ng-disabled="!newTripPlan['location_latlng'] || !newTripPlan['name'] || saving"
           tc-track-click="{name: 'new-trip-save', location: 'new-trip-modal'}">
-          Create New Trip
+          Create New Guide
         </button>
         <div class="save-spinner" ng-show="saving">
           <img src="/static/img/spinner-small.gif"/>

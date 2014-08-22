@@ -3089,6 +3089,8 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
 
 function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
     $tripPlanCreator, $pageStateModel) {
+  $scope.show = !_.isEmpty($allTripPlans);
+
   $scope.allTripPlans = $allTripPlans;
   $scope.activeTripPlanState = $activeTripPlanState;
 
