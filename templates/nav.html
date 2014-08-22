@@ -22,32 +22,15 @@
         <ul class="nav navbar-nav navbar-right right-controls">
           <li>
             <ul class="nav nav-pills">
-              <li ng-if="shoppingCartMode && activeTripPlan" class="trip-plan-name">
-                <a class="black-link" ng-href="/guide/[[activeTripPlan['trip_plan_id'] ]]" target="_blank"
-                  tc-track-click="{name: 'open-active-trip', location: 'nav-shopping-cart', value: activeTripPlan['trip_plan_id']}">
-                  <span>[[activeTripPlan['name'] ]]</span>
-                  <span id="place-count" class="place-count" tc-animate-on-change-to="numEntities"
-                    class-to-add="place-count-changed" remove-when-complete="true">
-                  [[numEntities]]
-                  </span>
-                </a>
-              </li>
-              <li ng-if="shoppingCartMode && activeTripPlan" class="new-trip-item dropdown">
-                <a href="javascript:void(0)" class="dropdown-toggle"
-                  tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'nav-shopping-cart'}">
-                  <span tc-icon="trip-plan" class="trip-menu-icon"></span>
-                </a>
-                <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
-              </li>
-              <li ng-if="!activeTripPlan" class="new-trip-item">
+              <li ng-if="!hasTripPlans()" class="new-trip-item">
                 <a ng-click="openNewTripModal()"
-                  tc-track-click="{name: 'open-new-trip-modal', location: 'nav-shopping-cart-no-trip'}"
+                  tc-track-click="{name: 'open-new-trip-modal', location: 'main-nav-no-trip'}"
                   href="javascript:void(0)">
                   <span tc-icon="trip-plan" class="trip-menu-icon"></span>
                   <span class="new-trip-text">New Trip</span>
                 </a>
               </li>
-              <li ng-if="!shoppingCartMode && activeTripPlan" class="dropdown">
+              <li ng-if="hasTripPlans()" class="dropdown">
                 <a class="black-link dropdown-toggle"
                   tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'main-nav'}"
                   href="javascript:void(0)">
@@ -137,27 +120,15 @@
   <ul class="nav-trip-plan-dropdown dropdown-menu">
     <span ng-show="allTripPlans && allTripPlans.length">
       <li class="select-trip-prompt">
-        <span ng-show="shoppingCartMode">
-          Select trip to add places
-        </span>
-        <span ng-show="!shoppingCartMode">
-          Select trip
-        </span>
+        Select trip
       </li>
       <li ng-repeat="tripPlan in allTripPlans">
-        <span ng-if="!isActiveTrip(tripPlan)">
-          <a ng-show="shoppingCartMode" class="trip-link"
-            ng-click="makeTripPlanActive(tripPlan)"
-            tc-track-click="{name: 'trip-plan-selected', location: 'nav-shopping-cart', value: tripPlan['trip_plan_id']}"
-            href="javascript:void(0)">
-            [[tripPlan['name'] ]]
-          </a>
-          <a ng-show="!shoppingCartMode" class="trip-link"
-            ng-href="[[isActiveTrip(tripPlan) ? 'javascript:void(0)' : '/guide/' + tripPlan['trip_plan_id'] ]]">
+        <span ng-if="!isTripOfCurrentPage(tripPlan)">
+          <a class="trip-link" ng-href="/guide/[[tripPlan['trip_plan_id'] ]]">
             [[tripPlan['name'] ]]
           </a>
         </span>
-        <span ng-if="isActiveTrip(tripPlan)" class="active-trip-item">
+        <span ng-if="isTripOfCurrentPage(tripPlan)" class="active-trip-item">
           [[tripPlan['name'] ]]
         </span>
       </li>

@@ -3042,7 +3042,7 @@ function EntityEditingService($entityService, $tripPlanModel,
 }
 
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
-  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing) {
+  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing, $rootScope, $modal) {
 
   this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
     var entityToSave = angular.copy(entity);
@@ -3066,24 +3066,48 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
           }
         });
     } else {
-      var doShoppingCartClip = function() {
+      var scope = $rootScope.$new(true);
+      scope.ed = entityToSave;
+      scope.save = function(opt_done) {
         $entityService.saveNewEntity(entityToSave, $activeTripPlanState.tripPlan['trip_plan_id'])
           .success(function(response) {
-            $activeTripPlanState.numEntities += 1;
             $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
             $activeTripPlanState.lastClippedEntity = response['entities'][0];
-            if ($activeTripPlanState.numEntities == 1) {
-              $pageStateModel.showAfterNewTripPlanPanel = true;            
-            }
             opt_success && opt_success();
+            opt_done && opt_done();
+
           });
       };
-      if (!$activeTripPlanState.tripPlan) {
-        $tripPlanCreator.openNewTripPlanModal(doShoppingCartClip, entityToSave);
-      } else {
-        doShoppingCartClip();
-      }      
+      $modal.open({
+        templateUrl: 'entity-clipping-modal-template',
+        windowClass: 'entity-clipping-modal-window',
+        scope: scope
+      });     
     }
+  };
+}
+
+function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
+    $tripPlanCreator, $pageStateModel) {
+  $scope.allTripPlans = $allTripPlans;
+  $scope.activeTripPlanState = $activeTripPlanState;
+
+  $scope.openNewTripPlanModal = function() {
+    var saveAutomatically = _.isEmpty($allTripPlans);
+    $tripPlanCreator.openNewTripPlanModal(function() {
+      if (saveAutomatically) {
+        $scope.saveAndClose(function() {
+          $pageStateModel.showAfterNewTripPlanPanel = true;
+        });
+      }
+    }, _.isEmpty($allTripPlans) ? $scope.ed : null);
+  };
+
+  $scope.saveAndClose = function(opt_callback) {
+    $scope.save(function() {
+      $scope.$close();
+      opt_callback && opt_callback();
+    });
   };
 }
 
@@ -3126,18 +3150,8 @@ function tcAfterNewTripPlanPanel($timeout, $window) {
     controller: function($scope, $activeTripPlanState, $window) {
       $scope.activeTripPlanState = $activeTripPlanState;
       $scope.goToTripPlan = function() {
-        $window.location.href = '/guide/' + $activeTripPlanState.tripPlan['trip_plan_id'];
+        $window.open('/guide/' + $activeTripPlanState.tripPlan['trip_plan_id'], '_blank');
       }
-    },
-    link: function(scope, element, attrs) {
-      $timeout(function() {
-        var connector = $("#after-new-trip-plan-panel .connector");
-        var connectorAlignmentElem = $(attrs.alignConnectorTo);
-        connector.css('left', connectorAlignmentElem.offset().left);
-        $($window).on('resize', function() {
-          connector.css('left', connectorAlignmentElem.offset().left);
-        });
-      });
     }
   };
 }
@@ -4187,6 +4201,7 @@ window['initApp'] = function(tripPlan, entities,
     .controller('TripPlanSettingsEditorCtrl', TripPlanSettingsEditorCtrl)
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
+    .controller('EntityClippingModalCtrl', EntityClippingModalCtrl)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
@@ -4200,6 +4215,7 @@ window['initApp'] = function(tripPlan, entities,
     .directive('tcFilterBar', tcFilterBar)
     .directive('tcSetNanoScrollbars', tcSetNanoScrollbars)
     .directive('tcLinkHeights', tcLinkHeights)
+    .directive('tcTripPlanSelector', tcTripPlanSelector)
     .service('$templateToStringRenderer', TemplateToStringRenderer)
     .service('$dataRefreshManager', DataRefreshManager)
     .service('$mapManager', MapManager)

@@ -170,7 +170,7 @@
 <script type="text/ng-template" id="trip-plan-selector-template">
   <div class="trip-plan-selector">
     <select class="form-control" ng-model="selectedTripPlan"
-      ng-options="tp['name'] for tp in tripPlanSelectOptions">
+      ng-options="tp['name'] for tp in tripPlanSelectOptions track by tp['trip_plan_id']">
     </select>
   </div>
 </script>
