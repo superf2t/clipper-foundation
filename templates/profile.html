@@ -64,18 +64,6 @@
       margin-bottom: 20px;
     }
 
-    @media (max-width: 1200px) {
-      .map-container {
-        height: 314px;
-      }
-    }
-
-    @media (min-width: 1441px) {
-      .map-container {
-        height: 374px;
-      }
-    }
-
     .map {
       width: 100%;
       height: 100%;
@@ -118,6 +106,19 @@
       color: #777;
       font-size: 1.1em;
     }
+
+    @media (max-width: 1200px) {
+      .map-container {
+        height: 314px;
+      }
+    }
+
+    @media (min-width: 1441px) {
+      .map-container {
+        height: 374px;
+      }
+    }
+
   </style>
 
   <script>
@@ -268,13 +269,13 @@
 
     {% if trip_plans %}
     <div class="trip-plans-container container">
-      <div class="map-container col-md-8 col-sm-12">
+      <div class="map-container col-md-8 col-sm-12 col-xs-12">
         <div tc-google-map class="map" map="mapState.map" map-options="mapOptions"
           after-creation="setupMap($map)">
         </div>
       </div>
 
-      <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan col-md-4">
+      <span ng-repeat="tripPlan in tripPlans" class="one-trip-plan col-md-4 col-sm-6 col-xs-12">
         <a ng-href="/guide/[[tripPlan['trip_plan_id'] ]]">
           <tc-trip-plan-details-header trip-plan="tripPlan" show-border="true"
             num-entities="tripPlan['num_entities']" include-creator="false">

@@ -36,7 +36,7 @@ SOURCE_HOST_TO_ICON_URL = {
     'www.ricksteves.com': 'https://lh6.googleusercontent.com/-JMraKPalP80/AAAAAAAAAAI/AAAAAAAAABI/18wMvzLN_RI/photo.jpg',
     'www.saveur.com': 'http://a2.mzstatic.com/us/r30/Purple4/v4/d1/ce/6e/d1ce6e3c-8efb-f0cf-d765-779c04d3abca/icon_256.png',
     'www.travelandleisure.com': 'http://a3.mzstatic.com/us/r30/Purple4/v4/08/db/c2/08dbc270-fe06-f528-5c5e-00f831485563/icon_256.png',
-    'www.thrillist.com': 'http://pbs.twimg.com/profile_images/3406986054/99d1ee1e35cc2f1376af0ab734882fa5.jpeg',
+    'www.thrillist.com': 'https://secure3.convio.net/fbnyc/images/content/pagebuilder/TL_Logo.jpg',
     'www.tripadvisor.com': 'http://d1hwvnnkb0v1bo.cloudfront.net/content/art/app/icons/tripadvisor_icon.jpg',
     'www.zagat.com': 'http://d1hwvnnkb0v1bo.cloudfront.net/content/art/app/icons/zagat_to_go_icon.jpg',
 }

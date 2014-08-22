@@ -84,6 +84,18 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
+    @media (max-width: 768px) {
+      .more-cities-section {
+        height: 1000px;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 990px) {
+      .more-cities-section {
+        height: 700px;
+      }
+    }
+
     .lg-text {
       font-size: 1.8em;
     }
@@ -180,7 +192,7 @@
 
     <div class="trip-plans-container container">
       <div class="row">
-        <span ng-repeat="guide in guides" class="one-trip-plan col-md-4">
+        <span ng-repeat="guide in guides" class="one-trip-plan col-md-4 col-sm-6 col-xs-12">
           <a ng-href="/guide/[[guide['trip_plan_id'] ]]">
             <tc-trip-plan-details-header trip-plan="guide" show-border="true"
               num-entities="guide['num_entities']" include-creator="true">
@@ -214,7 +226,7 @@
         <div class="more-cities row">
           {% for config in all_guide_configs %}
           <a class="city-link" href="/guides/{{config.city_name_url_token}}">
-            <div class="col-md-3">
+            <div class="col-md-3 col-sm-4 col-xs-6">
               {{config.city_name}}
             </div>
           </a>

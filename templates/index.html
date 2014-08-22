@@ -146,7 +146,6 @@
 
     .featured-cities-section .city {
       width: 100%;
-      max-width: 500px;
       height: 260px;
       background-repeat: no-repeat;
       background-position: 50% 50%;
@@ -157,6 +156,33 @@
       -webkit-box-shadow: 0 0 3px rgba(0,0,0,0.3);
       box-shadow: 0 0 3px rgba(0,0,0,0.3);
       border-radius: 2px;
+    }
+
+    @media (max-width: 767px) {
+      .featured-cities-section .city {
+        height: 320px;
+      }
+      .featured-cities-section .city-metadata {
+        top: 280px;
+      }  
+    }
+
+    @media (min-width: 768px) and (max-width: 1200px) {
+      .featured-cities-section .city {
+        height: 240px;
+      }
+      .featured-cities-section .city-metadata {
+        top: 200px;
+      }      
+    }
+
+    @media (min-width: 1441px) {
+      .featured-cities-section .city {
+        height: 300px;
+      }
+      .featured-cities-section .city-metadata {
+        top: 260px;
+      }
     }
 
     .featured-cities-section .city-name {
@@ -297,18 +323,31 @@
       font-size: 1.1em;
     }
 
-    @media (max-width: 1200px) {
-      .featured-cities-section .city-metadata {
-        top: 160px;
+    @media (max-width: 768px) {
+      .more-cities-section {
+        height: 1000px;
       }
+      .featured-source .source {
+        height: 180px;
+      }
+    }
 
-      .featured-cities-section .city {
+    @media (min-width: 769px) and (max-width: 990px) {
+      .more-cities-section {
+        height: 700px;
+      }
+      .featured-source .source {
         height: 200px;
       }
+    }
 
+    @media (min-width: 991px) and (max-width: 1200px) {
       .featured-source .source {
         height: 130px;
       }
+    }
+
+    @media (max-width: 1200px) {
       .search-section {
         background: url('https://lh5.googleusercontent.com/-XFHga-H4op4/UspHQuuPT3I/AAAAAAAAmKQ/tX5v3FY1kwk/w1272-h848-no/IMG_3144.jpg') 50% 0px repeat fixed;
         height: 300px;
@@ -485,7 +524,7 @@
       <div class="featured-cities row">
         {% for config in featured_guide_configs %}
         <a href="/guides/{{config.city_name_url_token}}">
-          <div class="featured-city col-md-4">
+          <div class="featured-city col-md-4 col-sm-6 col-xs-12">
             <div class="city"
               style="background-image: url(&quot;/static/img/index/{{config.city_name_url_token}}.jpg&quot;);">
               <div class="city-metadata">
@@ -533,7 +572,7 @@
       <div class="top-sources row">
         {% for config in featured_profile_configs %}
         <a href="/profile/{{config.profile_name_token}}">
-          <div class="featured-source col-md-2 col-xs-6">
+          <div class="featured-source col-md-2 col-sm-4 col-xs-6">
             <div class="source"
               style="background-image: url(&quot;{{config.icon_url}}&quot;);">
             </div>
@@ -552,7 +591,7 @@
       <div class="more-cities row">
         {% for config in all_guide_configs %}
         <a class="city-link" href="/guides/{{config.city_name_url_token}}">
-          <div class="col-xs-3">
+          <div class="col-md-3 col-sm-4 col-xs-6">
             {{config.city_name}}
           </div>
         </a>
