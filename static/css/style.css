@@ -1197,7 +1197,13 @@ a.category-filter-link:hover {
   background-image: url('/static/img/default-cover.jpg');
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 767px) {
+  .trip-plan-details-header .trip-plan-img {
+    height: 320px;
+  }  
+}
+
+@media (min-width: 768px) and (max-width: 1200px) {
   .trip-plan-details-header .trip-plan-img {
     height: 240px;
   }
