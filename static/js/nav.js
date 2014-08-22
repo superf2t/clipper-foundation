@@ -24,7 +24,7 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
     var scope = $scope.$new();
     var modal = null;
     scope.onCreate = function(tripPlan) {
-      if ($scope.shoppingCartMode) {
+      if (opt_callback) {
         $scope.makeTripPlanActive(tripPlan);
         $scope.allTripPlans.unshift(tripPlan);
         // Allow a digest cycle to happen before calling the callback.
@@ -50,18 +50,17 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
     $scope.openNewTripModal(opt_callback, opt_clippingEntity);
   });
 
-  $scope.isActiveTrip = function(tripPlan) {
-    return tripPlan && $scope.activeTripPlan
-      && tripPlan['trip_plan_id'] == $scope.activeTripPlan['trip_plan_id'];
+  $scope.isTripOfCurrentPage = function(tripPlan) {
+    return $scope.tripPlanOfCurrentPage 
+      && tripPlan['trip_plan_id'] == $scope.tripPlanOfCurrentPage['trip_plan_id'];
   };
 
   $scope.makeTripPlanActive = function(tripPlan) {
     $scope.activeTripPlan = tripPlan;
-    $scope.numEntities = null;
-    $entityService.getByTripPlanId(tripPlan['trip_plan_id'])
-      .success(function(response) {
-        $scope.numEntities = response['entities'].length;
-      });
+  };
+
+  $scope.hasTripPlans = function() {
+    return !_.isEmpty($scope.allTripPlans);
   };
 }
 
@@ -203,9 +202,8 @@ function tcNav() {
     scope: {
       accountInfo: '=',
       activeTripPlan: '=',
-      numEntities: '=',
       allTripPlans: '=',
-      shoppingCartMode: '='
+      tripPlanOfCurrentPage: '='
     }
   };
 }

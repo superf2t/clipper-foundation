@@ -21,8 +21,7 @@
 </head>
 <body ng-controller="RootCtrl">
   <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
-    num-entities="activeTripPlanState.numEntities" all-trip-plans="allTripPlans"
-    shopping-cart-mode="!{{allow_editing | jsbool}}">
+    all-trip-plans="allTripPlans" trip-plan-of-current-page="planModel.tripPlanData">
   </tc-nav>
   <tc-flashed-messages messages="flashedMessages">
   </tc-flashed-messages>
@@ -129,9 +128,31 @@
   {% if not allow_editing %}
   <tc-after-new-trip-plan-panel
     ng-if="pageStateModel.showAfterNewTripPlanPanel"
-    align-connector-to="#place-count"
     on-close="pageStateModel.showAfterNewTripPlanPanel = false">
   </tc-after-new-trip-plan-panel>
+
+
+  <script type="text/ng-template" id="entity-clipping-modal-template">
+    <div class="entity-clipping-modal" ng-controller="EntityClippingModalCtrl">
+      <div>
+        Save <i>[[ed['name'] ]]</i> to your guide:
+      </div>
+      <div>
+        <tc-trip-plan-selector trip-plans="allTripPlans"
+          select-trip-plan-to="activeTripPlanState.tripPlan"
+          show-create-new="true" on-create-new-selected="openNewTripPlanModal()">
+        </tc-trip-plan-selector>
+      </div>
+      <div>
+        <button class="btn btn-cta" ng-click="saveAndClose()">
+          Save
+        </button>
+        <button class="btn btn-default" ng-click="$close()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </script>
   {% endif %}
 
   <script type="text/ng-template" id="info-panel-nav-template">
@@ -1705,8 +1726,6 @@
 
   <script type="text/ng-template" id="after-new-trip-plan-panel-template">
     <div class="after-new-trip-plan-panel" id="after-new-trip-plan-panel">
-      <div class="connector">
-      </div>
       <div class="panel-body">
         <div class="close-button">
         <a ng-click="onClose()" href="javascript:void(0)">

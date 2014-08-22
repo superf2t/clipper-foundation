@@ -1922,30 +1922,25 @@ a.category-filter-link:hover {
   z-index: 1100;
 }
 
-.after-new-trip-plan-panel {
-  position: fixed;
-  top: 41px;
-  right: 20px;
+.entity-clipping-modal {
+  padding: 20px;
 }
 
-.after-new-trip-plan-panel .connector {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-bottom: 15px solid #fff;
-  border-right: 10px solid transparent;
-  border-left: 10px solid transparent;
-  -moz-transform: scale(.9999);
-  -webkit-transform: scale(.9999);
+.entity-clipping-modal .trip-plan-selector {
+  margin: 10px 0;
+}
+
+.after-new-trip-plan-panel {
   position: fixed;
-  top: calc(41px + 5px);
-  /* left: computed dynamically; */
+  top: calc(30%);
+  left: calc(40% + 30px);
+  z-index: 2;
 }
 
 .after-new-trip-plan-panel .panel-body {
-  -webkit-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-  -moz-box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
-  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.15);
+  -webkit-box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
   background-color: #fff;
   padding: 20px;
   position: relative;

@@ -150,7 +150,7 @@ def guide_by_id(trip_plan_id):
     has_guides = bool(guide_config_for_destination)
     flashed_messages = [data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]
 
-    response = render_template('trip_plan.html',
+    response_str = render_template('trip_plan.html',
         plan=current_trip_plan,
         entities_json=serializable.to_json_str(entities),
         all_trip_plans=sorted_trip_plans,
@@ -164,6 +164,9 @@ def guide_by_id(trip_plan_id):
         has_guides=has_guides,
         guide_config_for_destination=guide_config_for_destination,
         flashed_messages=flashed_messages)
+
+    response = make_response(response_str)
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate'
     return response
 
 @app.route('/guide/<int:trip_plan_id>/print')
