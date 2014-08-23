@@ -572,12 +572,12 @@ a.category-filter-link:hover {
   height: 40px;
   padding-top: 12px;
   border-radius: 0 3px 3px 0;
-  background-color: #4087F9;
+  background-color: #AAAAAA;
   color: #fff;
 }
 
 #info-panel .slide-control a:hover {
-  background-color: #4A90E2;
+  background-color: #BBBBBB;
 }
 
 .details-panel .add-cover-image-cta {
@@ -767,16 +767,18 @@ a.category-filter-link:hover {
 }
 
 .one-entity-details .add-to-trip-link {
+  color: #FFFFFF;
+  background-color: #4087F9;
   position: relative;
-  bottom: 3px;
-  left: 3px;
-  padding: 6px;
+  border-radius: 4px;  
+  bottom: 2px;
+  left: 2px;
+  padding: 4px;
 }
 
 .one-entity-details .add-to-trip-link:hover {
-  color: #4A90E2;
-  background-color: #ddd;
-  border-radius: 4px;
+  color: #FFFFFF;
+  background-color: #4A90E2;
 }
 
 .one-entity-details .saved-status {

@@ -136,7 +136,7 @@
     <div class="entity-clipping-modal" ng-controller="EntityClippingModalCtrl"
       ng-show="show">
       <div>
-        Save <i>[[ed['name'] ]]</i> to your guide:
+        Add <i>[[ed['name'] ]]</i> to your guide:
       </div>
       <div>
         <tc-trip-plan-selector trip-plans="allTripPlans"
@@ -145,8 +145,8 @@
         </tc-trip-plan-selector>
       </div>
       <div>
-        <button class="btn btn-cta" ng-click="saveAndClose()">
-          Save
+        <button class="btn btn-primary" ng-click="saveAndClose()">
+          Add to My Guide
         </button>
         <button class="btn btn-default" ng-click="$close()">
           Cancel
