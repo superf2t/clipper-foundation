@@ -20,7 +20,7 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
     };
   };
 
-  $scope.openNewTripModal = function(opt_callback, opt_clippingEntity) {
+  $scope.openNewTripModal = function(opt_callback, opt_clippingEntity, opt_onClose) {
     var scope = $scope.$new();
     var modal = null;
     scope.onCreate = function(tripPlan) {
@@ -30,8 +30,8 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
         // Allow a digest cycle to happen before calling the callback.
         $timeout(function() {
           opt_callback && opt_callback(tripPlan);
+          modal && modal.close();
         });
-        modal && modal.close();
       } else {
         $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
       }
@@ -44,10 +44,13 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
       controller: NewTripCtrl,
       scope: scope
     });
+    modal.result.finally(function() {
+      opt_onClose && opt_onClose();
+    });
   };
 
-  $scope.$on('open-new-trip-modal', function(event, opt_callback, opt_clippingEntity) {
-    $scope.openNewTripModal(opt_callback, opt_clippingEntity);
+  $scope.$on('open-new-trip-modal', function(event, opt_callback, opt_clippingEntity, opt_onClose) {
+    $scope.openNewTripModal(opt_callback, opt_clippingEntity, opt_onClose);
   });
 
   $scope.isTripOfCurrentPage = function(tripPlan) {
@@ -170,8 +173,8 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
 }
 
 function TripPlanCreator($rootScope) {
-  this.openNewTripPlanModal = function(opt_callback, opt_clippingEntity) {
-    $rootScope.$broadcast('open-new-trip-modal', opt_callback, opt_clippingEntity);
+  this.openNewTripPlanModal = function(opt_callback, opt_clippingEntity, opt_onClose) {
+    $rootScope.$broadcast('open-new-trip-modal', opt_callback, opt_clippingEntity, opt_onClose);
   };
 }
 
