@@ -20,23 +20,30 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
     };
   };
 
-  $scope.openNewTripModal = function(opt_callback, opt_clippingEntity, opt_onClose) {
+  /**
+   * Options:
+   *  callback
+   *  clippingEntity
+   *  onClose
+   */
+  $scope.openNewTripModal = function(options) {
+    options = options || {};
     var scope = $scope.$new();
     var modal = null;
     scope.onCreate = function(tripPlan) {
-      if (opt_callback) {
+      if (options.callback) {
         $scope.makeTripPlanActive(tripPlan);
         $scope.allTripPlans.unshift(tripPlan);
         // Allow a digest cycle to happen before calling the callback.
         $timeout(function() {
-          opt_callback && opt_callback(tripPlan);
+          options.callback && options.callback(tripPlan);
           modal && modal.close();
         });
       } else {
         $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
       }
     };
-    scope.clippingEntity = opt_clippingEntity;
+    scope.clippingEntity = options.clippingEntity;
 
     modal = $modal.open({
       templateUrl: 'new-trip-modal-template',
@@ -45,12 +52,12 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
       scope: scope
     });
     modal.result.finally(function() {
-      opt_onClose && opt_onClose();
+      options.onClose && options.onClose();
     });
   };
 
-  $scope.$on('open-new-trip-modal', function(event, opt_callback, opt_clippingEntity, opt_onClose) {
-    $scope.openNewTripModal(opt_callback, opt_clippingEntity, opt_onClose);
+  $scope.$on('open-new-trip-modal', function(event, options) {
+    $scope.openNewTripModal(options);
   });
 
   $scope.isTripOfCurrentPage = function(tripPlan) {
@@ -173,8 +180,8 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
 }
 
 function TripPlanCreator($rootScope) {
-  this.openNewTripPlanModal = function(opt_callback, opt_clippingEntity, opt_onClose) {
-    $rootScope.$broadcast('open-new-trip-modal', opt_callback, opt_clippingEntity, opt_onClose);
+  this.openNewTripPlanModal = function(options) {
+    $rootScope.$broadcast('open-new-trip-modal', options);
   };
 }
 

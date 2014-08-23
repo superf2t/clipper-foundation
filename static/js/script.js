@@ -3098,16 +3098,20 @@ function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
   $scope.openNewTripPlanModal = function() {
     var saveAutomatically = _.isEmpty($allTripPlans);
     var clippingEntity = _.isEmpty($allTripPlans) ? $scope.ed : null;
-    $tripPlanCreator.openNewTripPlanModal(function() {
-      if (saveAutomatically) {
-        $scope.saveAndClose(function() {
-          $pageStateModel.showAfterNewTripPlanPanel = true;
-        });
-      }
-    }, clippingEntity, function() {
-      if (!$scope.show && !$scope.saving) {
-        $scope.$close();
-      }
+    $tripPlanCreator.openNewTripPlanModal({
+      callback: function() {
+        if (saveAutomatically) {
+          $scope.saveAndClose(function() {
+            $pageStateModel.showAfterNewTripPlanPanel = true;
+          });
+        }
+      },
+      onClose: function() {
+        if (!$scope.show && !$scope.saving) {
+          $scope.$close();
+        }
+      },
+      clippingEntity: clippingEntity
     });
   };
 

@@ -135,8 +135,10 @@
       $scope.flashedMessages = $flashedMessages;
 
       $scope.createNewTripAndRedirect = function() {
-        $tripPlanCreator.openNewTripPlanModal(function(tripPlan) {
-          $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
+        $tripPlanCreator.openNewTripPlanModal({
+          callback: function(tripPlan) {
+            $window.location.href = '/guide/' + tripPlan['trip_plan_id'];
+          }
         });
       };
 
