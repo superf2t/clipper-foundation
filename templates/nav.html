@@ -26,15 +26,14 @@
                 <a ng-click="openNewTripModal()"
                   tc-track-click="{name: 'open-new-trip-modal', location: 'main-nav-no-trip'}"
                   href="javascript:void(0)">
-                  <span tc-icon="trip-plan" class="trip-menu-icon"></span>
-                  <span class="new-trip-text">New Trip</span>
+                  <span class="new-trip-text">Create New Guide</span>
                 </a>
               </li>
               <li ng-if="hasTripPlans()" class="dropdown">
                 <a class="black-link dropdown-toggle"
                   tc-track-click="{name: 'trip-plan-dropdown-toggle', location: 'main-nav'}"
                   href="javascript:void(0)">
-                  My Trips
+                  My Guides
                   <span class="caret"></span>
                 </a>
                 <tc-nav-trip-plan-dropdown></tc-nav-trip-plan-dropdown>
@@ -140,7 +139,7 @@
       <a ng-click="openNewTripModal()"
         tc-track-click="{name: 'open-new-trip-modal', location: 'nav-trip-plan-dropdown'}"
         href="javascript:void(0)">
-        Create New Trip
+        Create New Guide
       </a>
     </li>
   </ul>
@@ -150,10 +149,10 @@
   <div class="new-trip-modal" ng-controller="NewTripCtrl">
     <div class="header">
       <span ng-show="clippingEntity">
-        Create a new trip to add <i>[[clippingEntity['name'] ]]</i>
+        Create a new guide to add <i>[[clippingEntity['name'] ]]</i>
       </span>
       <span ng-show="!clippingEntity">
-        Create a New Trip
+        Create a New Guide
       </span>
       <div class="close-link">
         <a ng-click="$close(); onClose && onClose()"
@@ -180,7 +179,7 @@
         </div>
       </div>
       <div ng-show="newTripPlan['location_latlng']" class="trip-name-section">
-        <label for="trip-name-input">Trip Name</label>
+        <label for="trip-name-input">Guide Name</label>
         <input type="text" class="form-control" ng-model="newTripPlan['name']"/>
       </div>
       <div class="create-trip-button">
@@ -188,7 +187,7 @@
           ng-click="saveNewTripPlan()"
           ng-disabled="!newTripPlan['location_latlng'] || !newTripPlan['name'] || saving"
           tc-track-click="{name: 'new-trip-save', location: 'new-trip-modal'}">
-          Create New Trip
+          Create New Guide
         </button>
         <div class="save-spinner" ng-show="saving">
           <img src="/static/img/spinner-small.gif"/>
@@ -196,7 +195,7 @@
       </div>
       {% if not account_info.logged_in %}
       <div class="login-prompt" ng-show="!hideLoginPrompt">
-        Already have a trip you're planning?
+        Already have a guide you're planning?
         <a ng-click="openLoginModal('{{login_iframe_url}}', 'login-modal-window')"
           tc-track-click="{name: 'open-login-modal', location: 'new-trip-modal'}"
           href="javascript:void(0)">
