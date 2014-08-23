@@ -44,6 +44,7 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
       }
     };
     scope.clippingEntity = options.clippingEntity;
+    scope.locationInfo = options.locationInfo || {};
 
     modal = $modal.open({
       templateUrl: 'new-trip-modal-template',
@@ -75,13 +76,18 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
 }
 
 function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
-  $scope.newTripPlan = {};
+  $scope.newTripPlan = {
+    'name': $scope.locationInfo.locationName,
+    'location_name': $scope.locationInfo.locationName,
+    'location_latlng': $scope.locationInfo.locationLatLng,
+    'location_bounds': $scope.locationInfo.locationBounds
+  };
   $scope.results = null;
   $scope.saving = false;
-
-  $timeout(function() {
-    $scope.focusReady = true;
-  }, 300);
+  $scope.state = {
+    editingLocation: !$scope.locationInfo.locationLatLng,
+    editingName: false
+  };
 
   $scope.placeChanged = function(place) {
     if (!place['geometry']) {
@@ -102,6 +108,7 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
       $scope.newTripPlan['name'] = oldTripName;
     }
     $scope.results = [];
+    $scope.state.editingLocation = false;
 
     $eventTracker.track({name: 'new-trip-location-result-selected',
       location: 'new-trip-modal', value: place['name']});
