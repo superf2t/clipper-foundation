@@ -3090,25 +3090,33 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
 function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
     $tripPlanCreator, $pageStateModel) {
   $scope.show = !_.isEmpty($allTripPlans);
+  $scope.saving = false;
 
   $scope.allTripPlans = $allTripPlans;
   $scope.activeTripPlanState = $activeTripPlanState;
 
   $scope.openNewTripPlanModal = function() {
     var saveAutomatically = _.isEmpty($allTripPlans);
+    var clippingEntity = _.isEmpty($allTripPlans) ? $scope.ed : null;
     $tripPlanCreator.openNewTripPlanModal(function() {
       if (saveAutomatically) {
         $scope.saveAndClose(function() {
           $pageStateModel.showAfterNewTripPlanPanel = true;
         });
       }
-    }, _.isEmpty($allTripPlans) ? $scope.ed : null);
+    }, clippingEntity, function() {
+      if (!$scope.show && !$scope.saving) {
+        $scope.$close();
+      }
+    });
   };
 
   $scope.saveAndClose = function(opt_callback) {
+    $scope.saving = true;
     $scope.save(function() {
       $scope.$close();
       opt_callback && opt_callback();
+      $scope.saving = false;
     });
   };
 }
