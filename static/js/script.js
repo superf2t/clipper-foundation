@@ -387,9 +387,8 @@ function TripPlanModel(tripPlanData, entityDatas) {
   };
 }
 
-function ActiveTripPlanStateModel(tripPlan, numEntities) {
+function ActiveTripPlanStateModel(tripPlan) {
   this.tripPlan = tripPlan;
-  this.numEntities = numEntities || 0;
   this.lastClippedEntity = null;
   this.savedEntityIds = {};
 
@@ -3089,9 +3088,10 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
           .success(function(response) {
             $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
             $activeTripPlanState.lastClippedEntity = response['entities'][0];
+            $activeTripPlanState.tripPlan['num_entities'] += 1;
             opt_success && opt_success();
             opt_done && opt_done();
-
+            me.maybeShowRegisterPrompt();
           });
       };
       $modal.open({
@@ -3103,7 +3103,11 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
   };
 
   this.maybeShowRegisterPrompt = function() {
-    if (!$accountInfo['logged_in'] && $allowEditing && $tripPlanModel.numEntities() == 3) {
+    if ($accountInfo['logged_in']) {
+      return;
+    }
+    if (($allowEditing && $tripPlanModel.numEntities() == 3)
+      || (!$allowEditing && $activeTripPlanState.tripPlan['num_entities'] == 3)) {
       $pageStateModel.showRegisterAndSavePrompt = true;
     }
   };
@@ -4203,7 +4207,7 @@ angular.module('filtersModule', [])
   .filter('hostToIcon', makeFilter(hostToIcon));
 
 window['initApp'] = function(tripPlan, entities,
-    allTripPlans, activeTripPlan, activeTripPlanEntityCount,
+    allTripPlans, activeTripPlan,
     accountInfo, datatypeValues, allowEditing, sampleSites,
     hasGuides, flashedMessages) {
 
@@ -4213,7 +4217,7 @@ window['initApp'] = function(tripPlan, entities,
     .value('$tripPlanModel', tripPlanModel)
     .value('$allTripPlans', allTripPlans)
     .value('$activeTripPlanState', new ActiveTripPlanStateModel(
-      allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
+      allowEditing ? tripPlan : activeTripPlan))
     .value('$pageStateModel', new PageStateModel())
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())

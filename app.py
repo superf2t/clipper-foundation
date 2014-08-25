@@ -170,7 +170,6 @@ def guide_by_id(trip_plan_id):
         entities_json=serializable.to_json_str(entities),
         all_trip_plans=sorted_trip_plans,
         active_trip_plan=active_trip_plan,
-        active_trip_plan_entity_count=len(active_entities) if active_entities else 0,
         allow_editing=allow_editing,
         account_info=g.account_info,
         bookmarklet_url=constants.BASE_URL + '/bookmarklet.js',
