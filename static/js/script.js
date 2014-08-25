@@ -1735,7 +1735,8 @@ function tcTripPlanSelector() {
       tripPlans: '=',
       selectedTripPlan: '=selectTripPlanTo',
       showCreateNew: '=',
-      onCreateNewSelected: '&'
+      onCreateNewSelected: '&',
+      onChange: '&'
     },
     controller: function($scope) {
       $scope.$watch('tripPlans', function(tripPlans) {
@@ -1752,7 +1753,10 @@ function tcTripPlanSelector() {
           $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
         }
       }, true);
-      $scope.$watch('selectedTripPlan', function(newValue) {
+      $scope.$watch('selectedTripPlan', function(newValue, oldValue) {
+        if ($scope.onChange) {
+          $scope.onChange({$newValue: newValue, $oldValue: oldValue});
+        }
         if (newValue && newValue.createNew) {
           $scope.onCreateNewSelected();
         }
@@ -3115,7 +3119,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
 }
 
 function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
-    $tripPlanCreator, $pageStateModel, $tripPlanModel) {
+    $tripPlanCreator, $pageStateModel, $tripPlanModel, $eventTracker) {
   $scope.show = !_.isEmpty($allTripPlans);
   $scope.saving = false;
 
@@ -3141,6 +3145,7 @@ function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
       clippingEntity: clippingEntity,
       locationInfo: $tripPlanModel.locationInfo()
     });
+    $eventTracker.track({name: 'create-new-guide-selected', location: 'entity-clipping-confirmation'});
   };
 
   $scope.saveAndClose = function(opt_callback) {
@@ -3150,6 +3155,16 @@ function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
       opt_callback && opt_callback();
       $scope.saving = false;
     });
+  };
+
+  $scope.logChange = function($newValue, $oldValue) {
+    if ($newValue != $oldValue) {
+      $eventTracker.track({
+        name: 'selected-guide-changed',
+        location: 'entity-clipping-confirmation',
+        value: $scope.activeTripPlanState.tripPlan && $scope.activeTripPlanState.tripPlan['trip_plan_id']
+      });      
+    }
   };
 }
 

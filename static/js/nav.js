@@ -183,7 +183,7 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
   };
 
   $scope.$watch("newTripPlan['name']", function(newName, oldName) {
-    if (newName && oldName) {
+    if (newName && oldName && newName != oldName) {
       $eventTracker.track({name: 'new-trip-plan-name-changed',
         location: 'new-trip-modal', value: newName});
     }
