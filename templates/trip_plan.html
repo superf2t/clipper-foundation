@@ -1292,7 +1292,7 @@
           </div>
           <tc-entity-details ng-repeat="entity in searchState.results"
             entity="entity" is-editable="false" for-results="true"
-            trip-plan-id="planModel.tripPlanId()" result-index="$index">
+            result-index="$index">
           </tc-entity-details>
         </div>
       </div>
@@ -1409,7 +1409,7 @@
           </div>
           <tc-entity-details ng-repeat="entity in linkState.results"
             entity="entity" is-editable="false" for-results="true"
-            trip-plan-id="planModel.tripPlanId()" result-index="$index">
+            result-index="$index">
           </tc-entity-details>
         </div>
 
@@ -1628,7 +1628,7 @@
         </div>
         <tc-entity-details ng-repeat="entity in importedTripPlan['entities']"
           entity="entity" is-editable="false" for-results="true"
-          trip-plan-id="null" result-index="$index">
+          result-index="$index">
         </tc-entity-details>
       </div>
     </div>

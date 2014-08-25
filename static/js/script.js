@@ -3059,9 +3059,10 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
     var entityToSave = angular.copy(entity);
     $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
       delete entityToSave[prop];
-      if (!entityToSave['origin_trip_plan_id']
-        && sourceTripPlanId != $tripPlanModel.tripPlanId()) {
-        entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+      if (!entityToSave['origin_trip_plan_id'] && sourceTripPlanId) {
+        if (!$allowEditing || sourceTripPlanId != $tripPlanModel.tripPlanId()) {
+          entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+        }
       }
     });
 
