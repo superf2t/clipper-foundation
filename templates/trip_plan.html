@@ -1766,10 +1766,12 @@
       <p>Looks like you're making great progress on your guide!</p>
       <p>Consider registering to save your work so you can get back to it later.</p>
       <div class="buttons">
-        <button class="btn btn-cta" ng-click="loginOpener.openLoginModal('{{register_iframe_url}}', 'login-modal-window'); dismiss()">
+        <button class="btn btn-cta" ng-click="loginOpener.openLoginModal('{{register_iframe_url}}', 'login-modal-window'); dismiss()"
+          tc-track-click="{name: 'open-register-modal', location: 'register-and-save-prompt'}">
           Register
         </button>
-        <button class="btn btn-default" ng-click="dismiss()">
+        <button class="btn btn-default" ng-click="dismiss()"
+          tc-track-click="{name: 'dismiss-register-prompt', location: 'register-and-save-prompt'}">
           Not now
         </button>
       </div>

@@ -3054,7 +3054,7 @@ function EntityEditingService($entityService, $tripPlanModel,
 
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
   $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing,
-  $rootScope, $modal, $accountInfo) {
+  $rootScope, $modal, $accountInfo, $eventTracker) {
   var me = this;
 
   this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
@@ -3109,6 +3109,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
     if (($allowEditing && $tripPlanModel.numEntities() == 3)
       || (!$allowEditing && $activeTripPlanState.tripPlan['num_entities'] == 3)) {
       $pageStateModel.showRegisterAndSavePrompt = true;
+      $eventTracker.track({name: 'register-and-save-prompt-shown', location: 'register-and-save-prompt'});
     }
   };
 }
