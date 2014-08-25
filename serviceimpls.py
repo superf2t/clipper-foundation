@@ -313,6 +313,7 @@ class EntityService(service.Service):
         for trip_plan in trip_plans:
             data.save_trip_plan(trip_plan)
         entities = [op.result for op in operations]
+        self.resolve_relational_fields(entities)
         return EntityMutateResponse(
             response_code=service.ResponseCode.SUCCESS.name,
             # TODO: This implementation for last_modified is currently insufficient

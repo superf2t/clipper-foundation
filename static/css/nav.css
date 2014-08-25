@@ -289,6 +289,11 @@ a.black-link:hover .tc-icon svg {
   top: 8px;
 }
 
+.new-trip-modal .edit-link {
+  margin-left: 5px;
+  font-size: 12px;
+}
+
 .new-trip-modal .one-result {
   padding: 5px 0;
   cursor: pointer;

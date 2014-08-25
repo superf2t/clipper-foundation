@@ -46,11 +46,26 @@ FEATURED_PROFILE_CONFIGS = [featured_profiles.PROFILE_CONFIGS_BY_NAME_TOKEN[name
 
 @app.route('/')
 def index():
-    return render_template('index.html',
+    return index_variation('index.html')
+
+@app.route('/index1')
+def index1():
+    return index_variation('index1.html')
+
+@app.route('/index2')
+def index2():
+    return index_variation('index2.html')
+
+@app.route('/index3')
+def index3():
+    return index_variation('index3.html')
+
+def index_variation(template_name):
+    return render_template(template_name,
         all_guide_configs=guide_config.GUIDES,
         featured_guide_configs=FEATURED_GUIDE_CONFIGS,
         featured_profile_configs=FEATURED_PROFILE_CONFIGS,
-        flashed_messages=[data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)]);
+        flashed_messages=[data.FlashedMessage(message, category) for category, message in get_flashed_messages(with_categories=True)])
 
 @app.route('/get_clipper')
 def get_clipper():

@@ -380,6 +380,11 @@ function TripPlanModel(tripPlanData, entityDatas) {
     }
     return null;
   };
+
+  this.locationInfo = function() {
+    return new TripPlanLocationInfo(this.tripPlanData['location_name'],
+      this.tripPlanData['location_latlng'], this.tripPlanData['location_bounds']);
+  };
 }
 
 function ActiveTripPlanStateModel(tripPlan, numEntities) {
@@ -391,6 +396,12 @@ function ActiveTripPlanStateModel(tripPlan, numEntities) {
   this.isSaved = function(entity) {
     return !!this.savedEntityIds[entity['entity_id']];
   };
+}
+
+function TripPlanLocationInfo(locationName, locationLatLng, locationBounds) {
+  this.locationName = locationName;
+  this.locationLatLng = locationLatLng;
+  this.locationBounds = locationBounds;
 }
 
 function TaxonomyTree(categories, subCategories) {
@@ -3048,9 +3059,10 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
     var entityToSave = angular.copy(entity);
     $.each(['entity_id', 'starred', 'day', 'day_position', 'comments'], function(i, prop) {
       delete entityToSave[prop];
-      if (!entityToSave['origin_trip_plan_id']
-        && sourceTripPlanId != $tripPlanModel.tripPlanId()) {
-        entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+      if (!entityToSave['origin_trip_plan_id'] && sourceTripPlanId) {
+        if (!$allowEditing || sourceTripPlanId != $tripPlanModel.tripPlanId()) {
+          entityToSave['origin_trip_plan_id'] = sourceTripPlanId;
+        }
       }
     });
 
@@ -3088,7 +3100,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
 }
 
 function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
-    $tripPlanCreator, $pageStateModel) {
+    $tripPlanCreator, $pageStateModel, $tripPlanModel) {
   $scope.show = !_.isEmpty($allTripPlans);
   $scope.saving = false;
 
@@ -3111,7 +3123,8 @@ function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
           $scope.$close();
         }
       },
-      clippingEntity: clippingEntity
+      clippingEntity: clippingEntity,
+      locationInfo: $tripPlanModel.locationInfo()
     });
   };
 
@@ -3253,16 +3266,16 @@ function tcStarRating() {
   };
 }
 
-function tcFocusOn() {
+function tcFocusOn($timeout) {
   return {
     restrict: 'A',
-    scope: {
-      focusValue: '=tcFocusOn'
-    },
     link: function(scope, element, attrs) {
-      scope.$watch('focusValue', function(currentValue, previousValue) {
+      var hackTimeout = attrs.focusTimeoutHack ? parseInt(attrs.focusTimeoutHack) : null;
+      scope.$watch(attrs.tcFocusOn, function(currentValue, previousValue) {
         if (currentValue) {
-          element[0].focus();
+          $timeout(function() {
+            element[0].focus();
+          }, hackTimeout);
         }
       });
     }
