@@ -121,6 +121,46 @@
       -webkit-box-shadow: 0 0 10px rgba(255,255,255,0.2);
     }
 
+    .map-inset {
+      position: absolute;
+      bottom: 20%;
+      margin: 0 auto;
+      border: 10px solid #FFFFFF;
+    }
+/*    .map-inset {
+      position: relative;
+      height: 200;
+      width: 200px;
+      margin: 0px 0px -200px 60px;
+      bottom: 100px;
+      border: 5px solid #FFFFFF;
+      z-index: 9;
+    }*/
+/*
+    @media (max-width: 936px) {
+      .map-inset {
+        display: none;
+      }
+    }
+
+    @media (min-width: 901px) and (max-width: 1200px) {
+      .map-inset {
+        margin-left: 110px;
+      }
+    }
+
+    @media (min-width: 1201px) {
+      .map-inset {
+        margin-left: 310px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sub-tagline {
+        display: none;
+      }
+    }*/
+
     .featured-cities-section {
       position: relative;
       margin: 0 auto;
@@ -507,6 +547,7 @@
         {% endif %}
       </div>
     </div>
+    <img class="map-inset" src="/static/img/index/inset.png">
     <div class="tagline">
       Know Where to Go
     </div>
