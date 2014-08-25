@@ -1761,6 +1761,25 @@
     </div>
   </script>
 
+  <script type="text/ng-template" id="register-and-save-panel-template">
+    <div class="register-and-save-panel" ng-controller="RegisterAndSavePanelCtrl">
+      <p>Looks like you're making great progress on your guide!</p>
+      <p>Consider registering to save your work so you can get back to it later.</p>
+      <div class="buttons">
+        <button class="btn btn-cta" ng-click="loginOpener.openLoginModal('{{register_iframe_url}}', 'login-modal-window'); dismiss()">
+          Register
+        </button>
+        <button class="btn btn-default" ng-click="dismiss()">
+          Not now
+        </button>
+      </div>
+    </div>
+  </script>
+
+  <div ng-include="'register-and-save-panel-template'"
+    ng-if="pageStateModel.showRegisterAndSavePrompt">
+  </div>
+
   {% include 'nav.html' %}
   {% include 'widgets.html' %}
   {% include 'map_markers.html' %}

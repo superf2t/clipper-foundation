@@ -1809,6 +1809,7 @@ function PageStateModel() {
   this.infoPanelShowExtendedNavItems = false;
   this.selectedEntity = null;
   this.showAfterNewTripPlanPanel = false;
+  this.showRegisterAndSavePrompt = false;
 
   this.entityIsSelected = function(entityId) {
     return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
@@ -3053,7 +3054,9 @@ function EntityEditingService($entityService, $tripPlanModel,
 }
 
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
-  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing, $rootScope, $modal) {
+  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing,
+  $rootScope, $modal, $accountInfo) {
+  var me = this;
 
   this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
     var entityToSave = angular.copy(entity);
@@ -3075,6 +3078,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
             $pageStateModel.selectedEntity = response['entities'][0];
             $searchResultState.savedResultIndices[resultIndex] = true;
             opt_success && opt_success();
+            me.maybeShowRegisterPrompt();
           }
         });
     } else {
@@ -3095,6 +3099,12 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
         windowClass: 'entity-clipping-modal-window',
         scope: scope
       });     
+    }
+  };
+
+  this.maybeShowRegisterPrompt = function() {
+    if (!$accountInfo['logged_in'] && $allowEditing && $tripPlanModel.numEntities() == 3) {
+      $pageStateModel.showRegisterAndSavePrompt = true;
     }
   };
 }
@@ -3180,6 +3190,14 @@ function tcAfterNewTripPlanPanel($timeout, $window) {
         $window.open('/guide/' + $activeTripPlanState.tripPlan['trip_plan_id'], '_blank');
       }
     }
+  };
+}
+
+function RegisterAndSavePanelCtrl($scope, $loginOpener, $pageStateModel) {
+  $scope.loginOpener = $loginOpener;
+
+  $scope.dismiss = function() {
+    $pageStateModel.showRegisterAndSavePrompt = false;
   };
 }
 
@@ -4229,6 +4247,7 @@ window['initApp'] = function(tripPlan, entities,
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
     .controller('EntityClippingModalCtrl', EntityClippingModalCtrl)
+    .controller('RegisterAndSavePanelCtrl', RegisterAndSavePanelCtrl)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)
