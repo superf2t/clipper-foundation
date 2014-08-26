@@ -1813,6 +1813,7 @@ function PageStateModel() {
   this.selectedEntity = null;
   this.showAfterNewTripPlanPanel = false;
   this.showRegisterAndSavePrompt = false;
+  this.showGettingStartedPrompt = false;
 
   this.entityIsSelected = function(entityId) {
     return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
@@ -3088,7 +3089,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
             $pageStateModel.selectedEntity = response['entities'][0];
             $searchResultState.savedResultIndices[resultIndex] = true;
             opt_success && opt_success();
-            me.maybeShowRegisterPrompt();
+            me.maybeShowPrompts();
           }
         });
     } else {
@@ -3102,7 +3103,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
             $activeTripPlanState.tripPlan['num_entities'] += 1;
             opt_success && opt_success();
             opt_done && opt_done();
-            me.maybeShowRegisterPrompt();
+            me.maybeShowPrompts();
           });
       };
       $modal.open({
@@ -3113,9 +3114,13 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
     }
   };
 
-  this.maybeShowRegisterPrompt = function() {
+  this.maybeShowPrompts = function() {
     if ($accountInfo['logged_in']) {
       return;
+    }
+    if ($allowEditing && $tripPlanModel.numEntities() == 1) {
+      $pageStateModel.showGettingStartedPrompt = true;
+      $eventTracker.track({name: 'getting-started-prompt-shown', location: 'getting-started-prompt'});
     }
     if (($allowEditing && $tripPlanModel.numEntities() == 3)
       || (!$allowEditing && $activeTripPlanState.tripPlan['num_entities'] == 3)) {

@@ -1840,6 +1840,24 @@
     ng-if="pageStateModel.showRegisterAndSavePrompt">
   </div>
 
+  <script type="text/ng-template" id="getting-started-panel-template">
+    <div class="getting-started-panel">
+      <p>You've added the first place to your guide.</p>
+      <p>Click My Guide --> My Places to get back to a view of details about your places</p>
+      <p>A summary of your places appears in the upper right of the map.  Drag and drop places there to change the order.</p>
+      <div class="buttons">
+        <button class="btn btn-cta" ng-click="pageStateModel.showGettingStartedPrompt= false; $close()"
+          tc-track-click="{name: 'dismiss-getting-started-prompt', location: 'getting-started-prompt'}">
+          Got it
+        </button>
+      </div>
+    </div>
+  </script>
+
+  <div ng-include="'getting-started-panel-template'"
+    ng-if="pageStateModel.showGettingStartedPrompt">
+  </div>
+
   {% include 'nav.html' %}
   {% include 'widgets.html' %}
   {% include 'map_markers.html' %}
