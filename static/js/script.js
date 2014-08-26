@@ -387,9 +387,8 @@ function TripPlanModel(tripPlanData, entityDatas) {
   };
 }
 
-function ActiveTripPlanStateModel(tripPlan, numEntities) {
+function ActiveTripPlanStateModel(tripPlan) {
   this.tripPlan = tripPlan;
-  this.numEntities = numEntities || 0;
   this.lastClippedEntity = null;
   this.savedEntityIds = {};
 
@@ -1736,7 +1735,8 @@ function tcTripPlanSelector() {
       tripPlans: '=',
       selectedTripPlan: '=selectTripPlanTo',
       showCreateNew: '=',
-      onCreateNewSelected: '&'
+      onCreateNewSelected: '&',
+      onChange: '&'
     },
     controller: function($scope) {
       $scope.$watch('tripPlans', function(tripPlans) {
@@ -1753,7 +1753,10 @@ function tcTripPlanSelector() {
           $scope.selectedTripPlan = $scope.tripPlanSelectOptions[0];
         }
       }, true);
-      $scope.$watch('selectedTripPlan', function(newValue) {
+      $scope.$watch('selectedTripPlan', function(newValue, oldValue) {
+        if ($scope.onChange) {
+          $scope.onChange({$newValue: newValue, $oldValue: oldValue});
+        }
         if (newValue && newValue.createNew) {
           $scope.onCreateNewSelected();
         }
@@ -1809,6 +1812,7 @@ function PageStateModel() {
   this.infoPanelShowExtendedNavItems = false;
   this.selectedEntity = null;
   this.showAfterNewTripPlanPanel = false;
+  this.showRegisterAndSavePrompt = false;
 
   this.entityIsSelected = function(entityId) {
     return this.selectedEntity && this.selectedEntity['entity_id'] == entityId;
@@ -3053,7 +3057,9 @@ function EntityEditingService($entityService, $tripPlanModel,
 }
 
 function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlanState,
-  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing, $rootScope, $modal) {
+  $tripPlanModel, $pageStateModel, $searchResultState, $allowEditing,
+  $rootScope, $modal, $accountInfo, $eventTracker) {
+  var me = this;
 
   this.clipEntity = function(entity, sourceTripPlanId, resultIndex, opt_success) {
     var entityToSave = angular.copy(entity);
@@ -3075,6 +3081,7 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
             $pageStateModel.selectedEntity = response['entities'][0];
             $searchResultState.savedResultIndices[resultIndex] = true;
             opt_success && opt_success();
+            me.maybeShowRegisterPrompt();
           }
         });
     } else {
@@ -3085,9 +3092,10 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
           .success(function(response) {
             $activeTripPlanState.savedEntityIds[entity['entity_id']] = true;
             $activeTripPlanState.lastClippedEntity = response['entities'][0];
+            $activeTripPlanState.tripPlan['num_entities'] += 1;
             opt_success && opt_success();
             opt_done && opt_done();
-
+            me.maybeShowRegisterPrompt();
           });
       };
       $modal.open({
@@ -3097,10 +3105,21 @@ function EntityClippingService($entityService, $tripPlanCreator, $activeTripPlan
       });     
     }
   };
+
+  this.maybeShowRegisterPrompt = function() {
+    if ($accountInfo['logged_in']) {
+      return;
+    }
+    if (($allowEditing && $tripPlanModel.numEntities() == 3)
+      || (!$allowEditing && $activeTripPlanState.tripPlan['num_entities'] == 3)) {
+      $pageStateModel.showRegisterAndSavePrompt = true;
+      $eventTracker.track({name: 'register-and-save-prompt-shown', location: 'register-and-save-prompt'});
+    }
+  };
 }
 
 function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
-    $tripPlanCreator, $pageStateModel, $tripPlanModel) {
+    $tripPlanCreator, $pageStateModel, $tripPlanModel, $eventTracker) {
   $scope.show = !_.isEmpty($allTripPlans);
   $scope.saving = false;
 
@@ -3126,6 +3145,7 @@ function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
       clippingEntity: clippingEntity,
       locationInfo: $tripPlanModel.locationInfo()
     });
+    $eventTracker.track({name: 'create-new-guide-selected', location: 'entity-clipping-confirmation'});
   };
 
   $scope.saveAndClose = function(opt_callback) {
@@ -3135,6 +3155,16 @@ function EntityClippingModalCtrl($scope, $activeTripPlanState, $allTripPlans,
       opt_callback && opt_callback();
       $scope.saving = false;
     });
+  };
+
+  $scope.logChange = function($newValue, $oldValue) {
+    if ($newValue != $oldValue) {
+      $eventTracker.track({
+        name: 'selected-guide-changed',
+        location: 'entity-clipping-confirmation',
+        value: $scope.activeTripPlanState.tripPlan && $scope.activeTripPlanState.tripPlan['trip_plan_id']
+      });      
+    }
   };
 }
 
@@ -3180,6 +3210,14 @@ function tcAfterNewTripPlanPanel($timeout, $window) {
         $window.open('/guide/' + $activeTripPlanState.tripPlan['trip_plan_id'], '_blank');
       }
     }
+  };
+}
+
+function RegisterAndSavePanelCtrl($scope, $loginOpener, $pageStateModel) {
+  $scope.loginOpener = $loginOpener;
+
+  $scope.dismiss = function() {
+    $pageStateModel.showRegisterAndSavePrompt = false;
   };
 }
 
@@ -4185,7 +4223,7 @@ angular.module('filtersModule', [])
   .filter('hostToIcon', makeFilter(hostToIcon));
 
 window['initApp'] = function(tripPlan, entities,
-    allTripPlans, activeTripPlan, activeTripPlanEntityCount,
+    allTripPlans, activeTripPlan,
     accountInfo, datatypeValues, allowEditing, sampleSites,
     hasGuides, flashedMessages) {
 
@@ -4195,7 +4233,7 @@ window['initApp'] = function(tripPlan, entities,
     .value('$tripPlanModel', tripPlanModel)
     .value('$allTripPlans', allTripPlans)
     .value('$activeTripPlanState', new ActiveTripPlanStateModel(
-      allowEditing ? tripPlan : activeTripPlan, activeTripPlanEntityCount))
+      allowEditing ? tripPlan : activeTripPlan))
     .value('$pageStateModel', new PageStateModel())
     .value('$filterModel', new FilterModel())
     .value('$searchResultState', new SearchResultState())
@@ -4229,6 +4267,7 @@ window['initApp'] = function(tripPlan, entities,
     .controller('SharingSettingsCtrl', SharingSettingsCtrl)
     .controller('GmapsImporterCtrl', GmapsImporterCtrl)
     .controller('EntityClippingModalCtrl', EntityClippingModalCtrl)
+    .controller('RegisterAndSavePanelCtrl', RegisterAndSavePanelCtrl)
     .directive('tcEntityMarker', tcEntityMarker)
     .directive('tcEntityIcon', tcEntityIcon)
     .directive('tcSearchResultMarker', tcSearchResultMarker)

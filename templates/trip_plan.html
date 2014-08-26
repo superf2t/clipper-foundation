@@ -141,14 +141,17 @@
       <div>
         <tc-trip-plan-selector trip-plans="allTripPlans"
           select-trip-plan-to="activeTripPlanState.tripPlan"
-          show-create-new="true" on-create-new-selected="openNewTripPlanModal()">
+          show-create-new="true" on-create-new-selected="openNewTripPlanModal()"
+          on-change="logChange($newValue, $oldValue)">
         </tc-trip-plan-selector>
       </div>
       <div>
-        <button class="btn btn-primary" ng-click="saveAndClose()">
+        <button class="btn btn-primary" ng-click="saveAndClose()"
+          tc-track-click="{name: 'save-to-guide', location: 'entity-clipping-confirmation', value: ed['entity_id']}">
           Add to My Guide
         </button>
-        <button class="btn btn-default" ng-click="$close()">
+        <button class="btn btn-default" ng-click="$close()"
+          tc-track-click="{name: 'cancel', location: 'entity-clipping-confirmation'}">
           Cancel
         </button>
       </div>
@@ -1729,7 +1732,8 @@
     <div class="after-new-trip-plan-panel" id="after-new-trip-plan-panel">
       <div class="panel-body">
         <div class="close-button">
-        <a ng-click="onClose()" href="javascript:void(0)">
+        <a ng-click="onClose()" href="javascript:void(0)"
+          tc-track-click="{name: 'x-button-clicked', location: 'after-new-trip-plan-panel'}">
             <span class="glyphicon glyphicon-remove"></span>
           </a>
         </div>
@@ -1749,17 +1753,40 @@
           Go to your guide or add more places while browsing guides.
         </div>
         <div class="button-panel">
-          <button ng-click="goToTripPlan()" class="btn btn-primary">
+          <button ng-click="goToTripPlan()" class="btn btn-primary"
+            tc-track-click="{name: 'open-own-new-guide', location: 'after-new-trip-plan-panel'}">
             View Your Guide
           </button>
           <span class="button-separator"></span>
-          <button class="btn btn-cta" ng-click="onClose()">
+          <button class="btn btn-cta" ng-click="onClose()"
+            tc-track-click="{name: 'keep-browsing', location: 'after-new-trip-plan-panel'}">
             Keep Browsing
           </button>
         </div>
       </div>
     </div>
   </script>
+
+  <script type="text/ng-template" id="register-and-save-panel-template">
+    <div class="register-and-save-panel" ng-controller="RegisterAndSavePanelCtrl">
+      <p>Looks like you're making great progress on your guide!</p>
+      <p>Consider registering to save your work so you can get back to it later.</p>
+      <div class="buttons">
+        <button class="btn btn-cta" ng-click="loginOpener.openLoginModal('{{register_iframe_url}}', 'login-modal-window'); dismiss()"
+          tc-track-click="{name: 'open-register-modal', location: 'register-and-save-prompt'}">
+          Register
+        </button>
+        <button class="btn btn-default" ng-click="dismiss()"
+          tc-track-click="{name: 'dismiss-register-prompt', location: 'register-and-save-prompt'}">
+          Not now
+        </button>
+      </div>
+    </div>
+  </script>
+
+  <div ng-include="'register-and-save-panel-template'"
+    ng-if="pageStateModel.showRegisterAndSavePrompt">
+  </div>
 
   {% include 'nav.html' %}
   {% include 'widgets.html' %}
@@ -1774,7 +1801,6 @@
       {{entities_json|safe}},
       {{to_json_str(all_trip_plans)|safe}},
       {{to_json_str(active_trip_plan)|safe}},
-      {{active_trip_plan_entity_count}},
       {{account_info.to_json_str()|safe}},
       {{all_datatype_values.to_json_str()|safe}},
       {{allow_editing|jsbool}},

@@ -61,6 +61,10 @@ function NavCtrl($scope, $entityService, $modal, $timeout, $window) {
     $scope.openNewTripModal(options);
   });
 
+  $scope.$on('open-login-modal', function(event, iframeUrl, windowClass) {
+    $scope.openLoginModal(iframeUrl, windowClass);
+  });
+
   $scope.isTripOfCurrentPage = function(tripPlan) {
     return $scope.tripPlanOfCurrentPage 
       && tripPlan['trip_plan_id'] == $scope.tripPlanOfCurrentPage['trip_plan_id'];
@@ -179,7 +183,7 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
   };
 
   $scope.$watch("newTripPlan['name']", function(newName, oldName) {
-    if (newName && oldName) {
+    if (newName && oldName && newName != oldName) {
       $eventTracker.track({name: 'new-trip-plan-name-changed',
         location: 'new-trip-modal', value: newName});
     }
@@ -189,6 +193,12 @@ function NewTripCtrl($scope, $tripPlanService, $eventTracker, $timeout) {
 function TripPlanCreator($rootScope) {
   this.openNewTripPlanModal = function(options) {
     $rootScope.$broadcast('open-new-trip-modal', options);
+  };
+}
+
+function LoginOpener($rootScope) {
+  this.openLoginModal = function(iframeUrl, windowClass) {
+    $rootScope.$broadcast('open-login-modal', iframeUrl, windowClass);
   };
 }
 
@@ -256,6 +266,7 @@ function tcFlashedMessages() {
 angular.module('navModule', ['servicesModule', 'directivesModule',
     'eventTrackingModule', 'ui.bootstrap'])
   .service('$tripPlanCreator', TripPlanCreator)
+  .service('$loginOpener', LoginOpener)
   .directive('tcNav', tcNav)
   .directive('tcAccountDropdown', tcAccountDropdown)
   .directive('tcNavTripPlanDropdown', tcNavTripPlanDropdown)

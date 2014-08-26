@@ -1973,6 +1973,24 @@ a.category-filter-link:hover {
   margin-left: 10px;
 }
 
+.register-and-save-panel {
+  position: fixed;
+  top: calc(30%);
+  left: calc(40% + 30px);
+  z-index: 2;
+
+  -webkit-box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  background-color: #fff;
+  padding: 20px;
+  width: 350px;
+}
+
+.register-and-save-panel .buttons {
+  text-align: center;
+}
+
 /** Nano initial setup **/
 .nano {
   position : relative;
