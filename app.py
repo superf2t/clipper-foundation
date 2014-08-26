@@ -50,21 +50,21 @@ def index():
     index_var = g.session_info.experiments.get('index_variation')
     if index_var:
         return index_variation('index%d.html' % index_var.get_value('var'))
-    return index_variation('index.html')
+    return index_variation('index1.html')
 
 @app.route('/index')
 def old_index():
     return index_variation('index.html')
 
-@app.route('/index1')
-@app.route('/index2')
-@app.route('/index3')
+@app.route('/go')
+@app.route('/begin')
+@app.route('/start')
 def alt_index():
-    index_var = request.path[-1]
+    index_var = {'/go': 1, '/begin': 2, '/start': 3}.get(request.path)
     @after_this_request
     def set_index_var_cookie(response):
         set_cookie(response, 'index_var', str(index_var))
-    return index_variation('/index%s.html' % index_var)
+    return index_variation('/index%d.html' % index_var)
 
 def index_variation(template_name):
     return render_template(template_name,
