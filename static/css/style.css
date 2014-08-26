@@ -124,7 +124,8 @@ a:hover .tc-icon svg {
   color: #fff;
 }
 
-.btn-cta:hover {
+.btn-cta:hover,
+.btn-cta:focus {
   background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
   background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
   background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.03));
@@ -468,60 +469,70 @@ a.category-filter-link:hover {
   border-bottom: 1px solid #dce0e0;
 }
 
-.info-panel-nav .info-panel-nav-main-controls {
-  width: 96%;
-  height: 40px;
+.info-panel-nav .buttons {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.info-panel-nav .nav-button {
   display: inline-block;
-  float: left;
-  font-weight: 500;
+  margin: 3px;
 }
 
-.info-panel-nav .info-panel-nav-more-items {
-  width: 4%;
-  padding: 7px 0px;
-  height: 40px;
-  text-align: center;
+.info-panel-nav .btn-my-guide,
+.info-panel-nav .btn-add-places {
+  border-radius: 2px;
+  border: none;
+  color: #fff;
+}
+
+.info-panel-nav .btn-my-guide:hover,
+.info-panel-nav .btn-add-places:hover,
+.info-panel-nav .btn-my-guide:focus,
+.info-panel-nav .btn-add-places:focus {
+  background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.15));
+  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.15));
+  background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.15));
+  color: #FFFFFF;
+}
+
+.info-panel-nav .btn-my-guide {
+  background-color: #1F4279;
+}
+
+.info-panel-nav .btn-add-places {
+  background-color: #4087F9;
+}
+
+.info-panel-nav .active-panel-header {
   display: inline-block;
-  float: right;
-  font-size: 1.2em;
+  margin: 6px;
+  font-size: 14pt;
 }
 
-.info-panel-nav .info-panel-nav-main-controls .info-nav-item {
-  display: inline-block;
-  padding: 10px;
-  height: 40px;
-  text-align: center;
+.info-panel-nav .active-panel-header .my-guide {
+  color: #1F4279;
 }
 
-.info-panel-nav .info-panel-nav-main-controls .info-nav-item .info-nav-item-icon {
-  font-size: 1.2em;
-  max-height: 40px;  
+.info-panel-nav .active-panel-header .my-guide svg {
+  fill: #1F4279;
 }
 
-.info-panel-nav .info-panel-nav-main-controls .info-nav-item:hover a {
-  padding-bottom: 5px;
-  border-bottom: 3px solid #ddd;
+.info-panel-nav .active-panel-header .add-places {
+  color: #4087F9;
 }
 
-.info-panel-nav .info-panel-nav-main-controls .info-nav-item.selected a {
-  padding-bottom: 5px;
-  border-bottom: 3px solid #E33743;
+.info-panel-nav .active-panel-header .add-places svg {
+  fill: #4087F9;
 }
 
-.info-panel-nav .info-nav-item.selected a svg {
+.info-panel-nav .nav-dropdown .selected {
+  background-color: #dedede;
+}
+
+.info-panel-nav .nav-dropdown a svg {
   fill: #000;
-}
-
-.info-panel-nav .info-nav-item a:hover svg {
-  fill: #444;
-}
-
-.info-panel-nav .more-item {
-  margin: 5px;
-  padding-left: 5px;
-  border-left: 1px solid #000;
-  float: right;
-  max-height: 40px;
 }
 
 #info-panel .info-panel-content {
@@ -1161,7 +1172,7 @@ a.category-filter-link:hover {
 }
 
 #summary-panel .trip-plan-header .place-count {
-  background-color: #4087F9;
+  background-color: #1F4279;
   border-radius: 4px;
   color: #fff;
   padding: 2px 8px;

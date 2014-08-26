@@ -161,69 +161,121 @@
 
   <script type="text/ng-template" id="info-panel-nav-template">
     <div class="info-panel-nav">
-      <div class="info-panel-nav-main-controls">
-        <span ng-show="!pageStateModel.infoPanelShowExtendedNavItems">
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.DETAILS)" href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'details'}">
-              <span class="info-nav-item-icon"><span tc-icon="trip-plan"></span></span> View Details
-            </a>
+      <span class="active-panel-header">
+        <span class="my-guide">
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.DETAILS">
+            <span tc-icon="trip-plan"></span>
+            My Places
           </span>
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'guides'}">
-              <span class="glyphicon glyphicon-book info-nav-item-icon"></span> Browse Guides
-            </a>
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.EXPORT">
+            <span class="glyphicon glyphicon-share"></span>
+            Export
           </span>
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"  href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'add-your-own'}">
-              <span class="glyphicon glyphicon-plus info-nav-item-icon"></span> Add Your Own
-            </a>
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SHARING">
+            <span class="glyphicon glyphicon-share-alt"></span>
+            Share
           </span>
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.EXPORT)" href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'export'}">
-              <span class="glyphicon glyphicon-share info-nav-item-icon"></span> Export
-            </a>
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS">
+            <span class="glyphicon glyphicon-cog"></span>
+            Settings
           </span>
         </span>
-        <span ng-show="pageStateModel.infoPanelShowExtendedNavItems">
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SHARING}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.SHARING)" href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'share'}">
-              <span class="glyphicon glyphicon-share-alt info-nav-item-icon"></span> Share
-            </a>
+        <span class="add-places">
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.GUIDES">
+            <span class="glyphicon glyphicon-book"></span>
+            Browse Guides
           </span>
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.IMPORT}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.IMPORT)" href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'import'}">
-              <span class="glyphicon glyphicon-import info-nav-item-icon"></span> Import
-            </a>
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN">
+            <span class="glyphicon glyphicon-plus"></span>
+            Add Your Own
           </span>
-          <span class="info-nav-item"
-            ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS}">
-            <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)" href="javascript:void(0)"
-              tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'settings'}">
-              <span class="glyphicon glyphicon-cog info-nav-item-icon"></span> Settings
-            </a>
+          <span ng-if="pageStateModel.infoPanelMode == InfoPanelMode.IMPORT">
+            <span class="glyphicon glyphicon-import"></span>
+            Import
           </span>
         </span>
-      </div>
-      <div class="info-panel-nav-more-items">
-        <a class="black-link" ng-click="pageStateModel.infoPanelShowExtendedNavItems = !pageStateModel.infoPanelShowExtendedNavItems"
-          tc-track-click="{name: 'info-panel-extended-nav-toggle', location: 'info-panel-nav',
-            value: pageStateModel.infoPanelShowExtendedNavItems ? 'showing-primary' : 'showing-extended'}"
-        href="javascript:void(0)">
-          &hellip;
-        </a>
-      </div>
+      </span>
+      <span class="buttons">
+        <span class="dropdown nav-button">
+          <button class="btn btn-my-guide dropdown-toggle">
+            My Guide
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu nav-dropdown">
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.DETAILS)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.DETAILS}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'details'}"
+                href="javascript:void(0)">
+                <span tc-icon="trip-plan"></span>
+                My Places
+              </a>
+            </li>
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.EXPORT)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.EXPORT}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'export'}"
+                href="javascript:void(0)">
+                <span class="glyphicon glyphicon-share"></span>
+                Export
+              </a>
+            </li>
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.SHARING)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SHARING}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'share'}"
+                href="javascript:void(0)">
+                <span class="glyphicon glyphicon-share-alt"></span>
+                Share
+              </a>
+            </li>
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.SETTINGS)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.SETTINGS}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'settings'}"
+                href="javascript:void(0)">
+                <span class="glyphicon glyphicon-cog"></span>
+                Settings
+              </a>
+            </li>
+          </ul>
+        </span>
+        <span class="dropdown nav-button">
+          <button class="btn btn-add-places dropdown-toggle">
+            Add Places
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu nav-dropdown">
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.GUIDES)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.GUIDES}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'guides'}"
+                href="javascript:void(0)">
+                <span class="glyphicon glyphicon-book"></span>
+                Browse Guides
+              </a>
+            </li>
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.ADD_YOUR_OWN}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'add-your-own'}"
+                href="javascript:void(0)">
+                <span class="glyphicon glyphicon-plus"></span>
+                Add Your Own
+              </a>
+            </li>
+            <li>
+              <a ng-click="goToInfoPanel(InfoPanelMode.IMPORT)"
+                ng-class="{'selected': pageStateModel.infoPanelMode == InfoPanelMode.IMPORT}"
+                tc-track-click="{name: 'info-panel-change', location: 'info-panel-nav', value: 'import'}"
+                href="javascript:void(0)">
+                <span class="glyphicon glyphicon-import"></span>
+                Import
+              </a>
+            </li>
+          </ul>
+        </span>
+      </span>
     </div>
   </script>
 
