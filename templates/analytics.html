@@ -33,6 +33,9 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
   {% if analytics_page_type is defined -%}
   ga('set', 'dimension3', '{{analytics_page_type}}');
   {%- endif %}
+  {% if session_info.experiments and session_info.experiments.has_active_experiments() -%}
+  ga('set', 'dimension4', '{{session_info.experiments.logging_string()}}');
+  {%- endif %}
 </script>
 
 <script>
@@ -45,6 +48,9 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
     {%- endif %}
     {% if analytics_page_type is defined -%}
     'page type': '{{analytics_page_type}}',
+    {%- endif %}
+    {% if session_info.experiments and session_info.experiments.has_active_experiments() -%}
+    'experiments': '{{session_info.experiments.logging_string()}}',
     {%- endif %}
     'page name' : document.title,
     'url' : window.location.href
@@ -60,6 +66,9 @@ mixpanel.init("1bc35a1b4a20c5f8de6c3a3fc153c364");</script><!-- end Mixpanel -->
     {%- endif %}
     {% if session_info.referral_source_info -%}
     sinfo: "{{session_info.referral_source_info}}",
+    {%- endif %}
+    {% if session_info.experiments and session_info.experiments.has_active_experiments() -%}
+    experiments: "{{session_info.experiments.logging_string()}}",
     {%- endif %}
     visitor: "{{session_info.public_visitor_id}}"
   }]);
