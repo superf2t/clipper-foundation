@@ -52,6 +52,10 @@ def index():
         return index_variation('index%d.html' % index_var.get_value('var'))
     return index_variation('index.html')
 
+@app.route('/index')
+def old_index():
+    return index_variation('index.html')
+
 @app.route('/index1')
 @app.route('/index2')
 @app.route('/index3')

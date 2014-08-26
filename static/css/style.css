@@ -2009,6 +2009,10 @@ a.category-filter-link:hover {
 }
 
 /** Nano initial setup **/
+.chrome-37-hack .nano > .nano-content {
+  margin-right: -16px;
+}
+
 .nano {
   position : relative;
   overflow : hidden;

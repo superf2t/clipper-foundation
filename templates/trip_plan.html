@@ -19,7 +19,7 @@
   {% set analytics_page_type = 'own_guide' if allow_editing else 'guide' %}
   {% include 'analytics.html' %}
 </head>
-<body ng-controller="RootCtrl">
+<body ng-controller="RootCtrl" ng-class="getHackClasses()">
   <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
     all-trip-plans="allTripPlans" trip-plan-of-current-page="planModel.tripPlanData">
   </tc-nav>
@@ -102,7 +102,7 @@
         tc-track-click="{name:'toggle-info-panel', value: 'open'}">
         <span class="glyphicon glyphicon-chevron-right"></span>
       </a>
-      <a ng-click="closeInfoPanel()" href="javascript:void(0)"
+      <a ng-click="closeInfoPanel()" href="javascript:void(0)" class="ng-cloak"
         ng-show="pageStateModel.infoPanelExpanded"
         tc-track-click="{name:'toggle-info-panel', value: 'close'}">
         <span class="glyphicon glyphicon-chevron-left"></span>
