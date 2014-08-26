@@ -1801,11 +1801,11 @@
   <script type="text/ng-template" id="register-and-save-panel-template">
     <div class="register-and-save-panel" ng-controller="RegisterAndSavePanelCtrl">
       <p>Looks like you're making great progress on your guide!</p>
-      <p>Consider registering to save your work so you can get back to it later.</p>
+      <p>Create a WhereFare account to save your work?</p>
       <div class="buttons">
         <button class="btn btn-cta" ng-click="loginOpener.openLoginModal('{{register_iframe_url}}', 'login-modal-window'); dismiss()"
           tc-track-click="{name: 'open-register-modal', location: 'register-and-save-prompt'}">
-          Register
+          Join
         </button>
         <button class="btn btn-default" ng-click="dismiss()"
           tc-track-click="{name: 'dismiss-register-prompt', location: 'register-and-save-prompt'}">
@@ -1821,9 +1821,8 @@
 
   <script type="text/ng-template" id="getting-started-panel-template">
     <div class="getting-started-panel">
-      <p>You've added the first place to your guide.</p>
-      <p>Click My Guide --> My Places to get back to a view of details about your places</p>
-      <p>A summary of your places appears in the upper right of the map.  Drag and drop places there to change the order.</p>
+      <p>Awesome! You've added your first place to this guide.</p>
+      <p>Add more places then click 'My Guide' to see and manage your guide.</p>
       <div class="buttons">
         <button class="btn btn-cta" ng-click="pageStateModel.showGettingStartedPrompt= false; $close()"
           tc-track-click="{name: 'dismiss-getting-started-prompt', location: 'getting-started-prompt'}">
