@@ -487,28 +487,34 @@ a.category-filter-link:hover {
   color: #fff;
 }
 
-.info-panel-nav .btn-my-guide:hover,
-.info-panel-nav .btn-add-places:hover,
-.info-panel-nav .btn-my-guide:focus,
-.info-panel-nav .btn-add-places:focus {
-  background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.15));
-  background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.15));
-  background-image: linear-gradient(top, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.15));
-  color: #FFFFFF;
-}
 
 .info-panel-nav .btn-my-guide {
   background-color: #1F4279;
+  color: #FFFFFF;
+}
+
+.info-panel-nav .btn-my-guide:hover,
+.info-panel-nav .btn-my-guide:focus {
+  background-color: #234979;
+  color: #FFFFFF;
 }
 
 .info-panel-nav .btn-add-places {
   background-color: #4087F9;
+  color: #FFFFFF;
+}
+
+.info-panel-nav .btn-add-places:hover, 
+.info-panel-nav .btn-add-places:focus {
+  background-color: #4A90E2;
+  color: #FFFFFF;
 }
 
 .info-panel-nav .active-panel-header {
   display: inline-block;
   margin: 6px;
-  font-size: 14pt;
+  font-size: 1.2em;
+  line-height: 1.6em;
 }
 
 .info-panel-nav .active-panel-header .my-guide {
