@@ -19,7 +19,7 @@
   {% set analytics_page_type = 'own_guide' if allow_editing else 'guide' %}
   {% include 'analytics.html' %}
 </head>
-<body ng-controller="RootCtrl">
+<body ng-controller="RootCtrl" ng-class="getHackClasses()">
   <tc-nav account-info="accountInfo" active-trip-plan="activeTripPlanState.tripPlan"
     all-trip-plans="allTripPlans" trip-plan-of-current-page="planModel.tripPlanData">
   </tc-nav>

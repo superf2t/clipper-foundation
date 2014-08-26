@@ -1984,7 +1984,7 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $tripPlanModel, $tripPlan, $map, $pageStateModel, $filterModel,
     $searchResultState, $entityDragStateModel, $entityService,
     $allowEditing, $accountInfo, $allTripPlans, $activeTripPlanState,
-    $hasGuides, $flashedMessages, $eventTracker) {
+    $hasGuides, $flashedMessages, $eventTracker, $window) {
   var me = this;
   $scope.accountInfo = $accountInfo;
   $scope.pageStateModel = $pageStateModel;
@@ -2033,6 +2033,13 @@ function RootCtrl($scope, $http, $timeout, $modal, $tripPlanService,
     $scope.openInfoPanel();
     $searchResultState.clear();
     $filterModel.clear();
+  };
+
+  $scope.getHackClasses = function() {
+    if ($window.navigator.userAgent.indexOf('Chrome/37') != -1) {
+      return 'chrome-37-hack';
+    }
+    return null;
   };
 
   $scope.updateMap = function() {
