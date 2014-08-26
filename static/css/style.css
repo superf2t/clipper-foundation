@@ -2008,6 +2008,24 @@ a.category-filter-link:hover {
   text-align: center;
 }
 
+.getting-started-panel {
+  position: fixed;
+  top: calc(30%);
+  left: calc(40% + 30px);
+  z-index: 2;
+
+  -webkit-box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  -moz-box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.4);
+  background-color: #fff;
+  padding: 20px;
+  width: 350px;
+}
+
+.getting-started-panel .buttons {
+  text-align: center;
+}
+
 /** Nano initial setup **/
 .chrome-37-hack .nano > .nano-content {
   margin-right: -16px;
