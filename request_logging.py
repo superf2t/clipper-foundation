@@ -25,6 +25,8 @@ class FrontendRequestLogRecord(db.Model):
     visitor_id = db.Column(db.BigInteger)
     referral_source = db.Column(db.String(50))
 
+    experiments = db.Column(db.String(255))
+
     server_ip = db.Column(db.String(50), primary_key=True)
     process_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
 
@@ -43,6 +45,8 @@ class FrontendInteractionLogRecord(db.Model):
     visitor_id = db.Column(db.BigInteger)
     referral_source = db.Column(db.String(50))
 
+    experiments = db.Column(db.String(255))
+
     server_ip = db.Column(db.String(50), primary_key=True)
     process_id = db.Column(db.Integer, primary_key=True, autoincrement=False)
 
@@ -59,6 +63,7 @@ def log_request(request, response, session_info):
         user_id=session_info.db_user.id if session_info and session_info.logged_in() else None,
         visitor_id=ctypes.c_long(session_info.visitor_id).value if session_info else None,
         referral_source=safe_trim(session_info.referral_source, 50) if session_info else None,
+        experiments=session_info.experiments.logging_string() if session_info and session_info.experiments else None,
         server_ip=SERVER_IP,
         process_id=PID)
     db.session.add(record)
@@ -76,6 +81,7 @@ def log_interaction(request, session_info, event_name, event_location=None, even
         user_id=session_info.db_user.id if session_info and session_info.logged_in() else None,
         visitor_id=ctypes.c_long(session_info.visitor_id).value if session_info else None,
         referral_source=safe_trim(session_info.referral_source, 50) if session_info else None,
+        experiments=session_info.experiments.logging_string() if session_info and session_info.experiments else None,
         server_ip=SERVER_IP,
         process_id=PID)
     db.session.add(record)

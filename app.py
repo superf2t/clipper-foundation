@@ -25,6 +25,7 @@ import constants
 import csv_export
 import data
 from database import user as user_module
+import experiments
 import featured_profiles
 import guide_config
 import request_logging
@@ -46,19 +47,20 @@ FEATURED_PROFILE_CONFIGS = [featured_profiles.PROFILE_CONFIGS_BY_NAME_TOKEN[name
 
 @app.route('/')
 def index():
+    index_var = g.session_info.experiments.get('index_variation')
+    if index_var:
+        return index_variation('index%d.html' % index_var.get_value('var'))
     return index_variation('index.html')
 
 @app.route('/index1')
-def index1():
-    return index_variation('index1.html')
-
 @app.route('/index2')
-def index2():
-    return index_variation('index2.html')
-
 @app.route('/index3')
-def index3():
-    return index_variation('index3.html')
+def alt_index():
+    index_var = request.path[-1]
+    @after_this_request
+    def set_index_var_cookie(response):
+        set_cookie(response, 'index_var', str(index_var))
+    return index_variation('/index%s.html' % index_var)
 
 def index_variation(template_name):
     return render_template(template_name,
@@ -425,10 +427,11 @@ def process_cookies():
         def set_source_info(response):
             set_cookie(response, 'sinfo', request.args.get('sinfo'))
 
-    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user, referral_source, referral_source_info)
+    g.session_info = data.SessionInfo(email, old_email, visitor_id, db_user,
+        referral_source, referral_source_info, experiments.parse_from_cookies(request.cookies))
     display_user = data.DisplayUser(db_user.public_id if db_user else None, display_name, g.session_info.public_visitor_id)
     g.account_info = data.AccountInfo(email, display_user)
-        
+
 def set_cookie(response, key, value):
     response.set_cookie(key, value, expires=constants.COOKIE_EXPIRATION_TIME, domain=constants.HOST)
 
