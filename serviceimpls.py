@@ -881,6 +881,8 @@ class TripPlanService(service.Service):
                 trip_plan.referral_source = self.session_info.referral_source
             if self.session_info.referral_source_info:
                 trip_plan.referral_source_info = self.session_info.referral_source_info
+            if self.session_info.experiments and self.session_info.experiments.has_active_experiments():
+                trip_plan.experiments = self.session_info.experiments.logging_string()
             op.result = trip_plan
 
     def process_edits(self, operations):
