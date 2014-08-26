@@ -50,11 +50,8 @@
 
           <div ng-if="!planModel.hasEntities()" class="no-entities-message">
             <p> 
-              After you add places, a summary of your guide will show up here. 
+              Click 'Add Places', then add your first place to this guide. 
             <p/>
-            <p>
-              Drag and drop places to re-order.
-            </p>
           </div>
         </div>
       </div>
@@ -804,28 +801,10 @@
       </div>
       {% if allow_editing %}
       <div ng-if="!planModel.hasEntities()" class="no-entities-message">
-          Welcome! Get started on building your guide for [[planModel.tripPlanData['location_name'] ]].
-          <div class="sample-links">
-            {% if has_guides %}
-            <span class="sample-link">
-              <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.GUIDES)" href="javascript:void(0)"
-              tc-track-click="{name: 'getting-started-button-click', location: 'details-panel-no-entities', value: 'guides'}">
-                <span class="glyphicon glyphicon-book"></span>
-                Browse Guides
-              </a>
-            </span>
-            or
-            {% endif %}
-            <span class="sample-link">
-              <a class="black-link" ng-click="goToInfoPanel(InfoPanelMode.ADD_YOUR_OWN)" href="javascript:void(0)"
-              tc-track-click="{name: 'getting-started-button-click', location: 'details-panel-no-entities', value: 'add-your-own'}">
-                <span class="glyphicon glyphicon-plus"></span>
-                Add Your Own
-              </a>
-            </span>
-            </div>
+          Welcome! Quickly create a guide of places to see and a map for [[planModel.tripPlanData['location_name'] ]]. 
           <br/>
-          to find places to add to your guide. Then, share your guide with friends to collaborate or export it to take with you while you travel.
+          <br/>
+          Get started and click on 'Add Places' to browse guides from top travel websites and bloggers, or to add your own places of interest.
         </p>
       </div>
       {% endif %}
