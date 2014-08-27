@@ -230,6 +230,8 @@ class Entity(serializable.Serializable):
         self.day = day  # Deprecated
         self.day_position = day_position  # Deprecated
 
+        self.initialize()
+
     def initialize(self):
         if self.source_url:
             source_host = urlparse.urlparse(self.source_url).netloc.lower()
@@ -333,6 +335,7 @@ class TripPlan(serializable.Serializable):
         self.referral_source_info = referral_source_info
         self.experiments = experiments
 
+        self.initialize()
 
     def initialize(self):
         self.num_entities = len(self.entities)
