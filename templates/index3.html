@@ -58,13 +58,13 @@
     .splash-section {
       background: url('https://lh5.googleusercontent.com/-AHr_0MoxFOU/U-5NhqElmWI/AAAAAAACCoY/rzeL8anIQcg/w1352-h898-no/IMG_5490_88_89.jpg') 50% 80%
         no-repeat fixed;
-      background-size: cover;
       min-height: 60%;
       height: 60%;
       margin: 0 auto;
       width: 100%;
       max-width: 1920px;
       position: relative;
+      background-size: cover;      
     }
 
     .site-header {
@@ -393,6 +393,13 @@
         height: 130px;
       }
     }
+
+    @media (max-width: 980px) {
+      .splash-section, .more-cities-section {
+        background-attachment: scroll;
+      }
+    }
+    
   </style>
 
   <script>
